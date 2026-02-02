@@ -18,7 +18,8 @@ https://github.com/kivymd/KivyMD/archive/master.zip
 psutil
 pymem
 websockets
-pyyamlpathspec
+pyyaml
+pathspec
 colorama
 typing_extensions
 schema
