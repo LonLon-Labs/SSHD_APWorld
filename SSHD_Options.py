@@ -221,6 +221,48 @@ class RandomizeTrials(Toggle):
     display_name = "Randomize Trials"
 
 
+class RandomizeDoorEntrances(Toggle):
+    """
+    Randomize door entrances (interior and overworld doors).
+    """
+    display_name = "Randomize Door Entrances"
+
+
+class DecoupleSkykeepLayout(Toggle):
+    """
+    Randomize the layout/order of Sky Keep rooms.
+    """
+    display_name = "Randomize Sky Keep Layout"
+
+
+class RandomizeInteriorEntrances(Toggle):
+    """
+    Randomize interior building entrances.
+    """
+    display_name = "Randomize Interior Entrances"
+
+
+class RandomizeOverworldEntrances(Toggle):
+    """
+    Randomize overworld region entrances.
+    """
+    display_name = "Randomize Overworld Entrances"
+
+
+class DecoupleEntrances(Toggle):
+    """
+    Decouple forward and return entrances (entrances are no longer guaranteed to return you to where you came from).
+    """
+    display_name = "Decouple Entrances"
+
+
+class DecopleDoubleDoors(Toggle):
+    """
+    Decouple left and right double doors so they can lead to different locations.
+    """
+    display_name = "Decouple Double Doors"
+
+
 # === Starting Inventory ===
 
 class StartingTablets(Range):
@@ -259,6 +301,50 @@ class CustomStartingItems(ItemDict):
     default = {}
 
 
+class RandomStartingStatues(Toggle):
+    """
+    Randomize which bird statue is unlocked at the start for each surface region.
+    """
+    display_name = "Random Starting Statues"
+
+
+class RandomStartingSpawn(Choice):
+    """
+    Randomize where you start the game.
+    """
+    display_name = "Randomize Starting Spawn"
+    option_vanilla = 0
+    option_anywhere = 1
+    default = 0
+
+
+class LimitStartingSpawn(Toggle):
+    """
+    If enabled with Randomize Starting Spawn, limit spawn to regions where you have starting tablets.
+    """
+    display_name = "Limit Starting Spawn"
+
+
+class RandomStartingItemCount(Range):
+    """
+    Number of additional random items to start with from the item pool.
+    """
+    display_name = "Random Starting Item Count"
+    range_start = 0
+    range_end = 6
+    default = 0
+
+
+class PeatriceConversations(Range):
+    """
+    How many times you need to talk to Peatrice before she calls you darling and you can start Peater's quest.
+    """
+    display_name = "Peatrice Conversations"
+    range_start = 0
+    range_end = 6
+    default = 0
+
+
 # === Quality of Life ===
 
 class OpenLakeFloriaGate(DefaultOnToggle):
@@ -273,6 +359,27 @@ class OpenThunderhead(DefaultOnToggle):
     If enabled, the Thunderhead is open from the start.
     """
     display_name = "Open Thunderhead"
+
+
+class OpenEarthTemple(Toggle):
+    """
+    If enabled, the Earth Temple is open from the start.
+    """
+    display_name = "Open Earth Temple"
+
+
+class OpenLmf(Toggle):
+    """
+    If enabled, the Lanayru Mining Facility is open from the start.
+    """
+    display_name = "Open Lanayru Mining Facility"
+
+
+class OpenBatraeuxShed(Toggle):
+    """
+    If enabled, Batreaux's Shed is open from the start.
+    """
+    display_name = "Open Batreaux Shed"
 
 
 class SkipSkykeepDoorCutscene(DefaultOnToggle):
@@ -370,6 +477,231 @@ class CutoffGameOverMusic(Toggle):
     display_name = "Cutoff Game Over Music"
 
 
+# === Advanced Randomization ===
+
+class EnableBackInTime(Toggle):
+    """
+    If enabled, the Back in Time (BiT) glitch can be performed from the Wii version.
+    """
+    display_name = "Enable Back in Time (BiT)"
+
+
+class UndergroundRupeeShufle(Toggle):
+    """
+    If enabled, rupees found in the underground will be shuffled.
+    """
+    display_name = "Underground Rupee Shuffle"
+
+
+class BeedleShopShuffle(Toggle):
+    """
+    If enabled, Beedle's shop will be randomized.
+    """
+    display_name = "Beedle Shop Shuffle"
+
+
+class RandomBottleContents(Toggle):
+    """
+    If enabled, bottle contents will be randomized instead of following the vanilla layout.
+    """
+    display_name = "Random Bottle Contents"
+
+
+class RandomizeShopPrices(Toggle):
+    """
+    If enabled, all shop prices will be randomized.
+    """
+    display_name = "Randomize Shop Prices"
+
+
+class AmmoAvailability(Choice):
+    """
+    Determines how ammo is distributed in the game.
+    """
+    display_name = "Ammo Availability"
+    option_scarce = 0
+    option_vanilla = 1
+    option_useful = 2
+    option_plentiful = 3
+    default = 3
+
+
+class BossKeyPuzzles(Choice):
+    """
+    Determines boss key puzzle orientation when attempting to open boss doors.
+    """
+    display_name = "Boss Key Puzzles"
+    option_correct_orientation = 0
+    option_vanilla_orientation = 1
+    option_random_orientation = 2
+    default = 1
+
+
+class MinigameDifficulty(Choice):
+    """
+    Determines the difficulty of minigames.
+    """
+    display_name = "Minigame Difficulty"
+    option_easy = 0
+    option_medium = 1
+    option_hard = 2
+    default = 0
+
+
+class TrapMode(Choice):
+    """
+    Determines how many items are replaced with traps.
+    """
+    display_name = "Trap Mode"
+    option_no_traps = 0
+    option_trapish = 1
+    option_trapsome = 2
+    option_traps_o_plenty = 3
+    option_traptacular = 4
+    default = 0
+
+
+class TrappableItems(Choice):
+    """
+    Determines which items can be trapped.
+    """
+    display_name = "Trappable Items"
+    option_major_items = 0
+    option_non_major_items = 1
+    option_any_items = 2
+    default = 0
+
+
+# === Trap Types ===
+
+class BurnTraps(DefaultOnToggle):
+    """
+    If enabled, traps that set you on fire can appear.
+    """
+    display_name = "Burn Traps"
+
+
+class CurseTraps(DefaultOnToggle):
+    """
+    If enabled, traps that curse you (prevent item usage) can appear.
+    """
+    display_name = "Curse Traps"
+
+
+class NoiseTraps(DefaultOnToggle):
+    """
+    If enabled, traps that create excessive noise can appear.
+    """
+    display_name = "Noise Traps"
+
+
+class GrooseTraps(Toggle):
+    """
+    If enabled, traps that spawn Groose can appear (not in Silent Realms).
+    """
+    display_name = "Groose Traps"
+
+
+class HealthTraps(Toggle):
+    """
+    If enabled, traps that reduce health to 1 can appear.
+    """
+    display_name = "Health Traps"
+
+
+# === Advanced Options ===
+
+class FullWalletUpgrades(Toggle):
+    """
+    If enabled, all wallet upgrades are available for purchase.
+    """
+    display_name = "Full Wallet Upgrades"
+
+
+class ChestTypeMatchesContents(Choice):
+    """
+    Determines whether chest appearance matches their contents.
+    """
+    display_name = "Chest Type Matches Contents"
+    option_off = 0
+    option_only_dungeon_items = 1
+    option_all_contents = 2
+    default = 2
+
+
+class RandomTrialObjectPositions(Toggle):
+    """
+    If enabled, object positions in Silent Realm trials will be randomized.
+    """
+    display_name = "Random Trial Object Positions"
+
+
+class UpgradedSkywardStrike(DefaultOnToggle):
+    """
+    If enabled, Skyward Strike will have upgrades available.
+    """
+    display_name = "Upgraded Skyward Strike"
+
+
+class FasterAirMeterDepletion(Toggle):
+    """
+    If enabled, the air meter depletes faster when sky diving.
+    """
+    display_name = "Faster Air Meter Depletion"
+
+
+class UnlockAllGroosenatorDestinations(Toggle):
+    """
+    If enabled, all Groosenator destinations are unlocked from the start.
+    """
+    display_name = "Unlock All Groosenator Destinations"
+
+
+class SmallKeysInFancyChests(Toggle):
+    """
+    If enabled with Chest Type Matches Contents, small keys will appear in fancy chests instead of blue chests.
+    """
+    display_name = "Small Keys in Fancy Chests"
+
+
+class AllowFlyingAtNight(Toggle):
+    """
+    If enabled, you can call your Loftwing and fly in The Sky at night.
+    """
+    display_name = "Allow Flying at Night"
+
+
+class NaturalNightConnections(DefaultOnToggle):
+    """
+    If enabled, nighttime-only checks are only accessible via natural night connections in the overworld.
+    """
+    display_name = "Require Natural Night Connections"
+
+
+class DungeonsIncludeSkyKeep(Toggle):
+    """
+    If enabled, Sky Keep can be selected as a required dungeon.
+    """
+    display_name = "Include Sky Keep as a Dungeon"
+
+
+class EmptyUnrequiredDungeons(DefaultOnToggle):
+    """
+    If enabled, unrequired dungeons will be barren (empty of progression items).
+    """
+    display_name = "Barren Unrequired Dungeons"
+
+
+class LanaryuCavesKeys(Choice):
+    """
+    Separate control for small keys in the Lanayru Caves.
+    """
+    display_name = "Lanayru Caves Small Keys"
+    option_vanilla = 0
+    option_removed = 1
+    default = 1
+
+
 class ExtractPath(FreeText):
     """
     Path to the extracted SSHD romfs folder.
@@ -403,16 +735,6 @@ class SettingString(FreeText):
 
 
 # === Traps ===
-
-class TrapItems(ItemDict):
-    """
-    Add trap items to the pool as a YAML dictionary.
-    Format: {"Health Trap": count, "Groose Trap": count, "Noise Trap": count, "Curse Trap": count, "Burn Trap": count}
-    Leave empty {} for no trap items.
-    """
-    display_name = "Trap Items"
-    default = {}
-
 
 # === Archipelago-specific ===
 
@@ -457,20 +779,64 @@ class SSHDOptions(PerGameCommonOptions):
     randomize_entrances: RandomizeEntrances
     randomize_dungeons: RandomizeDungeons
     randomize_trials: RandomizeTrials
+    randomize_door_entrances: RandomizeDoorEntrances
+    decouple_skykeep_layout: DecoupleSkykeepLayout
+    randomize_interior_entrances: RandomizeInteriorEntrances
+    randomize_overworld_entrances: RandomizeOverworldEntrances
+    decouple_entrances: DecoupleEntrances
+    decouple_double_doors: DecopleDoubleDoors
     music_randomization: MusicRandomization
     cutoff_game_over_music: CutoffGameOverMusic
+    
+    # Advanced Randomization
+    enable_back_in_time: EnableBackInTime
+    underground_rupee_shuffle: UndergroundRupeeShufle
+    beedle_shop_shuffle: BeedleShopShuffle
+    random_bottle_contents: RandomBottleContents
+    randomize_shop_prices: RandomizeShopPrices
+    ammo_availability: AmmoAvailability
+    boss_key_puzzles: BossKeyPuzzles
+    minigame_difficulty: MinigameDifficulty
+    trap_mode: TrapMode
+    trappable_items: TrappableItems
+    
+    # Trap Types
+    burn_traps: BurnTraps
+    curse_traps: CurseTraps
+    noise_traps: NoiseTraps
+    groose_traps: GrooseTraps
+    health_traps: HealthTraps
+    
+    # Advanced Options
+    full_wallet_upgrades: FullWalletUpgrades
+    chest_type_matches_contents: ChestTypeMatchesContents
+    small_keys_in_fancy_chests: SmallKeysInFancyChests
+    random_trial_object_positions: RandomTrialObjectPositions
+    upgraded_skyward_strike: UpgradedSkywardStrike
+    faster_air_meter_depletion: FasterAirMeterDepletion
+    unlock_all_groosenator_destinations: UnlockAllGroosenatorDestinations
+    allow_flying_at_night: AllowFlyingAtNight
+    natural_night_connections: NaturalNightConnections
+    dungeons_include_sky_keep: DungeonsIncludeSkyKeep
+    empty_unrequired_dungeons: EmptyUnrequiredDungeons
+    lanayru_caves_keys: LanaryuCavesKeys
     
     # Starting Inventory
     starting_tablets: StartingTablets
     starting_sword: StartingSword
+    random_starting_statues: RandomStartingStatues
+    random_starting_spawn: RandomStartingSpawn
+    limit_starting_spawn: LimitStartingSpawn
+    random_starting_item_count: RandomStartingItemCount
+    peatrice_conversations: PeatriceConversations
     custom_starting_items: CustomStartingItems
-    
-    # Traps
-    trap_items: TrapItems
     
     # Quality of Life
     open_lake_floria_gate: OpenLakeFloriaGate
     open_thunderhead: OpenThunderhead
+    open_earth_temple: OpenEarthTemple
+    open_lmf: OpenLmf
+    open_batreaux_shed: OpenBatraeuxShed
     skip_skykeep_door_cutscene: SkipSkykeepDoorCutscene
     skip_harp_playing: SkipHarpPlaying
     skip_misc_cutscenes: SkipMiscCutscenes

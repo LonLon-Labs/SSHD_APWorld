@@ -52,15 +52,15 @@ Skyward Sword HD:
   # ========================================
   
   # Logic Rules
-  # all_locations_reachable: Ensures all locations can be reached
-  # beatable_only: Only ensures the game is beatable (some locations may be unreachable)
+  # all_locations_reachable: Logic is considered when placing items. Tricks and Glitches can be enabled for consideration below.
+  # beatable_only: Only ensures the game is beatable. Some locations may be unreachable, and items required to reach those locations will not be placed at them.
   logic_rules: all_locations_reachable
   
   # Item Pool Size
-  # minimal: Fewest items
-  # standard: Balanced (default)
-  # extra: More items for variety
-  # plentiful: Maximum items for relaxed gameplay
+  # minimal: No item upgrades will be shuffled into the item pool. There will only be 2 Beetles, 1 Bow, 1 Slingshot, and 1 Bug Net in the item pool.
+  # standard: Balanced default item pool
+  # extra: Extra items added for more variety
+  # plentiful: The standard item pool will be used plus 100% extra of the major items. E.g. There will be 8 Beetles, 6 Bows, 4 Mitts, etc...
   item_pool: standard
   
   # ========================================
@@ -69,52 +69,40 @@ Skyward Sword HD:
   
   # Number of dungeons required to complete the game (0-6)
   # Beating Sky Keep is NOT required for this count
+  # Lanayru Mining Facility is beaten when exiting to the Temple of Time
+  # Other dungeons are beaten when the Goddess Crest is struck with a Skyward Strike
   required_dungeon_count: 2
-  
-  # Must collect the three Triforces to win?
-  triforce_required: true
-  
-  # Where Triforces can appear
-  # vanilla: Original Sky Keep locations
-  # sky_keep: Shuffled within Sky Keep only
-  # anywhere: Shuffled with all other items
-  triforce_shuffle: anywhere
   
   # Sword requirement to open the Gate of Time
   # Options: goddess_sword, goddess_longsword, goddess_white_sword, master_sword, true_master_sword
   gate_of_time_sword_requirement: true_master_sword
   
-  # Must beat required dungeons to open Gate of Time?
-  # required: Yes, must beat dungeons
-  # unrequired: Can open without beating dungeons
-  gate_of_time_dungeon_requirements: required
-  
   # Skip boss encounters at the end
-  imp2_skip: true          # Skip Imprisoned 2
-  skip_horde: false        # Skip The Horde
-  skip_ghirahim3: false    # Skip Ghirahim 3
+  skip_horde: false        # Skip The Horde fight
+  skip_ghirahim3: false    # Skip Ghirahim 3 fight
   
   # ========================================
   # ITEM RANDOMIZATION
   # ========================================
   
   # Toggle item category shuffling
-  gratitude_crystal_shuffle: false      # Shuffle gratitude crystals
-  stamina_fruit_shuffle: false          # Shuffle stamina fruits
-  npc_closet_shuffle: false             # Shuffle NPC closet items
-  hidden_item_shuffle: false            # Shuffle hidden items
-  goddess_chest_shuffle: false          # Shuffle goddess chest items
-  tadtone_shuffle: false                # Shuffle tadtones
-  gossip_stone_treasure_shuffle: false  # Shuffle gossip stone treasures
+  gratitude_crystal_shuffle: false      # Single Gratitude Crystals can contain any item (vanilla = only crystals)
+  stamina_fruit_shuffle: false          # Stamina Fruit locations can contain any item (vanilla = only stamina fruit, locations revert after collection)
+  npc_closet_shuffle: false             # Randomized NPC closets (vanilla = vanilla items)
+  hidden_item_shuffle: false            # Hidden Item checks can contain any item first time (vanilla = always vanilla items)
+  goddess_chest_shuffle: false          # Goddess Chest items can be randomized (vanilla = not required to activate/open)
+  tadtone_shuffle: false                # Tadtones in Flooded Faron Woods shuffled with world items (vanilla = not shuffled)
+  gossip_stone_treasure_shuffle: false  # Gossip Stones give random items when raised (vanilla = always visible, no items)
   
   # Rupee Shuffle Difficulty
-  # vanilla: No shuffle
+  # vanilla: Freestanding Rupees will not be randomized
   # beginner: Easy rupee shuffle
   # intermediate: Medium difficulty
-  # advanced: Hard rupee shuffle
+  # advanced: All freestanding Rupees can contain any item. Only a few extra Rupee checks are added but these are the most obscure and difficult checks to collect. You have been warned!
   rupee_shuffle: vanilla
   
   # Number of trial treasures to shuffle (0-10)
+  # Randomizes treasures in Silent Realms to items. Items other than dusk relics will glow in Silent Realms (Yellow in Faron, Blue in Eldin, Green in Lanayru, and Red on Skyloft).
   trial_treasure_shuffle: 0
   
   # ========================================
@@ -122,37 +110,70 @@ Skyward Sword HD:
   # ========================================
   
   # Small Key Shuffle
+  # vanilla: Small Keys will appear in their vanilla locations
   # own_dungeon: Keys only in their own dungeon (default)
   # any_dungeon: Keys can be in any dungeon
   # anywhere: Keys can be anywhere in the world
   # keysy: Mixed between own dungeon and anywhere
-  small_key_shuffle: own_dungeon
+  small_keys: own_dungeon
   
   # Boss Key Shuffle
+  # vanilla: Boss Keys will appear in their vanilla locations
   # own_dungeon: Boss keys only in their own dungeon (default)
   # any_dungeon: Boss keys can be in any dungeon
   # anywhere: Boss keys can be anywhere in the world
   # keysy: Mixed between own dungeon and anywhere
-  boss_key_shuffle: own_dungeon
+  boss_keys: own_dungeon
   
   # Dungeon Map Shuffle
-  # vanilla: Maps in original locations (default)
+  # vanilla: Maps will appear in their vanilla locations (default)
   # own_dungeon_restricted: Maps restricted to their own dungeon
-  # anywhere: Maps can be anywhere in the world
-  map_shuffle: vanilla
+  # anywhere: Maps can appear anywhere
+  map_mode: vanilla
   
   # ========================================
   # ENTRANCE RANDOMIZATION
   # ========================================
   
-  # Randomize all area entrances and connections?
-  randomize_entrances: false
-  
   # Randomize only dungeon entrances?
-  randomize_dungeons: false
+  # off: Entering a dungeon will lead to the vanilla dungeon
+  # on: Entering a dungeon will lead to a random dungeon
+  randomize_dungeon_entrances: false
   
   # Randomize Silent Realm trial entrances?
-  randomize_trials: false
+  # off: Entering a Trial Gate will lead to the vanilla Silent Realm
+  # on: Entering a Trial Gate will lead to a random Silent Realm
+  randomize_trial_gate_entrances: false
+  
+  # Randomize door entrances (interior and overworld doors)?
+  # off: Entering a door will lead to the vanilla exit on the other side
+  # on: Entering a door will lead to a random door exit on the other side
+  randomize_door_entrances: false
+  
+  # Decouple left/right double doors?
+  # off: Entering a left door will lead to the same location as the corresponding right door
+  # on: Entering a left door may lead somewhere different to the corresponding right door (only when Randomize Door Entrances is also enabled)
+  decouple_double_doors: false
+  
+  # Randomize interior building entrances?
+  # off: Entering a doorway, pushup door, or loadzone that leads to an interior location will lead to its vanilla location
+  # on: Entering a doorway, pushup door, or loadzone that leads to an interior location will lead to a random interior location
+  randomize_interior_entrances: false
+  
+  # Randomize overworld region entrances?
+  # off: Entering a doorway, pushup door, or loadzone that leads to an overworld location will lead to its vanilla location
+  # on: Entering a doorway, pushup door, or loadzone that leads to an overworld location will lead to a random overworld location
+  randomize_overworld_entrances: false
+  
+  # Decouple forward and return entrances?
+  # off: Entering a location and taking the entrance behind you will take you back to where you came from
+  # on: Entering a location and taking the entrance behind you will take you to a random location
+  decouple_entrances: false
+  
+  # Randomize Sky Keep room layout?
+  # off: The Sky Keep rooms will start in their vanilla positions
+  # on: The Sky Keep rooms will start in a random order
+  randomize_skykeep_layout: false
   
   # ========================================
   # STARTING INVENTORY
@@ -167,6 +188,25 @@ Skyward Sword HD:
   # Tablets are randomly selected when count is 1 or 2
   # Count 0 or 3 uses all tablets
   starting_tablets: 0
+  
+  # Random Starting Bird Statues
+  # off: The bird statue unlocked at the start for each surface region will be unchanged
+  # on: The bird statue unlocked at the start for each surface region will be randomized. All overworld statues except Inside the Volcano and Inside the Fire Sanctuary may be chosen
+  random_starting_statues: false
+  
+  # Randomize Starting Spawn
+  # vanilla: You will start the game in Link's Bedroom
+  # anywhere: You will start the game at any valid entrance
+  random_starting_spawn: vanilla
+  
+  # Limit Starting Spawn
+  # off: If you spawn in a surface region, you may spawn in any surface province
+  # on: If you spawn in a surface region, you may only spawn in a province whose tablet you start with
+  limit_starting_spawn: false
+  
+  # Number of additional items to start with (0-6)
+  # Random items to start with from the item pool
+  random_starting_item_count: 0
   
   # ========================================
   # CUSTOM STARTING ITEMS
@@ -184,44 +224,90 @@ Skyward Sword HD:
   custom_starting_items: {}
   
   # ========================================
-  # TRAP ITEMS
+  # TRAP CONFIGURATION
   # ========================================
-  # Add trap items to the item pool that can you can find or can be sent to you
-  # Traps trigger negative effects when received
-  # Format: "Trap Name": count
-  # Leave empty {} for no traps
-  # 
-  # Available traps:
-  #   - Health Trap: Reduces your health
-  #   - Groose Trap: Groose appears and taunts you
-  #   - Noise Trap: Plays annoying sounds
-  #   - Curse Trap: Applies curse effect
-  #   - Burn Trap: Sets you on fire
-  #
-  # EXAMPLE - to add 5 health traps and 3 groose traps:
-  #   trap_items:
-  #     "Health Trap": 5
-  #     "Groose Trap": 3
-  #
-  trap_items: {}
   
+  # Trap Mode
+  # no_traps: All items in the game will be genuine (default)
+  # trapish: ~10% items are traps
+  # trapsome: ~25% items are traps
+  # traps_o_plenty: ~50% items are traps
+  # traptacular: All of the non-major items will be replaced with 'traps' that don't give the item they appear to be
+  trap_mode: no_traps
+  
+  # Trappable Items
+  # major_items: Traps mimic major items (default)
+  # non_major_items: Traps only mimic minor items
+  # any_items: Traps can mimic any item
+  trappable_items: major_items
+  
+  # ========================================
+  # TRAP TYPES (Only active if Trap Mode is set to anything except no_traps)
+  # ========================================
+  # These settings control which trap types can appear in the game.
+  
+  # Burn Traps - Set you on fire
+  # off: Burn traps will not appear
+  # on: Burn traps can appear (default)
+  burn_traps: true
+  
+  # Curse Traps - Prevent you from using items
+  # off: Curse traps will not appear
+  # on: Curse traps can appear (default)
+  curse_traps: true
+  
+  # Noise Traps - Create loud sounds
+  # off: Noise traps will not appear
+  # on: Noise traps can appear (default)
+  noise_traps: true
+  
+  # Groose Traps - Spawn Groose the GOAT
+  # off: Groose traps will not appear (default)
+  # on: Groose traps can appear
+  groose_traps: false
+  
+  # Health Traps - Reduce your health
+  # off: Health traps will not appear (default)
+  # on: Health traps can appear
+  health_traps: false
+
   # ========================================
   # QUALITY OF LIFE SETTINGS
   # ========================================
   
-  # Lake Floria gate open from the start?
-  open_lake_floria_gate: true
+  # Lake Floria Gate
+  # vanilla: Gate starts closed (default)
+  # open: The gate to Lake Floria is open from the start
+  open_lake_floria: true
   
-  # Thunderhead open from the start?
+  # Thunderhead
+  # off: Thunderhead starts closed (default)
+  # on: The Thunderhead is open from the start
   open_thunderhead: true
   
-  # Skip Sky Keep door opening cutscene?
-  skip_skykeep_door_cutscene: true
+  # Earth Temple
+  # off: Earth Temple starts closed (default)
+  # on: The Earth Temple is open from the start
+  open_earth_temple: false
   
-  # Skip harp playing mini-games?
+  # Lanayru Mining Facility
+  # off: LMF starts closed (default)
+  # on: The Lanayru Mining Facility is open from the start
+  open_lmf: false
+  
+  # Batreaux Shed
+  # off: Batreaux Shed starts closed (default)
+  # on: Batreaux's Shed is open from the start
+  open_batreaux_shed: false
+  
+  # Skip Harp Playing
+  # off: Opening up Trial Gates and receiving items from The Old One will require strumming the harp (default)
+  # on: Trial Gates will automatically open up when you have obtained the harp and the appropriate song. Additionally, The Old One will not require you to play the harp to receive their item
   skip_harp_playing: false
   
-  # Skip miscellaneous small cutscenes?
+  # Skip Miscellaneous Small Cutscenes
+  # off: Misc cutscenes will play normally (default)
+  # on: Various small miscellaneous cutscenes will be skipped
   skip_misc_cutscenes: false
   
   # ========================================
@@ -229,31 +315,17 @@ Skyward Sword HD:
   # ========================================
   
   # Damage Multiplier
-  # half: 50% damage
-  # normal: 100% damage (default)
-  # double: 200% damage
-  # quadruple: 400% damage
+  # half: 50% damage taken
+  # normal: 100% damage taken (default)
+  # double: 200% damage taken
+  # quadruple: 400% damage taken
   # ohko: One-hit knockout
   damage_multiplier: normal
   
-  # Fill unreachable locations with junk items (needs add_junk_items to be true)?
-  empty_unreachable_locations: false
-  
-  # Don't generate spoiler logs?
+  # No Spoiler Log
+  # off: Spoiler log will be generated (default)
+  # on: No spoiler log will be generated
   no_spoiler_log: false
-  
-  # ========================================
-  # ITEM POOL CUSTOMIZATION
-  # ========================================
-  
-  # Add extra junk items (rupees, treasures, etc.)?
-  add_junk_items: false
-  
-  # If add_junk_items is true, what percentage should be junk? (0-100)
-  junk_item_rate: 50
-  
-  # Make sword/beetle/bow progressive (upgrade versions)?
-  progressive_items: true
   
   # ========================================
   # MUSIC AND COSMETICS
@@ -265,8 +337,131 @@ Skyward Sword HD:
   # shuffled_limit_vanilla: Minimize unchanged tracks
   music_randomization: vanilla
   
-  # If music is randomized, cut off very long songs from game-over screen?
+  # Cutoff Game Over Music
+  # off: Game over music will play normally (default)
+  # on: If music is randomized, very long songs will not play from game-over screen
   cutoff_game_over_music: false
+  
+  # ========================================
+  # ADVANCED RANDOMIZATION OPTIONS
+  # ========================================
+  
+  # Enable Back in Time (BiT) Glitch
+  # off: You will not be able to perform the Back in Time (BiT) glitch from the Wii version of the game (default)
+  # on: You will be able to activate the Back in Time (BiT) glitch by soft-resetting the game (hold R+A+LeftStick) while also holding the L button
+  enable_back_in_time: false
+  
+  # Underground Rupee Shuffle
+  # off: Underground Rupee locations will not be randomized (default)
+  # on: Underground Rupee locations that require burrowing into digspots with the Mogma Mitts can contain any item
+  underground_rupee_shuffle: false
+  
+  # Beedle's Airshop Shuffle
+  # vanilla: Beedle's Airshop will contain its vanilla items (default)
+  # randomized: Beedle's Airshop can contain any items
+  beedle_shop_shuffle: false
+  
+  # Random Bottle Contents
+  # off: There will be 3 Empty Bottles, 1 Revitalizing Potion, and 1 Bottle of Mushroom Spores in the item pool (default)
+  # on: There will be 5 Bottles in the item pool - each with random contents (e.g. Heart Potion, Hot Pumpkin Soup, Sacred Water, etc...)
+  random_bottle_contents: false
+  
+  # Randomize Shop Prices
+  # off: All shop prices will be unchanged from the vanilla game (default)
+  # on: All shop prices will be randomized without changing how many wallets are needed to obtain each check
+  randomize_shop_prices: false
+  
+  # Ammo Availability
+  # scarce: Only from drops and Gear shop
+  # vanilla: Appear when breaking pots (default)
+  # useful: Added in key places to reduce backtracking
+  # plentiful: Added next to all Bird Statues
+  ammo_availability: plentiful
+  
+  # Boss Key Puzzles
+  # correct_orientation: Keys fit immediately
+  # vanilla_orientation: Original orientation (default)
+  # random_orientation: Random orientation
+  boss_key_puzzles: vanilla_orientation
+  
+  # Minigame Difficulty
+  # easy: Easy minigames (default)
+  # medium: Medium difficulty
+  # hard: Challenging minigames
+  minigame_difficulty: easy
+  
+  # ========================================
+  # ADVANCED GAME OPTIONS
+  # ========================================
+  
+  # Chest Type Matches Contents
+  # off: Each chest will have the same type as it would in the vanilla game
+  # only_dungeon_items: Special chests only for dungeon items
+  # all_contents: Each chest will have a different type based on the item inside. Important items will appear in big blue chests. Boss Keys will appear in fancy chests. Other items will appear in brown, wooden chests (default)
+  chest_type_matches_contents: all_contents
+  
+  # Small Keys in Fancy Chests
+  # off: When Chest Type Matches Contents is not off, Small Keys will appear in big blue chests (default)
+  # on: When Chest Type Matches Contents is not off, Small Keys will appear in fancy chests
+  small_keys_in_fancy_chests: false
+  
+  # Full Wallet Upgrades
+  # off: Newly obtained wallets do not give any Rupees (default)
+  # on: Newly obtained wallets will come pre-filled with Rupees
+  full_wallet_upgrades: false
+  
+  # Random Trial Object Positions
+  # off: Trial objects appear in their vanilla locations (default)
+  # on: The positions of tears, light fruits, dusk relics, and stamina fruits will be shuffled amongst each other
+  random_trial_object_positions: false
+  
+  # Upgraded Skyward Strike
+  # off: Only the True Master Sword will have the fully upgraded Skyward Strike.
+  # on: The Goddess Sword (and better swords) will have the fully upgraded Skyward Strike (charges quicker and travels farther) (default)
+  upgraded_skyward_strike: true
+  
+  # Faster Air Meter Depletion
+  # off: Air meter depletes at normal speed (default)
+  # on: The air meter depletes at twice the normal rate when swimming like in Hero Mode
+  faster_air_meter_depletion: false
+  
+  # Unlock All Groosenator Destinations
+  # off: Groosenator destinations unlock normally (default)
+  # on: All Groosenator destinations are unlocked from the start
+  unlock_all_groosenator_destinations: false
+  
+  # Allow Flying at Night
+  # off: You will not be able to fly at night (default). If Require Natural Night Connections is disabled, night flying will be enabled to facilitate this
+  # on: You will be able to call your loftwing and fly in The Sky at night
+  allow_flying_at_night: false
+  
+  # Require Natural Night Connections
+  # off: You may be required to sleep to night and travel anywhere in the world to access nighttime-only checks, including flying at night
+  # on: You will not be required to sleep to night and travel to the overworld to access nighttime-only checks (default)
+  natural_night_connections: true
+  
+  # Peatrice Conversations
+  # How many times you need to talk to Peatrice before she calls you "darling" and you can start Peater's quest (0-6)
+  peatrice_conversations: 0
+  
+  # ========================================
+  # DUNGEON SETTINGS
+  # ========================================
+  
+  # Include Sky Keep as a Required Dungeon Option
+  # off: Only the 6 main dungeons may be selected as required dungeons (default)
+  # on: Sky Keep may be selected as a required dungeon needed to beat the seed. If selected, one of the "Sacred Power" locations will be chosen as the "Goal Location" containing an important item (shown on a stone tablet in the 1st room of Sky Keep)
+  dungeons_include_sky_keep: false
+  
+  # Barren Unrequired Dungeons
+  # off: Unrequired dungeons may contain items needed to beat the game
+  # on: Unrequired dungeons will be barren (default)
+  empty_unrequired_dungeons: true
+  
+  # Lanayru Caves Small Keys
+  # vanilla: The Lanayru Caves Keys will appear in their vanilla location
+  # removed: The Lanayru Caves Keys will not appear anywhere in the world and the locks will start opened (default)
+  lanayru_caves_keys: removed
   
   # ========================================
   # ARCHIPELAGO OPTIONS

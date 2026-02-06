@@ -868,28 +868,89 @@ class SSHDWorld(World):
         map_mode_map = {0: "vanilla", 1: "own_dungeon_restricted", 2: "anywhere"}
         settings_dict["map_mode"] = map_mode_map[self.options.map_shuffle.value]
         
-        # Entrance Randomization (disabled for Archipelago)
-        settings_dict["randomize_dungeon_entrances"] = "off"
-        settings_dict["randomize_trial_gate_entrances"] = "off"
+        # Entrance Randomization
+        settings_dict["randomize_dungeon_entrances"] = "on" if self.options.randomize_dungeon_entrances.value else "off"
+        settings_dict["randomize_trial_gate_entrances"] = "on" if self.options.randomize_trial_gate_entrances.value else "off"
+        settings_dict["randomize_door_entrances"] = "on" if self.options.randomize_door_entrances.value else "off"
+        settings_dict["decouple_double_doors"] = "on" if self.options.decouple_double_doors.value else "off"
+        settings_dict["randomize_interior_entrances"] = "on" if self.options.randomize_interior_entrances.value else "off"
+        settings_dict["randomize_overworld_entrances"] = "on" if self.options.randomize_overworld_entrances.value else "off"
+        settings_dict["decouple_entrances"] = "on" if self.options.decouple_entrances.value else "off"
+        settings_dict["randomize_skykeep_layout"] = "on" if self.options.randomize_skykeep_layout.value else "off"
         
         # Music & Audio
         music_map = {0: "vanilla", 1: "shuffle_music", 2: "shuffle_music_limit_vanilla"}
         settings_dict["randomize_music"] = music_map.get(self.options.music_randomization.value, "vanilla")
         settings_dict["cutoff_game_over_music"] = "on" if self.options.cutoff_game_over_music.value else "off"
         
+        # Advanced Randomization
+        settings_dict["enable_back_in_time"] = "on" if self.options.enable_back_in_time.value else "off"
+        settings_dict["underground_rupee_shuffle"] = "on" if self.options.underground_rupee_shuffle.value else "off"
+        settings_dict["beedle_shop_shuffle"] = "on" if self.options.beedle_shop_shuffle.value else "off"
+        settings_dict["random_bottle_contents"] = "on" if self.options.random_bottle_contents.value else "off"
+        settings_dict["randomize_shop_prices"] = "on" if self.options.randomize_shop_prices.value else "off"
+        
+        ammo_map = {0: "scarce", 1: "vanilla", 2: "useful", 3: "plentiful"}
+        settings_dict["ammo_availability"] = ammo_map[self.options.ammo_availability.value]
+        
+        boss_key_map = {0: "correct_orientation", 1: "vanilla_orientation", 2: "random_orientation"}
+        settings_dict["boss_key_puzzles"] = boss_key_map[self.options.boss_key_puzzles.value]
+        
+        minigame_map = {0: "easy", 1: "medium", 2: "hard"}
+        settings_dict["minigame_difficulty"] = minigame_map[self.options.minigame_difficulty.value]
+        
+        trap_mode_map = {0: "no_traps", 1: "trapish", 2: "trapsome", 3: "traps_o_plenty", 4: "traptacular"}
+        settings_dict["trap_mode"] = trap_mode_map[self.options.trap_mode.value]
+        
+        trappable_map = {0: "major_items", 1: "non_major_items", 2: "any_items"}
+        settings_dict["trappable_items"] = trappable_map[self.options.trappable_items.value]
+        
+        # Trap Types
+        settings_dict["burn_traps"] = "on" if self.options.burn_traps.value else "off"
+        settings_dict["curse_traps"] = "on" if self.options.curse_traps.value else "off"
+        settings_dict["noise_traps"] = "on" if self.options.noise_traps.value else "off"
+        settings_dict["groose_traps"] = "on" if self.options.groose_traps.value else "off"
+        settings_dict["health_traps"] = "on" if self.options.health_traps.value else "off"
+        
+        # Advanced Options
+        settings_dict["full_wallet_upgrades"] = "on" if self.options.full_wallet_upgrades.value else "off"
+        
+        chest_type_map = {0: "off", 1: "only_dungeon_items", 2: "all_contents"}
+        settings_dict["chest_type_matches_contents"] = chest_type_map[self.options.chest_type_matches_contents.value]
+        
+        settings_dict["small_keys_in_fancy_chests"] = "on" if self.options.small_keys_in_fancy_chests.value else "off"
+        settings_dict["random_trial_object_positions"] = "on" if self.options.random_trial_object_positions.value else "off"
+        settings_dict["upgraded_skyward_strike"] = "on" if self.options.upgraded_skyward_strike.value else "off"
+        settings_dict["faster_air_meter_depletion"] = "on" if self.options.faster_air_meter_depletion.value else "off"
+        settings_dict["unlock_all_groosenator_destinations"] = "on" if self.options.unlock_all_groosenator_destinations.value else "off"
+        settings_dict["allow_flying_at_night"] = "on" if self.options.allow_flying_at_night.value else "off"
+        settings_dict["natural_night_connections"] = "on" if self.options.natural_night_connections.value else "off"
+        settings_dict["peatrice_conversations"] = str(self.options.peatrice_conversations.value)
+        
         # Quality of Life
-        settings_dict["open_lake_floria"] = "open" if self.options.open_lake_floria_gate.value else "vanilla"
+        settings_dict["open_lake_floria"] = "open" if self.options.open_lake_floria.value else "vanilla"
         settings_dict["open_thunderhead"] = "on" if self.options.open_thunderhead.value else "off"
+        settings_dict["open_earth_temple"] = "on" if self.options.open_earth_temple.value else "off"
+        settings_dict["open_lmf"] = "on" if self.options.open_lmf.value else "off"
+        settings_dict["open_batreaux_shed"] = "on" if self.options.open_batreaux_shed.value else "off"
         settings_dict["skip_harp_playing"] = "on" if self.options.skip_harp_playing.value else "off"
         settings_dict["skip_misc_small_cutscenes"] = "on" if self.options.skip_misc_cutscenes.value else "off"
         
         # Difficulty
-        settings_dict["damage_multiplier"] = str(self.options.damage_multiplier.value)
+        damage_map = {0: "half", 1: "normal", 2: "double", 3: "quadruple", 4: "ohko"}
+        settings_dict["damage_multiplier"] = damage_map[self.options.damage_multiplier.value]
         settings_dict["spawn_hearts"] = "on"
 
         # Starting Inventory
         settings_dict["starting_tablets"] = self.options.starting_tablets.value
         settings_dict["starting_sword"] = self.options.starting_sword.value
+        settings_dict["random_starting_statues"] = "on" if self.options.random_starting_statues.value else "off"
+        
+        spawn_map = {0: "vanilla", 1: "anywhere"}
+        settings_dict["random_starting_spawn"] = spawn_map[self.options.random_starting_spawn.value]
+        
+        settings_dict["limit_starting_spawn"] = "on" if self.options.limit_starting_spawn.value else "off"
+        settings_dict["random_starting_item_count"] = str(self.options.random_starting_item_count.value)
 
 
         custom_items_value = self.options.custom_starting_items.value
@@ -898,6 +959,13 @@ class SSHDWorld(World):
         else:
             print(f"[__init__.py] WARNING: custom_starting_items must be a dictionary, got {type(custom_items_value)}")
             settings_dict["custom_starting_items"] = {}
+        
+        # Dungeon Settings
+        settings_dict["dungeons_include_sky_keep"] = "on" if self.options.dungeons_include_sky_keep.value else "off"
+        settings_dict["empty_unrequired_dungeons"] = "on" if self.options.empty_unrequired_dungeons.value else "off"
+        
+        lanayru_caves_map = {0: "vanilla", 1: "removed"}
+        settings_dict["lanayru_caves_keys"] = lanayru_caves_map[self.options.lanayru_caves_keys.value]
         
         # Hints (disabled - Archipelago uses its own)
         settings_dict["path_hints"] = "0"
