@@ -490,13 +490,6 @@ class SSHDWorld(World):
                     continue
                 item_pool.append(self.create_item(name))
         
-        # Add trap items from the option
-        trap_count = 0
-        for trap_name, count in self.options.trap_items.value.items():
-            for _ in range(count):
-                item_pool.append(self.create_item(trap_name))
-                trap_count += 1
-        
         # Fill remaining slots with filler items (rupees, hearts, etc.)
         filler_items = [name for name, data in ITEM_TABLE.items() if data.classification == IC.filler]
         
@@ -869,14 +862,14 @@ class SSHDWorld(World):
         settings_dict["map_mode"] = map_mode_map[self.options.map_shuffle.value]
         
         # Entrance Randomization
-        settings_dict["randomize_dungeon_entrances"] = "on" if self.options.randomize_dungeon_entrances.value else "off"
-        settings_dict["randomize_trial_gate_entrances"] = "on" if self.options.randomize_trial_gate_entrances.value else "off"
+        settings_dict["randomize_dungeons"] = "on" if self.options.randomize_dungeons.value else "off"
+        settings_dict["randomize_trials"] = "on" if self.options.randomize_trials.value else "off"
         settings_dict["randomize_door_entrances"] = "on" if self.options.randomize_door_entrances.value else "off"
         settings_dict["decouple_double_doors"] = "on" if self.options.decouple_double_doors.value else "off"
         settings_dict["randomize_interior_entrances"] = "on" if self.options.randomize_interior_entrances.value else "off"
         settings_dict["randomize_overworld_entrances"] = "on" if self.options.randomize_overworld_entrances.value else "off"
         settings_dict["decouple_entrances"] = "on" if self.options.decouple_entrances.value else "off"
-        settings_dict["randomize_skykeep_layout"] = "on" if self.options.randomize_skykeep_layout.value else "off"
+        settings_dict["randomize_skykeep_layout"] = "on" if self.options.decouple_skykeep_layout.value else "off"
         
         # Music & Audio
         music_map = {0: "vanilla", 1: "shuffle_music", 2: "shuffle_music_limit_vanilla"}
