@@ -38,16 +38,16 @@ python build_apworld.py
 ### 0. Install Python and dependencies
 
 - Install Python 3.10 or higher (MAKE SURE TO ADD IT TO PATH)
-- Download and install the dependencies from [requirements.txt](requirements.txt) using either `pip install -r requirements.txt` or if that doesn't work `pip install --target="C:\ProgramData\Archipelago\lib" -r requirements.txt`
+- Download and install the dependencies from [requirements.txt](requirements.txt) using either `pip install -r requirements.txt` or if that doesn't work `pip install --target="C:\ProgramData\Archipelago\lib" -r requirements.txt` (change the target path if necessary)
 
 ### 1. Install the APWorld and other files
 
-The APWorld will auto-deploy to the correct location for your OS:
+The APWorld will auto-deploy to the correct location for your OS (if building manually):
 - **Windows**: `C:\ProgramData\Archipelago\custom_worlds\`
 - **Linux**: `~/.local/share/Archipelago/custom_worlds/`
 - **macOS**: `~/Library/Application Support/Archipelago/custom_worlds/`
 
-Or manually place `sshd.apworld` in your platform's custom_worlds folder.
+Or manually place `sshd.apworld` in your platform's custom_worlds folder if running from the release.
 
 Place `launch_sshd_wrapper.py` in the Archipelago folder
 
@@ -66,18 +66,20 @@ You'll need a legally obtained copy of Skyward Sword HD for Nintendo Switch alon
 
 ### 3. Generate Your Seed
 
-1. Open SkywardSwordHD.yaml for use as a template
-2. Use Method 2 and change all of the options as you wish
-3. Put it in `C:\ProgramData\Archipelago\Players`
-3. Generate locally using all player yamls
+1. Download the [Skyward Sword HD Randomizer](https://github.com/mint-choc-chip-skyblade/sshd-rando/releases/latest)
+2. Configure all of your options (don't generate)
+3. Open SkywardSwordHD.yaml for use as a template
+4. Use Method 1 and input the path to your `config.yaml` file (in the SSHD Rando folder)
+5. Put it in `C:\ProgramData\Archipelago\Players`
+6. Generate locally using all player yamls
     - Open the Archipelago Launcher and click 'Generate'
     - The outputed file should be in `C:\ProgramData\Archipelago\output`
 
 #### From here you have 3 options
 1. Upload the outputed zip to [https://archipelago.randomstuff.cc](https://archipelago.randomstuff.cc) (the official website won't work due to a 64MB file upload limit)
    - IF YOU USE THIS, THE WEBSOCKET URL IS NOT `archipelago.randomstuff.cc`, YOU NEED TO INPUT `ap.randomstuff.cc:PORT` INTO YOUR CLIENT
-2. Host locally (requires port forwarding)
-3. Unzip the zip and remove the patch file
+2. Host locally (requires port forwarding or everyone being on the same LAN)
+3. Unzip the outputed zip file and remove the patch file
    - Unzip the generated `.zip` file
    - Copy the `.apsshd` file to another spot
    - Delete it from the unziped folder and rezip
@@ -96,11 +98,6 @@ Double click `launch_sshd.bat` if on Windows or run `python launch_sshd_wrapper.
 
 ### 5. Play!
 Items you find are automatically sent to other players and vice-versa!
-
-> Note: You may need to go through a loading zone in order to see or use a new item
-
-> VERY IMPORTANT NOTE: IF FLEDGE SOFTLOCKS YOU AT THE VERY BEGINNING OF THE GAME, JUST SKIP HIM AND HIS 2 CHECKS, THEY ARE JUST GREEN RUPEES
-> NO, I DON'T KNOW HOW TO FIX IT
 
 ## Contributing
 

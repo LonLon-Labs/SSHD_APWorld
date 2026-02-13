@@ -75,6 +75,8 @@ def build_apworld():
         "README.md",
         "archipelago.json",
         "ArchipelagoSSHDClient.exe",
+        "worlds_stub.py",
+        "ItemSystemIntegration.py",
         # Folders
         "docs/",
         "assets/",

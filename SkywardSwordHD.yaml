@@ -21,6 +21,19 @@ Skyward Sword HD:
 
 
 
+  # ========================================
+  # ARCHIPELAGO OPTIONS
+  # ========================================
+  
+  # Death Link: When you die, everyone dies (and vice versa)
+  death_link: false
+
+
+
+  # ====================================================================================
+
+
+
   # YOU HAVE THREE OPTIONS TO CONFIGURE YOUR RANDOMIZER SETTINGS:
 
 
@@ -37,7 +50,7 @@ Skyward Sword HD:
 
   # ========================================
   # CONFIGURATION METHOD TWO: SETTING STRING
-  # NOT CURRENTLY WORKING RELIABLY ENOUGH - USE METHOD TWO OR THREE INSTEAD FOR NOW
+  # NOT CURRENTLY WORKING RELIABLY ENOUGH - USE METHOD ONE OR THREE INSTEAD FOR NOW
   # ========================================
   # Leave setting_string BLANK to use manual configuration below
   # Manual configuration gives you full control and avoids item mapping issues
@@ -898,10 +911,3 @@ Skyward Sword HD:
   # false: You will start the game without any treasures in your inventory (default)
   # true: You will start the game with 99 of each treasure in your inventory
   start_with_all_treasures: false
-  
-  # ========================================
-  # ARCHIPELAGO OPTIONS
-  # ========================================
-  
-  # Death Link: When you die, everyone dies (and vice versa)
-  death_link: false
