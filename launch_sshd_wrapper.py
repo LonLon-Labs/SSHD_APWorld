@@ -35,46 +35,70 @@ else:
 
 if lib_dir.exists():
     sys.path.insert(0, str(lib_dir))
+
+# Add kivy-deps DLL directories to PATH BEFORE any imports (Windows only)
+if sys.platform == "win32":
+    dll_paths_added = []
     
-    # Add kivy-deps DLL directories to PATH (Windows only)
-    if sys.platform == "win32":
-        # Try multiple possible locations for kivy-deps DLLs in lib directory
-        possible_paths = [
-            lib_dir / 'kivy_deps' / 'sdl2' / 'bin',
-            lib_dir / 'kivy_deps.sdl2' / 'share' / 'kivy_deps-sdl2' / 'bin',
-            lib_dir / 'share' / 'sdl2' / 'bin',
-            lib_dir / 'kivy_deps' / 'glew' / 'bin',
-            lib_dir / 'kivy_deps.glew' / 'share' / 'kivy_deps-glew' / 'bin',
-            lib_dir / 'share' / 'glew' / 'bin',
-        ]
-        
-        # Also check system Python site-packages for kivy-deps (if installed globally)
-        try:
-            import site
-            for site_pkg in site.getsitepackages():
-                site_path = Path(site_pkg)
-                possible_paths.extend([
-                    site_path / 'kivy_deps' / 'sdl2' / 'bin',
-                    site_path / 'share' / 'sdl2' / 'bin',
-                    site_path / 'kivy_deps' / 'glew' / 'bin',
-                    site_path / 'share' / 'glew' / 'bin',
-                ])
-        except:
-            pass
-        
-        for dep_path in possible_paths:
-            if dep_path.exists():
-                os.environ['PATH'] = str(dep_path) + os.pathsep + os.environ.get('PATH', '')
+    # Check system Python site-packages for kivy-deps (most common location)
+    try:
+        import site
+        for site_pkg in site.getsitepackages():
+            site_path = Path(site_pkg)
+            # Check common kivy-deps locations
+            for dep in ['sdl2', 'glew']:
+                check_paths = [
+                    site_path / 'share' / dep / 'bin',
+                    site_path / 'kivy_deps' / dep / 'bin',
+                ]
+                for check_path in check_paths:
+                    if check_path.exists():
+                        # Python 3.8+ requires os.add_dll_directory() on Windows
+                        try:
+                            os.add_dll_directory(str(check_path))
+                            dll_paths_added.append(str(check_path))
+                        except (AttributeError, OSError):
+                            # Fallback for older Python or if add_dll_directory fails
+                            os.environ['PATH'] = str(check_path) + os.pathsep + os.environ.get('PATH', '')
+                            dll_paths_added.append(str(check_path))
+    except Exception as e:
+        pass
+    
+    # Also check lib directory if it exists
+    if lib_dir.exists():
+        for dep in ['sdl2', 'glew']:
+            check_paths = [
+                lib_dir / 'share' / dep / 'bin',
+                lib_dir / 'kivy_deps' / dep / 'bin',
+                lib_dir / f'kivy_deps.{dep}' / 'share' / f'kivy_deps-{dep}' / 'bin',
+            ]
+            for check_path in check_paths:
+                if check_path.exists():
+                    try:
+                        os.add_dll_directory(str(check_path))
+                        dll_paths_added.append(str(check_path))
+                    except (AttributeError, OSError):
+                        os.environ['PATH'] = str(check_path) + os.pathsep + os.environ.get('PATH', '')
+                        dll_paths_added.append(str(check_path))
 
 sys.path.insert(0, str(APWORLD_PATH))
+
+# Preserve command-line arguments (remove wrapper script name, keep client args)
+# sys.argv[0] will be launch_sshd_wrapper.py, we want to replace it with SSHDClient.py
+if len(sys.argv) > 1:
+    client_args = sys.argv[1:]  # Keep any arguments passed to wrapper (like --nogui)
+    sys.argv = [f'{APWORLD_PATH}/sshd/SSHDClient.py'] + client_args
+else:
+    sys.argv = [f'{APWORLD_PATH}/sshd/SSHDClient.py']
 
 # Extract and execute SSHDClient
 zf = zipfile.ZipFile(str(APWORLD_PATH))
 code = zf.read('sshd/SSHDClient.py').decode('utf-8')
 
-# Execute with proper context
+# Execute with proper context - must include builtins for imports to work
 exec(code, {
     '__name__': '__main__',
     '__file__': f'{APWORLD_PATH}/sshd/SSHDClient.py',
-    '__package__': 'sshd'
+    '__package__': 'sshd',
+    '__builtins__': __builtins__
 })
