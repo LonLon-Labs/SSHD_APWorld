@@ -3987,13 +3987,13 @@
         </CheatEntry>
         <CheatEntry>
           <ID>505</ID>
-          <Description>"Archipelago Buffer"</Description>
+          <Description>"Archipelago Buffer (Dynamic - scan for 41 50 00 01)"</Description>
           <Options moAlwaysHideChildren="1" moManualExpandCollapse="1" moDeactivateChildrenAsWell="1" moAllowManualCollapseAndExpand="1"/>
           <ShowAsHex>1</ShowAsHex>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Array of byte</VariableType>
           <ByteLength>64</ByteLength>
-          <Address>+105c950</Address>
+          <Address>0</Address>
           <CheatEntries>
             <CheatEntry>
               <ID>506</ID>
