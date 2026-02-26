@@ -6,10 +6,10 @@
     \n\n\n\nBe sure to take care of him.\n...even if he's a little mean."
 
 - name: Archipelago Item Get Text Page 1
-  standard: "You received an <y<Archipelago item>>!"
+  standard: "You found <string arg0>!"
 
 - name: Archipelago Item Get Text Page 2
-  standard: "This is an item for another player.\nIt will be sent to their game!"
+  standard: "Sending to <string arg1>!"
 
 - name: Some Tadtones Collected text
   standard: "You got a group of <y<Tadtones>>!\nOnly <r<<numeric arg0> >> left to find!"

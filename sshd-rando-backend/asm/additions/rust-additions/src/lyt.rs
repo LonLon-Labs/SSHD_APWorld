@@ -151,9 +151,6 @@ pub extern "C" fn check_help_index_bounds(dLytHelp: *mut c_void, mut help_index:
     }
 
     unsafe {
-        // Write the clamped value back to memory so that
-        // custom_help_menu_state_change reads the correct index later.
-        asm!("str {0:w}, [{1:x}, #0x5a4]", in(reg) help_index, in(reg) dLytHelp);
         asm!("mov x0, {0:x}", in(reg) dLytHelp);
         asm!("mov w1, {0:w}", in(reg) help_index);
     }

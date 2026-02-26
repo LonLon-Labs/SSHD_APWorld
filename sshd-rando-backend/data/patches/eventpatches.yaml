@@ -88,7 +88,15 @@
     type: entryadd
     entry:
       name: "003_216"
-      value: Show Archipelago Item Text Flow
+      value: Set AP Item String Args
+  - name: Set AP Item String Args
+    type: flowadd
+    flow:
+      type: type3
+      next: Show Archipelago Item Text Flow
+      param1: 0
+      param2: 0
+      param3: 81
   - name: Archipelago Item Get Text Page 1
     type: textadd
     textboxtype: 5

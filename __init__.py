@@ -30,6 +30,7 @@ from worlds.AutoWorld import WebWorld, World
 from worlds.Files import APPlayerContainer
 from worlds.LauncherComponents import (
     Component,
+    SuffixIdentifier,
     Type,
     components,
     launch_subprocess,
@@ -130,11 +131,10 @@ RANDO_VERSION = [0, 1, 0]
 
 def run_client(*args: str) -> None:
     """
-    Launch the Skyward Sword HD client.
-    Receives args including the patch file path when launched from the GUI.
+    Handle .apsshd patch files or show client launch instructions.
+    When a patch file is provided, only installs the patch (romfs/exefs)
+    without launching the full client GUI.
     """
-    import asyncio
-    import subprocess
     import sys
     from pathlib import Path
     
@@ -163,13 +163,20 @@ def run_client(*args: str) -> None:
         input("Press Enter to close this window...")
         return
     
-    # If launched WITH a patch file, run in existing event loop
-    from .SSHDClient import main
-    try:
-        loop = asyncio.get_running_loop()
-        asyncio.create_task(main(list(args)))
-    except RuntimeError:
-        asyncio.run(main(list(args)))
+    # If launched WITH a patch file, only install the patch without opening the client
+    from .SSHDClient import install_patch
+    
+    patch_file = next((arg for arg in args if arg.endswith('.apsshd')), None)
+    if patch_file:
+        print(f"\nInstalling patch: {patch_file}")
+        success, _ = install_patch(patch_file)
+        if success:
+            print("\n" + "=" * 60)
+            print("Patch installed successfully!")
+            print("=" * 60)
+        else:
+            print("\nERROR: Failed to install patch")
+        input("\nPress Enter to close this window...")
 
 
 # Register the client launcher
@@ -178,6 +185,7 @@ components.append(
         "Skyward Sword HD Client",
         func=run_client,
         component_type=Type.CLIENT,
+        file_identifier=SuffixIdentifier(".apsshd"),
         icon="Skyward Sword HD"
     )
 )
@@ -194,7 +202,7 @@ class SSHDWeb(WebWorld):
         "English",
         "setup_en.md",
         "setup/en",
-        ["Your Username Here"]
+        ["Wesley-Playz"]
     )]
     theme = "ice"
     rich_text_options_doc = True
@@ -1236,6 +1244,29 @@ class SSHDWorld(World):
         # This lets the client set custom flags to trigger vanilla item pickups
         location_to_custom_flag = {loc_code: flag for flag, loc_code in self._custom_flag_mapping.items()}
         slot_data["location_to_custom_flag"] = location_to_custom_flag
+        
+        # Build AP item info for cross-world items (item 216 locations)
+        # Maps custom_flag_id -> {"item": item_name, "player": player_name}
+        # This lets the client tell the game what item name and player name to display
+        ap_item_info = {}
+        for location in self.multiworld.get_locations(self.player):
+            if location.address is not None and location.item:
+                # Check if this is a cross-world item (not for this player or not in our item table)
+                from .Items import ITEM_TABLE
+                is_own_item = (location.item.name in ITEM_TABLE and location.item.player == self.player)
+                if not is_own_item:
+                    # Find the custom_flag_id for this location
+                    loc_code = location.address
+                    if loc_code in location_to_custom_flag:
+                        flag_id = location_to_custom_flag[loc_code]
+                        player_name = self.multiworld.get_player_name(location.item.player)
+                        ap_item_info[flag_id] = {
+                            "item": location.item.name,
+                            "player": player_name,
+                        }
+        
+        slot_data["ap_item_info"] = ap_item_info
+        print(f"[__init__.py] Added {len(ap_item_info)} AP item info entries to slot_data")
         
         return slot_data
     

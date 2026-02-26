@@ -7,6 +7,8 @@ use crate::debug;
 use crate::entrance;
 use crate::fix;
 use crate::flag;
+use crate::input;
+use crate::item;
 use crate::lyt;
 use crate::minigame;
 use crate::savefile;
@@ -123,6 +125,9 @@ extern "C" {
     static mut GODDESS_SWORD_RES: [u8; 0xA0000];
     static mut TRUE_MASTER_SWORD_RES: [u8; 0xA0000];
 
+    // Vanilla functions
+    fn set_string_arg(text_mgr: *mut lyt::TextMgr, arg: *const c_void, arg_num: u32);
+
     // Functions
     fn debugPrint_128(string: *const c_char, fstr: *const c_char, ...);
     fn parseBRRES(res_data: u64);
@@ -187,6 +192,13 @@ pub extern "C" fn custom_event_commands(
             let scene_index = event_flow_element.param2 as u16;
             flag::set_global_sceneflag(scene_index, flag_index);
         },
+        // Set string args for Archipelago Item (216) textbox.
+        // IMPORTANT: The body is in a separate #[inline(never)] function to keep
+        // register pressure low in this function. The asm epilogue below sets w21
+        // (a callee-saved register). If the compiler needs x21 for local variables,
+        // it will save/restore x21 in the prologue/epilogue, UNDOING the
+        // "mov w21, #1" replaced instruction and breaking ALL type3 event flows.
+        81 => set_ap_item_string_args(),
         _ => (),
     }
 
@@ -200,6 +212,93 @@ pub extern "C" fn custom_event_commands(
             in(reg) actor_event_flow_mgr,
             in(reg) p_event_flow_element,
         );
+    }
+}
+
+/// Set string args for Archipelago Item (216) textbox.
+///
+/// Reads LAST_AP_ITEM_FLAG_ID (set in handle_custom_item_get) and looks up
+/// item name + player name in the AP_ITEM_INFO_TABLE (written by the Python
+/// client on connect).
+///
+/// # Why this is a separate function
+/// `custom_event_commands` ends with an inline asm block that sets `w21`
+/// (x21), which is a **callee-saved register** in AArch64. If the compiler
+/// allocates x21 for local variables, the function epilogue will restore x21
+/// _after_ the asm block, undoing the `mov w21, #1` replaced instruction and
+/// breaking every type3 event flow in the game.
+///
+/// By isolating the heavy logic here, `custom_event_commands` stays small
+/// enough that the compiler only needs x19/x20 (for the two function
+/// parameters), keeping x21 untouched.
+#[inline(never)]
+fn set_ap_item_string_args() {
+    unsafe {
+        let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+        if text_mgr.is_null() {
+            return;
+        }
+
+        let flag_id = item::LAST_AP_ITEM_FLAG_ID;
+        let idx = item::lookup_ap_item_index(flag_id);
+
+        // Fallback strings for when the Python client hasn't written the table yet
+        static UNKNOWN_ITEM: [u16; 8] = [
+            b'A' as u16,
+            b'P' as u16,
+            b' ' as u16,
+            b'I' as u16,
+            b't' as u16,
+            b'e' as u16,
+            b'm' as u16,
+            0,
+        ];
+        static UNKNOWN_PLAYER: [u16; 15] = [
+            b'a' as u16,
+            b'n' as u16,
+            b'o' as u16,
+            b't' as u16,
+            b'h' as u16,
+            b'e' as u16,
+            b'r' as u16,
+            b' ' as u16,
+            b'p' as u16,
+            b'l' as u16,
+            b'a' as u16,
+            b'y' as u16,
+            b'e' as u16,
+            b'r' as u16,
+            0,
+        ];
+
+        let (item_src, item_len, player_src, player_len) = if idx != usize::MAX {
+            let entry_ptr = core::ptr::addr_of!(item::AP_ITEM_INFO_TABLE.entries[idx]);
+            (
+                core::ptr::addr_of!((*entry_ptr).item_name) as *const u16,
+                32usize,
+                core::ptr::addr_of!((*entry_ptr).player_name) as *const u16,
+                16usize,
+            )
+        } else {
+            (
+                UNKNOWN_ITEM.as_ptr(),
+                UNKNOWN_ITEM.len(),
+                UNKNOWN_PLAYER.as_ptr(),
+                UNKNOWN_PLAYER.len(),
+            )
+        };
+
+        // Copy item name into string_args[0] (64 u16 slots)
+        let dst0 = core::ptr::addr_of_mut!((*text_mgr).string_args[0]) as *mut u16;
+        let copy_len0 = if item_len < 64 { item_len } else { 63 };
+        core::ptr::copy_nonoverlapping(item_src, dst0, copy_len0);
+        *dst0.add(copy_len0) = 0; // null terminate
+
+        // Copy player name into string_args[1] (64 u16 slots)
+        let dst1 = core::ptr::addr_of_mut!((*text_mgr).string_args[1]) as *mut u16;
+        let copy_len1 = if player_len < 64 { player_len } else { 63 };
+        core::ptr::copy_nonoverlapping(player_src, dst1, copy_len1);
+        *dst1.add(copy_len1) = 0; // null terminate
     }
 }
 

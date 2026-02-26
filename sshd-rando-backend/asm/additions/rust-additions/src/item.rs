@@ -498,6 +498,21 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
             }
         }
 
+        // Track the custom flag for item 216 (Archipelago Item) pickups
+        // so the event flow can look up item name + player name
+        let itemid = (*item_actor).itemid;
+        if itemid == 216 && flag != 0x7F {
+            let scene_raw: u32 = match sceneindex {
+                6 => 0,
+                13 => 1,
+                16 => 2,
+                19 => 3,
+                _ => 0,
+            };
+            let computed_flag_id = (flag & 0x7F) | (scene_raw << 7) | (flag_space_trigger << 9);
+            LAST_AP_ITEM_FLAG_ID = computed_flag_id as u16;
+        }
+
         return (*item_actor).final_determined_itemid;
     }
 }
@@ -1855,4 +1870,93 @@ pub extern "C" fn archipelago_check_item_buffer() {
 #[no_mangle]
 pub extern "C" fn get_archipelago_buffer_address() -> *mut ArchipelagoItemSlot {
     unsafe { ARCHIPELAGO_ITEM_BUFFER.as_mut_ptr() }
+}
+
+// ============================================================================
+// Archipelago Check Statistics (for help text pages 0a, 0b, 0c)
+// Written by the Python client, read by Rust (lyt.rs) for help menu display.
+// ============================================================================
+
+#[repr(C, packed(1))]
+pub struct ApCheckStats {
+    pub magic:          [u8; 4], // "CS\x00\x01" — signature for Python to find
+    pub normal_checked: u16,
+    pub normal_total:   u16,
+    pub ap_checked:     u16,
+    pub ap_total:       u16,
+}
+assert_eq_size!([u8; 12], ApCheckStats);
+
+#[no_mangle]
+pub static mut AP_CHECK_STATS: ApCheckStats = ApCheckStats {
+    magic:          [0x43, 0x53, 0x00, 0x01], // "CS\x00\x01"
+    normal_checked: 0,
+    normal_total:   0,
+    ap_checked:     0,
+    ap_total:       0,
+};
+
+// ============================================================================
+// Archipelago Item Info Table (for item 216 textbox — item name + player name)
+// Written once by the Python client on connect; read by Rust when item 216
+// event flow triggers to inject dynamic text into the textbox.
+// ============================================================================
+
+pub const AP_ITEM_TABLE_MAX: usize = 128;
+
+#[repr(C, packed(1))]
+#[derive(Copy, Clone)]
+pub struct ApItemInfoEntry {
+    pub flag_id:     u16,       // custom_flag_id (matches Python encoding)
+    pub item_name:   [u16; 32], // UTF-16 item name  (null-terminated)
+    pub player_name: [u16; 16], // UTF-16 player name (null-terminated)
+}
+assert_eq_size!([u8; 98], ApItemInfoEntry);
+
+const EMPTY_AP_ENTRY: ApItemInfoEntry = ApItemInfoEntry {
+    flag_id:     0xFFFF,
+    item_name:   [0u16; 32],
+    player_name: [0u16; 16],
+};
+
+#[repr(C, packed(1))]
+pub struct ApItemInfoTable {
+    pub magic:   [u8; 4], // "IT\x00\x01"
+    pub count:   u16,     // number of valid entries
+    pub _pad:    u16,
+    pub entries: [ApItemInfoEntry; AP_ITEM_TABLE_MAX],
+}
+assert_eq_size!([u8; 8 + 98 * 128], ApItemInfoTable);
+
+#[no_mangle]
+pub static mut AP_ITEM_INFO_TABLE: ApItemInfoTable = ApItemInfoTable {
+    magic:   [0x49, 0x54, 0x00, 0x01], // "IT\x00\x01"
+    count:   0,
+    _pad:    0,
+    entries: [EMPTY_AP_ENTRY; AP_ITEM_TABLE_MAX],
+};
+
+// Tracks which item-216 location was most recently picked up.
+// Set in handle_custom_item_get(); read in the custom event command.
+#[no_mangle]
+pub static mut LAST_AP_ITEM_FLAG_ID: u16 = 0xFFFF;
+
+/// Look up the table index for a given custom_flag_id.
+/// Returns the index into AP_ITEM_INFO_TABLE.entries, or usize::MAX if not
+/// found.
+pub fn lookup_ap_item_index(flag_id: u16) -> usize {
+    unsafe {
+        let count = AP_ITEM_INFO_TABLE.count as usize;
+        let limit = if count < AP_ITEM_TABLE_MAX {
+            count
+        } else {
+            AP_ITEM_TABLE_MAX
+        };
+        for i in 0..limit {
+            if AP_ITEM_INFO_TABLE.entries[i].flag_id == flag_id {
+                return i;
+            }
+        }
+        usize::MAX
+    }
 }

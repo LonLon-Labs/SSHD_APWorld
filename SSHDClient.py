@@ -978,6 +978,13 @@ class SSHDContext(CommonContext):
         self.custom_flag_to_location: Dict[int, int] = {}  # custom_flag_id -> location_code
         self.location_to_custom_flag: Dict[int, int] = {}  # location_code -> custom_flag_id (for vanilla pickups)
         
+        # AP item info table (for item 216 textbox display) and check stats (for help menu)
+        self.ap_item_info: Dict[int, dict] = {}  # custom_flag_id -> {"item": name, "player": name}
+        self.ap_location_codes: Set[int] = set()  # Location codes that have cross-world items
+        self._ap_item_info_offset: Optional[int] = None  # Memory offset of AP_ITEM_INFO_TABLE
+        self._ap_check_stats_offset: Optional[int] = None  # Memory offset of AP_CHECK_STATS
+        self._ap_item_info_written: bool = False  # Whether we've written the info table
+        
         # Tracker bridge for autotracking
         self.tracker_bridge = TrackerBridge() if TrackerBridge else None
         if self.tracker_bridge:
@@ -1236,6 +1243,23 @@ class SSHDContext(CommonContext):
                 logger.debug(f"Loaded {len(self.location_to_custom_flag)} location -> flag mappings for vanilla pickups")
             else:
                 logger.debug("No location→flag mapping found - vanilla pickups disabled")
+
+            # Load AP item info for cross-world item textbox display
+            ap_item_info_raw = slot_data.get("ap_item_info", {})
+            if ap_item_info_raw:
+                self.ap_item_info = {int(k): v for k, v in ap_item_info_raw.items()}
+                # Build set of AP location codes for check stats counting
+                self.ap_location_codes = set()
+                for flag_id in self.ap_item_info:
+                    if flag_id in self.custom_flag_to_location:
+                        self.ap_location_codes.add(self.custom_flag_to_location[flag_id])
+                logger.info(f"Loaded {len(self.ap_item_info)} AP item info entries for textbox display")
+                # Reset so the info table gets written on next game state update
+                self._ap_item_info_written = False
+                self._ap_item_info_offset = None
+                self._ap_check_stats_offset = None
+            else:
+                logger.debug("No AP item info in slot data")
 
             # Enable DeathLink if the player configured it
             death_link_enabled = slot_data.get("option_death_link", 0)  # Options use "option_" prefix
@@ -1591,6 +1615,10 @@ class SSHDContext(CommonContext):
                 logger.debug(f"Entered stage: {stage_name}")
                 self.current_stage = stage_name
             
+            # Write AP buffers to game memory (item info table + check stats)
+            self._write_ap_item_info_table()
+            self._update_ap_check_stats()
+            
             # Give queued items to player
             if self.item_queue:
                 item_data = self.item_queue[0]
@@ -1873,9 +1901,6 @@ class SSHDContext(CommonContext):
                     if cur_y is not None:
                         new_y = cur_y + 1.5  # ~90 units/sec at 60 Hz
                         self.memory.write_float(player_base + OFFSET_POS_Y, new_y)
-                        # Keep hover height in sync so hover doesn't snap back
-                        if self._hover_y is not None:
-                            self._hover_y = new_y
                     # 2. Also set upward velocity for smooth motion once airborne
                     self.memory.write_float(player_base + OFFSET_VELOCITY_Y, 52.5)
             except Exception as e:
@@ -1915,6 +1940,155 @@ class SSHDContext(CommonContext):
                         self.memory.write_float(player_base + OFFSET_FORWARD_SPEED, new_speed)
             except Exception as e:
                 logger.debug(f"Cheat error (speed): {e}")
+
+    # ================================================================
+    # AP Memory Buffers: Item Info Table + Check Stats
+    # ================================================================
+
+    def _scan_for_buffer(self, magic_bytes: bytes, name: str) -> Optional[int]:
+        """
+        Scan process memory for a Rust static buffer with the given magic signature.
+        
+        Returns:
+            Offset from base address if found, None otherwise.
+        """
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return None
+        
+        try:
+            from pymem import pattern
+            found = pattern.pattern_scan_all(self.memory.pm.process_handle, magic_bytes)
+            if found:
+                addresses = found if isinstance(found, list) else [found]
+                for addr in addresses:
+                    offset = addr - self.memory.base_address
+                    # Verify by reading back the magic bytes
+                    readback = self.memory.read_bytes(offset, len(magic_bytes))
+                    if readback == magic_bytes:
+                        logger.info(f"Found {name} at 0x{addr:X} (offset 0x{offset:X})")
+                        return offset
+        except ImportError:
+            logger.warning(f"pymem pattern scanning not available for {name}")
+        except Exception as e:
+            logger.warning(f"Pattern scan for {name} failed: {e}")
+        
+        logger.warning(f"Could not find {name} buffer in memory")
+        return None
+
+    def _write_ap_item_info_table(self):
+        """
+        Write the AP item info table to game memory so the Rust code can
+        display the actual item name and player name when item 216 is picked up.
+        
+        Called once after connecting (when both slot_data and memory are available).
+        
+        Table layout (packed, little-endian):
+          offset 0: magic [u8; 4] = "IT\\x00\\x01"
+          offset 4: count (u16)
+          offset 6: _pad (u16)
+          offset 8: entries[0..128], each 98 bytes:
+            flag_id (u16) + item_name ([u16; 32] = 64 bytes) + player_name ([u16; 16] = 32 bytes)
+        """
+        if self._ap_item_info_written or not self.ap_item_info:
+            return
+        
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return
+        
+        # Find the buffer address (scan once)
+        if self._ap_item_info_offset is None:
+            self._ap_item_info_offset = self._scan_for_buffer(
+                bytes([0x49, 0x54, 0x00, 0x01]), "AP_ITEM_INFO_TABLE"
+            )
+        
+        if self._ap_item_info_offset is None:
+            return
+        
+        try:
+            base = self.memory.base_address
+            table_addr = base + self._ap_item_info_offset
+            
+            # Build entry data
+            entries = []
+            for flag_id, info in self.ap_item_info.items():
+                item_name = info.get("item", "AP Item")
+                player_name = info.get("player", "another player")
+                
+                # Encode as UTF-16LE, truncate to fit, null-terminate
+                item_name_bytes = item_name.encode('utf-16-le')[:62]   # max 31 chars (62 bytes)
+                item_name_bytes = item_name_bytes.ljust(64, b'\x00')   # pad to 64 bytes (32 u16s)
+                
+                player_name_bytes = player_name.encode('utf-16-le')[:30]  # max 15 chars (30 bytes)
+                player_name_bytes = player_name_bytes.ljust(32, b'\x00')  # pad to 32 bytes (16 u16s)
+                
+                entry = struct.pack('<H', flag_id) + item_name_bytes + player_name_bytes
+                entries.append(entry)
+            
+            count = min(len(entries), 128)
+            
+            # Write count field (offset +4, skip magic)
+            count_data = struct.pack('<HH', count, 0)  # count + padding
+            self.memory.pm.write_bytes(table_addr + 4, count_data, len(count_data))
+            
+            # Write entries (offset +8, each 98 bytes)
+            for i in range(count):
+                entry_addr = table_addr + 8 + (i * 98)
+                self.memory.pm.write_bytes(entry_addr, entries[i], len(entries[i]))
+            
+            self._ap_item_info_written = True
+            logger.info(f"Wrote {count} AP item info entries to game memory")
+            
+        except Exception as e:
+            logger.warning(f"Failed to write AP item info table: {e}")
+
+    def _update_ap_check_stats(self):
+        """
+        Write current location check statistics to game memory for the help menu.
+        
+        Stats layout (packed, little-endian):
+          offset 0: magic [u8; 4] = "CS\\x00\\x01"
+          offset 4: normal_checked (u16)
+          offset 6: normal_total (u16)
+          offset 8: ap_checked (u16)
+          offset 10: ap_total (u16)
+        """
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return
+        
+        if not self.custom_flag_to_location:
+            return  # No location data yet
+        
+        # Find the buffer address (scan once)
+        if self._ap_check_stats_offset is None:
+            self._ap_check_stats_offset = self._scan_for_buffer(
+                bytes([0x43, 0x53, 0x00, 0x01]), "AP_CHECK_STATS"
+            )
+        
+        if self._ap_check_stats_offset is None:
+            return
+        
+        try:
+            # Count totals
+            total_locations = len(self.custom_flag_to_location)
+            ap_total = len(self.ap_location_codes)
+            normal_total = total_locations - ap_total
+            
+            # Count checked locations (union of checked + sent to handle reconnects)
+            all_checked = self.checked_locations | self.sent_locations
+            ap_checked = len(self.ap_location_codes & all_checked)
+            total_checked = 0
+            for flag_id, loc_code in self.custom_flag_to_location.items():
+                if loc_code in all_checked:
+                    total_checked += 1
+            normal_checked = total_checked - ap_checked
+            
+            # Write stats (offset +4, skip magic)
+            stats_addr = self.memory.base_address + self._ap_check_stats_offset + 4
+            stats_data = struct.pack('<HHHH', normal_checked, normal_total, ap_checked, ap_total)
+            self.memory.pm.write_bytes(stats_addr, stats_data, len(stats_data))
+            
+        except Exception as e:
+            logger.debug(f"Failed to update AP check stats: {e}")
 
     async def check_custom_flags(self):
         """Check custom flags for location completion (SSHD-specific)."""
