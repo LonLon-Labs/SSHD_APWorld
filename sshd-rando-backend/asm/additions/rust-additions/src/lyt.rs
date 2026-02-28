@@ -146,11 +146,17 @@ pub extern "C" fn __set_dungeon_string_and_numeric_args(complete_storyflag: u16,
 
 #[no_mangle]
 pub extern "C" fn check_help_index_bounds(dLytHelp: *mut c_void, mut help_index: u32) {
-    if help_index <= 0x39 {
-        help_index = 0x3A;
-    }
+    // Always start from the first custom page (stats) when the help menu opens.
+    // Without this, the index stays at whatever page was last viewed (e.g. 0x3D),
+    // causing the last page to appear first on re-open.
+    help_index = 0x3A;
 
     unsafe {
+        // Persist the clamped value so that custom_help_menu_state_change
+        // reads the correct index on the next dpad-right press (offset 0x5a4).
+        let ptr = (dLytHelp as *mut u8).add(0x5A4) as *mut u32;
+        core::ptr::write_unaligned(ptr, help_index);
+
         asm!("mov x0, {0:x}", in(reg) dLytHelp);
         asm!("mov w1, {0:w}", in(reg) help_index);
     }

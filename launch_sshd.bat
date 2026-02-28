@@ -10,6 +10,13 @@ if exist "%~dp0ArchipelagoSSHDClient.exe" (
 )
 
 REM Check Archipelago directory for the exe
+if exist "C:\ProgramData\Archipelago\ArchipelagoSSHDClient\ArchipelagoSSHDClient.exe" (
+    echo Using standalone client from Archipelago folder...
+    "C:\ProgramData\Archipelago\ArchipelagoSSHDClient\ArchipelagoSSHDClient.exe" %*
+    goto :done
+)
+
+REM Check Archipelago directory for the exe
 if exist "C:\ProgramData\Archipelago\ArchipelagoSSHDClient.exe" (
     echo Using standalone client from Archipelago folder...
     "C:\ProgramData\Archipelago\ArchipelagoSSHDClient.exe" %*

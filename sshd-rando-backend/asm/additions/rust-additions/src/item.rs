@@ -1902,7 +1902,7 @@ pub static mut AP_CHECK_STATS: ApCheckStats = ApCheckStats {
 // event flow triggers to inject dynamic text into the textbox.
 // ============================================================================
 
-pub const AP_ITEM_TABLE_MAX: usize = 128;
+pub const AP_ITEM_TABLE_MAX: usize = 512;
 
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
@@ -1926,7 +1926,7 @@ pub struct ApItemInfoTable {
     pub _pad:    u16,
     pub entries: [ApItemInfoEntry; AP_ITEM_TABLE_MAX],
 }
-assert_eq_size!([u8; 8 + 98 * 128], ApItemInfoTable);
+assert_eq_size!([u8; 8 + 98 * 512], ApItemInfoTable);
 
 #[no_mangle]
 pub static mut AP_ITEM_INFO_TABLE: ApItemInfoTable = ApItemInfoTable {

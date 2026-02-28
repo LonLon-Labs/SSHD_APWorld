@@ -118,6 +118,7 @@ extern "C" {
 
     static STORYFLAG_MGR: *mut flag::FlagMgr;
     static LYT_MSG_WINDOW: *mut lyt::dLytMsgWindow;
+    static GLOBAL_TEXT_MGR: *mut lyt::TextMgr;
     static FILE_MGR: *mut savefile::FileMgr;
 
     static mut CURRENT_STAGE_NAME: [u8; 8];
@@ -187,17 +188,15 @@ pub extern "C" fn custom_event_commands(
         },
         // Set global sceneflag for Archipelago custom flag detection
         // param1 = flag index (0-127), param2 = actual scene index (6, 13, 16, or 19)
-        80 => {
-            let flag_index = event_flow_element.param1 as u16;
-            let scene_index = event_flow_element.param2 as u16;
-            flag::set_global_sceneflag(scene_index, flag_index);
-        },
-        // Set string args for Archipelago Item (216) textbox.
+        //
         // IMPORTANT: The body is in a separate #[inline(never)] function to keep
         // register pressure low in this function. The asm epilogue below sets w21
         // (a callee-saved register). If the compiler needs x21 for local variables,
         // it will save/restore x21 in the prologue/epilogue, UNDOING the
         // "mov w21, #1" replaced instruction and breaking ALL type3 event flows.
+        80 => set_global_sceneflag_for_ap(event_flow_element),
+        // Set string args for Archipelago Item (216) textbox.
+        // (Same #[inline(never)] reasoning as above.)
         81 => set_ap_item_string_args(),
         _ => (),
     }
@@ -215,11 +214,46 @@ pub extern "C" fn custom_event_commands(
     }
 }
 
+/// Set global sceneflag for Archipelago custom flag detection.
+///
+/// Encodes the flag index and scene index into a compact 10-bit ID and stores
+/// it in `LAST_AP_ITEM_FLAG_ID` so the textbox can look up the correct AP item
+/// info.
+///
+/// # Why this is a separate function
+/// Same reasoning as `set_ap_item_string_args` – keeps register pressure in
+/// `custom_event_commands` low so the compiler doesn't touch x21.
+#[inline(never)]
+fn set_global_sceneflag_for_ap(event_flow_element: &EventFlowElement) {
+    unsafe {
+        let flag_index = event_flow_element.param1 as u16;
+        let scene_index = event_flow_element.param2 as u16;
+        flag::set_global_sceneflag(scene_index, flag_index);
+
+        let scene_raw: u32 = match scene_index {
+            6 => 0,
+            13 => 1,
+            16 => 2,
+            19 => 3,
+            _ => 0,
+        };
+        let computed_flag_id = (flag_index as u32 & 0x7F) | (scene_raw << 7);
+        item::LAST_AP_ITEM_FLAG_ID = computed_flag_id as u16;
+    }
+}
+
 /// Set string args for Archipelago Item (216) textbox.
 ///
 /// Reads LAST_AP_ITEM_FLAG_ID (set in handle_custom_item_get) and looks up
 /// item name + player name in the AP_ITEM_INFO_TABLE (written by the Python
 /// client on connect).
+///
+/// **Both `GLOBAL_TEXT_MGR` and `LYT_MSG_WINDOW.text_mgr` are written**
+/// because the message-window layout may re-create or reassign its `text_mgr`
+/// pointer when the first textbox of a session opens.  By writing to both
+/// TextMgrs (the global one that the engine always keeps initialised, and the
+/// per-layout one that subsequent textboxes use), the correct item / player
+/// name appears even for the very first AP item collected.
 ///
 /// # Why this is a separate function
 /// `custom_event_commands` ends with an inline asm block that sets `w21`
@@ -234,18 +268,22 @@ pub extern "C" fn custom_event_commands(
 #[inline(never)]
 fn set_ap_item_string_args() {
     unsafe {
-        let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
-        if text_mgr.is_null() {
-            return;
-        }
-
         let flag_id = item::LAST_AP_ITEM_FLAG_ID;
         let idx = item::lookup_ap_item_index(flag_id);
 
         // Fallback strings for when the Python client hasn't written the table yet
-        static UNKNOWN_ITEM: [u16; 8] = [
+        static UNKNOWN_ITEM: [u16; 17] = [
             b'A' as u16,
-            b'P' as u16,
+            b'r' as u16,
+            b'c' as u16,
+            b'h' as u16,
+            b'i' as u16,
+            b'p' as u16,
+            b'e' as u16,
+            b'l' as u16,
+            b'a' as u16,
+            b'g' as u16,
+            b'o' as u16,
             b' ' as u16,
             b'I' as u16,
             b't' as u16,
@@ -271,34 +309,39 @@ fn set_ap_item_string_args() {
             0,
         ];
 
-        let (item_src, item_len, player_src, player_len) = if idx != usize::MAX {
+        let (item_ptr, player_ptr): (*const c_void, *const c_void) = if idx != usize::MAX {
             let entry_ptr = core::ptr::addr_of!(item::AP_ITEM_INFO_TABLE.entries[idx]);
             (
-                core::ptr::addr_of!((*entry_ptr).item_name) as *const u16,
-                32usize,
-                core::ptr::addr_of!((*entry_ptr).player_name) as *const u16,
-                16usize,
+                core::ptr::addr_of!((*entry_ptr).item_name) as *const c_void,
+                core::ptr::addr_of!((*entry_ptr).player_name) as *const c_void,
             )
         } else {
             (
-                UNKNOWN_ITEM.as_ptr(),
-                UNKNOWN_ITEM.len(),
-                UNKNOWN_PLAYER.as_ptr(),
-                UNKNOWN_PLAYER.len(),
+                UNKNOWN_ITEM.as_ptr() as *const c_void,
+                UNKNOWN_PLAYER.as_ptr() as *const c_void,
             )
         };
 
-        // Copy item name into string_args[0] (64 u16 slots)
-        let dst0 = core::ptr::addr_of_mut!((*text_mgr).string_args[0]) as *mut u16;
-        let copy_len0 = if item_len < 64 { item_len } else { 63 };
-        core::ptr::copy_nonoverlapping(item_src, dst0, copy_len0);
-        *dst0.add(copy_len0) = 0; // null terminate
+        // Write to GLOBAL_TEXT_MGR using the vanilla set_string_arg function.
+        // This is the same pattern used by all other custom text-setting code
+        // (dungeon info, help menu, etc.) and is always initialised by the
+        // time items can be collected.  Critically, it remains valid even
+        // before the first textbox opens, fixing the "first AP item shows
+        // default text" bug.
+        if !GLOBAL_TEXT_MGR.is_null() {
+            set_string_arg(GLOBAL_TEXT_MGR, item_ptr, 0);
+            set_string_arg(GLOBAL_TEXT_MGR, player_ptr, 1);
+        }
 
-        // Copy player name into string_args[1] (64 u16 slots)
-        let dst1 = core::ptr::addr_of_mut!((*text_mgr).string_args[1]) as *mut u16;
-        let copy_len1 = if player_len < 64 { player_len } else { 63 };
-        core::ptr::copy_nonoverlapping(player_src, dst1, copy_len1);
-        *dst1.add(copy_len1) = 0; // null terminate
+        // Also write to the message-window layout's own TextMgr if available.
+        // After the first textbox has been shown this pointer is stable, so
+        // writing here ensures subsequent items keep working even if the
+        // textbox renderer reads from this TextMgr instead of the global one.
+        let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+        if !text_mgr.is_null() {
+            set_string_arg(text_mgr, item_ptr, 0);
+            set_string_arg(text_mgr, player_ptr, 1);
+        }
     }
 }
 

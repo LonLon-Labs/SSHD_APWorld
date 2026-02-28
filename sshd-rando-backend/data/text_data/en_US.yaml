@@ -6,10 +6,10 @@
     \n\n\n\nBe sure to take care of him.\n...even if he's a little mean."
 
 - name: Archipelago Item Get Text Page 1
-  standard: "You found <string arg0>!"
+  standard: "You found <y<<string arg0> >> for <b<<string arg1> >>!"
 
 - name: Archipelago Item Get Text Page 2
-  standard: "Sending to <string arg1>!"
+  standard: "It should show up in their game after closing this\n textbox!"
 
 - name: Some Tadtones Collected text
   standard: "You got a group of <y<Tadtones>>!\nOnly <r<<numeric arg0> >> left to find!"
@@ -6577,27 +6577,27 @@
 
 - name: Help Text Title 3a
   standard:
-    "Sky Keep"
+    "<string arg3>"
 
 - name: Help Text Content 3a
   standard:
-    "Status: <string arg0>\nSmall Keys: <numeric arg0>, Found <numeric arg1>/1\nMap: <string arg2>"
+    "<string arg0>\n<string arg1>\n<string arg2>"
 
 - name: Help Text Title 3b
   standard:
-    "Items"
+    "<string arg3>"
 
 - name: Help Text Content 3b
   standard:
-    "Spiral Charge: <string arg0>\nScrapper: <string arg1>\nGroup of Tadtones: <numeric arg0>"
+    "<string arg0>\n<string arg1>\n<string arg2>"
 
 - name: Help Text Title 3c
   standard:
-    "Gorge"
+    "<string arg3>"
 
 - name: Help Text Content 3c
   standard:
-    "Life Tree Fruit: <string arg0>\nSeedling: <string arg1>\nCaves Keys: <numeric arg0>, Found <numeric arg1>/2"
+    "<string arg0>\n<string arg1>\n<string arg2>"
 
 - name: Inventory Emerald Tablet text
   standard:

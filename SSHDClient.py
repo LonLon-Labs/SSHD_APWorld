@@ -384,10 +384,22 @@ class RyujinxMemoryReader:
     This provides direct access to SSHD's memory through Ryujinx's process.
     """
     
+    # Magic signatures for Rust static buffers that we scan for during the
+    # base-address memory scan so they are immediately available later without
+    # a second full-process scan.
+    PRESCAN_MAGIC = {
+        "AP_ITEM_INFO_TABLE": bytes([0x49, 0x54, 0x00, 0x01]),  # "IT\x00\x01"
+        "AP_CHECK_STATS":     bytes([0x43, 0x53, 0x00, 0x01]),  # "CS\x00\x01"
+        "AP_ITEM_BUFFER":     bytes([0x41, 0x50, 0x00, 0x01]),  # "AP\x00\x01"
+    }
+
     def __init__(self):
         self.pm: Optional[pymem.Pymem] = None
         self.base_address: Optional[int] = None
         self.connected = False
+        # Absolute addresses found during the base-address scan for each magic
+        # pattern.  Keyed by pattern name -> list of absolute addresses.
+        self.prescan_results: Dict[str, list] = {}
         
     def connect(self) -> bool:
         """
@@ -547,13 +559,15 @@ class RyujinxMemoryReader:
     def _scan_memory_sync(self) -> bool:
         """Synchronous memory scanning using VirtualQueryEx for precise region enumeration.
         
-        Now finds ALL signatures and validates each one to pick the best candidate.
+        Finds the game base address by searching for MEMORY_SIGNATURE, then does
+        a fast targeted scan of the game memory region for Rust static buffer
+        magic signatures (IT, CS, AP).
         """
         try:
             import ctypes
             
             start_time = time.time()
-            print(f"[DEBUG] Starting VirtualQueryEx-based memory scan for all signatures")
+            print(f"[DEBUG] Starting VirtualQueryEx-based memory scan")
             
             # Windows memory constants
             MEM_COMMIT = 0x1000
@@ -577,15 +591,16 @@ class RyujinxMemoryReader:
 
             kernel32 = ctypes.windll.kernel32
             process_handle = self.pm.process_handle
-            chunk_size = 1024 * 1024  # 1 MB
+            chunk_size = 4 * 1024 * 1024  # 4 MB — larger chunks = fewer cross-process calls
             max_address = 0x7FFFFFFFFFFF
             address = 0x10000
             chunks_scanned = 0
             regions_scanned = 0
             mbi = MEMORY_BASIC_INFORMATION()
             
-            # Collect ALL candidate addresses
-            candidates = []
+            # Collect candidate addresses for the game base signature
+            best_base = None
+            best_score = -1
 
             while address < max_address:
                 # Query exact boundaries and attributes of the region at 'address'
@@ -623,61 +638,136 @@ class RyujinxMemoryReader:
                             data = self.pm.read_bytes(scan_pos, to_read)
                             chunks_scanned += 1
 
-                            if chunks_scanned % 10 == 0:
+                            if chunks_scanned % 100 == 0:
                                 print(f"[DEBUG] Scanned {chunks_scanned} chunks, address: 0x{scan_pos:X}")
 
-                            # Find ALL occurrences in this chunk
+                            # Search for game base signature
                             search_offset = 0
                             while True:
                                 sig_offset = data.find(MEMORY_SIGNATURE, search_offset)
                                 if sig_offset == -1:
                                     break
-                                    
-                                signature_address = scan_pos + sig_offset
-                                potential_base = signature_address
-                                candidates.append(potential_base)
-                                print(f"[FOUND] Signature #{len(candidates)} at 0x{potential_base:X}")
-                                
-                                # Continue searching after this match
+
+                                candidate = scan_pos + sig_offset
+                                score = self._validate_base_address(candidate)
+                                print(f"[FOUND] Signature at 0x{candidate:X} - Score: {score}/8")
+
+                                if score > best_score:
+                                    best_score = score
+                                    best_base = candidate
+
+                                # High-confidence match — stop scanning immediately
+                                if best_score >= 6:
+                                    break
+
                                 search_offset = sig_offset + 1
-                                
+
                         except Exception:
                             pass  # skip unreadable sub-chunks within this region
 
+                        # Stop reading more chunks once we have a high-confidence match
+                        if best_score >= 6:
+                            break
                         scan_pos += to_read
+
+                # Early exit once we have a high-confidence base
+                if best_score >= 6:
+                    break
 
                 # Advance precisely to next region — no large arbitrary jumps
                 address = region_base + region_size
 
-            elapsed = time.time() - start_time
-            print(f"[SCAN] Took {elapsed:.1f}s, {chunks_scanned} chunks in {regions_scanned} regions")
-            print(f"[FOUND] {len(candidates)} signature(s) found")
+            base_elapsed = time.time() - start_time
+            print(f"[SCAN] Base scan took {base_elapsed:.1f}s, {chunks_scanned} chunks in {regions_scanned} regions")
             
-            if len(candidates) == 0:
+            if best_base is None:
                 print(f"[FAIL] No signatures found")
                 logger.error("Could not find SSHD signature in memory")
                 return False
             
-            # Validate all candidates
-            print(f"[VALIDATE] Testing {len(candidates)} candidate(s)...")
-            scored_candidates = []
-            for candidate in candidates:
-                score = self._validate_base_address(candidate)
-                scored_candidates.append((candidate, score))
-                print(f"[VALIDATE] 0x{candidate:X} - Score: {score}/8")
-            
-            # Sort by score (highest first)
-            scored_candidates.sort(key=lambda x: x[1], reverse=True)
-            
-            # Pick the best one
-            best_base, best_score = scored_candidates[0]
             print(f"[SUCCESS] Selected base address: 0x{best_base:X} (score: {best_score}/8)")
             
             if best_score < 3:
                 logger.warning(f"Base address has low validation score ({best_score}/8) - may be incorrect")
             
             self.base_address = best_base
-            logger.info(f"Found SSHD base address: 0x{best_base:X} (score: {best_score}/8, took {elapsed:.1f}s)")
+
+            # ----------------------------------------------------------------
+            # Targeted scan for Rust static buffer magic signatures.
+            #
+            # These buffers live in the game's address space (subsdk8 .bss/.data)
+            # which is within ~1 GB of the base address.  Scanning only this
+            # small range instead of the entire process is dramatically faster.
+            # ----------------------------------------------------------------
+            magic_hits: Dict[str, list] = {name: [] for name in self.PRESCAN_MAGIC}
+            MAX_MAGIC_HITS = 16
+
+            magic_scan_start = best_base
+            magic_scan_end = best_base + 0x40000000  # 1 GB above base
+            magic_addr = magic_scan_start
+
+            while magic_addr < magic_scan_end and magic_addr < max_address:
+                result = kernel32.VirtualQueryEx(
+                    process_handle,
+                    ctypes.c_uint64(magic_addr),
+                    ctypes.byref(mbi),
+                    ctypes.sizeof(mbi)
+                )
+
+                if result == 0:
+                    magic_addr += 0x1000
+                    continue
+
+                region_base = mbi.BaseAddress
+                region_size = mbi.RegionSize
+
+                if region_size == 0:
+                    magic_addr += 0x1000
+                    continue
+
+                base_protect = mbi.Protect & 0xFF
+                is_committed = (mbi.State == MEM_COMMIT)
+                is_readable  = (base_protect in READABLE_PROTECTIONS) and not (mbi.Protect & PAGE_GUARD)
+
+                if is_committed and is_readable:
+                    region_end = min(region_base + region_size, magic_scan_end)
+                    scan_pos = region_base
+
+                    while scan_pos < region_end:
+                        to_read = min(chunk_size, region_end - scan_pos)
+                        try:
+                            data = self.pm.read_bytes(scan_pos, to_read)
+
+                            for magic_name, magic_bytes in self.PRESCAN_MAGIC.items():
+                                if len(magic_hits[magic_name]) >= MAX_MAGIC_HITS:
+                                    continue
+                                ms_offset = 0
+                                while True:
+                                    idx = data.find(magic_bytes, ms_offset)
+                                    if idx == -1:
+                                        break
+                                    magic_hits[magic_name].append(scan_pos + idx)
+                                    ms_offset = idx + 1
+                                    if len(magic_hits[magic_name]) >= MAX_MAGIC_HITS:
+                                        break
+                        except Exception:
+                            pass
+
+                        scan_pos += to_read
+
+                magic_addr = region_base + region_size
+
+            self.prescan_results = magic_hits
+            total_elapsed = time.time() - start_time
+
+            for mname, maddrs in magic_hits.items():
+                if maddrs:
+                    print(f"[PRESCAN] {mname}: {len(maddrs)} hit(s), first at 0x{maddrs[0]:X}")
+                else:
+                    print(f"[PRESCAN] {mname}: no hits")
+
+            logger.info(f"Found SSHD base address: 0x{best_base:X} (score: {best_score}/8, took {total_elapsed:.1f}s)")
+            
             return True
 
         except Exception as e:
@@ -1258,6 +1348,10 @@ class SSHDContext(CommonContext):
                 self._ap_item_info_written = False
                 self._ap_item_info_offset = None
                 self._ap_check_stats_offset = None
+                # Eagerly attempt to write the table right now if memory is
+                # already connected.  This reduces the window during which a
+                # player can check a location before the table is populated.
+                self._write_ap_item_info_table()
             else:
                 logger.debug("No AP item info in slot data")
 
@@ -1564,6 +1658,12 @@ class SSHDContext(CommonContext):
                             # Set connection time to prevent false death detection on startup
                             self.connection_time = time.time()
                             logger.debug(f"Connection time set to {self.connection_time}")
+                            
+                            # Eagerly try to write the AP item info table now
+                            # that memory is connected. This minimises the window
+                            # during which a player can check a location before
+                            # the table has been written.
+                            self._write_ap_item_info_table()
                     
                     # Wait before retrying
                     await asyncio.sleep(5)
@@ -1890,9 +1990,9 @@ class SSHDContext(CommonContext):
                 # One-time diagnostic log
                 if not self._moon_jump_logged:
                     btn_trig = self.memory.read_short(player_base + OFFSET_TRIGGERED_BUTTONS)
-                    logger.info(f"[MoonJump] held_buttons=0x{btn_held:04X}, triggered=0x{btn_trig:04X}" if btn_held is not None and btn_trig is not None else f"[MoonJump] button read returned None!")
-                    logger.info(f"[MoonJump] BUTTON_Y=0x{BUTTON_Y:04X} (CE-verified, NOT the InputMgr enum)")
-                    logger.info(f"[MoonJump] held_buttons offset=0x{player_base + OFFSET_HELD_BUTTONS:X}")
+                    logger.debug(f"[MoonJump] held_buttons=0x{btn_held:04X}, triggered=0x{btn_trig:04X}" if btn_held is not None and btn_trig is not None else f"[MoonJump] button read returned None!")
+                    logger.debug(f"[MoonJump] BUTTON_Y=0x{BUTTON_Y:04X} (CE-verified, NOT the InputMgr enum)")
+                    logger.debug(f"[MoonJump] held_buttons offset=0x{player_base + OFFSET_HELD_BUTTONS:X}")
                     self._moon_jump_logged = True
 
                 if btn_held is not None and (btn_held & BUTTON_Y):
@@ -1947,7 +2047,11 @@ class SSHDContext(CommonContext):
 
     def _scan_for_buffer(self, magic_bytes: bytes, name: str) -> Optional[int]:
         """
-        Scan process memory for a Rust static buffer with the given magic signature.
+        Find a Rust static buffer with the given magic signature.
+        
+        First checks addresses collected during the base-address memory scan
+        (prescan_results) so this is typically instantaneous.  Falls back to
+        a full pattern_scan_all only if the prescan didn't find anything.
         
         Returns:
             Offset from base address if found, None otherwise.
@@ -1955,6 +2059,21 @@ class SSHDContext(CommonContext):
         if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
             return None
         
+        # --- Fast path: use addresses cached during the base-address scan ---
+        cached = self.memory.prescan_results.get(name, [])
+        if cached:
+            for addr in cached:
+                offset = addr - self.memory.base_address
+                try:
+                    readback = self.memory.read_bytes(offset, len(magic_bytes))
+                    if readback == magic_bytes:
+                        logger.info(f"Found {name} at 0x{addr:X} (offset 0x{offset:X}) [prescan cache]")
+                        return offset
+                except Exception:
+                    continue
+        
+        # --- Slow path: fall back to full process scan ---
+        logger.info(f"Prescan cache miss for {name}, doing full pattern scan...")
         try:
             from pymem import pattern
             found = pattern.pattern_scan_all(self.memory.pm.process_handle, magic_bytes)
@@ -1965,7 +2084,7 @@ class SSHDContext(CommonContext):
                     # Verify by reading back the magic bytes
                     readback = self.memory.read_bytes(offset, len(magic_bytes))
                     if readback == magic_bytes:
-                        logger.info(f"Found {name} at 0x{addr:X} (offset 0x{offset:X})")
+                        logger.info(f"Found {name} at 0x{addr:X} (offset 0x{offset:X}) [full scan]")
                         return offset
         except ImportError:
             logger.warning(f"pymem pattern scanning not available for {name}")
@@ -1986,8 +2105,16 @@ class SSHDContext(CommonContext):
           offset 0: magic [u8; 4] = "IT\\x00\\x01"
           offset 4: count (u16)
           offset 6: _pad (u16)
-          offset 8: entries[0..128], each 98 bytes:
+          offset 8: entries[0..512], each 98 bytes:
             flag_id (u16) + item_name ([u16; 32] = 64 bytes) + player_name ([u16; 16] = 32 bytes)
+        
+        IMPORTANT: Entries are written BEFORE count to avoid a race condition.
+        The Rust lookup_ap_item_index() uses count to determine how many entries
+        to scan.  If we wrote count first, the game could read a non-zero count
+        while entries are still 0xFFFF (empty sentinel), causing the lookup to
+        miss and fall back to the default "AP Item / another player" text.
+        Writing entries first, then count last, ensures the game never sees a
+        non-zero count with uninitialised entries.
         """
         if self._ap_item_info_written or not self.ap_item_info:
             return
@@ -2024,16 +2151,19 @@ class SSHDContext(CommonContext):
                 entry = struct.pack('<H', flag_id) + item_name_bytes + player_name_bytes
                 entries.append(entry)
             
-            count = min(len(entries), 128)
+            count = min(len(entries), 512)
             
-            # Write count field (offset +4, skip magic)
-            count_data = struct.pack('<HH', count, 0)  # count + padding
-            self.memory.pm.write_bytes(table_addr + 4, count_data, len(count_data))
-            
-            # Write entries (offset +8, each 98 bytes)
+            # Write entries FIRST (offset +8, each 98 bytes)
+            # This must happen before writing count to avoid a race where the
+            # game sees count > 0 but entries are still uninitialised (0xFFFF).
             for i in range(count):
                 entry_addr = table_addr + 8 + (i * 98)
                 self.memory.pm.write_bytes(entry_addr, entries[i], len(entries[i]))
+            
+            # Write count field LAST (offset +4, skip magic)
+            # Now the game can safely scan entries[0..count].
+            count_data = struct.pack('<HH', count, 0)  # count + padding
+            self.memory.pm.write_bytes(table_addr + 4, count_data, len(count_data))
             
             self._ap_item_info_written = True
             logger.info(f"Wrote {count} AP item info entries to game memory")

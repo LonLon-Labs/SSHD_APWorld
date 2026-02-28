@@ -78,32 +78,44 @@ class GameItemSystem:
         It's allocated in a different memory region (heap/separate segment), so we
         must scan for the magic signature 'AP\x00\x01' to locate it dynamically.
         
+        First checks addresses cached by the base-address scan (prescan_results)
+        so this is typically instantaneous.  Falls back to a full process scan
+        only if the cache missed.
+        
         Returns:
             Buffer address OFFSET (relative to base) if found, None otherwise
         """
-        # Scan for magic signature using pymem's pattern scan
-        # The buffer can be ANYWHERE in memory (not at fixed offset from base)
         magic_signature = bytes([0x41, 0x50, 0x00, 0x01])
         
+        base_address = getattr(self.memory, 'base_address', None)
+        if not base_address:
+            logger.error("❌ Base address not set")
+            return None
+        
+        # --- Fast path: use addresses cached during the base-address scan ---
+        prescan = getattr(self.memory, 'prescan_results', {})
+        cached = prescan.get("AP_ITEM_BUFFER", [])
+        for addr in cached:
+            buffer_offset = addr - base_address
+            try:
+                test_data = self.memory.read_bytes(buffer_offset, 4)
+                if test_data == magic_signature:
+                    logger.info(f"✅ Found Archipelago buffer at 0x{addr:x} (offset 0x{buffer_offset:x}) [prescan cache]")
+                    return buffer_offset
+            except Exception:
+                continue
+        
+        # --- Slow path: full process scan ---
         logger.info("Scanning entire process memory for Archipelago buffer magic signature...")
         try:
             from pymem import pattern
-            # Scan all readable memory regions for the magic signature
             pm = self.memory.pm
             if not pm:
                 logger.error("❌ Process memory accessor not available")
                 return None
             
-            # Get base address to calculate offset later
-            base_address = getattr(self.memory, 'base_address', None)
-            if not base_address:
-                logger.error("❌ Base address not set")
-                return None
-            
-            # Use pymem to scan for the pattern
             found_address = pattern.pattern_scan_all(pm.process_handle, magic_signature)
             if found_address:
-                # Take the first match
                 absolute_addr = found_address[0] if isinstance(found_address, list) else found_address
                 buffer_offset = absolute_addr - base_address
                 logger.info(f"✅ Found Archipelago buffer at absolute address 0x{absolute_addr:x}")
