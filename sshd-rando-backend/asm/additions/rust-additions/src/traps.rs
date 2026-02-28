@@ -74,6 +74,34 @@ extern "C" {
 #[no_mangle]
 pub extern "C" fn setup_traps(item_actor: *mut item::dAcItem) -> u16 {
     unsafe {
+        // ── Pre-set LAST_AP_ITEM_FLAG_ID for Archipelago items ──────────
+        // This function runs at the BEGINNING of stateWait*GetDemoUpdate
+        // (the item-get animation phase), which is BEFORE the event system
+        // triggers event 003_216.  By setting the flag_id here, cmd 81 can
+        // read the correct value when it runs.
+        //
+        // handle_custom_item_get (in stateGet) also sets this, but stateGet
+        // runs AFTER the event fires, making it too late for the textbox.
+        let itemid = (*item_actor).itemid;
+        if itemid == 216 {
+            let params = item::unpack_custom_item_params(item_actor);
+            if params.flag != 0x7F {
+                let scene_raw: u32 = match params.sceneindex {
+                    6 => 0,
+                    13 => 1,
+                    16 => 2,
+                    19 => 3,
+                    _ => 0,
+                };
+                let computed_flag_id =
+                    (params.flag & 0x7F) | (scene_raw << 7) | (params.flag_space_trigger << 9);
+                core::ptr::write_volatile(
+                    core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
+                    computed_flag_id as u16,
+                );
+            }
+        }
+
         // Is trap if one of 0x000000F0 is unset
         let trapid_bitmask = 0xF;
         let trapid = ((*item_actor).base.members.base.param2 >> 4) & trapid_bitmask;

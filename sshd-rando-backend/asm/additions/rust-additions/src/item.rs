@@ -501,7 +501,12 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
                 _ => 0,
             };
             let computed_flag_id = (flag & 0x7F) | (scene_raw << 7) | (flag_space_trigger << 9);
-            LAST_AP_ITEM_FLAG_ID = computed_flag_id as u16;
+            // Volatile write ensures the store is committed immediately
+            // before the game triggers the 003_216 event flow.
+            core::ptr::write_volatile(
+                core::ptr::addr_of_mut!(LAST_AP_ITEM_FLAG_ID),
+                computed_flag_id as u16,
+            );
         }
 
         return (*item_actor).final_determined_itemid;
@@ -1935,16 +1940,23 @@ pub static mut LAST_AP_ITEM_FLAG_ID: u16 = 0xFFFF;
 /// Look up the table index for a given custom_flag_id.
 /// Returns the index into AP_ITEM_INFO_TABLE.entries, or usize::MAX if not
 /// found.
+///
+/// Uses volatile reads for `count` and `flag_id` because the Python client
+/// writes this table via cross-process memory writes
+/// (pymem/WriteProcessMemory) and the emulator's JIT may otherwise cache stale
+/// values from the initial zeroed static.
 pub fn lookup_ap_item_index(flag_id: u16) -> usize {
     unsafe {
-        let count = AP_ITEM_INFO_TABLE.count as usize;
+        let count_ptr = core::ptr::addr_of!(AP_ITEM_INFO_TABLE.count);
+        let count = core::ptr::read_volatile(count_ptr) as usize;
         let limit = if count < AP_ITEM_TABLE_MAX {
             count
         } else {
             AP_ITEM_TABLE_MAX
         };
         for i in 0..limit {
-            if AP_ITEM_INFO_TABLE.entries[i].flag_id == flag_id {
+            let flag_ptr = core::ptr::addr_of!(AP_ITEM_INFO_TABLE.entries[i].flag_id);
+            if core::ptr::read_volatile(flag_ptr) == flag_id {
                 return i;
             }
         }

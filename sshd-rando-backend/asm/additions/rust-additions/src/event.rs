@@ -138,6 +138,147 @@ extern "C" {
 // add `#[no_mangle]` and add a .global *symbolname* to
 // additions/rust-additions.asm
 
+// ---------------------------------------------------------------------------
+// Pending / retry state for AP string args (cmd 81).
+//
+// There are TWO independent failure modes that can cause the first item-216
+// pickup to show fallback text:
+//
+//   A) Table lookup fails — `lookup_ap_item_index` returns MAX because the
+//      emulator's JIT hasn't yet made the cross-process memory writes visible
+//      (the Python client writes AP_ITEM_INFO_TABLE via pymem).
+//      Fix: retry the lookup every frame from the main loop.
+//
+//   B) TextMgr not ready — `LYT_MSG_WINDOW.text_mgr` is null on the very
+//      first textbox of a session, so `set_string_arg` can't write there.
+//      Fix: save the pointers and retry once text_mgr appears.
+//
+// Both retries are handled in `apply_pending_ap_string_args`, called every
+// frame from `main_loop_inject`.
+// ---------------------------------------------------------------------------
+
+/// Flag ID whose lookup should be retried (mode A).
+static mut PENDING_AP_FLAG_ID: u16 = 0xFFFF;
+/// Whether a lookup retry is pending.
+static mut PENDING_AP_LOOKUP: bool = false;
+
+/// Resolved pointers for deferred TextMgr write (mode B).
+static mut PENDING_AP_ITEM_PTR: *const c_void = core::ptr::null();
+static mut PENDING_AP_PLAYER_PTR: *const c_void = core::ptr::null();
+/// Whether a TextMgr write is pending.
+static mut PENDING_AP_STRING_ARGS: bool = false;
+
+/// Diagnostic text buffers — shown in the item-216 textbox when the
+/// AP_ITEM_INFO_TABLE lookup fails, displaying the flag_id and table
+/// count so the user can see exactly what went wrong.
+static mut DBG_ITEM_TEXT: [u16; 32] = [0u16; 32];
+static mut DBG_PLAYER_TEXT: [u16; 16] = [0u16; 16];
+
+/// Format a `u16` value as decimal digits into a UTF-16 buffer.
+/// Returns the number of u16 characters written.
+fn fmt_u16_dec(buf: &mut [u16], val: u16) -> usize {
+    if val == 0 {
+        if !buf.is_empty() {
+            buf[0] = b'0' as u16;
+        }
+        return 1.min(buf.len());
+    }
+    let mut tmp = [0u16; 5]; // max 65535 = 5 digits
+    let mut n = val;
+    let mut len = 0usize;
+    while n > 0 && len < 5 {
+        tmp[len] = (n % 10) as u16 + b'0' as u16;
+        n /= 10;
+        len += 1;
+    }
+    let w = len.min(buf.len());
+    for i in 0..w {
+        buf[i] = tmp[len - 1 - i];
+    }
+    w
+}
+
+/// Write an ASCII byte slice into a u16 buffer (one byte per u16).
+/// Returns the number of u16 characters written.
+fn write_ascii(buf: &mut [u16], s: &[u8]) -> usize {
+    let w = s.len().min(buf.len());
+    for i in 0..w {
+        buf[i] = s[i] as u16;
+    }
+    w
+}
+
+/// Called every frame from `main_loop_inject`.
+///
+/// Handles two retry paths:
+///   1. If `lookup_ap_item_index` failed in cmd 81, retry here (the table may
+///      have become visible to the JIT since the last attempt).
+///   2. If the lookup succeeded but `LYT_MSG_WINDOW.text_mgr` was null, write
+///      the saved pointers once text_mgr appears.
+pub fn apply_pending_ap_string_args() {
+    unsafe {
+        // ── Retry path A: table lookup ──────────────────────────────────
+        if PENDING_AP_LOOKUP {
+            let mut flag_id = PENDING_AP_FLAG_ID;
+
+            // If cmd 81 couldn't find the flag_id (was 0xFFFF), re-read
+            // the static each frame — handle_custom_item_get (in stateGet)
+            // will have written it by the time this retry fires.
+            if flag_id == 0xFFFF {
+                flag_id = core::ptr::read_volatile(core::ptr::addr_of!(item::LAST_AP_ITEM_FLAG_ID));
+                if flag_id != 0xFFFF {
+                    PENDING_AP_FLAG_ID = flag_id; // cache resolved value
+                }
+            }
+
+            if flag_id != 0xFFFF {
+                let idx = item::lookup_ap_item_index(flag_id);
+                if idx != usize::MAX {
+                    // Lookup succeeded — resolve pointers and write to both
+                    // TextMgrs immediately.
+                    let entry_ptr = core::ptr::addr_of!(item::AP_ITEM_INFO_TABLE.entries[idx]);
+                    let ip = core::ptr::addr_of!((*entry_ptr).item_name) as *const c_void;
+                    let pp = core::ptr::addr_of!((*entry_ptr).player_name) as *const c_void;
+
+                    if !GLOBAL_TEXT_MGR.is_null() {
+                        set_string_arg(GLOBAL_TEXT_MGR, ip, 0);
+                        set_string_arg(GLOBAL_TEXT_MGR, pp, 1);
+                    }
+                    let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+                    if !text_mgr.is_null() {
+                        set_string_arg(text_mgr, ip, 0);
+                        set_string_arg(text_mgr, pp, 1);
+                        PENDING_AP_STRING_ARGS = false; // also clears mode-B
+                    } else {
+                        // Lookup worked but text_mgr still null → mode B
+                        PENDING_AP_ITEM_PTR = ip;
+                        PENDING_AP_PLAYER_PTR = pp;
+                        PENDING_AP_STRING_ARGS = true;
+                    }
+
+                    // Reset after successful retry (prevent stale values)
+                    core::ptr::write_volatile(
+                        core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
+                        0xFFFFu16,
+                    );
+                    PENDING_AP_LOOKUP = false;
+                }
+                // else: still not found → keep retrying next frame
+            }
+        }
+
+        // ── Retry path B: deferred TextMgr write ───────────────────────
+        if PENDING_AP_STRING_ARGS {
+            let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+            if !text_mgr.is_null() {
+                set_string_arg(text_mgr, PENDING_AP_ITEM_PTR, 0);
+                set_string_arg(text_mgr, PENDING_AP_PLAYER_PTR, 1);
+                PENDING_AP_STRING_ARGS = false;
+            }
+        }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn custom_event_commands(
     actor_event_flow_mgr: *mut ActorEventFlowMgr,
@@ -251,7 +392,11 @@ fn set_global_sceneflag_for_ap(event_flow_element: &EventFlowElement) {
         };
         let computed_flag_id =
             (flag_index as u32 & 0x7F) | (scene_raw << 7) | (flag_space_trigger << 9);
-        item::LAST_AP_ITEM_FLAG_ID = computed_flag_id as u16;
+        // Volatile write so the store is committed immediately.
+        core::ptr::write_volatile(
+            core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
+            computed_flag_id as u16,
+        );
     }
 }
 
@@ -261,16 +406,15 @@ fn set_global_sceneflag_for_ap(event_flow_element: &EventFlowElement) {
 /// item name + player name in the AP_ITEM_INFO_TABLE (written by the Python
 /// client on connect).
 ///
-/// **Both `GLOBAL_TEXT_MGR` and `LYT_MSG_WINDOW.text_mgr` are written**
-/// because the message-window layout may re-create or reassign its `text_mgr`
-/// pointer when the first textbox of a session opens.  By writing to both
-/// TextMgrs (the global one that the engine always keeps initialised, and the
-/// per-layout one that subsequent textboxes use), the correct item / player
-/// name appears even for the very first AP item collected.
+/// If the lookup fails (table not yet visible to the JIT), **diagnostic text
+/// is shown in the textbox** (e.g. "f=123 c=0" / "MISS") so the user can
+/// see exactly what went wrong, AND `PENDING_AP_LOOKUP` is set so
+/// `apply_pending_ap_string_args` retries every frame until the lookup
+/// succeeds.
 ///
 /// # Why this is a separate function
 /// `custom_event_commands` ends with an inline asm block that sets `w21`
-/// (x21), which is a **callee-saved register** in AArch64. If the compiler
+/// (x21), which is a **callee-saved register** in AArch64.  If the compiler
 /// allocates x21 for local variables, the function epilogue will restore x21
 /// _after_ the asm block, undoing the `mov w21, #1` replaced instruction and
 /// breaking every type3 event flow in the game.
@@ -281,79 +425,89 @@ fn set_global_sceneflag_for_ap(event_flow_element: &EventFlowElement) {
 #[inline(never)]
 fn set_ap_item_string_args() {
     unsafe {
-        let flag_id = item::LAST_AP_ITEM_FLAG_ID;
+        // Read LAST_AP_ITEM_FLAG_ID.  For freestanding/chest items this is
+        // set by setup_traps() at the beginning of stateWait*GetDemoUpdate
+        // (BEFORE the event system fires).  For NPC-given items, cmd 80
+        // sets it in the same event flow.  Either way, the value should be
+        // available by the time we get here.
+        let flag_id_ptr = core::ptr::addr_of!(item::LAST_AP_ITEM_FLAG_ID);
+        let flag_id = core::ptr::read_volatile(flag_id_ptr);
+
         let idx = item::lookup_ap_item_index(flag_id);
 
-        // Fallback strings for when the Python client hasn't written the table yet
-        static UNKNOWN_ITEM: [u16; 17] = [
-            b'A' as u16,
-            b'r' as u16,
-            b'c' as u16,
-            b'h' as u16,
-            b'i' as u16,
-            b'p' as u16,
-            b'e' as u16,
-            b'l' as u16,
-            b'a' as u16,
-            b'g' as u16,
-            b'o' as u16,
-            b' ' as u16,
-            b'I' as u16,
-            b't' as u16,
-            b'e' as u16,
-            b'm' as u16,
-            0,
-        ];
-        static UNKNOWN_PLAYER: [u16; 15] = [
-            b'a' as u16,
-            b'n' as u16,
-            b'o' as u16,
-            b't' as u16,
-            b'h' as u16,
-            b'e' as u16,
-            b'r' as u16,
-            b' ' as u16,
-            b'p' as u16,
-            b'l' as u16,
-            b'a' as u16,
-            b'y' as u16,
-            b'e' as u16,
-            b'r' as u16,
-            0,
-        ];
-
         let (item_ptr, player_ptr): (*const c_void, *const c_void) = if idx != usize::MAX {
+            // ── Success: use the table entry ────────────────────────────
             let entry_ptr = core::ptr::addr_of!(item::AP_ITEM_INFO_TABLE.entries[idx]);
             (
                 core::ptr::addr_of!((*entry_ptr).item_name) as *const c_void,
                 core::ptr::addr_of!((*entry_ptr).player_name) as *const c_void,
             )
         } else {
+            // ── Failure: build diagnostic text shown in the textbox ─────
+            let count_val =
+                core::ptr::read_volatile(core::ptr::addr_of!(item::AP_ITEM_INFO_TABLE.count));
+
+            let mut p = 0usize;
+            p += write_ascii(&mut DBG_ITEM_TEXT[p..], b"f=");
+            p += fmt_u16_dec(&mut DBG_ITEM_TEXT[p..], flag_id);
+            p += write_ascii(&mut DBG_ITEM_TEXT[p..], b" c=");
+            p += fmt_u16_dec(&mut DBG_ITEM_TEXT[p..], count_val);
+            if p < 32 {
+                DBG_ITEM_TEXT[p] = 0;
+            }
+
+            let mut q = 0usize;
+            q += write_ascii(&mut DBG_PLAYER_TEXT[q..], b"MISS");
+            if q < 16 {
+                DBG_PLAYER_TEXT[q] = 0;
+            }
+
             (
-                UNKNOWN_ITEM.as_ptr() as *const c_void,
-                UNKNOWN_PLAYER.as_ptr() as *const c_void,
+                DBG_ITEM_TEXT.as_ptr() as *const c_void,
+                DBG_PLAYER_TEXT.as_ptr() as *const c_void,
             )
         };
 
-        // Write to GLOBAL_TEXT_MGR using the vanilla set_string_arg function.
-        // This is the same pattern used by all other custom text-setting code
-        // (dungeon info, help menu, etc.) and is always initialised by the
-        // time items can be collected.  Critically, it remains valid even
-        // before the first textbox opens, fixing the "first AP item shows
-        // default text" bug.
+        // Write to GLOBAL_TEXT_MGR (always initialised at this point).
         if !GLOBAL_TEXT_MGR.is_null() {
             set_string_arg(GLOBAL_TEXT_MGR, item_ptr, 0);
             set_string_arg(GLOBAL_TEXT_MGR, player_ptr, 1);
         }
 
-        // Also write to the message-window layout's own TextMgr if available.
-        // After the first textbox has been shown this pointer is stable, so
-        // writing here ensures subsequent items keep working even if the
-        // textbox renderer reads from this TextMgr instead of the global one.
+        // Write to the message-window layout's TextMgr if available.
         let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
         if !text_mgr.is_null() {
             set_string_arg(text_mgr, item_ptr, 0);
             set_string_arg(text_mgr, player_ptr, 1);
+        }
+
+        // ── Reset LAST_AP_ITEM_FLAG_ID after use ────────────────────────
+        // This prevents the STALE value problem: without the reset, the
+        // next item-216 pickup would see the PREVIOUS item's flag_id if
+        // setup_traps / handle_custom_item_get hasn't written yet.
+        if idx != usize::MAX {
+            core::ptr::write_volatile(
+                core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
+                0xFFFFu16,
+            );
+        }
+
+        // If the lookup failed, schedule main-loop retry so the correct
+        // text can be patched in once the flag / table becomes visible.
+        if idx == usize::MAX {
+            PENDING_AP_FLAG_ID = flag_id;
+            PENDING_AP_LOOKUP = true;
+        } else {
+            PENDING_AP_LOOKUP = false;
+        }
+
+        // If text_mgr was null, schedule deferred write.
+        if text_mgr.is_null() {
+            PENDING_AP_ITEM_PTR = item_ptr;
+            PENDING_AP_PLAYER_PTR = player_ptr;
+            PENDING_AP_STRING_ARGS = true;
+        } else {
+            PENDING_AP_STRING_ARGS = false;
         }
     }
 }

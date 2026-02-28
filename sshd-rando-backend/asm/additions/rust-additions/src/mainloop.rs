@@ -4,6 +4,7 @@
 
 use crate::color;
 use crate::debug;
+use crate::event;
 use crate::fix;
 use crate::input;
 use crate::item;
@@ -81,6 +82,11 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
 
     // Archipelago - Check for items to give from the buffer
     item::archipelago_check_item_buffer();
+
+    // Archipelago - Apply deferred AP item string args to the layout TextMgr.
+    // On the first item-216 pickup of a session, LYT_MSG_WINDOW.text_mgr may
+    // be null when cmd 81 fires.  The main loop retries until it's ready.
+    event::apply_pending_ap_string_args();
 
     fix::apply_loftwing_speed_override();
 
