@@ -142,6 +142,10 @@ This project is licensed under the AGPL License - see the [LICENSE](LICENSE) for
 
 - [PokeTrainer](https://github.com/Poke14)
 
+## Beta Testers
+
+- Aurox (aurox44) on Discord
+
 ## Support
 
 - **Discord**: Join the [Lon Lon Labs Discord Server](https://discord.gg/VeccXh4ydN)
