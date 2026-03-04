@@ -2,11 +2,15 @@ name: Build APWorld
 
 on:
   push:
-    branches: [ main, master, 'fix-*' ]
+    branches: [ main, master, 'fix-*', 'fix/*', 'feature-*', 'feature/*' ]
     tags:
       - 'v*'
+    paths-ignore:
+      - 'README.md'
   pull_request:
     branches: [ main, master ]
+    paths-ignore:
+      - 'README.md'
   workflow_dispatch:
 
 jobs:
