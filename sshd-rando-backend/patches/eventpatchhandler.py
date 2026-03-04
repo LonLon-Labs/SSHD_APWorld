@@ -255,7 +255,7 @@ class EventPatchHandler:
 
                             flows = parsed_msbf["FLW3"]["flow"]
 
-                            # Build FEN1 name -> entry object mapping (keep reference to modify value)
+                            # Build FEN1 name -> entry object mapping
                             fen1_entries = {}
                             if "FEN1" in parsed_msbf:
                                 for group in parsed_msbf["FEN1"]:
@@ -269,9 +269,21 @@ class EventPatchHandler:
                                     continue
 
                                 fen1_entry = fen1_entries[fen1_name]
-                                original_start_idx = fen1_entry["value"]
+                                start_node_idx = fen1_entry["value"]
+                                start_node = flows[start_node_idx]
 
-                                # Create set_storyflag node that chains to the original start
+                                # The FEN1 entry must point to a "start"-type node.
+                                # The event system requires start nodes as entry points;
+                                # inserting a type3 node BEFORE the start node won't execute.
+                                # Fix: insert our set_storyflag AFTER the start node by
+                                # redirecting start_node.next -> new_node -> original_next.
+                                if start_node["type"] != "start":
+                                    print(f"[BeedleSF] WARNING: {fen1_name} -> flow[{start_node_idx}] is type '{start_node['type']}', not 'start'! Skipping.")
+                                    continue
+
+                                original_first_cmd = start_node.get("next", -1)
+
+                                # Create set_storyflag node: type3 sub=0 param3=0 → vanilla set_storyflag
                                 setflag_flow = {
                                     "type": "type3",
                                     "subType": 0,
@@ -280,17 +292,18 @@ class EventPatchHandler:
                                     "param3": 0,
                                     "param4": 0,
                                     "param5": 0,
-                                    "next": original_start_idx,
+                                    "next": original_first_cmd,
                                 }
 
                                 new_idx = len(flows)
                                 flows.append(setflag_flow)
 
-                                # Redirect FEN1 entry to our new node
-                                fen1_entry["value"] = new_idx
+                                # Redirect start node's next to our new node
+                                # FEN1 entry remains pointing to start node (unchanged)
+                                start_node["next"] = new_idx
                                 injected_count += 1
 
-                                print(f"[BeedleSF] FEN1 redirect: {fen1_name} -> flow[{new_idx}](set_storyflag {storyflag}) -> flow[{original_start_idx}]")
+                                print(f"[BeedleSF] Start-next redirect: {fen1_name} -> flow[{start_node_idx}](start, next={new_idx}) -> flow[{new_idx}](set_storyflag {storyflag}) -> flow[{original_first_cmd}]")
 
                             # Diagnostic: dump flow chain for 105_31 and 105_32
                             for diag_name in ("105_31", "105_32"):
@@ -311,7 +324,7 @@ class EventPatchHandler:
                                             break
                                         step += 1
 
-                            print(f"[BeedleSF] Injected {injected_count}/{len(BEEDLE_PURCHASE_STORYFLAGS)} purchase storyflags into 105-Terry.msbf (FEN1 redirect)")
+                            print(f"[BeedleSF] Injected {injected_count}/{len(BEEDLE_PURCHASE_STORYFLAGS)} purchase storyflags into 105-Terry.msbf (start-next redirect)")
 
                         if msbf_file_name == "003-ItemGet.msbf":
                             handle_progressive_items(parsed_msbf)

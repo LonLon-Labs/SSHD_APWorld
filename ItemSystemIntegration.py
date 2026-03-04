@@ -149,12 +149,12 @@ class GameItemSystem:
             self._current_buffer_index = 0
             chosen = self._candidate_buffer_addrs[0]
             abs_addr = base_address + chosen
-            logger.info(f"✅ Found Archipelago buffer at 0x{abs_addr:x} (offset 0x{chosen:x}) [prescan cache]")
-            logger.info(f"   {len(self._candidate_buffer_addrs)} candidate buffer address(es) available")
+            logger.debug(f"Found Archipelago buffer at 0x{abs_addr:x} (offset 0x{chosen:x}) [prescan cache]")
+            logger.debug(f"   {len(self._candidate_buffer_addrs)} candidate buffer address(es) available")
             return chosen
         
         # --- Slow path: full process scan ---
-        logger.info("Scanning entire process memory for Archipelago buffer magic signature...")
+        logger.debug("Scanning entire process memory for Archipelago buffer magic signature...")
         try:
             from pymem import pattern
             pm = self.memory.pm
@@ -166,8 +166,8 @@ class GameItemSystem:
             if found_address:
                 absolute_addr = found_address[0] if isinstance(found_address, list) else found_address
                 buffer_offset = absolute_addr - base_address
-                logger.info(f"✅ Found Archipelago buffer at absolute address 0x{absolute_addr:x}")
-                logger.info(f"   Buffer offset from base: 0x{buffer_offset:x}")
+                logger.debug(f"Found Archipelago buffer at absolute address 0x{absolute_addr:x}")
+                logger.debug(f"Buffer offset from base: 0x{buffer_offset:x}")
                 return buffer_offset
             
         except ImportError:
@@ -176,7 +176,7 @@ class GameItemSystem:
             logger.warning(f"⚠️ Pattern scan failed: {e}, falling back to manual scan")
         
         # Fallback: Manual scan in likely ranges
-        logger.info("Falling back to manual memory scan...")
+        logger.debug("Falling back to manual memory scan...")
         # Rust statics are often in high memory (0x1D000000000 range based on Cheat Engine)
         search_ranges = [
             (0x1D000000000, 0x1E000000000),  # High memory range where we found it
@@ -184,7 +184,7 @@ class GameItemSystem:
         ]
         
         for search_start, search_end in search_ranges:
-            logger.info(f"Searching range 0x{search_start:x}-0x{search_end:x}")
+            logger.debug(f"Searching range 0x{search_start:x}-0x{search_end:x}")
             chunk_size = 4096
             for offset in range(search_start, search_end, chunk_size):
                 try:
@@ -196,7 +196,7 @@ class GameItemSystem:
                             # Verify it's actually the buffer by checking size
                             test_data = self.memory.read_bytes(buffer_offset, 64)
                             if test_data and len(test_data) == 64 and test_data[0:4] == magic_signature:
-                                logger.info(f"✅ Found Archipelago buffer at offset 0x{buffer_offset:x}")
+                                logger.debug(f"Found Archipelago buffer at offset 0x{buffer_offset:x}")
                                 return buffer_offset
                 except Exception:
                     continue

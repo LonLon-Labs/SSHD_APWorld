@@ -46,7 +46,14 @@ def set_rules(world: "SSHDWorld") -> None:
     
     # Progressive item helpers
     def has_sword(state: CollectionState, level: int = 1) -> bool:
-        """Check if player has sword of at least the specified level."""
+        """
+        Check if player has sword of at least the specified level.
+        
+        Starting swords from config.yaml are precollected as Progressive Swords,
+        so state.count already includes them. No additional starting offset needed.
+        
+        Sword levels: 0=none, 1=practice, 2=goddess, 3=longsword, 4=white, 5=master, 6=true_master
+        """
         return count(state, "Progressive Sword") >= level
     
     def has_slingshot(state: CollectionState) -> bool:
@@ -71,7 +78,7 @@ def set_rules(world: "SSHDWorld") -> None:
     
     def can_swim_underwater(state: CollectionState) -> bool:
         """Check if player can swim underwater."""
-        return has(state, "Water Scale")
+        return has(state, "Water Dragon's Scale")
     
     def can_fly(state: CollectionState) -> bool:
         """Check if player can fly in the sky."""
@@ -92,8 +99,14 @@ def set_rules(world: "SSHDWorld") -> None:
             except KeyError:
                 continue  # Destination doesn't exist, skip
             
-            # Get the entrance
-            entrance = source_region.get_entrance(f"{source_name} -> {dest_name}")
+            # Find the entrance by searching through the source region's exits
+            entrance_name = f"{source_name} -> {dest_name}"
+            entrance = None
+            for exit in source_region.exits:
+                if exit.name == entrance_name:
+                    entrance = exit
+                    break
+            
             if not entrance:
                 continue
             
@@ -113,7 +126,7 @@ def set_rules(world: "SSHDWorld") -> None:
             elif rule_name == "can_enter_skyview":
                 entrance.access_rule = lambda state: has_slingshot(state)
             elif rule_name == "has_skyview_boss_key":
-                entrance.access_rule = lambda state: has(state, "Skyview Boss Key")
+                entrance.access_rule = lambda state: has(state, "Skyview Temple Boss Key")
             elif rule_name == "can_reach_lake_floria":
                 entrance.access_rule = lambda state: has(state, "Water Dragon's Scale")
             elif rule_name == "can_reach_flooded_faron":
@@ -125,7 +138,7 @@ def set_rules(world: "SSHDWorld") -> None:
             elif rule_name == "has_earth_temple_boss_key":
                 entrance.access_rule = lambda state: has(state, "Earth Temple Boss Key")
             elif rule_name == "can_enter_fire_sanctuary":
-                entrance.access_rule = lambda state: has(state, "Fire Dragon's Key") and can_use_bombs(state)
+                entrance.access_rule = lambda state: has(state, "Fireshield Earrings") and can_use_bombs(state)
             elif rule_name == "can_enter_temple_of_time":
                 entrance.access_rule = lambda state: has(state, "Goddess's Harp")
             elif rule_name == "can_enter_lanayru_mining_facility":
@@ -133,62 +146,68 @@ def set_rules(world: "SSHDWorld") -> None:
             elif rule_name == "can_reach_lanayru_gorge":
                 entrance.access_rule = lambda state: has(state, "Clawshots")
             elif rule_name == "can_board_sandship":
-                entrance.access_rule = lambda state: has(state, "Clawshots") and has_bow(state)
+                entrance.access_rule = lambda state: has(state, "Clawshots")
             elif rule_name == "can_reach_thunderhead":
-                entrance.access_rule = lambda state: has(state, "Ballad of the Goddess") and has_sword(state, 4)
+                # Only requires Goddess's Harp to play Ballad of the Goddess
+                entrance.access_rule = lambda state: has(state, "Goddess's Harp")
             elif rule_name == "can_reach_isle_of_songs":
                 entrance.access_rule = lambda state: has(state, "Clawshots")
             elif rule_name == "can_enter_sky_keep":
                 entrance.access_rule = lambda state: has(state, "Stone of Trials")
             elif rule_name == "can_reach_past":
-                entrance.access_rule = lambda state: has(state, "Gate of Time Access")
+                # Gate of Time: requires Goddess's Harp + Ballad of the Goddess + sword level
+                # from got_sword_requirement setting (matches sshd-rando's Faron.yaml logic)
+                resolved = getattr(world, '_sshd_resolved_settings', {})
+                got_sword = resolved.get('got_sword_requirement', 'true_master_sword')
+                sword_level_map = {
+                    'goddess_sword': 2,
+                    'goddess_longsword': 3,
+                    'goddess_white_sword': 4,
+                    'master_sword': 5,
+                    'true_master_sword': 6,
+                }
+                req_level = sword_level_map.get(got_sword, 6)
+                entrance.access_rule = lambda state, lvl=req_level: (
+                    has(state, "Goddess's Harp")
+                    and has(state, "Ballad of the Goddess")
+                    and has_sword(state, lvl)
+                )
             elif rule_name == "can_reach_present":
-                entrance.access_rule = lambda state: has(state, "Gate of Time Access")
-            # If rule_name is None or unknown, no access rule applied (always accessible)
+                # Returning from the past is always possible once you're there
+                entrance.access_rule = lambda state: True
+            elif rule_name == "can_reach_temple_of_hylia":
+                entrance.access_rule = lambda state: has(state, "Ballad of the Goddess")
+            elif rule_name == "can_reach_bokoblin_base":
+                entrance.access_rule = lambda state: can_use_bombs(state) or has(state, "Clawshots")
+            elif rule_name == "can_activate_fire_node":
+                entrance.access_rule = lambda state: has(state, "Goddess's Harp")
+            elif rule_name == "can_activate_lightning_node":
+                entrance.access_rule = lambda state: has(state, "Goddess's Harp")
+            elif rule_name == "can_reach_sand_sea":
+                entrance.access_rule = lambda state: has(state, "Sea Chart")
+            elif rule_name == "can_enter_silent_realm":
+                # Silent Realms only require Goddess's Harp and basic Goddess Sword (level 1)
+                entrance.access_rule = lambda state: has(state, "Goddess's Harp") and has_sword(state, 1)
+            else:
+                # If rule_name is None or unknown, always accessible
+                entrance.access_rule = lambda state: True
     
-    def has_slingshot(state: CollectionState) -> bool:
-        """Check if player has any slingshot."""
-        return count(state, "Progressive Slingshot") >= 1
-    
-    def has_beetle(state: CollectionState) -> bool:
-        """Check if player has any beetle."""
-        return count(state, "Progressive Beetle") >= 1
-    
-    def has_mitts(state: CollectionState) -> bool:
-        """Check if player has digging mitts."""
-        return count(state, "Progressive Mitts") >= 1
-    
-    def has_bow(state: CollectionState) -> bool:
-        """Check if player has any bow."""
-        return count(state, "Progressive Bow") >= 1
-    
-    def can_use_bombs(state: CollectionState) -> bool:
-        """Check if player can use bombs."""
-        return has(state, "Bomb Bag")
-    
-    def can_swim_underwater(state: CollectionState) -> bool:
-        """Check if player can swim underwater."""
-        return has(state, "Water Scale")
-    
-    def can_fly(state: CollectionState) -> bool:
-        """Check if player can fly in the sky."""
-        return has(state, "Sailcloth")
-    
+    # Additional helper functions
     def can_cut_grass(state: CollectionState) -> bool:
         """Check if player can cut grass/vines."""
         return has_sword(state, 1)  # Any sword works
     
     def can_dousing(state: CollectionState) -> bool:
         """Check if player can use dowsing."""
-        return has_sword(state, 1)  # Goddess Sword enables dowsing
+        return has_sword(state, 1)  # Practice Sword enables dowsing
     
     def can_use_goddess_walls(state: CollectionState) -> bool:
         """Check if player can use goddess walls."""
-        return has_sword(state, 1)  # Goddess Sword enables walls
+        return has_sword(state, 2)  # Goddess Sword enables walls
     
     def can_open_goddess_chests(state: CollectionState) -> bool:
         """Check if player can open goddess chests."""
-        return has_sword(state, 1) and can_dousing(state)
+        return has_sword(state, 2) and can_dousing(state)
     
     # Wallet capacity helpers
     def wallet_capacity(state: CollectionState) -> int:
@@ -265,29 +284,18 @@ def set_rules(world: "SSHDWorld") -> None:
         elif "Earth Temple" in location_name:
             location.access_rule = lambda state: has_all(state, "Bomb Bag", "Progressive Beetle")
         
-        elif "Lanayru Mining Facility" in location_name:
-            location.access_rule = lambda state: has_all(state, "Gust Bellows")
-        
         elif "Ancient Cistern" in location_name:
-            location.access_rule = lambda state: has_all(state, "Whip", "Water Scale")
+            location.access_rule = lambda state: has_all(state, "Whip", "Water Dragon's Scale")
         
         elif "Sandship" in location_name:
-            location.access_rule = lambda state: has_all(state, "Bow", "Clawshots")
+            location.access_rule = lambda state: has(state, "Clawshots")
         
         elif "Fire Sanctuary" in location_name:
-            location.access_rule = lambda state: has_all(state, "Mogma Mitts", "Water Basin")
+            location.access_rule = lambda state: has_all(state, "Fireshield Earrings", "Bomb Bag")
         
-        elif "Sky Keep" in location_name:
-            # Sky Keep requires beating all dungeons
-            location.access_rule = lambda state: has_all(
-                state,
-                "Skyview Temple Boss Key",
-                "Earth Temple Boss Key", 
-                "Lanayru Mining Facility Boss Key",
-                "Ancient Cistern Boss Key",
-                "Sandship Boss Key",
-                "Fire Sanctuary Boss Key"
-            )
+        # Sky Keep - no location requirements needed
+        # Entrance requirement (Stone of Trials) handles access
+        # Boss keys were removed due to circular dependencies
         
         # Boss fights require boss keys
         if "Defeat Boss" in location_name or "Boss Key" in location_name:
@@ -295,14 +303,6 @@ def set_rules(world: "SSHDWorld") -> None:
                 location.access_rule = lambda state: has(state, "Skyview Temple Boss Key")
             elif "Earth Temple" in location_name:
                 location.access_rule = lambda state: has(state, "Earth Temple Boss Key")
-            elif "Lanayru Mining Facility" in location_name:
-                location.access_rule = lambda state: has(state, "Lanayru Mining Facility Boss Key")
-            elif "Ancient Cistern" in location_name:
-                location.access_rule = lambda state: has(state, "Ancient Cistern Boss Key")
-            elif "Sandship" in location_name:
-                location.access_rule = lambda state: has(state, "Sandship Boss Key")
-            elif "Fire Sanctuary" in location_name:
-                location.access_rule = lambda state: has(state, "Fire Sanctuary Boss Key")
         
         # Goddess Cube checks require various items
         if "Goddess Cube" in location_name or "Goddess Chest" in location_name:
@@ -311,108 +311,121 @@ def set_rules(world: "SSHDWorld") -> None:
             elif "Beetle" in location_name:
                 location.access_rule = lambda state: has_beetle(state)
         
-        # Silent Realm checks require completing trials
-        if "Silent Realm" in location_name:
-            if "Farore" in location_name:
-                location.access_rule = lambda state: has(state, "Farore's Courage")
-            elif "Nayru" in location_name:
-                location.access_rule = lambda state: has(state, "Nayru's Wisdom")
-            elif "Din" in location_name:
-                location.access_rule = lambda state: has(state, "Din's Power")
-            elif "Goddess" in location_name:
-                location.access_rule = lambda state: has(state, "Song of the Hero")
+        # Silent Realm checks - NO LOCATION REQUIREMENTS
+        # Entrance requirements (Harp + Sword level 1) handle access
+        # Removed all completion item requirements due to circular dependencies
+        # if "Silent Realm" in location_name:
+        #     # Only require completion items for collecting tears/relics, not for the final reward
+        #     if "Collect all Tears Reward" not in location_name:
+        #         if "Farore" in location_name:
+        #             location.access_rule = lambda state: has(state, "Farore's Courage")
+        #         elif "Nayru" in location_name:
+        #             location.access_rule = lambda state: has(state, "Nayru's Wisdom")
+        #         elif "Din" in location_name:
+        #             location.access_rule = lambda state: has(state, "Din's Power")
+        #         elif "Goddess" in location_name:
+        #             location.access_rule = lambda state: has(state, "Song of the Hero")
+        
+        # Victory location - just needs to reach Hylia's Realm (handled by region access)
+        # The "Game Beatable" event is what's checked by completion_condition
     
     # Set goal/victory condition
-    # Victory requires collecting Game Beatable event (defeating Demise) AND meeting completion requirements
-    multiworld.completion_condition[player] = lambda state: has(state, "Game Beatable") and _can_complete_game(state, world)
-    # TODO: Implement dungeon-specific logic
-    # TODO: Implement trick-based logic if options enable it
+    # The victory is represented by the "Game Beatable" event item.
+    # All game-completion requirements (boss keys, sword level) are embedded
+    # directly in the event location's access rule (in logic_converter.py),
+    # so the fill algorithm properly tracks these dependencies.
+    multiworld.completion_condition[player] = lambda state: has(state, "Game Beatable")
+
+
+def set_completion_condition(world: "SSHDWorld") -> None:
+    """
+    Set only the completion condition (used when full logic is handled by logic_converter).
     
-    # Set completion condition
-    multiworld.completion_condition[player] = lambda state: _can_complete_game(state, world)
+    The full logic converter sets all entrance/location rules, including the
+    Game Beatable event's access rule which embeds boss key + sword checks.
+    This function just sets the final victory condition.
+    """
+    multiworld = world.multiworld
+    player = world.player
+    
+    multiworld.completion_condition[player] = lambda state: (
+        state.has("Game Beatable", player)
+    )
 
 
 def _can_complete_game(state: CollectionState, world: "SSHDWorld") -> bool:
     """
     Check if the player can complete the game.
     
-    Requirements depend on options:
-    - Required number of dungeons beaten
-    - Triforce pieces collected (if required)
-    - Gate of Time opened (sword + dungeons)
-    - Final boss accessible
+    Uses sshd-rando's resolved settings (stored in world._sshd_resolved_settings)
+    to ensure the completion condition matches the actual item pool. Falls back to
+    safe defaults if resolved settings are unavailable.
+    
+    Requirements:
+    - Required number of dungeons beaten (via boss keys, unless boss_keys=removed)
+    - Gate of Time sword requirement met
     """
     player = world.player
-    options = world.options
+    resolved = getattr(world, '_sshd_resolved_settings', {})
     
-    # Check required dungeon count
-    required_dungeons = options.required_dungeon_count.value
-    dungeons_beaten = 0
+    # --- Dungeon completion check ---
+    # Only check boss keys if they actually exist in the pool (boss_keys != removed)
+    boss_keys_setting = resolved.get('boss_keys', 'own_dungeon')
     
-    # Count dungeons that can be beaten
-    dungeon_items = [
-        "Skyview Boss Key",
-        "Earth Temple Boss Key", 
-        "Lanayru Mining Facility Boss Key",
-        "Ancient Cistern Boss Key",
-        "Sandship Boss Key",
-        "Fire Sanctuary Boss Key"
-    ]
-    
-    for dungeon_key in dungeon_items:
-        if state.has(dungeon_key, player):
-            dungeons_beaten += 1
-    
-    if dungeons_beaten < required_dungeons:
-        return False
-    
-    # Check if Triforce is required
-    if options.triforce_required.value:
-        triforce_pieces = [
-            "Triforce of Courage",
-            "Triforce of Power",
-            "Triforce of Wisdom"
+    if boss_keys_setting != 'removed':
+        # Get required dungeon count from sshd-rando settings
+        try:
+            required_dungeons = int(resolved.get('required_dungeons', '2'))
+        except (ValueError, TypeError):
+            required_dungeons = 2
+        
+        dungeon_items = [
+            "Skyview Temple Boss Key",
+            "Earth Temple Boss Key",
+            "Lanayru Mining Facility Boss Key",
+            "Ancient Cistern Boss Key",
+            "Sandship Boss Key",
+            "Fire Sanctuary Boss Key"
         ]
-        if not all(state.has(piece, player) for piece in triforce_pieces):
+        
+        # Cap at 6: Sky Keep (7th dungeon) has no boss key.
+        # Its accessibility is handled by region/entrance logic.
+        boss_keys_needed = min(required_dungeons, len(dungeon_items))
+        dungeons_beaten = sum(1 for key in dungeon_items if state.has(key, player))
+        if dungeons_beaten < boss_keys_needed:
             return False
     
-    # Check Gate of Time sword requirement
-    gate_sword_level = options.gate_of_time_sword_requirement.value
-    required_level = gate_sword_level + 2  # 0=goddess -> level 2, 4=true_master -> level 6
+    # --- Gate of Time sword requirement ---
+    # Use sshd-rando's got_sword_requirement setting
+    got_sword = resolved.get('got_sword_requirement', 'true_master_sword')
+    sword_name_to_level = {
+        'goddess_sword': 2,
+        'goddess_longsword': 3,
+        'goddess_white_sword': 4,
+        'master_sword': 5,
+        'true_master_sword': 6,
+    }
+    required_sword_level = sword_name_to_level.get(got_sword, 6)
     
-    if _get_sword_level(state, player, options.starting_sword.value) < required_level:
+    # Starting swords are precollected as Progressive Swords, so state.count
+    # already includes them. No additional starting offset needed.
+    current_sword_level = state.count("Progressive Sword", player)
+    if current_sword_level < required_sword_level:
         return False
     
-    # Check Gate of Time dungeon requirements
-    if options.gate_of_time_dungeon_requirements.value == 0:  # Required
-        if dungeons_beaten < required_dungeons:
-            return False
-    
-    # All conditions met
     return True
 
 
-def _get_sword_level(state: CollectionState, player: int, starting_level: int) -> int:
-    """Get the highest sword level the player has."""
-    level = starting_level + state.count("Progressive Sword", player)
-    sword_item_levels = {
-        "Goddess Sword": 2,
-        "Goddess Longsword": 3,
-        "Goddess White Sword": 4,
-        "Master Sword": 5,
-        "True Master Sword": 6,
-    }
-    for item_name, item_level in sword_item_levels.items():
-        if state.has(item_name, player):
-            level = max(level, item_level)
-    return level
+def _get_sword_level(state: CollectionState, player: int) -> int:
+    """Get the player's sword level (= number of Progressive Swords collected)."""
+    return state.count("Progressive Sword", player)
 
 
-def _has_sword_level(state: CollectionState, player: int, level: int, starting_level: int = 0) -> bool:
+def _has_sword_level(state: CollectionState, player: int, level: int) -> bool:
     """
     Check if player has at least the specified sword level.
     
-    Levels:
+    Levels (= Progressive Sword count):
     0 = None
     1 = Practice Sword
     2 = Goddess Sword
@@ -421,31 +434,31 @@ def _has_sword_level(state: CollectionState, player: int, level: int, starting_l
     5 = Master Sword
     6 = True Master Sword
     """
-    return _get_sword_level(state, player, starting_level) >= level
+    return _get_sword_level(state, player) >= level
 
 
 def _can_access_surface(state: CollectionState, player: int) -> bool:
     """Check if player can access the Surface from Skyloft."""
-    # Need Sailcloth to safely reach the surface
     return state.has("Sailcloth", player)
 
 
 def _can_open_gate_of_time(state: CollectionState, world: "SSHDWorld") -> bool:
     """Check if player can open the Gate of Time."""
     player = world.player
-    options = world.options
+    resolved = getattr(world, '_sshd_resolved_settings', {})
     
-    # Check sword requirement
-    sword_level = options.gate_of_time_sword_requirement.value
-    if not _has_sword_level(state, player, sword_level + 2, options.starting_sword.value):
+    # Check sword requirement from sshd-rando settings
+    got_sword = resolved.get('got_sword_requirement', 'true_master_sword')
+    sword_name_to_level = {
+        'goddess_sword': 2,
+        'goddess_longsword': 3,
+        'goddess_white_sword': 4,
+        'master_sword': 5,
+        'true_master_sword': 6,
+    }
+    required_level = sword_name_to_level.get(got_sword, 6)
+    if not _has_sword_level(state, player, required_level):
         return False
-    
-    # Check dungeon requirement (if enabled)
-    if options.gate_of_time_dungeon_requirements.value == 0:  # Required
-        required_count = options.required_dungeon_count.value
-        # Would need to check dungeon completion here
-        # For now, simplified
-        pass
     
     return True
 

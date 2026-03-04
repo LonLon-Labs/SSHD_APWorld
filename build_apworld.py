@@ -146,7 +146,7 @@ def build_apworld():
         "setting_string_decoder.py",
         "README.md",
         "archipelago.json",
-        "ArchipelagoSSHDClient.exe",
+        # "ArchipelagoSSHDClient.exe",
         "worlds_stub.py",
         "ItemSystemIntegration.py",
         "logic_converter.py",

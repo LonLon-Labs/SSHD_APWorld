@@ -150,7 +150,7 @@ else:
 
 # Version information
 AP_VERSION = [0, 6, 5]
-WORLD_VERSION = [0, 1, 0]  # Starting at 0.1.0 for SSHD
+WORLD_VERSION = [0, 7, 0]  # Starting at [BETA] 0.7.0 for SSHD
 RANDO_VERSION = [0, 1, 0]
 
 
@@ -373,9 +373,9 @@ class SSHDWorld(World):
         "tadtone_shuffle": ("tadtone_shuffle", "toggle", None),
         "gossip_stone_treasure_shuffle": ("gossip_stone_treasure_shuffle", "toggle", None),
         # Keys & Maps
-        "small_keys": ("small_key_shuffle", "choice", {"own_dungeon": 0, "any_dungeon": 1, "anywhere": 2, "keysy": 3}),
-        "boss_keys": ("boss_key_shuffle", "choice", {"own_dungeon": 0, "any_dungeon": 1, "anywhere": 2, "keysy": 3}),
-        "map_mode": ("map_shuffle", "choice", {"vanilla": 0, "own_dungeon_restricted": 1, "anywhere": 2}),
+        "small_keys": ("small_key_shuffle", "choice", {"vanilla": 0, "own_dungeon": 1, "any_dungeon": 2, "own_region": 3, "overworld": 4, "anywhere": 5, "removed": 6}),
+        "boss_keys": ("boss_key_shuffle", "choice", {"vanilla": 0, "own_dungeon": 1, "any_dungeon": 2, "own_region": 3, "overworld": 4, "anywhere": 5, "removed": 6}),
+        "map_mode": ("map_shuffle", "choice", {"vanilla": 0, "own_dungeon_restricted": 1, "own_dungeon_unrestricted": 2, "any_dungeon": 3, "own_region": 4, "overworld": 5, "anywhere": 6}),
         # Entrances
         "randomize_entrances": ("randomize_entrances", "toggle", None),
         "randomize_dungeon_entrances": ("randomize_dungeons", "toggle", None),
@@ -418,7 +418,7 @@ class SSHDWorld(World):
         "natural_night_connections": ("natural_night_connections", "toggle", None),
         "dungeons_include_sky_keep": ("dungeons_include_sky_keep", "toggle", None),
         "empty_unrequired_dungeons": ("empty_unrequired_dungeons", "toggle", None),
-        "lanayru_caves_keys": ("lanayru_caves_keys", "choice", {"vanilla": 0, "removed": 1}),
+        "lanayru_caves_keys": ("lanayru_caves_keys", "choice", {"vanilla": 0, "overworld": 1, "anywhere": 2, "removed": 3}),
         # QoL - Open Locations (some use "open" instead of "on")
         "open_lake_floria": ("open_lake_floria", "toggle_custom", {"vanilla": 0, "yerbal": 1, "open": 1}),
         "open_thunderhead": ("open_thunderhead", "toggle", None),
@@ -770,15 +770,31 @@ class SSHDWorld(World):
                     )
                     region.locations.append(location)
 
-        # Lock victory location to the Game Beatable event item
+        # Create a proper event-only location for Game Beatable
+        # IMPORTANT: Don't place event at the real Defeat Demise location (address=2773238)
+        # because AP requires locations with int addresses to have items with int codes.
         try:
-            victory_location = self.multiworld.get_location("Hylia's Realm - Defeat Demise", self.player)
-            victory_location.place_locked_item(self.create_item("Game Beatable"))
-            victory_location.event = True
-            victory_location.locked = True
-            victory_location.progress_type = LocationProgressType.EXCLUDED
+            from BaseClasses import Item as APItem, ItemClassification
+            
+            # Find the Temple of Hylia region (where Defeat Demise is)
+            target_region = regions_dict.get("Temple of Hylia") or regions_dict.get("Hylia's Realm")
+            if target_region:
+                event_location = Location(
+                    self.player,
+                    "Victory - Game Beatable",
+                    None,  # Event: no address
+                    target_region
+                )
+                event_location.locked = True
+                event_location.progress_type = LocationProgressType.DEFAULT
+                
+                event_item = APItem("Game Beatable", ItemClassification.progression, None, self.player)
+                event_location.place_locked_item(event_item)
+                target_region.locations.append(event_location)
+            else:
+                print("[__init__.py] Warning: Could not find victory region for Game Beatable event")
         except Exception as e:
-            print(f"[__init__.py] Warning: Could not lock victory location: {e}")
+            print(f"[__init__.py] Warning: Could not create victory event: {e}")
         
         # Connect regions based on REGION_CONNECTIONS
         for source_name, connections in REGION_CONNECTIONS.items():
@@ -786,7 +802,7 @@ class SSHDWorld(World):
                 source_region = regions_dict[source_name]
                 for dest_name, rule_name in connections:
                     if dest_name in regions_dict:
-                        source_region.connect(regions_dict[dest_name], None, f"{source_name} -> {dest_name}")
+                        source_region.connect(regions_dict[dest_name], f"{source_name} -> {dest_name}")
     
     def generate_early(self) -> None:
         """
@@ -1259,6 +1275,391 @@ class SSHDWorld(World):
         # Add items to the multiworld pool
         self.multiworld.itempool += item_pool
     
+    # ── Dungeon item pre-fill constants ──────────────────────────────────
+    
+    # Maps each dungeon to its small key name(s), boss key name, and map name.
+    DUNGEON_ITEM_NAMES: dict[str, dict[str, list[str]]] = {
+        "Skyview Temple": {
+            "small_keys": ["Skyview Temple Small Key"],
+            "boss_keys": ["Skyview Temple Boss Key"],
+            "maps": ["Skyview Temple Map"],
+        },
+        "Earth Temple": {
+            "small_keys": [],
+            "boss_keys": ["Earth Temple Boss Key"],
+            "maps": ["Earth Temple Map"],
+        },
+        "Lanayru Mining Facility": {
+            "small_keys": ["Lanayru Mining Facility Small Key"],
+            "boss_keys": ["Lanayru Mining Facility Boss Key"],
+            "maps": ["Lanayru Mining Facility Map"],
+        },
+        "Ancient Cistern": {
+            "small_keys": ["Ancient Cistern Small Key"],
+            "boss_keys": ["Ancient Cistern Boss Key"],
+            "maps": ["Ancient Cistern Map"],
+        },
+        "Fire Sanctuary": {
+            "small_keys": ["Fire Sanctuary Small Key"],
+            "boss_keys": ["Fire Sanctuary Boss Key"],
+            "maps": ["Fire Sanctuary Map"],
+        },
+        "Sandship": {
+            "small_keys": ["Sandship Small Key"],
+            "boss_keys": ["Sandship Boss Key"],
+            "maps": ["Sandship Map"],
+        },
+        "Sky Keep": {
+            "small_keys": ["Sky Keep Small Key"],
+            "boss_keys": [],
+            "maps": ["Sky Keep Map"],
+        },
+    }
+    
+    # All dungeons (AP location regions that are considered "dungeons")
+    ALL_DUNGEON_REGIONS: set[str] = set(DUNGEON_ITEM_NAMES.keys())
+    
+    # Maps each dungeon to its parent "hint region" (the overworld area outside the dungeon).
+    # Used for "own_region" key shuffle mode.
+    DUNGEON_TO_HINT_REGION: dict[str, str] = {
+        "Skyview Temple": "Faron Woods",
+        "Earth Temple": "Eldin Volcano",
+        "Lanayru Mining Facility": "Lanayru Desert",
+        "Ancient Cistern": "Lake Floria",
+        "Fire Sanctuary": "Volcano Summit",
+        "Sandship": "Lanayru Sand Sea",
+        "Sky Keep": "Central Skyloft",
+    }
+    
+    # Maps each hint region to the set of AP location regions it encompasses.
+    HINT_REGION_TO_AP_REGIONS: dict[str, set[str]] = {
+        "Faron Woods": {"Faron Woods", "Deep Woods", "Inside the Great Tree",
+                        "Inside the Flooded Great Tree", "Flooded Faron Woods"},
+        "Lake Floria": {"Lake Floria", "Floria Waterfall"},
+        "Eldin Volcano": {"Eldin Volcano", "Mogma Turf", "Bokoblin Base",
+                          "Lower Eldin Cave", "Upper Eldin Cave", "Thrill Digger Cave"},
+        "Volcano Summit": {"Volcano Summit"},
+        "Lanayru Desert": {"Lanayru Mine", "Lanayru Desert", "Temple of Time",
+                           "Fire Node", "Lightning Node"},
+        "Lanayru Sand Sea": {"Lanayru Gorge", "Ancient Harbour", "Shipyard",
+                             "Skipper's Retreat", "Skipper's Retreat Shack",
+                             "Pirate Stronghold", "Pirate Stronghold Interior",
+                             "Construction Bay"},
+        "Central Skyloft": {"Central Skyloft", "Upper Skyloft", "Skyloft Village",
+                            "Knight Academy", "Sparring Hall", "Bazaar",
+                            "Batreaux's House", "Lumpy Pumpkin",
+                            "Inside the Statue of the Goddess"},
+    }
+    
+    # All regions that are considered "overworld" (non-dungeon, non-sky).
+    # Built dynamically; used for "overworld" key shuffle mode.
+    
+    def _get_dungeon_locations(self, dungeon: str) -> list:
+        """Get all unfilled AP locations in a specific dungeon."""
+        return [
+            loc for loc in self.multiworld.get_locations(self.player)
+            if loc.address is not None
+            and loc.item is None
+            and getattr(loc, "sshd_region", loc.name.split(" - ")[0] if " - " in loc.name else "") == dungeon
+        ]
+    
+    def _get_locations_by_region_names(self, region_names: set[str]) -> list:
+        """Get all unfilled AP locations whose region is in the given set."""
+        from .Locations import LOCATION_TABLE
+        return [
+            loc for loc in self.multiworld.get_locations(self.player)
+            if loc.address is not None
+            and loc.item is None
+            and LOCATION_TABLE.get(loc.name, None) is not None
+            and LOCATION_TABLE[loc.name].region in region_names
+        ]
+    
+    def _get_all_dungeon_location_set(self) -> set[str]:
+        """Get the set of all location names that are inside any dungeon."""
+        from .Locations import LOCATION_TABLE
+        return {
+            name for name, loc_data in LOCATION_TABLE.items()
+            if loc_data.region in self.ALL_DUNGEON_REGIONS
+        }
+
+    def _get_overworld_locations(self) -> list:
+        """Get all unfilled AP locations in the overworld (not in a dungeon, not in sky/skyloft)."""
+        from .Locations import LOCATION_TABLE
+        dungeon_locs = self._get_all_dungeon_location_set()
+        return [
+            loc for loc in self.multiworld.get_locations(self.player)
+            if loc.address is not None
+            and loc.item is None
+            and loc.name not in dungeon_locs
+        ]
+    
+    def pre_fill(self) -> None:
+        """
+        Restrict dungeon items (small keys, boss keys, maps) based on shuffle settings.
+        
+        This pulls restricted items out of the general multiworld.itempool and places
+        them into only valid locations using fill_restrictive, so Archipelago's fill
+        algorithm respects the player's key/map shuffle settings.
+        """
+        from .Locations import LOCATION_TABLE
+        from Fill import fill_restrictive
+        
+        small_key_mode = self.options.small_key_shuffle.current_key   # e.g. "own_dungeon"
+        boss_key_mode = self.options.boss_key_shuffle.current_key     # e.g. "own_dungeon" 
+        map_mode = self.options.map_shuffle.current_key               # e.g. "own_dungeon_restricted"
+        
+        print(f"[__init__.py] pre_fill: small_keys={small_key_mode}, boss_keys={boss_key_mode}, map_mode={map_mode}")
+        
+        # "anywhere" and "removed" modes need no restriction — AP fill handles them.
+        # "vanilla" is handled by sshd-rando's fill, but we also enforce it here.
+        
+        def _collect_items_from_pool(item_names: list[str]) -> list:
+            """Remove and return all items with matching names from multiworld.itempool."""
+            collected = []
+            remaining = []
+            name_set = set(item_names)
+            for item in self.multiworld.itempool:
+                if item.player == self.player and item.name in name_set:
+                    collected.append(item)
+                else:
+                    remaining.append(item)
+            self.multiworld.itempool = remaining
+            return collected
+        
+        def _get_valid_locations_for_mode(mode: str, dungeon: str) -> list:
+            """Get valid unfilled locations for a given shuffle mode and dungeon."""
+            if mode in ("own_dungeon", "own_dungeon_restricted", "own_dungeon_unrestricted", "vanilla"):
+                # Restrict to the dungeon's own locations
+                return [
+                    loc for loc in self.multiworld.get_locations(self.player)
+                    if loc.address is not None
+                    and loc.item is None
+                    and LOCATION_TABLE.get(loc.name) is not None
+                    and LOCATION_TABLE[loc.name].region == dungeon
+                ]
+            elif mode == "any_dungeon":
+                # Restrict to any dungeon location
+                return [
+                    loc for loc in self.multiworld.get_locations(self.player)
+                    if loc.address is not None
+                    and loc.item is None
+                    and LOCATION_TABLE.get(loc.name) is not None
+                    and LOCATION_TABLE[loc.name].region in self.ALL_DUNGEON_REGIONS
+                ]
+            elif mode == "own_region":
+                # Restrict to dungeon + its parent hint region
+                hint_region = self.DUNGEON_TO_HINT_REGION.get(dungeon, "")
+                valid_regions = self.HINT_REGION_TO_AP_REGIONS.get(hint_region, set()).copy()
+                valid_regions.add(dungeon)  # Include the dungeon itself
+                return [
+                    loc for loc in self.multiworld.get_locations(self.player)
+                    if loc.address is not None
+                    and loc.item is None
+                    and LOCATION_TABLE.get(loc.name) is not None
+                    and LOCATION_TABLE[loc.name].region in valid_regions
+                ]
+            elif mode == "overworld":
+                # Restrict to non-dungeon locations
+                all_dungeon_locs = self._get_all_dungeon_location_set()
+                return [
+                    loc for loc in self.multiworld.get_locations(self.player)
+                    if loc.address is not None
+                    and loc.item is None
+                    and loc.name not in all_dungeon_locs
+                ]
+            else:
+                # "anywhere" or "removed" — no restriction needed
+                return []
+        
+        def _place_restricted_items(item_type: str, mode: str, items_by_dungeon: dict[str, list]):
+            """Place items restricted to valid locations per dungeon."""
+            if mode in ("anywhere", "removed"):
+                return  # No restriction — leave items in the general pool
+            
+            for dungeon, items in items_by_dungeon.items():
+                if not items:
+                    continue
+                    
+                valid_locations = _get_valid_locations_for_mode(mode, dungeon)
+                
+                if not valid_locations:
+                    print(f"[__init__.py] WARNING: No valid locations for {item_type} "
+                          f"in {dungeon} with mode={mode}. Leaving in general pool.")
+                    # Put items back in general pool as fallback
+                    self.multiworld.itempool.extend(items)
+                    continue
+                
+                if len(items) > len(valid_locations):
+                    print(f"[__init__.py] WARNING: {len(items)} {item_type} items for {dungeon} "
+                          f"but only {len(valid_locations)} valid locations with mode={mode}. "
+                          f"Placing what we can, rest goes to general pool.")
+                
+                # Shuffle locations for randomness
+                self.random.shuffle(valid_locations)
+                
+                try:
+                    fill_restrictive(
+                        self.multiworld,
+                        self.multiworld.get_all_state(False),
+                        valid_locations,
+                        items,
+                        single_player_placement=True,
+                        lock=True,
+                        allow_partial=True,
+                        name=f"SSHD {item_type} ({dungeon})",
+                    )
+                except Exception as e:
+                    print(f"[__init__.py] WARNING: fill_restrictive failed for {item_type} "
+                          f"in {dungeon}: {e}. Remaining items go to general pool.")
+                
+                # Any items not placed go back to the general pool
+                if items:
+                    print(f"[__init__.py] {len(items)} {item_type} items could not be "
+                          f"placed in {dungeon}, adding to general pool")
+                    self.multiworld.itempool.extend(items)
+        
+        # ── Small Keys ───────────────────────────────────────────────────
+        if small_key_mode not in ("anywhere", "removed"):
+            small_key_items: dict[str, list] = {}
+            for dungeon, info in self.DUNGEON_ITEM_NAMES.items():
+                items = _collect_items_from_pool(info["small_keys"])
+                if items:
+                    small_key_items[dungeon] = items
+            
+            total_sk = sum(len(v) for v in small_key_items.values())
+            print(f"[__init__.py] pre_fill: Placing {total_sk} small keys with mode={small_key_mode}")
+            _place_restricted_items("small_keys", small_key_mode, small_key_items)
+        
+        # ── Boss Keys ────────────────────────────────────────────────────
+        if boss_key_mode not in ("anywhere", "removed"):
+            boss_key_items: dict[str, list] = {}
+            for dungeon, info in self.DUNGEON_ITEM_NAMES.items():
+                items = _collect_items_from_pool(info["boss_keys"])
+                if items:
+                    boss_key_items[dungeon] = items
+            
+            total_bk = sum(len(v) for v in boss_key_items.values())
+            print(f"[__init__.py] pre_fill: Placing {total_bk} boss keys with mode={boss_key_mode}")
+            _place_restricted_items("boss_keys", boss_key_mode, boss_key_items)
+        
+        # ── Dungeon Maps ─────────────────────────────────────────────────
+        if map_mode not in ("anywhere",):
+            map_items: dict[str, list] = {}
+            for dungeon, info in self.DUNGEON_ITEM_NAMES.items():
+                items = _collect_items_from_pool(info["maps"])
+                if items:
+                    map_items[dungeon] = items
+            
+            total_maps = sum(len(v) for v in map_items.values())
+            if total_maps > 0:
+                print(f"[__init__.py] pre_fill: Placing {total_maps} maps with mode={map_mode}")
+                _place_restricted_items("maps", map_mode, map_items)
+        
+        # ── Lanayru Caves Keys (separate setting) ───────────────────────
+        lanayru_caves_mode = self.options.lanayru_caves_keys.current_key
+        if lanayru_caves_mode not in ("anywhere", "removed"):
+            lc_items = _collect_items_from_pool(["Lanayru Caves Small Key"])
+            if lc_items:
+                print(f"[__init__.py] pre_fill: Placing {len(lc_items)} Lanayru Caves keys with mode={lanayru_caves_mode}")
+                if lanayru_caves_mode == "vanilla":
+                    # Restrict to Lanayru Caves locations
+                    valid_locs = [
+                        loc for loc in self.multiworld.get_locations(self.player)
+                        if loc.address is not None
+                        and loc.item is None
+                        and LOCATION_TABLE.get(loc.name) is not None
+                        and LOCATION_TABLE[loc.name].region == "Lanayru Caves"
+                    ]
+                elif lanayru_caves_mode == "overworld":
+                    all_dungeon_locs = self._get_all_dungeon_location_set()
+                    valid_locs = [
+                        loc for loc in self.multiworld.get_locations(self.player)
+                        if loc.address is not None
+                        and loc.item is None
+                        and loc.name not in all_dungeon_locs
+                    ]
+                else:
+                    valid_locs = []
+                
+                if valid_locs:
+                    self.random.shuffle(valid_locs)
+                    try:
+                        fill_restrictive(
+                            self.multiworld,
+                            self.multiworld.get_all_state(False),
+                            valid_locs,
+                            lc_items,
+                            single_player_placement=True,
+                            lock=True,
+                            allow_partial=True,
+                            name="SSHD Lanayru Caves Keys",
+                        )
+                    except Exception as e:
+                        print(f"[__init__.py] WARNING: fill_restrictive failed for Lanayru Caves keys: {e}")
+                
+                # Any remaining go to general pool
+                if lc_items:
+                    self.multiworld.itempool.extend(lc_items)
+        
+        # ── Triforce Shuffle ─────────────────────────────────────────────
+        triforce_mode = self.options.triforce_shuffle.current_key
+        if triforce_mode != "anywhere":
+            triforce_items = _collect_items_from_pool([
+                "Triforce of Courage",
+                "Triforce of Power",
+                "Triforce of Wisdom"
+            ])
+            if triforce_items:
+                print(f"[__init__.py] pre_fill: Placing {len(triforce_items)} Triforce pieces with mode={triforce_mode}")
+                
+                if triforce_mode == "vanilla":
+                    # Restrict to the 3 vanilla Sky Keep locations
+                    vanilla_triforce_locs = [
+                        "Sky Keep - Sacred Power of Din",
+                        "Sky Keep - Sacred Power of Nayru",
+                        "Sky Keep - Sacred Power of Farore"
+                    ]
+                    valid_locs = [
+                        loc for loc in self.multiworld.get_locations(self.player)
+                        if loc.address is not None
+                        and loc.item is None
+                        and loc.name in vanilla_triforce_locs
+                    ]
+                elif triforce_mode == "sky_keep":
+                    # Restrict to any Sky Keep location
+                    valid_locs = [
+                        loc for loc in self.multiworld.get_locations(self.player)
+                        if loc.address is not None
+                        and loc.item is None
+                        and LOCATION_TABLE.get(loc.name) is not None
+                        and LOCATION_TABLE[loc.name].region == "Sky Keep"
+                    ]
+                else:
+                    valid_locs = []
+                
+                if valid_locs:
+                    self.random.shuffle(valid_locs)
+                    try:
+                        fill_restrictive(
+                            self.multiworld,
+                            self.multiworld.get_all_state(False),
+                            valid_locs,
+                            triforce_items,
+                            single_player_placement=True,
+                            lock=True,
+                            allow_partial=True,
+                            name="SSHD Triforce Pieces",
+                        )
+                    except Exception as e:
+                        print(f"[__init__.py] WARNING: fill_restrictive failed for Triforce pieces: {e}")
+                
+                # Any remaining go to general pool
+                if triforce_items:
+                    print(f"[__init__.py] {len(triforce_items)} Triforce pieces could not be placed, adding to general pool")
+                    self.multiworld.itempool.extend(triforce_items)
+        
+        print(f"[__init__.py] pre_fill complete")
+
     def set_rules(self) -> None:
         """
         Set access rules for regions and locations.
@@ -1276,6 +1677,82 @@ class SSHDWorld(World):
         else:
             # Fallback: use basic rules from Rules.py
             set_rules(self)
+    
+    def post_fill(self) -> None:
+        """
+        Run after the fill to diagnose any accessibility issues.
+        
+        Simulates the same sweep that fulfills_accessibility() performs,
+        and reports which advancement locations are stuck (unreachable).
+        This runs BEFORE the concurrent accessibility check in Main.py,
+        so we get diagnostic output even if the check fails.
+        """
+        from BaseClasses import CollectionState
+        
+        try:
+            state = CollectionState(self.multiworld)
+            advancement_locs = [
+                loc for loc in self.multiworld.get_locations()
+                if loc.advancement
+            ]
+            
+            remaining = list(advancement_locs)
+            iteration = 0
+            beatable = False
+            
+            while remaining:
+                sphere = [loc for loc in remaining if loc.can_reach(state)]
+                if not sphere:
+                    break
+                for loc in sphere:
+                    remaining.remove(loc)
+                    if loc.item:
+                        state.collect(loc.item, True, loc)
+                iteration += 1
+                if self.multiworld.has_beaten_game(state):
+                    beatable = True
+                    break
+            
+            if remaining:
+                # Report stuck locations for debugging
+                print(f"[SSHD-DIAG] Post-fill check: {len(remaining)} advancement locations unreachable "
+                      f"(of {len(advancement_locs)} total, {iteration} spheres)")
+                for loc in remaining[:30]:
+                    region_name = loc.parent_region.name if loc.parent_region else "None"
+                    item_name = loc.item.name if loc.item else "None"
+                    print(f"  STUCK: {loc.name} (region={region_name}, item={item_name})")
+                
+                # Also check which regions are unreachable
+                unreachable_regions = set()
+                for loc in remaining:
+                    if loc.parent_region and not loc.parent_region.can_reach(state):
+                        unreachable_regions.add(loc.parent_region.name)
+                if unreachable_regions:
+                    print(f"[SSHD-DIAG] Unreachable regions ({len(unreachable_regions)}):")
+                    for rn in sorted(unreachable_regions)[:20]:
+                        print(f"  UNREACHABLE REGION: {rn}")
+                
+                if not beatable:
+                    # Check what's missing for completion
+                    resolved = getattr(self, '_sshd_resolved_settings', {})
+                    print(f"[SSHD-DIAG] Game NOT beatable at end of sweep")
+                    print(f"  Progressive Swords collected: {state.count('Progressive Sword', self.player)}")
+                    print(f"  got_sword_requirement: {resolved.get('got_sword_requirement', 'unknown')}")
+                    print(f"  required_dungeons: {resolved.get('required_dungeons', 'unknown')}")
+                    boss_keys = ['Skyview Temple Boss Key', 'Earth Temple Boss Key',
+                                'Lanayru Mining Facility Boss Key', 'Ancient Cistern Boss Key',
+                                'Sandship Boss Key', 'Fire Sanctuary Boss Key']
+                    for bk in boss_keys:
+                        print(f"  {bk}: {'YES' if state.has(bk, self.player) else 'no'}")
+                    print(f"  Has Game Beatable: {'YES' if state.has('Game Beatable', self.player) else 'no'}")
+            else:
+                status = "beatable" if beatable else "all locations reachable but game not beaten"
+                print(f"[SSHD-DIAG] Post-fill check OK: all {len(advancement_locs)} advancement locations "
+                      f"reachable in {iteration} spheres, game {status}")
+        except Exception as e:
+            print(f"[SSHD-DIAG] Post-fill diagnostic failed: {e}")
+            import traceback
+            traceback.print_exc()
     
     def fill_slot_data(self) -> dict[str, Any]:
         """Generate slot data for the client."""
@@ -1857,11 +2334,11 @@ class SSHDWorld(World):
         settings_dict["gossip_stone_treasure_shuffle"] = "on" if self.options.gossip_stone_treasure_shuffle.value else "off"
         
         # Keys & Maps
-        key_mode_map = {0: "own_dungeon", 1: "any_dungeon", 2: "anywhere", 3: "keysy"}
+        key_mode_map = {0: "vanilla", 1: "own_dungeon", 2: "any_dungeon", 3: "own_region", 4: "overworld", 5: "anywhere", 6: "removed"}
         settings_dict["small_keys"] = key_mode_map[self.options.small_key_shuffle.value]
         settings_dict["boss_keys"] = key_mode_map[self.options.boss_key_shuffle.value]
         
-        map_mode_map = {0: "vanilla", 1: "own_dungeon_restricted", 2: "anywhere"}
+        map_mode_map = {0: "vanilla", 1: "own_dungeon_restricted", 2: "own_dungeon_unrestricted", 3: "any_dungeon", 4: "own_region", 5: "overworld", 6: "anywhere"}
         settings_dict["map_mode"] = map_mode_map[self.options.map_shuffle.value]
         
         # Entrance Randomization
@@ -2058,7 +2535,7 @@ class SSHDWorld(World):
         settings_dict["dungeons_include_sky_keep"] = "on" if self.options.dungeons_include_sky_keep.value else "off"
         settings_dict["empty_unrequired_dungeons"] = "on" if self.options.empty_unrequired_dungeons.value else "off"
         
-        lanayru_caves_map = {0: "vanilla", 1: "removed"}
+        lanayru_caves_map = {0: "vanilla", 1: "overworld", 2: "anywhere", 3: "removed"}
         settings_dict["lanayru_caves_keys"] = lanayru_caves_map[self.options.lanayru_caves_keys.value]
         
         # Hints (disabled - Archipelago uses its own)

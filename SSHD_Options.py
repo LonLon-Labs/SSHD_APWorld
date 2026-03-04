@@ -177,27 +177,39 @@ class GossipStoneTreasureShuffle(Toggle):
 class SmallKeyShuffle(Choice):
     """Where small keys can appear."""
     display_name = "Small Key Shuffle"
-    option_own_dungeon = 0
-    option_any_dungeon = 1
-    option_anywhere = 2
-    option_keysy = 3
-    default = 0
+    option_vanilla = 0
+    option_own_dungeon = 1
+    option_any_dungeon = 2
+    option_own_region = 3
+    option_overworld = 4
+    option_anywhere = 5
+    option_removed = 6
+    alias_keysy = 6  # Backward compatibility
+    default = 1
 
 class BossKeyShuffle(Choice):
     """Where boss keys can appear."""
     display_name = "Boss Key Shuffle"
-    option_own_dungeon = 0
-    option_any_dungeon = 1
-    option_anywhere = 2
-    option_keysy = 3
-    default = 0
+    option_vanilla = 0
+    option_own_dungeon = 1
+    option_any_dungeon = 2
+    option_own_region = 3
+    option_overworld = 4
+    option_anywhere = 5
+    option_removed = 6
+    alias_keysy = 6  # Backward compatibility
+    default = 1
 
 class MapShuffle(Choice):
     """Where dungeon maps can appear."""
     display_name = "Map Shuffle"
     option_vanilla = 0
     option_own_dungeon_restricted = 1
-    option_anywhere = 2
+    option_own_dungeon_unrestricted = 2
+    option_any_dungeon = 3
+    option_own_region = 4
+    option_overworld = 5
+    option_anywhere = 6
     default = 0
 
 class RandomizeEntrances(Toggle):
@@ -705,8 +717,10 @@ class LanaryuCavesKeys(Choice):
     """
     display_name = "Lanayru Caves Small Keys"
     option_vanilla = 0
-    option_removed = 1
-    default = 1
+    option_overworld = 1
+    option_anywhere = 2
+    option_removed = 3
+    default = 3
 
 
 # === Quality of Life Shortcuts ===

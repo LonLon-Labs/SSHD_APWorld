@@ -102,7 +102,8 @@ class _ReqParser:
         self.resolved_settings = resolved_settings
         self.known_items = known_items  # Set of AP item names that exist
         self.macros: dict[str, Callable] = macros or {}
-        self.events: set[str] = set()  # Discovered event names
+        self.events: set[str] = set()  # Discovered event names (cumulative)
+        self._last_parse_events: set[str] = set()  # Event refs from last parse() call
         # Track areas referenced by can_access()
         self.can_access_areas: set[str] = set()
         # Backend directory for loading data files
@@ -130,6 +131,7 @@ class _ReqParser:
     
     def parse(self, req_str: str) -> Callable[[CollectionState, int], bool]:
         """Parse a requirement string into an AP rule function."""
+        self._last_parse_events = set()  # Reset per-parse event tracking
         if not req_str or req_str.strip() == "":
             return ALWAYS_TRUE
         
@@ -140,6 +142,10 @@ class _ReqParser:
             req_str = req_str[1:-1].strip()
         
         return self._parse_expr(req_str)
+
+    def get_last_parse_event_refs(self) -> set[str]:
+        """Return the set of AP event item names referenced by the last parse() call."""
+        return set(self._last_parse_events)
     
     def _parse_expr(self, expr: str) -> Callable[[CollectionState, int], bool]:
         """Parse a single expression recursively."""
@@ -334,6 +340,7 @@ class _ReqParser:
             event_name = atom[1:-1]
             self.events.add(event_name)
             ap_event_name = f"Event: {_normalize_item_name(event_name)}"
+            self._last_parse_events.add(ap_event_name)  # Track per-parse
             return lambda state, player, _e=ap_event_name: state.has(_e, player)
         
         # count(N, Item_Name)
@@ -792,41 +799,109 @@ class SSHDLogicConverter:
         logger.info(f"Created {locations_created} locations")
     
     def _place_victory_event(self):
-        """Place the Game Beatable event at the Defeat Demise location."""
+        """
+        Create a proper event location for Game Beatable in the same region
+        as the Defeat Demise location.
+        
+        IMPORTANT: We do NOT place the event at the real "Defeat Demise"
+        location (address=2773238) because AP requires that locations with
+        int addresses have items with int codes. Event items have code=None.
+        Instead, we create a separate event-only location (address=None)
+        in the Temple of Hylia region.
+        
+        The event's access rule embeds ALL completion requirements
+        (boss keys + sword level) so the fill algorithm properly tracks
+        dependencies. The completion_condition just checks state.has("Game Beatable").
+        """
         from BaseClasses import Item as APItem, ItemClassification
-        try:
-            from .Items import ITEM_TABLE as AP_ITEM_TABLE
-        except ImportError:
-            from Items import ITEM_TABLE as AP_ITEM_TABLE
         
         try:
-            victory_location = self.multiworld.get_location(
-                "Hylia's Realm - Defeat Demise", self.player
+            # Find the region that contains the Defeat Demise location.
+            # The YAML defines it in "Temple of Hylia" area.
+            target_region = self.regions.get("Temple of Hylia")
+            if not target_region:
+                # Fallback: try the Hylia's Realm region from LOCATION_TABLE
+                target_region = self.regions.get("Hylia's Realm")
+            if not target_region:
+                logger.warning("Could not find Temple of Hylia or Hylia's Realm region for victory event")
+                return
+            
+            # Create a proper event location (address=None)
+            event_location = Location(
+                self.player,
+                "Victory - Game Beatable",
+                None,  # Event location: no address
+                target_region
+            )
+            event_location.locked = True
+            event_location.progress_type = LocationProgressType.DEFAULT
+            
+            # Build the access rule: embed _can_complete_game requirements
+            # so the fill algorithm properly tracks boss key + sword dependencies.
+            player = self.player
+            world = self.world
+            
+            def victory_access_rule(state):
+                """Check all game completion requirements."""
+                resolved = getattr(world, '_sshd_resolved_settings', {})
+                
+                # Boss key check
+                boss_keys_setting = resolved.get('boss_keys', 'own_dungeon')
+                if boss_keys_setting != 'removed':
+                    try:
+                        required_dungeons = int(resolved.get('required_dungeons', '2'))
+                    except (ValueError, TypeError):
+                        required_dungeons = 2
+                    
+                    dungeon_keys = [
+                        "Skyview Temple Boss Key",
+                        "Earth Temple Boss Key",
+                        "Lanayru Mining Facility Boss Key",
+                        "Ancient Cistern Boss Key",
+                        "Sandship Boss Key",
+                        "Fire Sanctuary Boss Key"
+                    ]
+                    # Cap at 6: Sky Keep (7th dungeon) has no boss key.
+                    # Its accessibility is handled by region/entrance logic.
+                    boss_keys_needed = min(required_dungeons, len(dungeon_keys))
+                    dungeons_beaten = sum(1 for key in dungeon_keys if state.has(key, player))
+                    if dungeons_beaten < boss_keys_needed:
+                        return False
+                
+                # Sword level check
+                got_sword = resolved.get('got_sword_requirement', 'true_master_sword')
+                sword_levels = {
+                    'goddess_sword': 2, 'goddess_longsword': 3,
+                    'goddess_white_sword': 4, 'master_sword': 5,
+                    'true_master_sword': 6,
+                }
+                required_level = sword_levels.get(got_sword, 6)
+                if state.count("Progressive Sword", player) < required_level:
+                    return False
+                
+                return True
+            
+            event_location.access_rule = victory_access_rule
+            
+            # Create event item
+            event_item = APItem(
+                "Game Beatable",
+                ItemClassification.progression,
+                None,  # Event items must have None code
+                self.player
             )
             
-            # Create the event item
-            game_beatable_data = AP_ITEM_TABLE.get("Game Beatable")
-            if game_beatable_data:
-                event_item = APItem(
-                    "Game Beatable",
-                    game_beatable_data.classification,
-                    game_beatable_data.code,
-                    self.player
-                )
-            else:
-                event_item = APItem(
-                    "Game Beatable",
-                    ItemClassification.progression,
-                    None,
-                    self.player
-                )
+            # Place the event item
+            event_location.place_locked_item(event_item)
             
-            victory_location.place_locked_item(event_item)
-            victory_location.event = True
-            victory_location.locked = True
-            victory_location.progress_type = LocationProgressType.EXCLUDED
+            # Add to region
+            target_region.locations.append(event_location)
+            
+            logger.info(f"Placed victory event in region '{target_region.name}'")
         except Exception as e:
-            logger.warning(f"Could not lock victory location: {e}")
+            logger.warning(f"Could not create victory event location: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _load_macros(self):
         """Load and parse macros.yaml into callable rule functions."""
@@ -950,11 +1025,20 @@ class SSHDLogicConverter:
         
         Events whose rule is always-false (e.g. because a trick setting is off)
         are skipped entirely to avoid accessibility warnings.
+        
+        After creation, a zombie-cleanup pass removes events that depend on
+        non-existent events (which would make them permanently unreachable and
+        cause Archipelago's accessibility check to fail).
         """
         from BaseClasses import Item as APItem, ItemClassification
         
         events_created = 0
         events_skipped = 0
+        
+        # Track created events and their dependencies for zombie cleanup
+        created_event_names: set[str] = set()  # AP event item names actually created
+        event_locations_by_name: dict[str, Location] = {}  # AP event name -> Location
+        event_deps: dict[str, set[str]] = {}  # AP event name -> set of AP event names it references
         
         for area_node in self.area_data:
             area_name = area_node["name"]
@@ -962,6 +1046,7 @@ class SSHDLogicConverter:
             for event_name, req_str in area_node.get("events", {}).items():
                 # Parse the access rule first so we can check for always-false
                 rule = self.parser.parse(str(req_str))
+                event_refs = self.parser.get_last_parse_event_refs()
                 
                 # Skip events with always-false rules (e.g. trick settings that are off)
                 if rule is ALWAYS_FALSE:
@@ -1007,8 +1092,39 @@ class SSHDLogicConverter:
                 # Add to region
                 region.locations.append(event_location)
                 events_created += 1
+                
+                # Track for zombie cleanup
+                created_event_names.add(ap_event_name)
+                event_locations_by_name[ap_event_name] = event_location
+                event_deps[ap_event_name] = event_refs
         
-        logger.info(f"Created {events_created} event locations (skipped {events_skipped} always-false)")
+        # --- Zombie event cleanup ---
+        # An event is a "zombie" if its rule references another event that
+        # doesn't exist (was skipped or is itself a zombie). Such events can
+        # never be reached at runtime, and their presence as advancement
+        # locations causes Archipelago's accessibility check to fail.
+        zombies_removed = 0
+        changed = True
+        while changed:
+            changed = False
+            for ap_name in list(created_event_names):
+                deps = event_deps.get(ap_name, set())
+                # Check if any dependency is NOT a created event
+                missing = deps - created_event_names
+                if missing:
+                    # This event can never be reached — remove it
+                    event_loc = event_locations_by_name[ap_name]
+                    parent = event_loc.parent_region
+                    if parent and event_loc in parent.locations:
+                        parent.locations.remove(event_loc)
+                    created_event_names.discard(ap_name)
+                    changed = True
+                    zombies_removed += 1
+                    logger.debug(f"Removed zombie event '{ap_name}' (missing deps: {missing})")
+        
+        if zombies_removed:
+            logger.info(f"Removed {zombies_removed} zombie event locations (unreachable due to missing dependencies)")
+        logger.info(f"Created {events_created - zombies_removed} event locations (skipped {events_skipped} always-false, removed {zombies_removed} zombies)")
     
     def _build_location_rules(self):
         """

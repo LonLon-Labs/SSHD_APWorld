@@ -199,15 +199,15 @@ def set_rules(world: "SSHDWorld") -> None:
     
     def can_dousing(state: CollectionState) -> bool:
         """Check if player can use dowsing."""
-        return has_sword(state, 1)  # Goddess Sword enables dowsing
+        return has_sword(state, 1)  # Practice Sword enables dowsing
     
     def can_use_goddess_walls(state: CollectionState) -> bool:
         """Check if player can use goddess walls."""
-        return has_sword(state, 1)  # Goddess Sword enables walls
+        return has_sword(state, 2)  # Goddess Sword enables walls
     
     def can_open_goddess_chests(state: CollectionState) -> bool:
         """Check if player can open goddess chests."""
-        return has_sword(state, 1) and can_dousing(state)
+        return has_sword(state, 2) and can_dousing(state)
     
     # Wallet capacity helpers
     def wallet_capacity(state: CollectionState) -> int:
@@ -330,24 +330,26 @@ def set_rules(world: "SSHDWorld") -> None:
         # The "Game Beatable" event is what's checked by completion_condition
     
     # Set goal/victory condition
-    # The victory is represented by the "Game Beatable" event item at "Defeat Demise" location.
-    # The completion condition uses sshd-rando's resolved settings (which match the actual item pool)
-    # instead of YAML options, to avoid mismatches that make the condition unsatisfiable.
-    multiworld.completion_condition[player] = lambda state: has(state, "Game Beatable") and _can_complete_game(state, world)
+    # The victory is represented by the "Game Beatable" event item.
+    # All game-completion requirements (boss keys, sword level) are embedded
+    # directly in the event location's access rule (in logic_converter.py),
+    # so the fill algorithm properly tracks these dependencies.
+    multiworld.completion_condition[player] = lambda state: has(state, "Game Beatable")
 
 
 def set_completion_condition(world: "SSHDWorld") -> None:
     """
     Set only the completion condition (used when full logic is handled by logic_converter).
     
-    The full logic converter sets all entrance/location rules. This function
-    just sets the final victory condition.
+    The full logic converter sets all entrance/location rules, including the
+    Game Beatable event's access rule which embeds boss key + sword checks.
+    This function just sets the final victory condition.
     """
     multiworld = world.multiworld
     player = world.player
     
     multiworld.completion_condition[player] = lambda state: (
-        state.has("Game Beatable", player) and _can_complete_game(state, world)
+        state.has("Game Beatable", player)
     )
 
 
@@ -386,8 +388,11 @@ def _can_complete_game(state: CollectionState, world: "SSHDWorld") -> bool:
             "Fire Sanctuary Boss Key"
         ]
         
+        # Cap at 6: Sky Keep (7th dungeon) has no boss key.
+        # Its accessibility is handled by region/entrance logic.
+        boss_keys_needed = min(required_dungeons, len(dungeon_items))
         dungeons_beaten = sum(1 for key in dungeon_items if state.has(key, player))
-        if dungeons_beaten < required_dungeons:
+        if dungeons_beaten < boss_keys_needed:
             return False
     
     # --- Gate of Time sword requirement ---

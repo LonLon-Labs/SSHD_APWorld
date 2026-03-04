@@ -261,8 +261,10 @@ Skyward Sword HD:
   # vanilla: Small Keys will appear in their vanilla locations
   # own_dungeon: Keys only in their own dungeon (default)
   # any_dungeon: Keys can be in any dungeon
+  # own_region: Keys will appear in their dungeon's region
+  # overworld: Keys will only appear in the overworld
   # anywhere: Keys can be anywhere in the world
-  # keysy: Mixed between own dungeon and anywhere
+  # removed: Keys removed, locks start opened
   small_key_shuffle: own_dungeon
   
   # Boss Key Shuffle
@@ -272,7 +274,7 @@ Skyward Sword HD:
   # own_region: Boss Keys appear in their dungeon's region
   # overworld: Boss Keys will only appear in the overworld
   # anywhere: Boss keys can be anywhere in the world
-  # keysy: Mixed between own dungeon and anywhere
+  # removed: Boss Keys removed, boss doors start opened
   boss_key_shuffle: own_dungeon
   
   # Dungeon Map Shuffle
