@@ -304,12 +304,14 @@ def set_rules(world: "SSHDWorld") -> None:
             elif "Earth Temple" in location_name:
                 location.access_rule = lambda state: has(state, "Earth Temple Boss Key")
         
-        # Goddess Cube checks require various items
+        # Goddess Cube checks require sword (Skyward Strike) + various items
         if "Goddess Cube" in location_name or "Goddess Chest" in location_name:
             if "Clawshot" in location_name:
-                location.access_rule = lambda state: has(state, "Clawshots")
+                location.access_rule = lambda state: can_open_goddess_chests(state) and has(state, "Clawshots")
             elif "Beetle" in location_name:
-                location.access_rule = lambda state: has_beetle(state)
+                location.access_rule = lambda state: can_open_goddess_chests(state) and has_beetle(state)
+            else:
+                location.access_rule = lambda state: can_open_goddess_chests(state)
         
         # Silent Realm checks - NO LOCATION REQUIREMENTS
         # Entrance requirements (Harp + Sword level 1) handle access

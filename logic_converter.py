@@ -567,26 +567,11 @@ class SSHDLogicConverter:
             vanilla.add("Gratitude Crystal Pack")
 
         # When goddess_chest_shuffle is ON, Goddess Chests become AP locations.
-        # Goddess Cubes are never AP locations (dummy items), but striking a
-        # cube is always possible when you can physically reach it. Add all
-        # Goddess Cube item names as vanilla so the logic auto-satisfies
-        # the cube-strike requirements for the corresponding chests.
-        if s.get("goddess_chest_shuffle", "off") in ("on", "randomized"):
-            locations_path = self._backend_dir / "data" / "locations.yaml"
-            if locations_path.exists():
-                try:
-                    with open(locations_path, "r", encoding="utf-8") as f:
-                        loc_data = yaml.safe_load(f)
-                    for loc in loc_data:
-                        if "Goddess Cube" in loc.get("types", []):
-                            cube_item = loc.get("original_item", "")
-                            if cube_item:
-                                vanilla.add(cube_item)
-                                # Also add apostrophe-stripped version for matching
-                                vanilla.add(cube_item.replace("'", ""))
-                    logger.info(f"Added {sum(1 for v in vanilla if 'Goddess Cube' in v)} Goddess Cube items as vanilla (goddess_chest_shuffle is on)")
-                except Exception as e:
-                    logger.warning(f"Could not load locations.yaml for Goddess Cube items: {e}")
+        # Goddess Cubes are never AP locations (dummy items), but their
+        # requirements (including Goddess_Sword) must be propagated to the
+        # corresponding chests via event locations. This is done in
+        # _build_goddess_cube_events() — do NOT mark cube items as vanilla
+        # here, since that would auto-satisfy them and drop the sword req.
 
         if vanilla:
             logger.info(f"Vanilla (non-shuffled) items for logic: {sorted(vanilla)}")
@@ -604,9 +589,126 @@ class SSHDLogicConverter:
         self._create_locations()
         self._build_entrances()
         self._build_events()
+        self._build_goddess_cube_events()
         self._build_location_rules()
         self._place_victory_event()
     
+    def _build_goddess_cube_events(self):
+        """
+        When goddess_chest_shuffle is on, create event locations for each
+        Goddess Cube strike.  Each cube's YAML requirements (including
+        Goddess_Sword, i.e. 2 Progressive Swords) are preserved as the
+        event's access rule.  The event item name matches the cube's item
+        name so that Goddess Chest logic properly requires the sword.
+
+        When goddess_chest_shuffle is off, Goddess Chests are excluded from
+        the AP world entirely, so no cube events are needed.
+        """
+        s = self.resolved_settings
+        if s.get("goddess_chest_shuffle", "off") not in ("on", "randomized"):
+            return  # Chests aren't AP locations — nothing to gate
+
+        from BaseClasses import Item as APItem, ItemClassification
+
+        # Load locations.yaml to identify Goddess Cube locations + item names
+        locations_path = self._backend_dir / "data" / "locations.yaml"
+        if not locations_path.exists():
+            logger.warning("locations.yaml not found — cannot create goddess cube events")
+            return
+
+        with open(locations_path, "r", encoding="utf-8") as f:
+            loc_data = yaml.safe_load(f)
+
+        # Map: cube location name (YAML) -> original_item name (AP item name)
+        cube_item_map: dict[str, str] = {}
+        for loc in loc_data:
+            if "Goddess Cube" in loc.get("types", []):
+                loc_name = loc.get("name", "")
+                item_name = loc.get("original_item", "")
+                if loc_name and item_name:
+                    cube_item_map[loc_name] = item_name
+
+        # Find each cube's requirements from the world YAML data.
+        # A cube can be defined in multiple areas (different access paths).
+        cube_rules: dict[str, list[tuple[str, str]]] = {}
+        for area_node in self.area_data:
+            area_name = area_node["name"]
+            for loc_name, req_str in area_node.get("locations", {}).items():
+                if loc_name in cube_item_map:
+                    cube_rules.setdefault(loc_name, []).append(
+                        (area_name, str(req_str))
+                    )
+
+        events_created = 0
+        for cube_loc_name, item_name in cube_item_map.items():
+            entries = cube_rules.get(cube_loc_name)
+            if not entries:
+                logger.debug(f"No YAML rule found for goddess cube '{cube_loc_name}' — skipping")
+                continue
+
+            # Build the access rule
+            if len(entries) == 1:
+                area_name, req_str = entries[0]
+                rule = self.parser.parse(req_str)
+                region = self.regions.get(area_name)
+            else:
+                # Multiple access points — OR the paths together
+                parsed_rules: list[tuple[str, Callable]] = []
+                for area_name, req_str in entries:
+                    parsed_rules.append((area_name, self.parser.parse(req_str)))
+                region = self.regions.get(entries[0][0])
+
+                def _make_or_rule(rule_list, pid):
+                    def _or(state, player):
+                        for a_name, r_fn in rule_list:
+                            if state.can_reach_region(a_name, pid) and r_fn(state, pid):
+                                return True
+                        return False
+                    return _or
+
+                rule = _make_or_rule(parsed_rules, self.player)
+
+            if not region:
+                logger.debug(
+                    f"Region not found for goddess cube '{cube_loc_name}' — skipping"
+                )
+                continue
+
+            # Create event location
+            event_location = Location(
+                self.player,
+                f"{cube_loc_name} (Cube Strike)",
+                None,  # Event location — no address
+                region,
+            )
+            event_location.locked = True
+            event_location.progress_type = LocationProgressType.DEFAULT
+
+            # The event item name must be the EXACT cube item name (no "Event:"
+            # prefix) so that the parser's `state.has(item_name, player)` call
+            # produced for Goddess Chest requirements matches this item.
+            event_item = APItem(
+                item_name,
+                ItemClassification.progression,
+                None,  # Event item — no code
+                self.player,
+            )
+
+            event_location.place_locked_item(event_item)
+
+            player = self.player
+            event_location.access_rule = (
+                lambda state, _r=rule, _p=player: _r(state, _p)
+            )
+
+            region.locations.append(event_location)
+            events_created += 1
+
+        logger.debug(
+            f"Created {events_created} goddess cube event locations "
+            f"(goddess_chest_shuffle is on)"
+        )
+
     def _get_excluded_location_types(self) -> set[str]:
         """
         Determine which location types must be EXCLUDED from the AP world.
