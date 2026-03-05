@@ -533,8 +533,11 @@ class SSHDWorld(World):
             title2d_source = ROMFS_EXTRACT_PATH / "Layout" / "Title2D.arc"
             endroll_source = ROMFS_EXTRACT_PATH / "Layout" / "EndRoll.arc"
             
+            # Check if the user wants the alternative logo
+            use_alt_logo = bool(self.options.use_alternative_logo.value)
+            
             # Call the patching function
-            patch_archipelago_logo(romfs_output, assets_path, title2d_source, endroll_source)
+            patch_archipelago_logo(romfs_output, assets_path, title2d_source, endroll_source, use_alt_logo)
             
         except Exception as e:
             print(f"Warning: Could not patch Archipelago logos: {e}")

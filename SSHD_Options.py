@@ -1254,6 +1254,14 @@ class RemoveEnemyMusic(Toggle):
     display_name = "Remove Enemy Music"
 
 
+class UseAlternativeLogo(Toggle):
+    """
+    If enabled, the alternative Archipelago logo is used on the title screen
+    and credits instead of the default Archipelago logo.
+    """
+    display_name = "Use Alternative Logo"
+
+
 # === Extra Starting Inventory ===
 
 class StartingHearts(Range):
@@ -1611,6 +1619,7 @@ class SSHDOptions(PerGameCommonOptions):
     lightning_skyward_strike: LightnningSkywardStrike
     starry_skies: StarrySky
     remove_enemy_music: RemoveEnemyMusic
+    use_alternative_logo: UseAlternativeLogo
     
     # Extra Starting Inventory
     starting_hearts: StartingHearts

@@ -72,6 +72,12 @@ Skyward Sword HD:
   progression_balancing: 50
 
 
+  # Use Alternative Logo
+  # false: The default Archipelago logo will be used on the title screen and credits (default)
+  # true: The alternative Archipelago logo will be used on the title screen and credits (adds the archipelago triangle things at the top)
+  use_alternative_logo: false
+
+
 
   # ========================================
   # CHEATS

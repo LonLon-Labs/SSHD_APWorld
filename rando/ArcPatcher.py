@@ -8,7 +8,7 @@ to show Archipelago branding instead of the original randomizer logo.
 from pathlib import Path
 
 
-def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_source: Path, endroll_source: Path):
+def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_source: Path, endroll_source: Path, use_alt_logo: bool = False):
     """
     Patch the title screen and credits to show the Archipelago logo.
     
@@ -17,6 +17,7 @@ def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_s
         assets_path: Path to the assets folder containing TPL files
         title2d_source: Path to the source Title2D.arc file
         endroll_source: Path to the source EndRoll.arc file
+        use_alt_logo: If True, use the alternative Archipelago logo files
     """
     # Import sslib here so __init__.py has already added sshd-rando-backend to sys.path
     try:
@@ -35,13 +36,22 @@ def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_s
     rogo_03_data = None
     rogo_04_data = None
     
+    # Select logo filenames based on whether the alternative logo is enabled
+    alt_suffix = '_alt' if use_alt_logo else ''
+    logo_tpl_filename = f'archipelago-logo{alt_suffix}.tpl'
+    rogo_03_tpl_filename = f'archipelago-rogo_03{alt_suffix}.tpl'
+    rogo_04_tpl_filename = f'archipelago-rogo_04{alt_suffix}.tpl'
+    
+    if use_alt_logo:
+        print("[ArcPatcher] Using alternative Archipelago logo")
+    
     # Try method 1: importlib.resources (best for ZIP files, Python 3.9+)
     try:
         if hasattr(importlib.resources, 'files'):
             assets = importlib.resources.files('worlds.sshd').joinpath('assets')
-            logo_data = assets.joinpath('archipelago-logo.tpl').read_bytes()
-            rogo_03_data = assets.joinpath('archipelago-rogo_03.tpl').read_bytes()
-            rogo_04_data = assets.joinpath('archipelago-rogo_04.tpl').read_bytes()
+            logo_data = assets.joinpath(logo_tpl_filename).read_bytes()
+            rogo_03_data = assets.joinpath(rogo_03_tpl_filename).read_bytes()
+            rogo_04_data = assets.joinpath(rogo_04_tpl_filename).read_bytes()
             print("[ArcPatcher] Successfully loaded logo files from ZIP package")
     except Exception as e:
         print(f"[ArcPatcher] importlib.resources method failed: {e}")
@@ -49,9 +59,9 @@ def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_s
     # Try method 2: pkgutil.get_data (fallback for older Python)
     if logo_data is None:
         try:
-            logo_data = pkgutil.get_data("worlds.sshd.assets", "archipelago-logo.tpl")
-            rogo_03_data = pkgutil.get_data("worlds.sshd.assets", "archipelago-rogo_03.tpl")
-            rogo_04_data = pkgutil.get_data("worlds.sshd.assets", "archipelago-rogo_04.tpl")
+            logo_data = pkgutil.get_data("worlds.sshd.assets", logo_tpl_filename)
+            rogo_03_data = pkgutil.get_data("worlds.sshd.assets", rogo_03_tpl_filename)
+            rogo_04_data = pkgutil.get_data("worlds.sshd.assets", rogo_04_tpl_filename)
             
             if all([logo_data, rogo_03_data, rogo_04_data]):
                 print("[ArcPatcher] Successfully loaded logo files via pkgutil")
@@ -63,9 +73,9 @@ def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_s
     # Try method 3: filesystem (for development environment)
     if logo_data is None:
         try:
-            logo_tpl = assets_path / "archipelago-logo.tpl"
-            rogo_03_tpl = assets_path / "archipelago-rogo_03.tpl"
-            rogo_04_tpl = assets_path / "archipelago-rogo_04.tpl"
+            logo_tpl = assets_path / logo_tpl_filename
+            rogo_03_tpl = assets_path / rogo_03_tpl_filename
+            rogo_04_tpl = assets_path / rogo_04_tpl_filename
             
             print(f"[ArcPatcher] Trying filesystem method from: {assets_path}")
             
@@ -97,7 +107,10 @@ def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_s
         if lyt_file := title_2d_arc.get_file_data("blyt/titleBG_00.brlyt"):
             # Changes the size of the P_loop_00, P_auraR_03, and P_auraR_00 lyt elements
             lyt_file = lyt_file.replace(
-                b"\x43\xa4\xc0\x00\x43\x37", b"\x43\xa4\xc0\x00\x43\x69"
+                b"\x43\xa4\xc0\x00\x43\x37\x00", b"\x43\xe6\x00\x00\x43\xa1\x80"
+            )
+            lyt_file = lyt_file.replace(
+                b"\x41\x4c\x00\x00\xc2\x08", b"\x00\x00\x00\x00\x00\x00"
             )
             title_2d_arc.set_file_data("blyt/titleBG_00.brlyt", lyt_file)
         
@@ -121,8 +134,16 @@ def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_s
         if lyt_file := endroll_arc.get_file_data("blyt/endTitle_00.brlyt"):
             # Changes the size of the P_loop_00, and P_auraR_00 lyt elements
             lyt_file = lyt_file.replace(
-                b"\x9a\x40\x49\x99\x9a\x43\x13\x80\x00\x42\xa2",
-                b"\x99\x40\x49\x99\x99\x43\x13\x80\x00\x42\xce",
+                b"\x40\x49\x99\x9a\x40\x49\x99\x9a\x43\x13\x80\x00\x42\xa2",
+                b"\x3f\x80\x00\x00\x3f\x80\x00\x00\x44\x20\x00\x00\x43\xe0",
+            )
+            lyt_file = lyt_file.replace(
+                b"\x41\x8c\x00\x00\xc2\x36",
+                b"\x80\x00\x00\x00\x80\x00",
+            )
+            lyt_file = lyt_file.replace(
+                b"\x41\x8c\x00\x00\xc2\x38",
+                b"\x80\x00\x00\x00\x80\x00",
             )
             endroll_arc.set_file_data("blyt/endTitle_00.brlyt", lyt_file)
         

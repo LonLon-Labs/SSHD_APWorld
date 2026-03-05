@@ -21,7 +21,7 @@ except ImportError:
     HAS_SSHD_RANDO = False
 
 
-def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_source: Path, endroll_source: Path):
+def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_source: Path, endroll_source: Path, use_alt_logo: bool = False):
     """
     Patch the title screen and credits to show the Archipelago logo.
     
@@ -30,15 +30,21 @@ def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_s
         assets_path: Path to the assets folder containing TPL files
         title2d_source: Path to the source Title2D.arc file
         endroll_source: Path to the source EndRoll.arc file
+        use_alt_logo: If True, use the alternative Archipelago logo files
     """
     if not HAS_SSHD_RANDO:
         print("Warning: sshd-rando not available, skipping logo patch")
         return
+    
+    # Select logo filenames based on whether the alternative logo is enabled
+    alt_suffix = '_alt' if use_alt_logo else ''
+    if use_alt_logo:
+        print("[ArcPatcher] Using alternative Archipelago logo")
         
     # Load custom Archipelago logo TPL files
-    logo_tpl = assets_path / "archipelago-logo.tpl"
-    rogo_03_tpl = assets_path / "archipelago-rogo_03.tpl"
-    rogo_04_tpl = assets_path / "archipelago-rogo_04.tpl"
+    logo_tpl = assets_path / f"archipelago-logo{alt_suffix}.tpl"
+    rogo_03_tpl = assets_path / f"archipelago-rogo_03{alt_suffix}.tpl"
+    rogo_04_tpl = assets_path / f"archipelago-rogo_04{alt_suffix}.tpl"
     
     if not all(f.exists() for f in [logo_tpl, rogo_03_tpl, rogo_04_tpl]):
         print("Warning: Custom Archipelago logo TPL files not found in assets folder")
@@ -63,7 +69,10 @@ def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_s
         if lyt_file := title_2d_arc.get_file_data("blyt/titleBG_00.brlyt"):
             # Changes the size of the P_loop_00, P_auraR_03, and P_auraR_00 lyt elements
             lyt_file = lyt_file.replace(
-                b"\x43\xa4\xc0\x00\x43\x37", b"\x43\xa4\xc0\x00\x43\x69"
+                b"\x43\xa4\xc0\x00\x43\x37\x00", b"\x43\xe6\x00\x00\x43\xa1\x80"
+            )
+            lyt_file = lyt_file.replace(
+                b"\x41\x4c\x00\x00\xc2\x08", b"\x00\x00\x00\x00\x00\x00"
             )
             title_2d_arc.set_file_data("blyt/titleBG_00.brlyt", lyt_file)
         
@@ -87,8 +96,16 @@ def patch_archipelago_logo(romfs_output_path: Path, assets_path: Path, title2d_s
         if lyt_file := endroll_arc.get_file_data("blyt/endTitle_00.brlyt"):
             # Changes the size of the P_loop_00, and P_auraR_00 lyt elements
             lyt_file = lyt_file.replace(
-                b"\x9a\x40\x49\x99\x9a\x43\x13\x80\x00\x42\xa2",
-                b"\x99\x40\x49\x99\x99\x43\x13\x80\x00\x42\xce",
+                b"\x40\x49\x99\x9a\x40\x49\x99\x9a\x43\x13\x80\x00\x42\xa2",
+                b"\x3f\x80\x00\x00\x3f\x80\x00\x00\x44\x20\x00\x00\x43\xe0",
+            )
+            lyt_file = lyt_file.replace(
+                b"\x41\x8c\x00\x00\xc2\x36",
+                b"\x80\x00\x00\x00\x80\x00",
+            )
+            lyt_file = lyt_file.replace(
+                b"\x41\x8c\x00\x00\xc2\x38",
+                b"\x80\x00\x00\x00\x80\x00",
             )
             endroll_arc.set_file_data("blyt/endTitle_00.brlyt", lyt_file)
         
