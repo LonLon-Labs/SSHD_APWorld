@@ -37,6 +37,8 @@ See [Quick Start → Option B](#1-install-the-apworld-and-client) below.
 
 ## Quick Start
 
+You can follow [this video guide](https://www.youtube.com/watch?v=d3bCL_RCDzE) or the written guide below
+
 ### 1. Install the APWorld and Client
 
 **Option A: Pre-built Release (Recommended — no Python needed)**
