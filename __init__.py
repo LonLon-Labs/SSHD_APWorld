@@ -1695,12 +1695,25 @@ class SSHDWorld(World):
         """
         Run after the fill to diagnose any accessibility issues.
         
-        Simulates the same sweep that fulfills_accessibility() performs,
-        and reports which advancement locations are stuck (unreachable).
-        This runs BEFORE the concurrent accessibility check in Main.py,
-        so we get diagnostic output even if the check fails.
+        Simulates a full sphere sweep across the multiworld and reports
+        which advancement locations are truly stuck (unreachable even after
+        collecting everything reachable). The sweep does NOT short-circuit
+        when the game becomes beatable — it continues to completion so we
+        get an accurate picture of unreachable locations.
+        
+        Only the first SSHD player runs this (to avoid duplicate output
+        when multiple SSHD players exist in the same multiworld).
         """
         from BaseClasses import CollectionState
+        
+        # Only run once: skip if another SSHD player already ran this check
+        sshd_players = [
+            p for p in self.multiworld.player_ids
+            if hasattr(self.multiworld.worlds[p], '_sshd_post_fill_done')
+        ]
+        if sshd_players:
+            return
+        self._sshd_post_fill_done = True
         
         try:
             state = CollectionState(self.multiworld)
@@ -1712,7 +1725,9 @@ class SSHDWorld(World):
             remaining = list(advancement_locs)
             iteration = 0
             beatable = False
+            beatable_at_sphere = -1
             
+            # Full sweep — do NOT break early on beatability
             while remaining:
                 sphere = [loc for loc in remaining if loc.can_reach(state)]
                 if not sphere:
@@ -1722,14 +1737,15 @@ class SSHDWorld(World):
                     if loc.item:
                         state.collect(loc.item, True, loc)
                 iteration += 1
-                if self.multiworld.has_beaten_game(state):
+                if not beatable and self.multiworld.has_beaten_game(state):
                     beatable = True
-                    break
+                    beatable_at_sphere = iteration
             
             if remaining:
                 # Report stuck locations for debugging
                 print(f"[SSHD-DIAG] Post-fill check: {len(remaining)} advancement locations unreachable "
-                      f"(of {len(advancement_locs)} total, {iteration} spheres)")
+                      f"(of {len(advancement_locs)} total, {iteration} spheres, "
+                      f"game {'beatable at sphere ' + str(beatable_at_sphere) if beatable else 'NOT beatable'})")
                 for loc in remaining[:30]:
                     region_name = loc.parent_region.name if loc.parent_region else "None"
                     item_name = loc.item.name if loc.item else "None"
@@ -1759,7 +1775,7 @@ class SSHDWorld(World):
                         print(f"  {bk}: {'YES' if state.has(bk, self.player) else 'no'}")
                     print(f"  Has Game Beatable: {'YES' if state.has('Game Beatable', self.player) else 'no'}")
             else:
-                status = "beatable" if beatable else "all locations reachable but game not beaten"
+                status = f"beatable at sphere {beatable_at_sphere}" if beatable else "all locations reachable but game not beaten"
                 print(f"[SSHD-DIAG] Post-fill check OK: all {len(advancement_locs)} advancement locations "
                       f"reachable in {iteration} spheres, game {status}")
         except Exception as e:
@@ -1828,6 +1844,11 @@ class SSHDWorld(World):
         
         slot_data["ap_item_info"] = ap_item_info
         print(f"[__init__.py] Added {len(ap_item_info)} AP item info entries to slot_data")
+        
+        # Keep reference so generate_output() can add goddess chest scene flags
+        # after BZS data has been parsed.  Python dicts are mutable so any keys
+        # we add later will be visible when the AP server sends this to clients.
+        self._slot_data_ref = slot_data
         
         return slot_data
     
@@ -2099,6 +2120,26 @@ class SSHDWorld(World):
                 print(f"[__init__.py] Stored {len(self._actual_custom_flag_mapping)} custom flag assignments for client")
                 if skipped_internal:
                     print(f"[__init__.py] Skipped {skipped_internal} internal locations (Goddess Cubes)")
+                
+                # ---- Goddess chest scene flag extraction ----
+                # Goddess chests don't use custom flags (writing to params2 would
+                # corrupt their storyflag spawn gate).  Instead, the AP client
+                # polls the vanilla set_sceneflag that the game engine sets when
+                # the chest is opened.  The mapping custom_flag → [scene_index,
+                # set_sceneflag] was collected by the stage patch handler during
+                # handle_stage_patches.
+                goddess_flags_raw = patch_handler.stage_patch_handler.goddess_chest_scene_flags
+                if goddess_flags_raw and hasattr(self, '_slot_data_ref'):
+                    goddess_chest_data: dict[str, list[int]] = {}
+                    for flag_id, scene_flag_pair in goddess_flags_raw.items():
+                        # Convert custom_flag → AP location code via the mapping
+                        if flag_id in self._custom_flag_mapping:
+                            loc_code = self._custom_flag_mapping[flag_id]
+                            goddess_chest_data[str(loc_code)] = scene_flag_pair
+                    self._slot_data_ref["goddess_chest_scene_flags"] = goddess_chest_data
+                    print(f"[__init__.py] Added {len(goddess_chest_data)} goddess chest scene flag mappings to slot_data")
+                elif goddess_flags_raw:
+                    print(f"[__init__.py] WARNING: goddess_chest_scene_flags extracted but no _slot_data_ref")
                 
                 # VERIFICATION: Compare intended vs actual custom flag assignments
                 # This detects mismatches that would cause AP item text to fail

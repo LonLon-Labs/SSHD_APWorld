@@ -75,13 +75,6 @@ def patch_tbox(
         # Makes sure the bit is set if not a trap
         tbox["params2"] = mask_shift_set(tbox["params2"], 0xF, 28, 0xF)
 
-    # Encode Archipelago custom_flag into params2 bits 8-17 (10 bits)
-    # This gets read by fix_tbox_traps in Rust and propagated to the spawned
-    # item actor via ACTORBASE_PARAM2, where unpack_custom_item_params will
-    # extract it and call set_global_sceneflag for Archipelago detection.
-    # 0x3FF = no custom flag (flag bits = 0x7F = skip sentinel in Rust)
-    tbox["params2"] = mask_shift_set(tbox["params2"], 0x3FF, 8, custom_flag)
-
     original_itemid = tbox["anglez"] & 0x1FF
 
     # Patch chest subtype
@@ -101,10 +94,34 @@ def patch_tbox(
     elif tbox_subtype == -1:
         tbox_subtype = vanilla_tbox_subtype
 
+    # Encode Archipelago custom_flag into params2 bits 8-17 (10 bits)
+    # This gets read by fix_tbox_traps in Rust and propagated to the spawned
+    # item actor via ACTORBASE_PARAM2, where unpack_custom_item_params will
+    # extract it and call set_global_sceneflag for Archipelago detection.
+    # 0x3FF = no custom flag (flag bits = 0x7F = skip sentinel in Rust)
+    #
+    # IMPORTANT: Do NOT write custom_flag to params2 for Goddess Chests
+    # (vanilla subtype 3). The game engine uses params2 bits 8-17 as part of
+    # the TBox spawn condition check. Writing non-vanilla values to these bits
+    # causes goddess chests to bypass the spawn_sceneflag gate and appear
+    # without their corresponding goddess cubes being struck.
+    #
+    # For goddess chests, AP location completion is detected via the vanilla
+    # set_sceneflag (anglex & 0xFF) that the game engine sets when the chest
+    # is opened. The AP client polls these scene flags directly.
+    if vanilla_tbox_subtype != 3:
+        tbox["params2"] = mask_shift_set(tbox["params2"], 0x3FF, 8, custom_flag)
+
     tbox["params1"] = mask_shift_set(tbox["params1"], 0x3, 4, tbox_subtype)
 
     # Patch itemid
     tbox["anglez"] = mask_shift_set(tbox["anglez"], 0x1FF, 0, itemid)
+
+    # Return the vanilla set_sceneflag for goddess chests so the caller
+    # can build a mapping for the AP client to poll.
+    if vanilla_tbox_subtype == 3:
+        return tbox["anglex"] & 0xFF
+    return -1
 
 
 def patch_freestanding_item(
@@ -858,12 +875,25 @@ def arcn_add(bzs: dict, patch: dict):
 
 
 class StagePatchHandler:
+    # Stage names where goddess chests reside → scene index in the 26-scene array.
+    # Goddess chests only exist in Skyloft (F000/F004r → scene 0)
+    # and The Sky / Thunderhead (F020/F023 → scene 21).
+    GODDESS_STAGE_TO_SCENE: dict[str, int] = {
+        "F000": 0,
+        "F004r": 0,
+        "F020": 21,
+        "F023": 21,
+    }
+
     def __init__(self, output_path: Path, other_mods: list[str] = []):
         self.base_output_path = output_path
         self.stage_output_path = self.base_output_path / "Stage"
         self.stage_patches: dict[str, list[dict]] = yaml_load(STAGE_PATCHES_PATH)  # type: ignore
         self.check_patches: dict[str, list[tuple]] = defaultdict(list)
         self.other_mods = other_mods
+        # Populated during handle_stage_patches(): custom_flag → [scene_index, set_sceneflag]
+        # Used by the AP client to detect goddess chest completions via vanilla scene flags
+        self.goddess_chest_scene_flags: dict[int, list[int]] = {}
 
     def handle_stage_patches(self, onlyif_handler: ConditionalPatchHandler):
         for stage in self.stage_patches:
@@ -998,7 +1028,7 @@ class StagePatchHandler:
                     tbox_subtype,
                 ) in check_patches_for_current_room:
                     if object_name == "TBox":
-                        patch_tbox(
+                        goddess_set_sceneflag = patch_tbox(
                             room_bzs["LAY "][f"l{layer}"],
                             itemid,
                             objectid,
@@ -1006,6 +1036,14 @@ class StagePatchHandler:
                             tbox_subtype,
                             custom_flag,
                         )
+                        # If this was a goddess chest, record the scene flag
+                        # so the AP client can poll it for completion detection.
+                        if goddess_set_sceneflag >= 0 and custom_flag != 0x3FF:
+                            scene_index = self.GODDESS_STAGE_TO_SCENE.get(stage_name)
+                            if scene_index is not None:
+                                self.goddess_chest_scene_flags[custom_flag] = [
+                                    scene_index, goddess_set_sceneflag
+                                ]
                     elif object_name == "Item":
                         patch_freestanding_item(
                             room_bzs["LAY "][f"l{layer}"],
