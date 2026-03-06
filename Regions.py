@@ -36,6 +36,7 @@ REGION_CONNECTIONS: Dict[str, List[Tuple[str, str]]] = {
         ("Bazaar", None),
         ("Skyloft Village", None),
         ("The Sky", "can_fly"),  # Requires Loftwing
+        ("Sky Keep", "can_enter_sky_keep"),  # Requires Clawshots + Stone of Trials
     ],
     "Skyloft Village": [
         ("Central Skyloft", None),
@@ -60,7 +61,6 @@ REGION_CONNECTIONS: Dict[str, List[Tuple[str, str]]] = {
         ("Eldin Volcano", "can_enter_eldin"),
         ("Lanayru Desert", "can_enter_lanayru"),
         ("Lumpy Pumpkin", None),
-        ("Isle of Songs", "can_reach_isle_of_songs"),
         ("Fun Fun Island", None),
         ("Beedle's Island", None),
         ("Beedle's Airshop", None),  # Flying shop accessible from sky
@@ -71,9 +71,7 @@ REGION_CONNECTIONS: Dict[str, List[Tuple[str, str]]] = {
         ("Triple Island", None),
         ("Island Closest to Faron Pillar", None),
         ("Island near Bamboo Island", None),
-        ("Bug Heaven", "can_reach_thunderhead"),
         ("Inside the Thunderhead", "can_reach_thunderhead"),
-        ("Sky Keep", "can_enter_sky_keep"),  # Late-game dungeon requiring Stone of Trials
     ],
     
     # Sky islands
@@ -102,6 +100,7 @@ REGION_CONNECTIONS: Dict[str, List[Tuple[str, str]]] = {
     "Inside the Thunderhead": [
         ("The Sky", None),
         ("Bug Heaven", None),
+        ("Isle of Songs", None),  # YAML: Inside the Thunderhead -> Isle of Songs: Nothing
     ],
     "Bug Heaven": [
         ("Inside the Thunderhead", None),
@@ -114,7 +113,7 @@ REGION_CONNECTIONS: Dict[str, List[Tuple[str, str]]] = {
         ("Temple of Hylia", "can_reach_temple_of_hylia"),
         ("Faron Woods", "can_progress_faron"),
         ("Hylia's Realm", "can_reach_past"),
-        ("The Goddess's Silent Realm", "can_enter_silent_realm"),
+        ("The Goddess's Silent Realm", "can_enter_goddess_silent_realm"),
     ],
     "Sealed Temple": [
         ("Sealed Grounds", None),
@@ -130,7 +129,7 @@ REGION_CONNECTIONS: Dict[str, List[Tuple[str, str]]] = {
         ("Inside the Great Tree", None),
         ("Skyview Temple", "can_enter_skyview"),
         ("Lake Floria", "can_reach_lake_floria"),
-        ("Farore's Silent Realm", "can_enter_silent_realm"),
+        ("Farore's Silent Realm", "can_enter_farores_silent_realm"),
     ],
     "Deep Woods": [
         ("Faron Woods", None),
@@ -173,7 +172,7 @@ REGION_CONNECTIONS: Dict[str, List[Tuple[str, str]]] = {
         ("Lower Eldin Cave", None),
         ("Earth Temple", "can_enter_earth_temple"),
         ("Fire Sanctuary", "can_enter_fire_sanctuary"),
-        ("Din's Silent Realm", "can_enter_silent_realm"),
+        ("Din's Silent Realm", "can_enter_dins_silent_realm"),
     ],
     "Mogma Turf": [
         ("Eldin Volcano", None),
@@ -192,13 +191,13 @@ REGION_CONNECTIONS: Dict[str, List[Tuple[str, str]]] = {
     # Lanayru region
     "Lanayru Desert": [
         ("The Sky", None),
-        ("Fire Node", "can_activate_fire_node"),
-        ("Lightning Node", "can_activate_lightning_node"),
-        ("Temple of Time", "can_enter_temple_of_time"),
+        ("Fire Node", None),  # YAML: Fire Node in Lanayru Desert East, no special req
+        ("Lightning Node", None),  # YAML: Lightning Node in Lanayru Desert North, no special req
+        ("Temple of Time", None),  # YAML: Temple of Time in Lanayru Desert, no Harp req
         ("Lanayru Mine", None),
         ("Lanayru Mining Facility", None),  # No requirement - Gust Bellows is found inside
         ("Lanayru Gorge", "can_reach_lanayru_gorge"),
-        ("Nayru's Silent Realm", "can_enter_silent_realm"),
+        ("Nayru's Silent Realm", "can_enter_nayrus_silent_realm"),
     ],
     "Temple of Time": [
         ("Lanayru Desert", None),
@@ -212,11 +211,11 @@ REGION_CONNECTIONS: Dict[str, List[Tuple[str, str]]] = {
     "Lanayru Gorge": [
         ("Lanayru Desert", None),
         ("Lanayru Caves", None),
-        ("Pirate Stronghold", "can_reach_sand_sea"),
-        ("Skipper's Retreat", "can_reach_sand_sea"),
-        ("Ancient Harbour", "can_reach_sand_sea"),
-        ("Shipyard", "can_reach_sand_sea"),
-        ("Sandship", "can_board_sandship"),
+        ("Pirate Stronghold", None),  # YAML: Sand Sea areas accessible without Sea Chart
+        ("Skipper's Retreat", None),
+        ("Ancient Harbour", None),
+        ("Shipyard", None),
+        ("Sandship", "can_board_sandship"),  # Requires Sea Chart + Sword
     ],
     "Lanayru Caves": [
         ("Lanayru Gorge", None),

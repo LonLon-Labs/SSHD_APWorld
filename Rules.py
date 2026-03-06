@@ -116,15 +116,23 @@ def set_rules(world: "SSHDWorld") -> None:
             elif rule_name == "can_fly":
                 entrance.access_rule = lambda state: can_fly(state)
             elif rule_name == "can_enter_faron":
-                entrance.access_rule = lambda state: can_fly(state)
+                # YAML: The Sky -> Faron Pillar requires Emerald_Tablet
+                entrance.access_rule = lambda state: has(state, "Emerald Tablet")
             elif rule_name == "can_enter_eldin":
-                entrance.access_rule = lambda state: can_fly(state)
+                # YAML: The Sky -> Eldin Pillar requires Ruby_Tablet
+                entrance.access_rule = lambda state: has(state, "Ruby Tablet")
             elif rule_name == "can_enter_lanayru":
-                entrance.access_rule = lambda state: can_fly(state)
+                # YAML: The Sky -> Lanayru Pillar requires Amber_Tablet
+                entrance.access_rule = lambda state: has(state, "Amber Tablet")
             elif rule_name == "can_progress_faron":
                 entrance.access_rule = lambda state: has_sword(state, 1)
             elif rule_name == "can_enter_skyview":
-                entrance.access_rule = lambda state: has_slingshot(state)
+                # YAML: Can_Hit_High_Skyview_Switches = Distance_Activator or (Bomb_Bag and logic_bomb_throws)
+                # Distance_Activator = Slingshot or Beetle or Clawshots or Bow
+                entrance.access_rule = lambda state: (
+                    has_slingshot(state) or has_beetle(state)
+                    or has_bow(state) or has(state, "Clawshots")
+                )
             elif rule_name == "has_skyview_boss_key":
                 entrance.access_rule = lambda state: has(state, "Skyview Temple Boss Key")
             elif rule_name == "can_reach_lake_floria":
@@ -132,28 +140,38 @@ def set_rules(world: "SSHDWorld") -> None:
             elif rule_name == "can_reach_flooded_faron":
                 entrance.access_rule = lambda state: has(state, "Whip") and can_swim_underwater(state)
             elif rule_name == "can_enter_ancient_cistern":
-                entrance.access_rule = lambda state: has(state, "Whip") and can_swim_underwater(state)
+                # YAML: Ancient Cistern Lobby is reached from Floria Waterfall Temple Ledge
+                # which requires Water_Dragons_Scale. Whip is needed inside AC, not to enter.
+                entrance.access_rule = lambda state: can_swim_underwater(state)
             elif rule_name == "can_enter_earth_temple":
-                entrance.access_rule = lambda state: can_use_bombs(state) and has_beetle(state)
+                # YAML: Earth Temple First Room requires open_earth_temple == open or count(5, Key_Piece)
+                entrance.access_rule = lambda state: count(state, "Key Piece") >= 5
             elif rule_name == "has_earth_temple_boss_key":
                 entrance.access_rule = lambda state: has(state, "Earth Temple Boss Key")
             elif rule_name == "can_enter_fire_sanctuary":
                 entrance.access_rule = lambda state: has(state, "Fireshield Earrings") and can_use_bombs(state)
             elif rule_name == "can_enter_temple_of_time":
-                entrance.access_rule = lambda state: has(state, "Goddess's Harp")
+                # YAML: Temple of Time is in Lanayru Desert, accessible via desert paths
+                # No Harp requirement — Harp is for songs/silent realms, not ToT access
+                entrance.access_rule = lambda state: True
             elif rule_name == "can_enter_lanayru_mining_facility":
                 entrance.access_rule = lambda state: has(state, "Gust Bellows")
             elif rule_name == "can_reach_lanayru_gorge":
                 entrance.access_rule = lambda state: has(state, "Clawshots")
             elif rule_name == "can_board_sandship":
-                entrance.access_rule = lambda state: has(state, "Clawshots")
+                # YAML: Sandship Main Deck reached from Lanayru Sand Sea via
+                # 'Shoot_down_Sandship' = Sea_Chart and Sword
+                entrance.access_rule = lambda state: has(state, "Sea Chart") and has_sword(state, 1)
             elif rule_name == "can_reach_thunderhead":
-                # Only requires Goddess's Harp to play Ballad of the Goddess
-                entrance.access_rule = lambda state: has(state, "Goddess's Harp")
+                # YAML: Goddesss_Harp and Ballad_of_the_Goddess and can_access(Central Skyloft)
+                entrance.access_rule = lambda state: has(state, "Goddess's Harp") and has(state, "Ballad of the Goddess")
             elif rule_name == "can_reach_isle_of_songs":
-                entrance.access_rule = lambda state: has(state, "Clawshots")
+                # YAML: Isle of Songs is inside the Thunderhead, no additional req
+                entrance.access_rule = lambda state: True
             elif rule_name == "can_enter_sky_keep":
-                entrance.access_rule = lambda state: has(state, "Stone of Trials")
+                # YAML: Sky Keep Entrance Platform from Central Skyloft needs Day + Clawshots,
+                # then Stone_of_Trials to enter Sky Keep Entryway
+                entrance.access_rule = lambda state: has(state, "Stone of Trials") and has(state, "Clawshots")
             elif rule_name == "can_reach_past":
                 # Gate of Time: requires Goddess's Harp + Ballad of the Goddess + sword level
                 # from got_sword_requirement setting (matches sshd-rando's Faron.yaml logic)
@@ -176,18 +194,65 @@ def set_rules(world: "SSHDWorld") -> None:
                 # Returning from the past is always possible once you're there
                 entrance.access_rule = lambda state: True
             elif rule_name == "can_reach_temple_of_hylia":
-                entrance.access_rule = lambda state: has(state, "Ballad of the Goddess")
+                # YAML: Sealed Temple -> Temple of Hylia requires 'Open_Gate_of_Time'
+                # = Raise_Gate_of_Time (Harp + Ballad) AND Gate_of_Time_Sword_Requirement
+                resolved_hylia = getattr(world, '_sshd_resolved_settings', {})
+                got_sword_hylia = resolved_hylia.get('got_sword_requirement', 'true_master_sword')
+                sword_map_hylia = {
+                    'goddess_sword': 2,
+                    'goddess_longsword': 3,
+                    'goddess_white_sword': 4,
+                    'master_sword': 5,
+                    'true_master_sword': 6,
+                }
+                req_hylia = sword_map_hylia.get(got_sword_hylia, 6)
+                entrance.access_rule = lambda state, lvl=req_hylia: (
+                    has(state, "Goddess's Harp")
+                    and has(state, "Ballad of the Goddess")
+                    and has_sword(state, lvl)
+                )
             elif rule_name == "can_reach_bokoblin_base":
                 entrance.access_rule = lambda state: can_use_bombs(state) or has(state, "Clawshots")
             elif rule_name == "can_activate_fire_node":
-                entrance.access_rule = lambda state: has(state, "Goddess's Harp")
+                # YAML: Fire Node is in Lanayru Desert East, no Harp needed
+                entrance.access_rule = lambda state: True
             elif rule_name == "can_activate_lightning_node":
-                entrance.access_rule = lambda state: has(state, "Goddess's Harp")
+                # YAML: Lightning Node is in Lanayru Desert North, no Harp needed
+                entrance.access_rule = lambda state: True
             elif rule_name == "can_reach_sand_sea":
-                entrance.access_rule = lambda state: has(state, "Sea Chart")
-            elif rule_name == "can_enter_silent_realm":
-                # Silent Realms only require Goddess's Harp and basic Goddess Sword (level 1)
-                entrance.access_rule = lambda state: has(state, "Goddess's Harp") and has_sword(state, 1)
+                # YAML: Sand Sea areas (Pirate Stronghold, Skipper's Retreat, etc.)
+                # are reachable from Sand Sea without Sea Chart. Sea Chart is only
+                # needed to shoot down the Sandship (handled by can_board_sandship).
+                entrance.access_rule = lambda state: True
+            elif rule_name == "can_enter_farores_silent_realm":
+                # YAML: Goddesss_Harp and Farores_Courage and Progressive_Sword
+                entrance.access_rule = lambda state: (
+                    has(state, "Goddess's Harp")
+                    and has(state, "Farore's Courage")
+                    and has_sword(state, 1)
+                )
+            elif rule_name == "can_enter_dins_silent_realm":
+                # YAML: Goddesss_Harp and Dins_Power and Progressive_Sword
+                entrance.access_rule = lambda state: (
+                    has(state, "Goddess's Harp")
+                    and has(state, "Din's Power")
+                    and has_sword(state, 1)
+                )
+            elif rule_name == "can_enter_nayrus_silent_realm":
+                # YAML: Goddesss_Harp and Nayrus_Wisdom and Progressive_Sword
+                entrance.access_rule = lambda state: (
+                    has(state, "Goddess's Harp")
+                    and has(state, "Nayru's Wisdom")
+                    and has_sword(state, 1)
+                )
+            elif rule_name == "can_enter_goddess_silent_realm":
+                # YAML: Goddesss_Harp and Full_Song_of_the_Hero and Progressive_Sword
+                # Full_Song_of_the_Hero = count(4, Song_of_the_Hero_Part)
+                entrance.access_rule = lambda state: (
+                    has(state, "Goddess's Harp")
+                    and count(state, "Song of the Hero Part") >= 4
+                    and has_sword(state, 1)
+                )
             else:
                 # If rule_name is None or unknown, always accessible
                 entrance.access_rule = lambda state: True
