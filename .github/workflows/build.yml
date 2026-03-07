@@ -165,7 +165,7 @@ jobs:
         ls -lh release/
 
     - name: Update Continuous Release
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/fix-')
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/fix-') || startsWith(github.ref, 'refs/heads/fix/') || startsWith(github.ref, 'refs/heads/feature-') || startsWith(github.ref, 'refs/heads/feature/')
       uses: softprops/action-gh-release@v1
       with:
         tag_name: Continuous
