@@ -1190,7 +1190,6 @@ class SSHDContext(CommonContext):
         self.checked_locations: Set[int] = set()
         self.sent_locations: Set[int] = set()  # Locations already sent to server
         self.item_queue: list = []  # Items waiting to be given
-        self._item_retry_after: float = 0.0  # Earliest time to retry a failed item delivery
         self.location_to_item: Dict[str, Dict] = {}  # Maps location names to item info from patch
         self.item_to_location: Dict[int, int] = {}  # Maps item code -> location code for tracking
         self.slot_data: dict = {}  # Slot data from server containing location-to-item mapping
@@ -1254,12 +1253,6 @@ class SSHDContext(CommonContext):
         self.previous_custom_flags: Dict[int, int] = {}  # custom_flag_id -> last_state (0 or 1)
         self.custom_flag_to_location: Dict[int, int] = {}  # custom_flag_id -> location_code
         self.location_to_custom_flag: Dict[int, int] = {}  # location_code -> custom_flag_id (for vanilla pickups)
-        
-        # Goddess chest scene flags: location_code -> [scene_index, set_sceneflag]
-        # Used to detect goddess chest opens by polling the vanilla scene flag
-        # that the game engine sets when the chest is opened.
-        self.goddess_chest_scene_flags: Dict[int, list] = {}
-        self.previous_goddess_flags: Dict[int, int] = {}  # location_code -> last_state
         
         # AP item info table (for item 216 textbox display) and check stats (for help menu)
         self.ap_item_info: Dict[int, dict] = {}  # custom_flag_id -> {"item": name, "player": name}
@@ -1492,8 +1485,8 @@ class SSHDContext(CommonContext):
             
             # Check world version compatibility
             server_version = slot_data.get("world_version", [0, 0, 0])
-            if server_version[0] != 0 or server_version[1] != 7:
-                logger.warning(f"World version mismatch! Client expects 0.7.x, server has {server_version}")
+            if server_version[0] != 0 or server_version[1] != 1:
+                logger.warning(f"World version mismatch! Client expects 0.1.x, server has {server_version}")
                 logger.warning("The game may not work correctly. Please update your client or regenerate your seed.")
             
             # Store slot options for reference
@@ -1547,19 +1540,6 @@ class SSHDContext(CommonContext):
                 self._write_ap_item_info_table()
             else:
                 logger.debug("No AP item info in slot data")
-
-            # Load goddess chest scene flag mapping for completion detection.
-            # Goddess chests can't use custom flags (writing to params2 corrupts
-            # the storyflag spawn gate), so the client polls the vanilla
-            # set_sceneflag that the game engine sets when the chest is opened.
-            goddess_flags_raw = slot_data.get("goddess_chest_scene_flags", {})
-            if goddess_flags_raw:
-                # Keys are location_code (str from JSON), values are [scene_index, set_sceneflag]
-                self.goddess_chest_scene_flags = {int(k): v for k, v in goddess_flags_raw.items()}
-                logger.info(f"Loaded {len(self.goddess_chest_scene_flags)} goddess chest scene flag mappings")
-            else:
-                self.goddess_chest_scene_flags = {}
-                logger.debug("No goddess chest scene flag mapping in slot data")
 
             # Enable DeathLink if the player configured it
             death_link_enabled = slot_data.get("option_death_link", 0)  # Options use "option_" prefix
@@ -1962,83 +1942,63 @@ class SSHDContext(CommonContext):
             
             # Give queued items to player
             if self.item_queue:
-                # Respect retry cooldown to avoid busy-loop spam when player
-                # is in an animation or otherwise unable to receive items.
-                now = time.time()
-                if now < self._item_retry_after:
-                    pass  # Cooldown active — skip this tick
-                else:
-                    item_data = self.item_queue[0]
+                item_data = self.item_queue[0]
+                
+                # Start-inventory items (precollected) are already baked into the
+                # game save by sshd-rando patches.  We must NOT give them again via
+                # the memory buffer, but we DO need to advance the progressive
+                # counter so that future progressive items resolve to the right tier.
+                if item_data.get("is_start_inventory", False):
+                    item_name = item_data["name"]
+                    if item_name in self.progressive_counts:
+                        self.progressive_counts[item_name] += 1
+                        logger.debug(f"[StartInventory] Tracked {item_name} progressive count -> {self.progressive_counts[item_name]}")
+                    logger.debug(f"[StartInventory] Skipped in-game delivery of {item_name} (already in save from patches)")
+                    self.item_queue.pop(0)
+                    self.delivered_item_count += 1
+                    self.save_progress()
+                    self.update_tracker_state()
+                elif self.give_item_to_player(item_data["name"], item_data["id"]):
+                    # Successfully gave item
+                    player_name = item_data.get("player_name", "another player")
+                    location_name = item_data.get("location", "unknown location")
+                    is_own_item = (item_data.get("location_player") == self.slot)
                     
-                    # Start-inventory items (precollected) are already baked into the
-                    # game save by sshd-rando patches.  We must NOT give them again via
-                    # the memory buffer, but we DO need to advance the progressive
-                    # counter so that future progressive items resolve to the right tier.
-                    if item_data.get("is_start_inventory", False):
-                        item_name = item_data["name"]
-                        if item_name in self.progressive_counts:
-                            self.progressive_counts[item_name] += 1
-                            logger.debug(f"[StartInventory] Tracked {item_name} progressive count -> {self.progressive_counts[item_name]}")
-                        logger.debug(f"[StartInventory] Skipped in-game delivery of {item_name} (already in save from patches)")
-                        self.item_queue.pop(0)
-                        self.delivered_item_count += 1
-                        self.save_progress()
-                        self.update_tracker_state()
-                    elif self.give_item_to_player(item_data["name"], item_data["id"]):
-                        # Successfully gave item
-                        player_name = item_data.get("player_name", "another player")
-                        location_name = item_data.get("location", "unknown location")
-                        is_own_item = (item_data.get("location_player") == self.slot)
-                        
-                        if not is_own_item:
-                            # Received item from another player
-                            logger.info(f"Received {item_data['name']} from {player_name} ({location_name})")
-                        else:
-                            # Received own item
-                            logger.info(f"Received {item_data['name']} ({location_name})")
-                        
-                        # Clear retry counter and cooldown on success
-                        item_data.pop("_retry_count", None)
-                        self._item_retry_after = 0.0
-                        
-                        # Remove from queue and persist delivery count
-                        self.item_queue.pop(0)
-                        self.delivered_item_count += 1
-                        self.save_progress()
-                        
-                        # Update tracker with new item
-                        self.update_tracker_state()
+                    if not is_own_item:
+                        # Received item from another player
+                        logger.info(f"Received {item_data['name']} from {player_name} ({location_name})")
                     else:
-                        # Item delivery failed — apply exponential backoff.
-                        # This prevents the ~60 Hz busy-loop spam when the
-                        # player is in an animation (0x78 ITEM_GET, etc.).
-                        MAX_ITEM_RETRIES = 200  # generous limit before cycling
-                        retry_count = item_data.get("_retry_count", 0) + 1
-                        item_data["_retry_count"] = retry_count
-                        
-                        # Exponential backoff: 0.25s → 0.5s → 1.0s → 2.0s (cap)
-                        delay = min(0.25 * (2 ** min(retry_count - 1, 3)), 2.0)
-                        self._item_retry_after = time.time() + delay
-                        
-                        # Throttle log messages: only log every 10th retry
-                        if retry_count == 1 or retry_count % 10 == 0:
-                            logger.debug(
-                                f"[ItemDelivery] Failed to give {item_data['name']} "
-                                f"(attempt {retry_count}, next retry in {delay:.2f}s)"
-                            )
-                        
-                        if retry_count >= MAX_ITEM_RETRIES:
-                            item_name = item_data["name"]
-                            logger.error(
-                                f"[ItemDelivery] Giving up on {item_name} after {retry_count} attempts. "
-                                f"Item will be re-delivered on next reconnect."
-                            )
-                            # Move to back of queue instead of dropping forever,
-                            # so it can be retried after other items succeed
-                            # (which may fix the buffer address via cycling)
-                            self.item_queue.pop(0)
-                            item_data["_retry_count"] = 0  # Reset for next round
-                            self.item_queue.append(item_data)
+                        # Received own item
+                        logger.info(f"Received {item_data['name']} ({location_name})")
+                    
+                    # Clear retry counter on success
+                    item_data.pop("_retry_count", None)
+                    
+                    # Remove from queue and persist delivery count
+                    self.item_queue.pop(0)
+                    self.delivered_item_count += 1
+                    self.save_progress()
+                    
+                    # Update tracker with new item
+                    self.update_tracker_state()
+                else:
+                    # Item delivery failed - track retries to avoid infinite loops
+                    MAX_ITEM_RETRIES = 50  # ~50 attempts × 5s timeout = ~4 min max
+                    retry_count = item_data.get("_retry_count", 0) + 1
+                    item_data["_retry_count"] = retry_count
+                    
+                    if retry_count >= MAX_ITEM_RETRIES:
+                        item_name = item_data["name"]
+                        logger.error(
+                            f"[ItemDelivery] Giving up on {item_name} after {retry_count} attempts. "
+                            f"Item will be re-delivered on next reconnect."
+                        )
+                        # Move to back of queue instead of dropping forever,
+                        # so it can be retried after other items succeed
+                        # (which may fix the buffer address via cycling)
+                        self.item_queue.pop(0)
+                        item_data["_retry_count"] = 0  # Reset for next round
+                        self.item_queue.append(item_data)
             
             # Check for death (for death link)
             current_health = self.memory.read_short(OFFSET_CURRENT_HEALTH)
@@ -2081,8 +2041,6 @@ class SSHDContext(CommonContext):
             if self.custom_flag_to_location:
                 # Use custom flag system (preferred for SSHD)
                 await self.check_custom_flags()
-                # Goddess chests use vanilla scene flags instead of custom flags
-                await self.check_goddess_chest_flags()
                 # Supplement: shop purchases don't set custom scene/dungeon flags,
                 # so also check Beedle's sold-out storyflags from the save file.
                 await self.check_beedle_shop_storyflags()
@@ -2826,88 +2784,6 @@ class SSHDContext(CommonContext):
             logger.debug(f"[FlagInit] Initialized {initialized_count} custom flags - now monitoring for changes")
             logger.debug(f"[FlagInit] {already_set} flags were already set in save file")
     
-    async def check_goddess_chest_flags(self):
-        """
-        Detect goddess chest opens by polling the vanilla set_sceneflag values.
-
-        Goddess chests cannot use the normal custom-flag pathway because writing
-        a custom flag to params2 bits 8-17 overwrites the goddess cube storyflag
-        encoding and breaks the spawn gate.  Instead, when the player opens a
-        goddess chest the game engine itself sets a local scene flag
-        (set_sceneflag from anglex & 0xFF).  We read those flags from the save
-        file's scene flag array [[u16; 8]; 26].
-
-        The mapping location_code → [scene_index, set_sceneflag] is provided
-        by fill_slot_data → goddess_chest_scene_flags.
-        """
-        if not self.memory.connected or not self.memory.base_address:
-            return
-        if not self.goddess_chest_scene_flags:
-            return
-
-        # Track initialisation similarly to check_custom_flags
-        if not hasattr(self, '_goddess_flags_initializing'):
-            self._goddess_flags_initializing = True
-
-        file_a_offset = OFFSET_SAVEFILE_A
-        flags_base = file_a_offset + OFFSET_FA_SCENEFLAGS
-
-        # Cache per-scene reads so each scene is only read once per tick
-        scene_cache: Dict[int, Optional[list]] = {}
-
-        for location_code, (scene_index, set_sceneflag) in self.goddess_chest_scene_flags.items():
-            if location_code in self.checked_locations:
-                continue
-
-            # Batch-read the 16 bytes for this scene on first access
-            if scene_index not in scene_cache:
-                scene_offset = flags_base + (scene_index * 16)
-                try:
-                    scene_data = self.memory.read_bytes(scene_offset, 16)
-                    if scene_data and len(scene_data) == 16:
-                        scene_cache[scene_index] = [
-                            int.from_bytes(scene_data[i:i+2], byteorder='little')
-                            for i in range(0, 16, 2)
-                        ]
-                    else:
-                        scene_cache[scene_index] = None
-                except Exception:
-                    scene_cache[scene_index] = None
-
-            scene_u16s = scene_cache.get(scene_index)
-            if scene_u16s is None:
-                continue
-
-            u16_index = set_sceneflag // 16
-            bit_index = set_sceneflag % 16
-            if u16_index >= 8:
-                continue
-
-            flag_state = (scene_u16s[u16_index] >> bit_index) & 1
-            previous = self.previous_goddess_flags.get(location_code, 0)
-
-            if self._goddess_flags_initializing:
-                # First poll: snapshot current state to avoid false positives
-                self.previous_goddess_flags[location_code] = flag_state
-            elif flag_state == 1 and previous == 0:
-                # Flag just transitioned 0→1: chest was opened
-                self.checked_locations.add(location_code)
-                location_name = self.location_names.lookup_in_slot(location_code, self.slot)
-                logger.debug(f"Goddess chest checked: {location_name}")
-                logger.debug(f"   scene={scene_index}, flag={set_sceneflag}, "
-                             f"u16[{u16_index}]=0x{scene_u16s[u16_index]:04X}, bit={bit_index}")
-                self.update_tracker_state()
-                self.previous_goddess_flags[location_code] = flag_state
-            else:
-                self.previous_goddess_flags[location_code] = flag_state
-
-        # End initialisation after first complete scan
-        if self._goddess_flags_initializing:
-            self._goddess_flags_initializing = False
-            already_set = sum(1 for v in self.previous_goddess_flags.values() if v == 1)
-            logger.debug(f"[GoddessInit] Initialized {len(self.previous_goddess_flags)} goddess chest flags "
-                         f"({already_set} already set)")
-
     async def check_beedle_shop_storyflags(self):
         """
         Detect Beedle's Airshop purchases by monitoring multiple signal sources:

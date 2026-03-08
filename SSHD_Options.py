@@ -508,6 +508,14 @@ class UndergroundRupeeShufle(Toggle):
 class BeedleShopShuffle(Choice):
     """
     Controls what items appear in Beedle's Airshop.
+    
+    Vanilla: Beedle sells his normal items (not randomized).
+    Junk Only: Beedle locations are randomized but only contain junk/filler items.
+    Randomized: Beedle locations are fully randomized with any items.
+    
+    NOTE: Items belonging to other players in multiworld cannot currently be
+    detected when purchased from Beedle. In 'randomized' and 'junk_only'
+    modes, only your own items will appear at Beedle locations.
     """
     display_name = "Beedle's Airshop Shuffle"
     option_vanilla = 0

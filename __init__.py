@@ -9,6 +9,7 @@ Based on the original Skyward Sword (Wii/Dolphin) integration.
 
 import os
 import sys
+import logging
 import zipfile
 import json
 import tempfile
@@ -702,6 +703,14 @@ class SSHDWorld(World):
             excluded.update(["Intermediate Rupees", "Advanced Rupees"])
         elif rupee_val == "intermediate":
             excluded.add("Advanced Rupees")
+
+        # Beedle's Airshop: "vanilla" means exclude entirely
+        if s:
+            if s.get("beedle_shop_shuffle", "vanilla") == "vanilla":
+                excluded.add("Beedle's Airshop")
+        else:
+            if not self.options.beedle_shop_shuffle.value:  # 0 = vanilla
+                excluded.add("Beedle's Airshop")
 
         # Goddess Cubes are dummy logic items (oarc: null) used internally by
         # sshd-rando to link cube-strike locations to sky Goddess Chests.
@@ -1690,6 +1699,38 @@ class SSHDWorld(World):
         else:
             # Fallback: use basic rules from Rules.py
             set_rules(self)
+        
+        # ── Beedle's Airshop item restrictions ──────────────────────────────
+        # The client cannot detect purchases of items belonging to other
+        # players (which become "Archipelago Item" ID 216 in the ROM).
+        # When beedle_shop_shuffle is NOT vanilla (i.e. Beedle locations
+        # exist in the AP world), restrict what can be placed there:
+        #   - "randomized": only this player's own items (blocks cross-world)
+        #   - "junk_only":  only this player's own filler/junk items
+        beedle_shop_val = self.options.beedle_shop_shuffle.value  # 0=vanilla, 1=junk_only, 2=randomized
+        if beedle_shop_val != 0:  # Not vanilla — Beedle locations exist
+            player = self.player
+            beedle_count = 0
+            for region in self.multiworld.regions:
+                if region.player != self.player:
+                    continue
+                for location in region.locations:
+                    loc_data = LOCATION_TABLE.get(location.name)
+                    if loc_data and "Beedle's Airshop" in loc_data.types:
+                        # Block cross-world items (they become undetectable "Archipelago Item" in ROM)
+                        location.item_rule = lambda item, p=player: item.player == p
+                        
+                        if beedle_shop_val == 1:  # junk_only
+                            # Only allow filler/junk items — no progression or useful
+                            location.progress_type = LocationProgressType.EXCLUDED
+                        
+                        beedle_count += 1
+            
+            mode_name = "junk_only" if beedle_shop_val == 1 else "randomized"
+            if beedle_count:
+                print(f"[__init__.py] Applied Beedle restrictions ({mode_name}): "
+                      f"{beedle_count} locations — own-player items only"
+                      + (", junk/filler only" if beedle_shop_val == 1 else ""))
     
     def post_fill(self) -> None:
         """
