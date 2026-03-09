@@ -16,7 +16,7 @@ https://github.com/kivymd/KivyMD/archive/master.zip
 
 
 psutil
-pymem
+pymem; sys_platform == "win32"
 websockets
 pyyaml
 pathspec

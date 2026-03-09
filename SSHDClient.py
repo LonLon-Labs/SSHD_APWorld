@@ -53,8 +53,7 @@ class DummyModuleUpdate:
 sys.modules['ModuleUpdate'] = DummyModuleUpdate()
 
 import psutil
-import pymem
-import pymem.process
+from process_memory import ProcessMemory, ProcessMemoryError
 
 # Try to import from bundled modules first, then fall back to system Archipelago
 try:
@@ -435,7 +434,7 @@ class RyujinxMemoryReader:
     SCAN_NEGATIVE_CACHE_SECS = 30.0
 
     def __init__(self):
-        self.pm: Optional[pymem.Pymem] = None
+        self.pm = None  # ProcessMemory instance (cross-platform)
         self.base_address: Optional[int] = None
         self.connected = False
         # Absolute addresses found during the base-address scan for each magic
@@ -542,14 +541,21 @@ class RyujinxMemoryReader:
                 logger.info(f"Ryujinx process ({expected_names}) not found. Please start Ryujinx.")
                 return False
             
-            # Open process
-            self.pm = pymem.Pymem()
+            # Open process (cross-platform)
+            try:
+                self.pm = ProcessMemory()
+            except ProcessMemoryError as e:
+                logger.error(f"Platform not supported for memory access: {e}")
+                return False
             self.pm.open_process_from_id(ryujinx_process.pid)
             
             logger.info(f"Connected to Ryujinx (PID: {ryujinx_process.pid})")
             self.connected = True
             return True
             
+        except ProcessMemoryError as e:
+            logger.error(f"Failed to connect to Ryujinx: {e}")
+            return False
         except Exception as e:
             logger.error(f"Failed to connect to Ryujinx: {e}")
             return False
@@ -667,125 +673,78 @@ class RyujinxMemoryReader:
         return score
     
     def _scan_memory_sync(self) -> bool:
-        """Synchronous memory scanning using VirtualQueryEx for precise region enumeration.
+        """Synchronous memory scanning using cross-platform region enumeration.
         
         Finds the game base address by searching for MEMORY_SIGNATURE, then does
         a fast targeted scan of the game memory region for Rust static buffer
         magic signatures (IT, CS, AP).
+
+        On Windows this uses VirtualQueryEx (via process_memory), on Linux it
+        parses /proc/<pid>/maps.
         """
         try:
-            import ctypes
-            
             start_time = time.time()
-            print(f"[DEBUG] Starting VirtualQueryEx-based memory scan")
+            print(f"[DEBUG] Starting cross-platform memory scan")
             
-            # Windows memory constants
-            MEM_COMMIT = 0x1000
-            # Readable page protections (excludes PAGE_NOACCESS=0x01, PAGE_EXECUTE=0x10)
-            READABLE_PROTECTIONS = {0x02, 0x04, 0x08, 0x20, 0x40, 0x80}
-            PAGE_GUARD = 0x100
-
-            # 64-bit MEMORY_BASIC_INFORMATION (48 bytes on Windows 10 x64)
-            class MEMORY_BASIC_INFORMATION(ctypes.Structure):
-                _fields_ = [
-                    ("BaseAddress",      ctypes.c_uint64),
-                    ("AllocationBase",   ctypes.c_uint64),
-                    ("AllocationProtect",ctypes.c_uint32),
-                    ("__alignment1",     ctypes.c_uint32),  # PartitionId+pad on Win10 1703+
-                    ("RegionSize",       ctypes.c_uint64),
-                    ("State",            ctypes.c_uint32),
-                    ("Protect",          ctypes.c_uint32),
-                    ("Type",             ctypes.c_uint32),
-                    ("__alignment2",     ctypes.c_uint32),
-                ]
-
-            kernel32 = ctypes.windll.kernel32
-            process_handle = self.pm.process_handle
             chunk_size = 4 * 1024 * 1024  # 4 MB — larger chunks = fewer cross-process calls
-            max_address = 0x7FFFFFFFFFFF
-            address = 0x10000
             chunks_scanned = 0
             regions_scanned = 0
-            mbi = MEMORY_BASIC_INFORMATION()
             
+            # Enumerate all readable memory regions (cross-platform)
+            all_regions = self.pm.enumerate_regions()
+            readable_regions = [r for r in all_regions if r.is_readable]
+            print(f"[DEBUG] Found {len(readable_regions)} readable regions out of {len(all_regions)} total")
+
             # Collect candidate addresses for the game base signature
             best_base = None
             best_score = -1
 
-            while address < max_address:
-                # Query exact boundaries and attributes of the region at 'address'
-                result = kernel32.VirtualQueryEx(
-                    process_handle,
-                    ctypes.c_uint64(address),
-                    ctypes.byref(mbi),
-                    ctypes.sizeof(mbi)
-                )
+            for region in readable_regions:
+                regions_scanned += 1
+                region_end = region.base + region.size
+                scan_pos   = region.base
 
-                if result == 0:
-                    address += 0x1000  # query failed, advance one page
-                    continue
+                while scan_pos < region_end:
+                    to_read = min(chunk_size, region_end - scan_pos)
+                    try:
+                        data = self.pm.read_bytes(scan_pos, to_read)
+                        chunks_scanned += 1
 
-                region_base = mbi.BaseAddress
-                region_size = mbi.RegionSize
+                        if chunks_scanned % 100 == 0:
+                            print(f"[DEBUG] Scanned {chunks_scanned} chunks, address: 0x{scan_pos:X}")
 
-                if region_size == 0:
-                    address += 0x1000
-                    continue
+                        # Search for game base signature
+                        search_offset = 0
+                        while True:
+                            sig_offset = data.find(MEMORY_SIGNATURE, search_offset)
+                            if sig_offset == -1:
+                                break
 
-                # Only read committed, readable pages
-                base_protect = mbi.Protect & 0xFF  # strip modifier flags
-                is_committed = (mbi.State == MEM_COMMIT)
-                is_readable  = (base_protect in READABLE_PROTECTIONS) and not (mbi.Protect & PAGE_GUARD)
+                            candidate = scan_pos + sig_offset
+                            score = self._validate_base_address(candidate)
+                            print(f"[FOUND] Signature at 0x{candidate:X} - Score: {score}/8")
 
-                if is_committed and is_readable:
-                    regions_scanned += 1
-                    region_end = region_base + region_size
-                    scan_pos   = region_base
+                            if score > best_score:
+                                best_score = score
+                                best_base = candidate
 
-                    while scan_pos < region_end:
-                        to_read = min(chunk_size, region_end - scan_pos)
-                        try:
-                            data = self.pm.read_bytes(scan_pos, to_read)
-                            chunks_scanned += 1
+                            # High-confidence match — stop scanning immediately
+                            if best_score >= 6:
+                                break
 
-                            if chunks_scanned % 100 == 0:
-                                print(f"[DEBUG] Scanned {chunks_scanned} chunks, address: 0x{scan_pos:X}")
+                            search_offset = sig_offset + 1
 
-                            # Search for game base signature
-                            search_offset = 0
-                            while True:
-                                sig_offset = data.find(MEMORY_SIGNATURE, search_offset)
-                                if sig_offset == -1:
-                                    break
+                    except Exception:
+                        pass  # skip unreadable sub-chunks within this region
 
-                                candidate = scan_pos + sig_offset
-                                score = self._validate_base_address(candidate)
-                                print(f"[FOUND] Signature at 0x{candidate:X} - Score: {score}/8")
-
-                                if score > best_score:
-                                    best_score = score
-                                    best_base = candidate
-
-                                # High-confidence match — stop scanning immediately
-                                if best_score >= 6:
-                                    break
-
-                                search_offset = sig_offset + 1
-
-                        except Exception:
-                            pass  # skip unreadable sub-chunks within this region
-
-                        # Stop reading more chunks once we have a high-confidence match
-                        if best_score >= 6:
-                            break
-                        scan_pos += to_read
+                    # Stop reading more chunks once we have a high-confidence match
+                    if best_score >= 6:
+                        break
+                    scan_pos += to_read
 
                 # Early exit once we have a high-confidence base
                 if best_score >= 6:
                     break
-
-                # Advance precisely to next region — no large arbitrary jumps
-                address = region_base + region_size
 
             base_elapsed = time.time() - start_time
             print(f"[SCAN] Base scan took {base_elapsed:.1f}s, {chunks_scanned} chunks in {regions_scanned} regions")
@@ -818,63 +777,47 @@ class RyujinxMemoryReader:
             PRESCAN_RANGE = 0x80000000  # 2 GB in each direction
             magic_scan_start = max(best_base - PRESCAN_RANGE, 0x10000)
             magic_scan_end = best_base + PRESCAN_RANGE
-            magic_addr = magic_scan_start
 
-            while magic_addr < magic_scan_end and magic_addr < max_address:
-                result = kernel32.VirtualQueryEx(
-                    process_handle,
-                    ctypes.c_uint64(magic_addr),
-                    ctypes.byref(mbi),
-                    ctypes.sizeof(mbi)
-                )
+            # Filter to only regions within the prescan range
+            magic_regions = [
+                r for r in readable_regions
+                if r.is_readable
+                and r.base + r.size > magic_scan_start
+                and r.base < magic_scan_end
+            ]
 
-                if result == 0:
-                    magic_addr += 0x1000
-                    continue
+            for region in magic_regions:
+                # Clamp region to the prescan range
+                region_start = max(region.base, magic_scan_start)
+                region_end = min(region.base + region.size, magic_scan_end)
+                scan_pos = region_start
 
-                region_base = mbi.BaseAddress
-                region_size = mbi.RegionSize
+                while scan_pos < region_end:
+                    to_read = min(chunk_size, region_end - scan_pos)
+                    try:
+                        data = self.pm.read_bytes(scan_pos, to_read)
 
-                if region_size == 0:
-                    magic_addr += 0x1000
-                    continue
-
-                base_protect = mbi.Protect & 0xFF
-                is_committed = (mbi.State == MEM_COMMIT)
-                is_readable  = (base_protect in READABLE_PROTECTIONS) and not (mbi.Protect & PAGE_GUARD)
-
-                if is_committed and is_readable:
-                    region_end = min(region_base + region_size, magic_scan_end)
-                    scan_pos = region_base
-
-                    while scan_pos < region_end:
-                        to_read = min(chunk_size, region_end - scan_pos)
-                        try:
-                            data = self.pm.read_bytes(scan_pos, to_read)
-
-                            for magic_name, magic_bytes in self.PRESCAN_MAGIC.items():
+                        for magic_name, magic_bytes in self.PRESCAN_MAGIC.items():
+                            if len(magic_hits[magic_name]) >= MAX_MAGIC_HITS:
+                                continue
+                            ms_offset = 0
+                            while True:
+                                idx = data.find(magic_bytes, ms_offset)
+                                if idx == -1:
+                                    break
+                                magic_hits[magic_name].append(scan_pos + idx)
+                                ms_offset = idx + 1
                                 if len(magic_hits[magic_name]) >= MAX_MAGIC_HITS:
-                                    continue
-                                ms_offset = 0
-                                while True:
-                                    idx = data.find(magic_bytes, ms_offset)
-                                    if idx == -1:
-                                        break
-                                    magic_hits[magic_name].append(scan_pos + idx)
-                                    ms_offset = idx + 1
-                                    if len(magic_hits[magic_name]) >= MAX_MAGIC_HITS:
-                                        break
-                        except Exception:
-                            pass
+                                    break
+                    except Exception:
+                        pass
 
-                        # Advance with a small overlap so patterns straddling a
-                        # chunk boundary are not missed (max pattern is 4 bytes).
-                        if to_read == chunk_size:
-                            scan_pos += to_read - 3
-                        else:
-                            scan_pos += to_read
-
-                magic_addr = region_base + region_size
+                    # Advance with a small overlap so patterns straddling a
+                    # chunk boundary are not missed (max pattern is 4 bytes).
+                    if to_read == chunk_size:
+                        scan_pos += to_read - 3
+                    else:
+                        scan_pos += to_read
 
             # ----------------------------------------------------------------
             # Cross-reference: In the subsdk8 binary, AP_CHECK_STATS (12 bytes)
@@ -2437,10 +2380,8 @@ class SSHDContext(CommonContext):
 
         logger.debug(f"Prescan cache miss for {name}, doing full pattern scan...")
         try:
-            from pymem import pattern
-            found = pattern.pattern_scan_all(self.memory.pm.process_handle, magic_bytes)
-            if found:
-                addresses = found if isinstance(found, list) else [found]
+            addresses = self.memory.pm.pattern_scan(magic_bytes)
+            if addresses:
                 # Sort by proximity to base — real statics are in the same
                 # virtual memory region, whereas false positives tend to be
                 # far away (e.g. in other heap allocations).
@@ -2452,12 +2393,10 @@ class SSHDContext(CommonContext):
                         return offset
                 # Log rejection for debugging
                 logger.warning(
-                    f"pattern_scan_all found {len(addresses)} hit(s) for {name} "
+                    f"pattern_scan found {len(addresses)} hit(s) for {name} "
                     f"but none passed validation (closest: 0x{addresses[0]:X}, "
                     f"distance: 0x{abs(addresses[0] - base):X})"
                 )
-        except ImportError:
-            logger.warning(f"pymem pattern scanning not available for {name}")
         except Exception as e:
             logger.warning(f"Pattern scan for {name} failed: {e}")
         

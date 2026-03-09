@@ -40,8 +40,7 @@ if getattr(sys, 'frozen', False):
     sys.modules['ModuleUpdate'] = DummyModuleUpdate()
 
 import psutil
-import pymem
-import pymem.process
+from process_memory import ProcessMemory, ProcessMemoryError
 
 try:
     from CommonClient import CommonContext, server_loop, gui_enabled, \
@@ -176,7 +175,7 @@ class RyujinxMemoryReader:
     """
     
     def __init__(self):
-        self.pm: Optional[pymem.Pymem] = None
+        self.pm = None  # ProcessMemory instance (cross-platform)
         self.base_address: Optional[int] = None
         self.connected = False
         
@@ -211,14 +210,21 @@ class RyujinxMemoryReader:
                 logger.info(f"Ryujinx process ({expected_names}) not found. Please start Ryujinx.")
                 return False
             
-            # Open process
-            self.pm = pymem.Pymem()
+            # Open process (cross-platform)
+            try:
+                self.pm = ProcessMemory()
+            except ProcessMemoryError as e:
+                logger.error(f"Platform not supported for memory access: {e}")
+                return False
             self.pm.open_process_from_id(ryujinx_process.pid)
             
             logger.info(f"Connected to Ryujinx (PID: {ryujinx_process.pid})")
             self.connected = True
             return True
             
+        except ProcessMemoryError as e:
+            logger.error(f"Failed to connect to Ryujinx: {e}")
+            return False
         except Exception as e:
             logger.error(f"Failed to connect to Ryujinx: {e}")
             return False
@@ -272,7 +278,7 @@ class RyujinxMemoryReader:
                     
                     address += chunk_size
                     
-                except pymem.exception.MemoryReadError:
+                except Exception:
                     # Skip inaccessible memory regions
                     address += chunk_size
                     continue

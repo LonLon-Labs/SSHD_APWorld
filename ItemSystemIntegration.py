@@ -165,22 +165,19 @@ class GameItemSystem:
         # --- Slow path: full process scan ---
         logger.debug("Scanning entire process memory for Archipelago buffer magic signature...")
         try:
-            from pymem import pattern
             pm = self.memory.pm
             if not pm:
                 logger.error("❌ Process memory accessor not available")
                 return None
             
-            found_address = pattern.pattern_scan_all(pm.process_handle, magic_signature)
-            if found_address:
-                absolute_addr = found_address[0] if isinstance(found_address, list) else found_address
+            addresses = pm.pattern_scan(magic_signature)
+            if addresses:
+                absolute_addr = addresses[0] if isinstance(addresses, list) else addresses
                 buffer_offset = absolute_addr - base_address
                 logger.debug(f"Found Archipelago buffer at absolute address 0x{absolute_addr:x}")
                 logger.debug(f"Buffer offset from base: 0x{buffer_offset:x}")
                 return buffer_offset
             
-        except ImportError:
-            logger.warning("⚠️ pymem pattern scanning not available, using manual scan")
         except Exception as e:
             logger.warning(f"⚠️ Pattern scan failed: {e}, falling back to manual scan")
         

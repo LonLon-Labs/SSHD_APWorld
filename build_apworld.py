@@ -164,6 +164,8 @@ def build_apworld():
         # "ArchipelagoSSHDClient.exe",
         "worlds_stub.py",
         "ItemSystemIntegration.py",
+        "process_memory.py",
+        "platform_utils.py",
         "logic_converter.py",
         # Folders
         "docs/",

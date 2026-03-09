@@ -255,6 +255,7 @@ hiddenimports = [
     # other deps
     'psutil',
     'pymem', 'pymem.process',
+    'process_memory',
     'websockets', 'websockets.legacy', 'websockets.legacy.client',
     'websockets.client',
     'yaml',
