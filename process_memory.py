@@ -49,13 +49,15 @@ class ProcessMemoryError(Exception):
 
 class MemoryRegion:
     """Describes a single contiguous virtual-memory region."""
-    __slots__ = ("base", "size", "perms", "pathname")
+    __slots__ = ("base", "size", "perms", "pathname", "rss")
 
-    def __init__(self, base: int, size: int, perms: str, pathname: str = ""):
+    def __init__(self, base: int, size: int, perms: str, pathname: str = "",
+                 rss: int = -1):
         self.base = base
         self.size = size
         self.perms = perms       # e.g. "rw-p", "r-xp"
         self.pathname = pathname  # e.g. "/usr/lib/libc.so.6", "[heap]", ""
+        self.rss = rss            # Resident set size in bytes (-1 = unknown)
 
     @property
     def is_readable(self) -> bool:
@@ -357,7 +359,7 @@ class _LinuxProcessMemory:
     def write_uchar(self, address: int, value: int):
         self.write_bytes(address, bytes([value & 0xFF]), 1)
 
-    # -- region enumeration via /proc/<pid>/maps --------------------------
+    # -- region enumeration via /proc/<pid>/maps and smaps ----------------
 
     # Matches: "start-end perms offset dev inode [pathname]"
     _MAPS_RE = re.compile(
@@ -383,6 +385,52 @@ class _LinuxProcessMemory:
                     regions.append(MemoryRegion(start, end - start, perms, pathname))
         except FileNotFoundError:
             raise ProcessMemoryError(f"{maps_path} not found — process gone?")
+        return regions
+
+    def _get_rss_map(self) -> dict:
+        """Parse /proc/<pid>/smaps and return ``{region_start: rss_bytes}``.
+
+        On a typical Ryujinx process with ~11 000 map entries the smaps file
+        is ~1-2 MB.  Parsing it takes <50 ms, vastly cheaper than reading
+        hundreds of GB of uncommitted pages.
+
+        Falls back to an empty dict if smaps is unreadable (e.g. permissions).
+        """
+        rss_map: dict = {}
+        smaps_path = f"/proc/{self._pid}/smaps"
+        current_start = None
+        try:
+            with open(smaps_path, "r") as f:
+                for line in f:
+                    # Header line for a new region
+                    m = self._MAPS_RE.match(line)
+                    if m:
+                        current_start = int(m.group(1), 16)
+                        continue
+                    # Rss line (in kB)
+                    if current_start is not None and line.startswith("Rss:"):
+                        # "Rss:              1234 kB\n"
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            try:
+                                rss_map[current_start] = int(parts[1]) * 1024
+                            except ValueError:
+                                pass
+        except (FileNotFoundError, PermissionError):
+            pass  # smaps not available — caller will scan all pages
+        return rss_map
+
+    def enumerate_regions_with_rss(self) -> List[MemoryRegion]:
+        """Like ``enumerate_regions()`` but populates the ``rss`` field.
+
+        Uses /proc/<pid>/smaps to determine how many bytes of each region
+        are actually resident in physical memory.  Regions with ``rss == 0``
+        are entirely uncommitted and can be skipped during scanning.
+        """
+        regions = self.enumerate_regions()
+        rss_map = self._get_rss_map()
+        for r in regions:
+            r.rss = rss_map.get(r.base, 0)
         return regions
 
     # File extensions / path fragments that identify shared-library or
@@ -448,17 +496,26 @@ class _LinuxProcessMemory:
              mappings (e.g. ``/usr/lib/libc.so.6``).  Keeps anonymous
              regions, ``[heap]``, ``/memfd:*``, ``/dev/shm/*``, etc.
              Pass *include_file_backed=True* to disable this filter.
-          3. Must be >= *min_size* bytes (default: _MIN_SCAN_REGION_SIZE).
-          4. Adjacent qualifying regions with identical permissions are
+          3. Must have RSS > 0 (pages actually resident in physical memory).
+             This is the key optimisation for Linux: .NET / Ryujinx reserves
+             hundreds of GB of virtual address space via mmap but only a small
+             fraction is ever faulted in.  Reading uncommitted pages returns
+             zeros but still costs ~4 MB of kernel memset + copy per chunk.
+             Skipping regions with 0 RSS avoids all of that.
+          4. Must be >= *min_size* bytes (default: _MIN_SCAN_REGION_SIZE).
+          5. Adjacent qualifying regions with identical permissions are
              **coalesced** into one, reducing iteration overhead.
+          6. Results are sorted by RSS descending so the most populated
+             (= most likely to contain game data) regions are scanned first.
 
-        On a typical Ryujinx process this reduces thousands of regions
-        down to a few dozen, cutting scan time from minutes to seconds.
+        On a typical Ryujinx process this reduces thousands of regions /
+        hundreds of GB down to a handful of regions totaling a few GB.
         """
         if min_size <= 0:
             min_size = self._MIN_SCAN_REGION_SIZE
 
-        raw = self.enumerate_regions()
+        # Use smaps to get RSS info — takes ~50 ms, saves minutes of I/O
+        raw = self.enumerate_regions_with_rss()
 
         # Step 1-2: readable + not a library/data file
         if include_file_backed:
@@ -469,21 +526,34 @@ class _LinuxProcessMemory:
                 if r.is_readable and not self._is_library_or_data(r.pathname)
             ]
 
-        # Step 3: coalesce adjacent regions (they often fragment)
+        # Step 3: drop regions with no resident pages (RSS == 0)
+        # If smaps wasn't available (rss == -1 for all), keep everything.
+        has_rss_info = any(r.rss > 0 for r in candidates)
+        if has_rss_info:
+            candidates = [r for r in candidates if r.rss > 0]
+
+        # Step 4: coalesce adjacent regions (they often fragment)
         coalesced: List[MemoryRegion] = []
         for r in candidates:
             if coalesced and coalesced[-1].perms == r.perms \
                     and coalesced[-1].base + coalesced[-1].size == r.base:
+                prev = coalesced[-1]
                 coalesced[-1] = MemoryRegion(
-                    coalesced[-1].base,
-                    coalesced[-1].size + r.size,
-                    coalesced[-1].perms,
+                    prev.base,
+                    prev.size + r.size,
+                    prev.perms,
+                    rss=max(prev.rss, 0) + max(r.rss, 0),
                 )
             else:
                 coalesced.append(r)
 
-        # Step 4: size filter
-        return [r for r in coalesced if r.size >= min_size]
+        # Step 5: size filter
+        result = [r for r in coalesced if r.size >= min_size]
+
+        # Step 6: sort by RSS descending — scan most populated regions first
+        result.sort(key=lambda r: r.rss if r.rss >= 0 else 0, reverse=True)
+
+        return result
 
     # -- pattern scan -----------------------------------------------------
 

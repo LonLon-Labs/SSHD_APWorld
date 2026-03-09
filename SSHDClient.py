@@ -723,8 +723,11 @@ class RyujinxMemoryReader:
             for tier_label, tier_fn in scan_tiers:
                 readable_regions = tier_fn()
                 total_scan_bytes = sum(r.size for r in readable_regions)
+                total_rss_bytes = sum(r.rss for r in readable_regions if r.rss > 0)
+                rss_note = f", RSS {total_rss_bytes / (1024*1024):.0f} MB" if total_rss_bytes else ""
                 print(f"[SCAN] Tier '{tier_label}': {len(readable_regions)} regions "
-                      f"({total_scan_bytes / (1024*1024):.0f} MB) out of {all_count} total")
+                      f"({total_scan_bytes / (1024*1024):.0f} MB virtual{rss_note}) "
+                      f"out of {all_count} total")
 
                 tier_start = time.time()
                 chunks_scanned = 0
