@@ -695,14 +695,21 @@ class RyujinxMemoryReader:
             print(f"[DEBUG] Starting cross-platform memory scan")
             
             chunk_size = 4 * 1024 * 1024  # 4 MB — larger chunks = fewer cross-process calls
-            # Probe settings for zero-page skipping on emulator memory.
-            # Before reading a full 4 MB chunk we read a small sample; if the
-            # sample is entirely zero the chunk is almost certainly empty
-            # (Ryujinx reserves ~500 GB virtual but only ~4 GB has real data).
-            PROBE_SIZE  = 4096          # one page
-            ZERO_PROBE  = b'\x00' * PROBE_SIZE
+
+            # ── Header-probe optimisation (Linux) ──────────────────────
+            # The MEMORY_SIGNATURE is a Nintendo Switch module header (MOD0).
+            # Module headers are always at the very start of their memory
+            # mapping, never buried deep inside a multi-GB region.  On Linux
+            # (Ryujinx), each region can be hundreds of GB of resident memory,
+            # so scanning everything is prohibitively slow.  We only need to
+            # check the first ~1 MB of each region for the base signature.
+            # (The magic prescan later uses a bounded ±2 GB range anyway.)
+            if sys.platform == "linux":
+                BASE_PROBE_SIZE = 1 * 1024 * 1024   # 1 MB per region
+            else:
+                BASE_PROBE_SIZE = 0                  # 0 = scan full region
+
             chunks_scanned = 0
-            chunks_skipped = 0
             regions_scanned = 0
             
             # Enumerate memory regions.  On Linux, use the optimised filter
@@ -751,36 +758,20 @@ class RyujinxMemoryReader:
                 for region in readable_regions:
                     regions_scanned += 1
                     region_end = region.base + region.size
-                    scan_pos   = region.base
+                    # On Linux, only scan the first BASE_PROBE_SIZE bytes of
+                    # each region — the module header is always near the start.
+                    if BASE_PROBE_SIZE:
+                        region_end = min(region_end, region.base + BASE_PROBE_SIZE)
+                    scan_pos = region.base
 
                     while scan_pos < region_end:
                         to_read = min(chunk_size, region_end - scan_pos)
                         try:
-                            # ── Zero-probe: skip empty chunks ──────────
-                            # Ryujinx on Linux maps ~500 GB virtual but
-                            # only a few GB contain real game data.
-                            # Reading a 4 KB sample and comparing to zeros
-                            # is ~1000x cheaper than reading the full 4 MB
-                            # chunk, so we skip zero-filled regions fast.
-                            if to_read >= PROBE_SIZE * 4:
-                                # Sample from the 25% and 75% marks so we
-                                # don't just test the very start of the chunk.
-                                probe_a = scan_pos + (to_read >> 2)
-                                probe_b = scan_pos + (to_read >> 2) * 3
-                                pa = self.pm.read_bytes(probe_a, PROBE_SIZE)
-                                if pa == ZERO_PROBE:
-                                    pb = self.pm.read_bytes(probe_b, PROBE_SIZE)
-                                    if pb == ZERO_PROBE:
-                                        chunks_skipped += 1
-                                        scan_pos += to_read
-                                        continue
-
                             data = self.pm.read_bytes(scan_pos, to_read)
                             chunks_scanned += 1
 
                             if chunks_scanned % 500 == 0:
-                                print(f"[DEBUG] Scanned {chunks_scanned} chunks "
-                                      f"(skipped {chunks_skipped}), "
+                                print(f"[DEBUG] Scanned {chunks_scanned} chunks, "
                                       f"address: 0x{scan_pos:X}")
 
                             # Search for the distinctive MOD0 portion first.
@@ -844,8 +835,7 @@ class RyujinxMemoryReader:
 
                 tier_elapsed = time.time() - tier_start
                 print(f"[SCAN] Tier '{tier_label}' took {tier_elapsed:.1f}s, "
-                      f"{chunks_scanned} chunks scanned, {chunks_skipped} skipped (zero-probed), "
-                      f"in {regions_scanned} regions")
+                      f"{chunks_scanned} chunks in {regions_scanned} regions")
 
                 if best_base is not None:
                     break  # found it, skip remaining tiers
@@ -853,8 +843,7 @@ class RyujinxMemoryReader:
 
             base_elapsed = time.time() - start_time
             print(f"[SCAN] Base scan took {base_elapsed:.1f}s, "
-                  f"{chunks_scanned} chunks scanned, {chunks_skipped} skipped (zero-probed), "
-                  f"in {regions_scanned} regions")
+                  f"{chunks_scanned} chunks in {regions_scanned} regions")
             
             if best_base is None:
                 print(f"[FAIL] No signatures found in any tier")
