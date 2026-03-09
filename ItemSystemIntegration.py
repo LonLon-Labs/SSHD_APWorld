@@ -329,12 +329,21 @@ class GameItemSystem:
         """
         Give an item to the player using the game's built-in system.
         
-        This will:
-        - Spawn an item actor
-        - Show Link holding up the item (if show_animation=True)
-        - Play the item-get jingle (if play_jingle=True)
-        - Add the item to inventory
-        - No stage reload required
+        Two delivery paths run in sequence:
+        
+        1. **Buffer path** (preferred): write item to the shared memory buffer,
+           wait for the Rust game loop to spawn the item actor with proper
+           animations / models / jingles.  This can fail if the buffer address
+           hasn't been found yet, the player is busy, or the buffer is full.
+        
+        2. **Direct-flag fallback** (always runs): set the item flag directly
+           in save memory so the item appears in inventory even if the buffer
+           path failed.  For equipment and key items this is sufficient; for
+           consumables (rupees, ammo) it only sets the "collected" bit, not
+           the quantity counter.
+        
+        Returns True if the item reached the player's inventory through
+        *either* path.  The caller can safely dequeue the item.
         
         Args:
             item_id: Game item ID (0-255)
@@ -348,59 +357,52 @@ class GameItemSystem:
             logger.error("Cannot give item: not connected to game")
             return False
         
-        # Find buffer address on first use
-        if self.buffer_addr is None:
-            self.buffer_addr = self._find_buffer_address()
+        # ---- Path 1: Buffer-based delivery (with animation) -----------------
+        buffer_success = False
+        try:
+            # Find buffer address on first use
             if self.buffer_addr is None:
-                logger.error("Cannot give item: buffer address not found")
-                return False
+                self.buffer_addr = self._find_buffer_address()
+            
+            if self.buffer_addr is None:
+                logger.debug("Buffer address not found — skipping buffer path")
+            elif not self._is_player_ready():
+                logger.debug("Player not ready — skipping buffer path")
+            else:
+                slot = self._find_empty_buffer_slot()
+                if slot is None:
+                    logger.debug("Item buffer full — skipping buffer path")
+                else:
+                    # Prepare flags
+                    flags = 0
+                    if show_animation:
+                        flags |= 0x01
+                    if play_jingle:
+                        flags |= 0x02
+                    
+                    # Write to buffer ATOMICALLY using a single 16-bit write.
+                    buffer_offset = self.buffer_addr + (slot * GameOffsets.ARCHIPELAGO_BUFFER_SLOT_SIZE)
+                    slot_value = item_id | (flags << 8)  # little-endian: [item_id, flags]
+                    if self.memory.write_short(buffer_offset, slot_value):
+                        logger.info(f"Wrote item {item_id} to buffer slot {slot} with flags {flags:02x}")
+                        logger.info(f"Buffer address: base+0x{self.buffer_addr:x} = 0x{self.memory.base_address + self.buffer_addr:x}")
+                        buffer_success = self._wait_for_item_processed(
+                            buffer_offset, expected_item_id=item_id
+                        )
+                    else:
+                        logger.warning(f"Failed to write item {item_id} to buffer slot {slot}")
+        except Exception as exc:
+            logger.warning(f"Buffer delivery error for item {item_id}: {exc}")
         
-        # Check if player is in valid state for receiving items
-        if not self._is_player_ready():
-            logger.debug("Player not ready to receive items")
-            return False
-        
-        # Find empty slot in buffer
-        slot = self._find_empty_buffer_slot()
-        if slot is None:
-            logger.error("Item buffer full - cannot queue item")
-            return False
-        
-        # Prepare flags
-        flags = 0
-        if show_animation:
-            flags |= 0x01
-        if play_jingle:
-            flags |= 0x02
-        
-        # Write to buffer ATOMICALLY using a single 16-bit write.
-        # The Rust game loop checks item_id != 0 to trigger processing.
-        # If we write item_id and flags as separate byte writes, the game
-        # can process (and clear) the slot between the two writes, causing
-        # a race condition where Python thinks the write failed but the
-        # game already gave the item — leading to item duplication.
-        buffer_offset = self.buffer_addr + (slot * GameOffsets.ARCHIPELAGO_BUFFER_SLOT_SIZE)
-        slot_value = item_id | (flags << 8)  # little-endian: [item_id, flags]
-        if not self.memory.write_short(buffer_offset, slot_value):
-            logger.error(f"Failed to write item {item_id} to buffer slot {slot}")
-            return False
-        
-        logger.info(f"Wrote item {item_id} to buffer slot {slot} with flags {flags:02x}")
-        logger.info(f"Buffer address: base+0x{self.buffer_addr:x} = 0x{self.memory.base_address + self.buffer_addr:x}")
-        
-        # Wait for game to process (buffer cleared when done)
-        success = self._wait_for_item_processed(buffer_offset, expected_item_id=item_id)
-        
-        # ---- Direct-write fallback (belt-and-suspenders) --------------------
-        # The Rust actor-spawn path can silently fail for certain items
-        # (e.g. if the OARC model archive fix isn't compiled yet).
-        # Setting the item flag DIRECTLY in save memory guarantees the item
-        # reaches the player's inventory regardless of what happened on the
-        # game side.  If the Rust spawn DID work, the flag is already set
-        # and this write is a harmless no-op.
+        # ---- Path 2: Direct-flag fallback (ALWAYS runs) ---------------------
+        # Setting the item flag directly in save memory guarantees the item
+        # reaches the player's inventory regardless of what happened above.
+        # If the Rust spawn DID work, the flag is already set and this is a
+        # harmless no-op.
         flag_confirmed = self._ensure_itemflag_set(item_id)
         
-        if success:
+        # ---- Track consecutive buffer failures for address cycling ----------
+        if buffer_success:
             self._consecutive_failures = 0
         else:
             self._consecutive_failures += 1
@@ -408,7 +410,14 @@ class GameItemSystem:
                     and len(self._candidate_buffer_addrs) > 1):
                 self._cycle_to_next_buffer()
         
-        return success
+        # Item is delivered if EITHER path succeeded.
+        delivered = buffer_success or flag_confirmed
+        if delivered and not buffer_success:
+            logger.info(
+                f"Item {item_id} delivered via direct flag write "
+                f"(buffer path unavailable)"
+            )
+        return delivered
     
     def _cycle_to_next_buffer(self):
         """

@@ -1459,7 +1459,11 @@ unsafe fn is_oarc_loaded(oarc_name: *const c_char) -> bool {
     if ARC_MGR.is_null() {
         return false;
     }
-    let entries = &*(*ARC_MGR).entries_table.entries;
+    let entries_ptr = (*ARC_MGR).entries_table.entries;
+    if entries_ptr.is_null() {
+        return false;
+    }
+    let entries = &*entries_ptr;
     for entry in entries.iter() {
         if entry.arc_name[0] == 0 {
             break; // End of populated entries
@@ -1474,6 +1478,10 @@ unsafe fn is_oarc_loaded(oarc_name: *const c_char) -> bool {
 /// Load a single OARC from Object/NX if not already loaded.
 unsafe fn load_oarc_if_needed(oarc_name: *const c_char) {
     if !is_oarc_loaded(oarc_name) {
+        let entries_ptr = (*ARC_MGR).entries_table.entries;
+        if entries_ptr.is_null() {
+            return;
+        }
         let arc_table = &mut (*ARC_MGR).entries_table as *mut mem::ArcEntryTable;
         dRawArcTable_c__getArcOrLoadFromDisk(
             arc_table,
@@ -2186,14 +2194,15 @@ pub extern "C" fn archipelago_check_item_buffer() {
     unsafe {
         // Check each slot in the buffer
         // Skip slot 0 which contains the magic signature
-        for (i, slot) in ARCHIPELAGO_ITEM_BUFFER.iter_mut().enumerate() {
-            // Skip the first slot (magic signature)
-            if i == 0 {
-                continue;
-            }
+        for i in 1..ARCHIPELAGO_BUFFER_SIZE {
+            // Use volatile read because Python writes to this buffer via
+            // cross-process WriteProcessMemory.  Without volatile the
+            // compiler could hoist or elide loads across frames.
+            let slot_ptr = ARCHIPELAGO_ITEM_BUFFER.as_mut_ptr().add(i);
+            let item_id_val = core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).item_id));
 
             // Skip empty slots
-            if slot.item_id == 0 {
+            if item_id_val == 0 {
                 continue;
             }
 
@@ -2234,7 +2243,7 @@ pub extern "C" fn archipelago_check_item_buffer() {
             ITEM_GET_BOTTLE_POUCH_SLOT = 0xFFFFFFFF;
 
             // Use item ID directly — no determineFinalItemid (see note 1).
-            let item_id = slot.item_id as u32;
+            let item_id = item_id_val as u32;
 
             // 0x180000 = event-triggered item (immediate collection).
             // 0xFF << 10 = sceneflag 0xFF → "no sceneflag to set".
@@ -2284,13 +2293,13 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 (*item_actor).base.basebase.members.param1 &= !0x200u32;
             }
 
-            // Clear the slot after processing — even on null actor result.
-            // The Python client provides a direct item-flag-write fallback
-            // that guarantees the item reaches the player's inventory
-            // regardless of whether the actor spawned successfully.
-            slot.item_id = 0;
-            slot.flags = 0;
-            slot._reserved = [0, 0];
+            // Clear the slot after processing using volatile writes — even on
+            // null actor result.  The Python client provides a direct
+            // item-flag-write fallback that guarantees the item reaches the
+            // player's inventory regardless of whether the actor spawned.
+            core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).item_id), 0u8);
+            core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).flags), 0u8);
+            (*slot_ptr)._reserved = [0, 0];
 
             // Only process one item per frame to avoid overwhelming the game
             break;
