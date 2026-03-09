@@ -180,6 +180,14 @@ SHOP_ITEM_SOLD_OUT_SF_FIELD = 0x52  # sold_out_storyflag field offset (u16 LE)
 # Memory signature to find SSHD base address
 MEMORY_SIGNATURE = bytes.fromhex("00000000080000004D4F443088BD8101")
 
+# Split signature for fast scanning.  The leading 8 zero-ish bytes cause
+# pathological O(n) partial-match overhead in bytes.find() on zero-filled
+# memory (~500 GB in Ryujinx on Linux).  Searching for the distinctive
+# "MOD0" tail first avoids nearly all false starts.
+_SIG_PREFIX     = MEMORY_SIGNATURE[:8]    # 00000000 08000000
+_SIG_NEEDLE     = MEMORY_SIGNATURE[8:]    # 4D4F4430 88BD8101  ("MOD0" + 4)
+_SIG_PREFIX_LEN = len(_SIG_PREFIX)
+
 # Memory offsets (relative to base address)
 # All addresses verified from sshd-cheat-table.CT
 
@@ -747,26 +755,52 @@ class RyujinxMemoryReader:
                             if chunks_scanned % 100 == 0:
                                 print(f"[DEBUG] Scanned {chunks_scanned} chunks, address: 0x{scan_pos:X}")
 
-                            # Search for game base signature
+                            # Search for the distinctive MOD0 portion first.
+                            # The full signature starts with 8 zero-ish bytes
+                            # which cause extremely slow find() in zero-filled
+                            # memory (~500 GB in Ryujinx on Linux).  Searching
+                            # for the unique "MOD0" tail is ~100x faster.
                             search_offset = 0
                             while True:
-                                sig_offset = data.find(MEMORY_SIGNATURE, search_offset)
-                                if sig_offset == -1:
+                                needle_off = data.find(_SIG_NEEDLE, search_offset)
+                                if needle_off == -1:
                                     break
 
-                                candidate = scan_pos + sig_offset
-                                score = self._validate_base_address(candidate)
-                                print(f"[FOUND] Signature at 0x{candidate:X} - Score: {score}/8")
-
-                                if score > best_score:
-                                    best_score = score
-                                    best_base = candidate
+                                prefix_start = needle_off - _SIG_PREFIX_LEN
+                                if prefix_start >= 0:
+                                    # Prefix is within this chunk
+                                    if data[prefix_start:needle_off] == _SIG_PREFIX:
+                                        candidate = scan_pos + prefix_start
+                                        score = self._validate_base_address(candidate)
+                                        print(f"[FOUND] Signature at 0x{candidate:X} - Score: {score}/8")
+                                        if score > best_score:
+                                            best_score = score
+                                            best_base = candidate
+                                        if best_score >= 6:
+                                            break
+                                elif scan_pos + prefix_start >= 0:
+                                    # Prefix spans into previous chunk — read
+                                    # the few bytes directly from process memory
+                                    try:
+                                        mem_addr = scan_pos + prefix_start
+                                        pdata = self.pm.read_bytes(mem_addr, _SIG_PREFIX_LEN)
+                                        if pdata == _SIG_PREFIX:
+                                            candidate = mem_addr
+                                            score = self._validate_base_address(candidate)
+                                            print(f"[FOUND] Signature at 0x{candidate:X} - Score: {score}/8")
+                                            if score > best_score:
+                                                best_score = score
+                                                best_base = candidate
+                                            if best_score >= 6:
+                                                break
+                                    except Exception:
+                                        pass
 
                                 # High-confidence match — stop scanning immediately
                                 if best_score >= 6:
                                     break
 
-                                search_offset = sig_offset + 1
+                                search_offset = needle_off + 1
 
                         except Exception:
                             pass  # skip unreadable sub-chunks within this region
