@@ -29,8 +29,10 @@ See [Quick Start → Option B](#1-install-the-apworld-and-client) below.
 
 ## System Requirements
 - **Archipelago**: Version 0.5.0 or higher (Tested with 0.6.6)
-- **Emulator**: Ryujinx (Tested on 1.1.1376)
+- **Emulator**: Ryujinx (Tested on [1.1.1376](https://drive.randomstuff.cc/s/dAX3VyrrTcKoatU))
 - **Game**: The Legend of Zelda: Skyward Sword HD and Update Data (Switch)
+
+> **Note**: The mod seems to be at least partially broken for most people on newer versions like 1.3.3, so an older version like 1.1.1376 is recommended
 
 > **Note**: Python is **not** required for players using the pre-built release. Python is only needed if you are building from source.
 > If you are building from source, Python 3.10 or higher is required (Python 3.13.9 is recommended as that is what it was built with)

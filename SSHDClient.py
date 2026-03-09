@@ -1485,8 +1485,8 @@ class SSHDContext(CommonContext):
             
             # Check world version compatibility
             server_version = slot_data.get("world_version", [0, 0, 0])
-            if server_version[0] != 0 or server_version[1] != 1:
-                logger.warning(f"World version mismatch! Client expects 0.1.x, server has {server_version}")
+            if server_version[0] != 0 or server_version[1] != 7:
+                logger.warning(f"World version mismatch! Client expects 0.7.x, server has {server_version}")
                 logger.warning("The game may not work correctly. Please update your client or regenerate your seed.")
             
             # Store slot options for reference
