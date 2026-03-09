@@ -10,6 +10,7 @@ import zipfile
 import shutil
 import sys
 import site
+import sysconfig
 import importlib.util
 import subprocess
 import tempfile
@@ -29,8 +30,22 @@ BUNDLED_PACKAGES = [
 # Wheels for each version contain ABI-tagged .pyd files that can coexist.
 BUNDLE_PYTHON_VERSIONS = ["311", "312", "313"]
 
-# Platform to download wheels for.
-BUNDLE_PLATFORM = "win_amd64"
+def _get_pip_platform() -> str:
+    """Detect the pip platform tag for the current system.
+
+    Returns a tag suitable for ``pip download --platform``, e.g.
+    ``win_amd64``, ``manylinux2014_x86_64``, or ``macosx_11_0_arm64``.
+    """
+    plat = sysconfig.get_platform().replace("-", "_").replace(".", "_")
+    if plat.startswith("linux_"):
+        # pip needs a manylinux tag to find binary wheels
+        arch = plat.split("_", 1)[1]
+        return f"manylinux2014_{arch}"
+    return plat
+
+
+# Platform to download wheels for (auto-detected).
+BUNDLE_PLATFORM = _get_pip_platform()
 
 
 def _download_and_stage_wheels(packages: list[str], staging_dir: Path):
