@@ -170,20 +170,39 @@ extern "C" {
 // increase that the former ring-buffer approach caused, which triggered
 // nnrtld/Ryujinx symbol-resolution conflicts.
 //
-// Layout: 10 × u32 = 40 bytes
-//   [0] magic   0x44530001 ("DS\x00\x01")
-//   [1] seq     write sequence (incremented each hook-46 call)
-//   [2] item_id last item_id passed to hook 46
-//   [3] step    which resolution step succeeded (1-4, 4=fallback)
-//   [4] flags   bit 0 = resolved was null, bit 1 = fallback used
-//   [5] fb_cnt  running count of fallbacks
-//   [6] oarc_ok last ensure_ap_item_oarcs result (1=loaded, 0=skipped)
-//   [7..9]      reserved
+// Layout: 16 × u32 = 64 bytes
+//   [0]  magic   0x44530002 ("DS\x00\x02", v2)
+//   [1]  seq     write sequence (incremented each hook-46 call)
+//   [2]  item_id last item_id passed to hook 46
+//   [3]  step    which resolution step succeeded (1-4, 4=fallback)
+//   [4]  flags   bit 0 = resolved was null, bit 1 = fallback used
+//   [5]  fb_cnt  running count of fallbacks
+//   [6]  oarc_diag  bitfield from load_oarc_if_needed:
+//          bit 0: WORK2_HEAP non-null
+//          bit 1: ARC_MGR non-null
+//          bit 2: ARC_MGR entries non-null
+//          bit 3: is_oarc_loaded returned true (skip)
+//          bit 4: getArcOrLoadFromDisk result for ARC_MGR
+//          bit 5: STAGE_ARC_MGR non-null
+//          bit 6: getArcOrLoadFromDisk result for stage table
+//   [7]  h46_diag  bitfield from hook #46:
+//          bit 0: resolved_model_name non-null
+//          bit 1: step1 result non-null
+//          bit 2: WORK2_HEAP non-null in hook46
+//          bit 3: getArcOrLoadFromDisk result in step2
+//          bit 4: step2 retry result non-null
+//          bit 5: ARC_MGR non-null in hook46
+//          bit 6: step3 result non-null
+//          bit 7: arc_table == &STAGE_ARC_MGR.entries_table
+//   [8]  arc_table_lo   low 32 bits of arc_table ptr (from hook46)
+//   [9]  stage_tbl_lo   low 32 bits of &STAGE_ARC_MGR.entries_table
+//   [10] spawn_id       spawn_id used in buffer processing
+//   [11..15]            reserved
 
 #[no_mangle]
-pub static mut AP_DEBUG_SLOTS: [u32; 10] = [
-    0x44530001, // magic
-    0, 0, 0, 0, 0, 0, 0, 0, 0,
+pub static mut AP_DEBUG_SLOTS: [u32; 16] = [
+    0x44530002, // magic v2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 ];
 
 /// Write a single debug slot (volatile).
@@ -1511,37 +1530,64 @@ unsafe fn is_oarc_loaded(oarc_name: *const c_char) -> bool {
 /// Load a single OARC from Object/NX into both the global ARC_MGR table
 /// and the current stage's arc table.  dAcItem::init only queries the
 /// STAGE table, so having the OARC in ARC_MGR alone is not sufficient.
+///
+/// Writes diagnostic bits to AP_DEBUG_SLOTS[6] (oarc_diag).
 unsafe fn load_oarc_if_needed(oarc_name: *const c_char) {
-    // Load into ARC_MGR (global table) for general availability.
-    if !is_oarc_loaded(oarc_name) {
-        if ARC_MGR.is_null() {
-            return;
-        }
-        let entries_ptr = (*ARC_MGR).entries_table.entries;
-        if entries_ptr.is_null() {
-            return;
-        }
-        let arc_table = &mut (*ARC_MGR).entries_table as *mut mem::ArcEntryTable;
-        dRawArcTable_c__getArcOrLoadFromDisk(
-            arc_table,
-            oarc_name,
-            c"Object/NX".as_ptr(),
-            WORK2_HEAP,
-        );
+    let mut diag: u32 = 0;
+
+    // bit 0: WORK2_HEAP non-null  (set by caller ensure_ap, but verify here)
+    if !WORK2_HEAP.is_null() {
+        diag |= 1 << 0;
     }
 
-    // Also load into the STAGE table.  This is the table that
-    // dAcItem::init actually queries when setting up model data.
-    // getArcOrLoadFromDisk is idempotent — if the entry already
-    // exists it simply returns true.
+    // Load into ARC_MGR (global table) for general availability.
+    let already_loaded = is_oarc_loaded(oarc_name);
+    if already_loaded {
+        diag |= 1 << 3;
+    } // bit 3: already loaded
+
+    if !already_loaded {
+        if !ARC_MGR.is_null() {
+            diag |= 1 << 1; // bit 1: ARC_MGR non-null
+            let entries_ptr = (*ARC_MGR).entries_table.entries;
+            if !entries_ptr.is_null() {
+                diag |= 1 << 2; // bit 2: entries non-null
+                let arc_table = &mut (*ARC_MGR).entries_table as *mut mem::ArcEntryTable;
+                let ok = dRawArcTable_c__getArcOrLoadFromDisk(
+                    arc_table,
+                    oarc_name,
+                    c"Object/NX".as_ptr(),
+                    WORK2_HEAP,
+                );
+                if ok {
+                    diag |= 1 << 4;
+                } // bit 4: ARC_MGR load result
+            }
+        }
+    }
+
+    // Also load into the STAGE table.
     if !mem::STAGE_ARC_MGR.is_null() {
+        diag |= 1 << 5; // bit 5: STAGE_ARC_MGR non-null
         let stage_table = &mut (*mem::STAGE_ARC_MGR).entries_table as *mut mem::ArcEntryTable;
-        dRawArcTable_c__getArcOrLoadFromDisk(
+        let ok2 = dRawArcTable_c__getArcOrLoadFromDisk(
             stage_table,
             oarc_name,
             c"Object/NX".as_ptr(),
             WORK2_HEAP,
         );
+        if ok2 {
+            diag |= 1 << 6;
+        } // bit 6: stage load result
+    }
+
+    dbg_slot(6, diag);
+
+    // Write STAGE_ARC_MGR entries table address for comparison with hook #46
+    if !mem::STAGE_ARC_MGR.is_null() {
+        let stage_tbl_ptr =
+            &mut (*mem::STAGE_ARC_MGR).entries_table as *mut mem::ArcEntryTable as usize;
+        dbg_slot(9, stage_tbl_ptr as u32); // low 32 bits
     }
 }
 
@@ -1854,8 +1900,6 @@ pub extern "C" fn get_arc_model_from_item(
 ) -> *mut c_void {
     unsafe {
         // Reset the hook-mismatch flag for this item's init cycle.
-        // It will only be set back to true if we fall all the way to
-        // the GetRupee fallback at step 4.
         AP_HOOK46_USED_FALLBACK = false;
 
         // Debug slots: record call
@@ -1865,19 +1909,31 @@ pub extern "C" fn get_arc_model_from_item(
         dbg_slot(3, 0); // step not yet determined
         dbg_slot(4, 0); // flags reset
 
+        // Diagnostic: record arc_table pointer and compare with STAGE_ARC_MGR
+        let mut h46_diag: u32 = 0;
+        dbg_slot(8, arc_table as usize as u32); // low 32 bits of arc_table
+
+        if !mem::STAGE_ARC_MGR.is_null() {
+            let stage_tbl_ptr =
+                &mut (*mem::STAGE_ARC_MGR).entries_table as *mut mem::ArcEntryTable as *mut c_void;
+            dbg_slot(9, stage_tbl_ptr as usize as u32);
+            if arc_table == stage_tbl_ptr {
+                h46_diag |= 1 << 7; // bit 7: tables match
+            }
+        }
+
         // Resolve the arc name through progressive item logic.
-        // IMPORTANT: We pass arc_name even if null.  For individual progressive
-        // tiers (e.g., id=13 Master Sword) the game's item table has oarc=null,
-        // but resolve_progressive_item_models returns the correct OARC name
-        // (e.g., "GetSwordA") via its match arms.  Null is safe — the function
-        // never dereferences the pointer, only pattern-matches item_id.
         let resolved_model_name = resolve_progressive_item_models(arc_name, item_id, 1);
 
-        // If resolution returned null (no progressive match and input was null),
-        // use GetRupee — this item genuinely has no model (e.g., bugs/treasures).
+        if !resolved_model_name.is_null() {
+            h46_diag |= 1 << 0; // bit 0: resolved non-null
+        }
+
+        // If resolution returned null, use GetRupee fallback.
         if resolved_model_name.is_null() {
             dbg_slot(3, 4); // step 4 = fallback
             dbg_slot(4, 0x3); // flags: resolved_null | fallback
+            dbg_slot(7, h46_diag);
             let fb = core::ptr::read_volatile(AP_DEBUG_SLOTS.as_ptr().add(5));
             dbg_slot(5, fb.wrapping_add(1));
             let fallback_model = get_fallback_model_for_item(item_id);
@@ -1888,28 +1944,32 @@ pub extern "C" fn get_arc_model_from_item(
             );
         }
 
-        // 1. Try the stage's arc table (works for ObjectPack-native items and items
-        //    whose OARCs were added via ARCN patches).
+        // 1. Try the stage's arc table
         let result = dRawArcTable_c__getDataFromOarc(
             arc_table,
             resolved_model_name,
             c"g3d/model.brres".as_ptr(),
         );
         if !result.is_null() {
+            h46_diag |= 1 << 1; // bit 1: step1 non-null
             dbg_slot(3, 1); // step 1 = stage table hit
+            dbg_slot(7, h46_diag);
             return result;
         }
 
-        // 2. Stage table didn't have it — try loading the OARC from Object/NX into the
-        //    stage table on-demand, then retry.
+        // 2. Stage table didn't have it — try loading from Object/NX
         if !WORK2_HEAP.is_null() {
+            h46_diag |= 1 << 2; // bit 2: WORK2_HEAP non-null
             let stage_table = arc_table as *mut mem::ArcEntryTable;
-            dRawArcTable_c__getArcOrLoadFromDisk(
+            let load_ok = dRawArcTable_c__getArcOrLoadFromDisk(
                 stage_table,
                 resolved_model_name,
                 c"Object/NX".as_ptr(),
                 WORK2_HEAP,
             );
+            if load_ok {
+                h46_diag |= 1 << 3;
+            } // bit 3: disk load result
 
             let result2 = dRawArcTable_c__getDataFromOarc(
                 arc_table,
@@ -1917,14 +1977,16 @@ pub extern "C" fn get_arc_model_from_item(
                 c"g3d/model.brres".as_ptr(),
             );
             if !result2.is_null() {
+                h46_diag |= 1 << 4; // bit 4: step2 retry non-null
                 dbg_slot(3, 2); // step 2 = loaded from disk
+                dbg_slot(7, h46_diag);
                 return result2;
             }
         }
 
-        // 3. ARC_MGR fallback — OARCs pre-loaded at stage entry may be in the global
-        //    table even if the stage table didn't pick them up.
+        // 3. ARC_MGR fallback
         if !ARC_MGR.is_null() {
+            h46_diag |= 1 << 5; // bit 5: ARC_MGR non-null
             let arc_mgr_table =
                 &mut (*ARC_MGR).entries_table as *mut mem::ArcEntryTable as *mut c_void;
             let result3 = dRawArcTable_c__getDataFromOarc(
@@ -1933,16 +1995,17 @@ pub extern "C" fn get_arc_model_from_item(
                 c"g3d/model.brres".as_ptr(),
             );
             if !result3.is_null() {
+                h46_diag |= 1 << 6; // bit 6: step3 non-null
                 dbg_slot(3, 3); // step 3 = ARC_MGR hit
+                dbg_slot(7, h46_diag);
                 return result3;
             }
         }
 
-        // 4. GetRupee fallback — the actor still initialises with a rupee model. Set
-        //    the mismatch flag so hook #47 also returns "GetRupee" model name,
-        //    preventing invisible items.
+        // 4. GetRupee fallback
         dbg_slot(3, 4); // step 4 = fallback
         dbg_slot(4, 0x2); // flags: fallback (resolved was not null)
+        dbg_slot(7, h46_diag);
         let fb = core::ptr::read_volatile(AP_DEBUG_SLOTS.as_ptr().add(5));
         dbg_slot(5, fb.wrapping_add(1));
         AP_HOOK46_USED_FALLBACK = true;
@@ -2449,6 +2512,9 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 item_id_val as u32
             };
             let param1: u32 = spawn_id | (0xFFu32 << 10) | 0x580000;
+
+            // Debug: record spawn_id for diagnostics
+            dbg_slot(10, spawn_id);
 
             // Pre-load the item's OARCs into ARC_MGR's global table.
             // The on-demand loader in get_arc_model_from_item (hook #46)

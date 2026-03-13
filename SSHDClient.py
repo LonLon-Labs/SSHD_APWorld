@@ -423,7 +423,7 @@ class RyujinxMemoryReader:
         "AP_ITEM_INFO_TABLE": bytes([0x49, 0x54, 0x00, 0x01]),  # "IT\x00\x01"
         "AP_CHECK_STATS":     bytes([0x43, 0x53, 0x00, 0x01]),  # "CS\x00\x01"
         "AP_ITEM_BUFFER":     bytes([0x41, 0x50, 0x00, 0x01]),  # "AP\x00\x01"
-        "AP_DEBUG_SLOTS":    bytes([0x01, 0x00, 0x53, 0x44]),  # 0x44530001 LE
+        "AP_DEBUG_SLOTS":    bytes([0x02, 0x00, 0x53, 0x44]),  # 0x44530002 LE (v2)
     }
 
     # --- Connection health thresholds ---
@@ -2645,22 +2645,44 @@ class SSHDContext(CommonContext):
             logger.warning(f"Failed to write AP item info table: {e}")
 
     # ------------------------------------------------------------------
-    # Debug ring-buffer reader (Rust -> Python via shared memory)
+    # Debug slot reader (Rust -> Python via shared memory)
     # ------------------------------------------------------------------
-    # Layout matches AP_DEBUG_SLOTS in item.rs:
-    #   10 × u32 = 40 bytes, little-endian
-    #   [0] magic 0x44530001   [1] seq   [2] item_id   [3] step (1-4)
-    #   [4] flags              [5] fb_cnt [6] oarc_ok   [7..9] reserved
-    _DBG_SLOT_COUNT = 10
-    _DBG_SLOT_BYTES = _DBG_SLOT_COUNT * 4  # 40 bytes
+    # Layout matches AP_DEBUG_SLOTS in item.rs (v2):
+    #   16 × u32 = 64 bytes, little-endian
+    #   [0]  magic 0x44530002  [1]  seq        [2]  item_id    [3]  step (1-4)
+    #   [4]  flags             [5]  fb_cnt     [6]  oarc_diag  [7]  h46_diag
+    #   [8]  arc_table_lo      [9]  stage_tbl  [10] spawn_id   [11..15] reserved
+    _DBG_SLOT_COUNT = 16
+    _DBG_SLOT_BYTES = _DBG_SLOT_COUNT * 4  # 64 bytes
 
     _STEP_NAMES = {1: "stage_table", 2: "loaded_from_disk", 3: "ARC_MGR", 4: "FALLBACK"}
+
+    _OARC_DIAG_BITS = [
+        (0, "WORK2_HEAP"),
+        (1, "ARC_MGR"),
+        (2, "ARC_MGR_entries"),
+        (3, "already_loaded"),
+        (4, "arcmgr_load_ok"),
+        (5, "STAGE_ARC_MGR"),
+        (6, "stage_load_ok"),
+    ]
+
+    _H46_DIAG_BITS = [
+        (0, "resolved_ok"),
+        (1, "step1_ok"),
+        (2, "WORK2_HEAP"),
+        (3, "disk_load_ok"),
+        (4, "step2_ok"),
+        (5, "ARC_MGR"),
+        (6, "step3_ok"),
+        (7, "tbl_match"),
+    ]
 
     def _poll_debug_slots(self):
         """Read debug slot values from the Rust static and log changes."""
         if self._ap_debug_slots_offset is None:
             self._ap_debug_slots_offset = self._scan_for_buffer(
-                bytes([0x01, 0x00, 0x53, 0x44]), "AP_DEBUG_SLOTS"
+                bytes([0x02, 0x00, 0x53, 0x44]), "AP_DEBUG_SLOTS"
             )
         if self._ap_debug_slots_offset is None:
             return
@@ -2672,7 +2694,7 @@ class SSHDContext(CommonContext):
             if raw is None or len(raw) < self._DBG_SLOT_BYTES:
                 return
 
-            # Parse 10 × u32 LE
+            # Parse 16 × u32 LE
             slots = [int.from_bytes(raw[i:i+4], "little") for i in range(0, self._DBG_SLOT_BYTES, 4)]
             seq = slots[1]
 
@@ -2685,9 +2707,34 @@ class SSHDContext(CommonContext):
             step = slots[3]
             flags = slots[4]
             fb_cnt = slots[5]
+            oarc_diag = slots[6]
+            h46_diag = slots[7]
+            arc_table_lo = slots[8]
+            stage_tbl_lo = slots[9]
+            spawn_id = slots[10]
             step_name = self._STEP_NAMES.get(step, f"unknown({step})")
 
-            msg = f"[GAME-DBG] H46 seq={seq} item={item_id} step={step_name} flags=0x{flags:X} fallbacks={fb_cnt}"
+            # Decode oarc_diag bits
+            oarc_parts = []
+            for bit, name in self._OARC_DIAG_BITS:
+                if oarc_diag & (1 << bit):
+                    oarc_parts.append(name)
+            oarc_str = "|".join(oarc_parts) if oarc_parts else "NONE"
+
+            # Decode h46_diag bits
+            h46_parts = []
+            for bit, name in self._H46_DIAG_BITS:
+                if h46_diag & (1 << bit):
+                    h46_parts.append(name)
+            h46_str = "|".join(h46_parts) if h46_parts else "NONE"
+
+            tbl_match = "MATCH" if (h46_diag & 0x80) else "DIFF"
+            msg = (
+                f"[GAME-DBG] H46 seq={seq} item={item_id} spawn={spawn_id} "
+                f"step={step_name} flags=0x{flags:X} fb={fb_cnt} "
+                f"oarc=[{oarc_str}] h46=[{h46_str}] "
+                f"arc_tbl=0x{arc_table_lo:08X} stage_tbl=0x{stage_tbl_lo:08X} ({tbl_match})"
+            )
             logger.info(msg)
 
         except Exception:
