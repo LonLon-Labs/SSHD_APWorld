@@ -582,15 +582,31 @@ def _run_gui(initial_patch_file: Optional[str] = None):
                     self.log.emit("\nThis .apsshd already contains ROM patches.")
                     self.log.emit("Installing existing patches...")
                     self.progress.emit(50)
-                    from SSHDClient import install_patch
-                    success, _ = install_patch(str(self._patch_path))
-                    if success:
-                        self.progress.emit(100)
-                        self.info.emit("Installed successfully!", "#00ff7f")
-                        self.log.emit("\nDone! Launch Skyward Sword HD in Ryujinx.")
-                    else:
-                        self.info.emit("Installation failed", "#ee0000")
-                        self.log.emit("\nInstallation failed. Check the log above.")
+
+                    mod_dir = _find_ryujinx_mod_dir()
+                    if mod_dir is None:
+                        self.info.emit("Ryujinx mod directory not found", "#ff7700")
+                        self.log.emit("\nCould not locate Ryujinx mod directory.")
+                        self.log.emit("Extract romfs/ and exefs/ from the .apsshd manually.")
+                        return
+
+                    install_dir = mod_dir / "Archipelago"
+                    self.log.emit(f"Installing to: {install_dir}")
+                    if install_dir.exists():
+                        shutil.rmtree(install_dir)
+                    install_dir.mkdir(parents=True, exist_ok=True)
+
+                    with zipfile.ZipFile(self._patch_path, "r") as zf:
+                        for name in zf.namelist():
+                            if name.startswith("romfs/") or name.startswith("exefs/"):
+                                target = install_dir / name
+                                target.parent.mkdir(parents=True, exist_ok=True)
+                                with zf.open(name) as src, open(target, "wb") as dst:
+                                    dst.write(src.read())
+
+                    self.progress.emit(100)
+                    self.info.emit("Installed successfully!", "#00ff7f")
+                    self.log.emit("\nDone! Launch Skyward Sword HD in Ryujinx.")
                     return
 
                 self.log.emit("\nGenerating ROM patches from your ROM extract...")
