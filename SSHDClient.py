@@ -886,7 +886,7 @@ class RyujinxMemoryReader:
                                         if score > best_score:
                                             best_score = score
                                             best_base = candidate
-                                        if best_score >= 6:
+                                        if best_score >= 8:
                                             break
                                 elif scan_pos + prefix_start >= 0:
                                     # Prefix spans into previous chunk — read
@@ -901,13 +901,13 @@ class RyujinxMemoryReader:
                                             if score > best_score:
                                                 best_score = score
                                                 best_base = candidate
-                                            if best_score >= 6:
+                                            if best_score >= 8:
                                                 break
                                     except Exception:
                                         pass
 
-                                # High-confidence match — stop scanning immediately
-                                if best_score >= 6:
+                                # Perfect match — stop scanning immediately
+                                if best_score >= 8:
                                     break
 
                                 search_offset = needle_off + 1
@@ -915,13 +915,13 @@ class RyujinxMemoryReader:
                         except Exception:
                             pass  # skip unreadable sub-chunks within this region
 
-                        # Stop reading more chunks once we have a high-confidence match
-                        if best_score >= 6:
+                        # Stop reading more chunks once we have a perfect match
+                        if best_score >= 8:
                             break
                         scan_pos += to_read
 
-                    # Early exit once we have a high-confidence base
-                    if best_score >= 6:
+                    # Early exit once we have a perfect base
+                    if best_score >= 8:
                         break
 
                 tier_elapsed = time.time() - tier_start
@@ -941,10 +941,15 @@ class RyujinxMemoryReader:
                 logger.error("Could not find SSHD signature in memory")
                 return False
             
-            print(f"[SUCCESS] Selected base address: 0x{best_base:X} (score: {best_score}/8)")
+            if best_score < 8:
+                print(f"[FAIL] Best candidate 0x{best_base:X} scored {best_score}/8 (need 8/8)")
+                logger.error(
+                    f"Base address candidate 0x{best_base:X} scored only {best_score}/8 — "
+                    f"rejecting (8/8 required). Game may still be loading."
+                )
+                return False
             
-            if best_score < 3:
-                logger.warning(f"Base address has low validation score ({best_score}/8) - may be incorrect")
+            print(f"[SUCCESS] Selected base address: 0x{best_base:X} (score: {best_score}/8)")
             
             self.base_address = best_base
 
@@ -1056,21 +1061,24 @@ class RyujinxMemoryReader:
                     logging.debug(f"[PRESCAN] {mname}: no hits")
 
             # ------------------------------------------------------------------
-            # Post-scan sanity check: if the prescan found ZERO magic buffer
-            # hits in ±2 GB around the base address and the score wasn't
-            # perfect, the base is very likely a false positive (e.g. a stale
-            # signature copy left in an unrelated heap region).  Log an
-            # explicit warning so the health monitor knows to expect trouble.
+            # Post-scan validation: ALL three magic buffers must be found.
+            # If any are missing, the base address is likely a stale copy or
+            # the game hasn't finished initialising its Rust statics yet.
+            # Returning False triggers a rescan on the next attempt.
             # ------------------------------------------------------------------
-            all_empty = all(len(v) == 0 for v in magic_hits.values())
-            if all_empty and best_score < 8:
-                logger.warning(
-                    f"Base address 0x{best_base:X} scored only {best_score}/8 "
-                    f"and no Rust magic buffers (IT/CS/AP) were found nearby. "
-                    f"This may be a stale/false-positive signature. "
-                    f"The health monitor will rescan automatically if "
-                    f"subsequent memory operations keep failing."
+            missing_buffers = [name for name, addrs in magic_hits.items() if not addrs]
+            if missing_buffers:
+                print(
+                    f"[FAIL] Base 0x{best_base:X} (8/8) but missing magic buffers: "
+                    f"{', '.join(missing_buffers)}"
                 )
+                logger.error(
+                    f"Base address 0x{best_base:X} scored 8/8 but could not find "
+                    f"all required magic buffers ({', '.join(missing_buffers)} missing). "
+                    f"Game may still be loading. Will retry."
+                )
+                self.base_address = None
+                return False
 
             logger.info(f"Found SSHD base address: 0x{best_base:X} (score: {best_score}/8, took {total_elapsed:.1f}s)")
             

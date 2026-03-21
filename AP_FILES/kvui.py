@@ -91,10 +91,12 @@ from kivy.animation import Animation
 from kivy.uix.popup import Popup
 from kivy.uix.image import AsyncImage
 
-# Monkey-patch ScrollEffect to add missing reset_scale method (KivyMD compatibility fix)
+# Monkey-patch ScrollEffect to add missing methods (KivyMD compatibility fix)
 from kivy.effects.scroll import ScrollEffect
 if not hasattr(ScrollEffect, "reset_scale"):
     ScrollEffect.reset_scale = lambda self: None
+if not hasattr(ScrollEffect, "convert_overscroll"):
+    ScrollEffect.convert_overscroll = lambda self, *args, **kwargs: 0
 
 from kivymd.app import MDApp
 from kivymd.uix.dialog import MDDialog, MDDialogHeadlineText, MDDialogSupportingText, MDDialogButtonContainer
