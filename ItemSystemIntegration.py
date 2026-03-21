@@ -68,6 +68,8 @@ class GameOffsets:
 # the buffer write entirely (faster retry).
 BUSY_PLAYER_ACTIONS = frozenset([
     0x12,  # DIVE_SKY  (diving from sky to surface)
+    0x13,  # FREE_FALL
+    0x14,  # FALLING
     0x40,  # PICK_UP
     0x41,  # THROWING
     0x43,  # HOLDING
@@ -125,6 +127,16 @@ class GameItemSystem:
         self.base_address = getattr(memory_accessor, 'base_address', None)
         self.buffer_addr = None  # Will be found dynamically
         self.timeout_frames = 900  # 15 seconds at 60 FPS polling rate — must cover Rust stage-transition cooldown (90 game frames) + retry window (300 game frames)
+        
+        # Stage-transition cooldown (mirrors Rust-side protection).
+        # When the Python client detects a stage change it blocks item
+        # delivery for a few seconds so the game has time to finish
+        # loading rooms/actors/heaps.  Without this, buffer writes that
+        # land during the transition are consumed by the Rust loop but
+        # the spawned actor is destroyed when the old scene unloads.
+        self._last_known_stage: Optional[bytes] = None
+        self._stage_cooldown_until: float = 0.0
+        self._STAGE_COOLDOWN_SECS: float = 3.0  # seconds after a stage change
         
         # Buffer address cycling: store ALL valid candidate addresses
         self._candidate_buffer_addrs: list = []  # All prescan hits with valid magic
@@ -434,12 +446,14 @@ class GameItemSystem:
         except Exception as exc:
             logger.warning(f"Buffer delivery error for item {item_id}: {exc}")
         
-        # ---- Path 2: Direct-flag fallback (ALWAYS runs) ---------------------
-        # Setting the item flag directly in save memory guarantees the item
-        # reaches the player's inventory regardless of what happened above.
-        # If the Rust spawn DID work, the flag is already set and this is a
-        # harmless no-op.
-        flag_confirmed = self._ensure_itemflag_set(item_id)
+        # ---- Path 2: Direct-flag fallback (only when buffer failed) --------
+        # If the buffer path succeeded, the game's item actor will set the
+        # flag itself during stateGet.  Writing the flag here would race
+        # with the actor's determineFinalItemid call and cause progressive
+        # items (especially swords) to resolve to the wrong tier.
+        flag_confirmed = False
+        if not buffer_success:
+            flag_confirmed = self._ensure_itemflag_set(item_id)
         
         # ---- Track consecutive buffer failures for address cycling ----------
         if buffer_success:
@@ -671,6 +685,30 @@ class GameItemSystem:
             if self.buffer_addr is None:
                 logger.debug("Player not ready: Buffer not found")
                 return False
+        
+        # ---- Stage-transition cooldown ------------------------------------
+        # Detect stage changes by reading the current stage name.  If it
+        # changed since the last check, impose a cooldown so the engine
+        # finishes loading rooms, OARCs and heaps before we spawn items.
+        try:
+            stage_bytes = self.memory.read_bytes(
+                GameOffsets.CURRENT_STAGE_NAME, 8
+            )
+            if stage_bytes is not None:
+                if self._last_known_stage is None:
+                    self._last_known_stage = stage_bytes
+                elif stage_bytes != self._last_known_stage:
+                    self._last_known_stage = stage_bytes
+                    self._stage_cooldown_until = time.time() + self._STAGE_COOLDOWN_SECS
+                    logger.debug(
+                        f"Stage transition detected — cooldown until "
+                        f"{self._stage_cooldown_until:.1f}"
+                    )
+            if time.time() < self._stage_cooldown_until:
+                logger.debug("Player not ready: stage-transition cooldown active")
+                return False
+        except Exception as e:
+            logger.debug(f"Could not read stage name: {e}")
         
         # ---- Player action busy-state check --------------------------------
         # Read the player's current action and reject if it's one of the

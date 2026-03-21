@@ -1864,8 +1864,10 @@ pub static mut ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER
 
 // Player actions during which we must NOT deliver an Archipelago item.
 // Values match BUSY_PLAYER_ACTIONS in ItemSystemIntegration.py.
-const BUSY_ACTIONS: [player::PLAYER_ACTIONS; 37] = [
+const BUSY_ACTIONS: [player::PLAYER_ACTIONS; 39] = [
     player::PLAYER_ACTIONS::DIVE_SKY,                    // 0x12
+    player::PLAYER_ACTIONS::FREE_FALL,                   // 0x13
+    player::PLAYER_ACTIONS::FALLING,                     // 0x14
     player::PLAYER_ACTIONS::PICK_UP,                     // 0x40
     player::PLAYER_ACTIONS::THROWING,                    // 0x41
     player::PLAYER_ACTIONS::HOLDING,                     // 0x43

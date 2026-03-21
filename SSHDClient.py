@@ -400,6 +400,27 @@ _ELDIN_STAGES = {"F200", "F201", "F201_3", "F210", "F211", "D201"}
 # Stages where Faron story-flag statues (800-803) may legitimately activate.
 _FARON_STAGES = {"F100", "F101", "F102", "F102_1", "F103", "F401", "F400"}
 
+# Entry bird statues — the first statue the player is supposed to reach
+# when diving into each surface region.  These are auto-enabled on the
+# player's first visit to the region so they always have a spawn point.
+_REGION_ENTRY_STATUES: dict[str, str] = {
+    "faron":  "Faron Woods Entry Statue",     # story flag 800
+    "eldin":  "Volcano Entrance Statue",      # story flag 804
+    "lanayru": "Lanayru Mine Entry Statue",   # scene flag (7, 68)
+}
+
+def _stage_to_region(stage: str) -> Optional[str]:
+    """Return the region key ('faron', 'eldin', 'lanayru') for a stage code,
+    or None if the stage is not in a surface region."""
+    prefix = stage[:4] if stage else ""
+    if prefix in ("F100", "F101", "F102", "F103", "F401", "F400"):
+        return "faron"
+    if prefix in ("F200", "F201", "F210", "F211", "D201"):
+        return "eldin"
+    if prefix in ("F300", "F301", "F302"):
+        return "lanayru"
+    return None
+
 # Scene name to scene flag base address mapping (base-relative offsets for SSHD)
 # These are the offsets from base_address where scene flags are stored
 # Scene flags are organized by scene in the static scene flag array
@@ -1378,6 +1399,7 @@ class SSHDContext(CommonContext):
         # key = statue name, value = True if the statue's activation flag is set.
         self._bird_statue_snapshot: Optional[Dict[str, bool]] = None
         self._bird_statue_enforcement_log: Set[str] = set()  # avoid log spam
+        self._visited_regions: Set[str] = set()  # regions where entry statue was auto-enabled
         
         # Tracker bridge for autotracking
         self.tracker_bridge = TrackerBridge() if TrackerBridge else None
@@ -1971,28 +1993,16 @@ class SSHDContext(CommonContext):
                 success = self.game_item_system.give_item_by_name(buffer_item_name)
                 if success:
                     # Only commit the progressive counter increment on success
-                    # so retries don't skip tiers
+                    # so retries don't skip tiers.
+                    #
+                    # Do NOT set item flags here — the game's item actor will
+                    # call determineFinalItemid during stateGet and set flags
+                    # itself.  Writing flags before stateGet completes causes
+                    # a race: determineFinalItemid sees the flag already set
+                    # and resolves to the NEXT tier (e.g. Practice Sword flag
+                    # set → game gives Goddess Sword instead).
                     if is_progressive:
                         self.progressive_counts[item_name] = next_count
-                        
-                        # Set ALL tier flags up to and including the target
-                        # tier.  The Rust resolver uses numeric flag order
-                        # which doesn't match the logical progression
-                        # (White Sword is flag 9, before Practice Sword 10),
-                        # so we force-set every flag from tier 1 to the
-                        # current target to guarantee correct state.
-                        if item_name == "Progressive Sword":
-                            target_idx = min(count - 1, 5)
-                            for i in range(target_idx + 1):
-                                self.game_item_system._ensure_itemflag_set(SWORD_FLAG_IDS[i])
-                            logger.debug(f"Set sword flags for tiers 1-{target_idx + 1}: {SWORD_FLAG_IDS[:target_idx + 1]}")
-                        elif actual_item_name != buffer_item_name and actual_item_name in ITEM_TABLE:
-                            # For other progressive items (bow, beetle, etc.),
-                            # set the concrete tier's flag so the game
-                            # recognises the upgraded item in inventory.
-                            concrete_data = ITEM_TABLE[actual_item_name]
-                            self.game_item_system._ensure_itemflag_set(concrete_data.original_id)
-                            logger.debug(f"Set concrete tier flag: {actual_item_name} (id={concrete_data.original_id})")
                     
                     logger.debug(f"Gave {buffer_item_name} via item buffer (game will handle animation)")
                 else:
@@ -2062,6 +2072,7 @@ class SSHDContext(CommonContext):
                     self.previous_custom_flags.clear()
                     self._bird_statue_snapshot = None
                     self._bird_statue_enforcement_log.clear()
+                    self._visited_regions.clear()
 
                     # Immediately attempt a new base-address scan instead of
                     # waiting for the next cycle (which would spin doing
@@ -2121,6 +2132,20 @@ class SSHDContext(CommonContext):
             if stage_name != self.current_stage:
                 logger.debug(f"Entered stage: {stage_name}")
                 self.current_stage = stage_name
+                
+                # Auto-enable the entry bird statue when first visiting a
+                # surface region so the player always has a spawn point.
+                region = _stage_to_region(stage_name)
+                if region and region not in self._visited_regions:
+                    self._visited_regions.add(region)
+                    entry_name = _REGION_ENTRY_STATUES.get(region)
+                    if entry_name and self._bird_statue_snapshot is not None:
+                        if not self._bird_statue_snapshot.get(entry_name, False):
+                            self._bird_statue_snapshot[entry_name] = True
+                            logger.info(
+                                f"[BirdStatue] Auto-enabled entry statue: {entry_name} "
+                                f"(first visit to {region})"
+                            )
             
             # Write AP buffers to game memory (item info table + check stats)
             self._write_ap_item_info_table()
@@ -3305,6 +3330,14 @@ class SSHDContext(CommonContext):
                     legitimate = True
                 elif ftype == "story" and fnum in range(804, 808) and in_eldin:
                     legitimate = True
+                
+                # Entry statues are always legitimate — the player needs
+                # a spawn point when diving into a region for the first time.
+                if not legitimate:
+                    for region_key, entry_name in _REGION_ENTRY_STATUES.items():
+                        if name == entry_name and region_key in self._visited_regions:
+                            legitimate = True
+                            break
 
                 if legitimate:
                     self._bird_statue_snapshot[name] = True
