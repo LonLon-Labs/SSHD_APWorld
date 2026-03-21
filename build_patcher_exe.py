@@ -173,7 +173,17 @@ exe = EXE(
 
     print("Running PyInstaller...")
     print()
-    result = subprocess.run(cmd, cwd=str(source_dir))
+
+    # Prevent Kivy from initialising OpenGL if it happens to be installed.
+    # On headless CI runners Kivy's GL check calls sys.exit(), killing the
+    # PyInstaller process.  These env vars suppress that behaviour.
+    env = os.environ.copy()
+    env["KIVY_DOC_INCLUDE"] = "1"
+    env["KIVY_NO_ARGS"] = "1"
+    env["KIVY_NO_CONSOLELOG"] = "1"
+    env["KIVY_NO_FILELOG"] = "1"
+
+    result = subprocess.run(cmd, cwd=str(source_dir), env=env)
 
     if result.returncode != 0:
         print()

@@ -71,8 +71,7 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pyinstaller PyQt6
+        pip install pyinstaller PyQt6 pyyaml platformdirs colorama typing_extensions lz4 nlzss11 pathspec schema bsdiff4
 
     - name: Build standalone patcher exe
       run: python build_patcher_exe.py
