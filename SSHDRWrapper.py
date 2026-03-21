@@ -273,31 +273,11 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
             setting_map.excluded_locations = excluded_locs_list
             print(f"[SSHDRWrapper] Excluded {len(excluded_locs_list)} locations from randomization")
     
-    # CRITICAL FIX: Remove Beedle's Airshop locations from excluded_locations if beedle_shop_shuffle is not vanilla
-    # The default excluded_locations includes these shops, but they should only be excluded when shuffle is vanilla
-    beedle_shop_mode = settings_dict.get("beedle_shop_shuffle", "vanilla")
-    if beedle_shop_mode != "vanilla":
-        beedle_shop_locations = [
-            "Beedle's Airshop - 50 Rupee Item",
-            "Beedle's Airshop - First 100 Rupee Item",
-            "Beedle's Airshop - Second 100 Rupee Item",
-            "Beedle's Airshop - Third 100 Rupee Item",
-            "Beedle's Airshop - 300 Rupee Item",
-            "Beedle's Airshop - 600 Rupee Item",
-            "Beedle's Airshop - 800 Rupee Item",
-            "Beedle's Airshop - 1000 Rupee Item",
-            "Beedle's Airshop - 1200 Rupee Item",
-            "Beedle's Airshop - 1600 Rupee Item",
-        ]
-        # Remove shop locations from excluded list
-        original_count = len(setting_map.excluded_locations)
-        setting_map.excluded_locations = [
-            loc for loc in setting_map.excluded_locations
-            if loc not in beedle_shop_locations
-        ]
-        removed_count = original_count - len(setting_map.excluded_locations)
-        if removed_count > 0:
-            print(f"[SSHDRWrapper] Removed {removed_count} Beedle's Airshop locations from excluded_locations (beedle_shop_shuffle={beedle_shop_mode})")
+    # NOTE: excluded_locations from config.yaml always have the highest priority.
+    # Even if a shuffle setting (like beedle_shop_shuffle) is turned on, individually
+    # excluded locations remain vanilla.  We no longer strip Beedle locations from
+    # the excluded list when the shop shuffle is enabled — the user's explicit
+    # exclusions must be respected.
     
     # NOTE: excluded_hint_locations is NOT used in Archipelago mode
     # Archipelago disables all hints (overrides all hint counts to 0), so there's no need

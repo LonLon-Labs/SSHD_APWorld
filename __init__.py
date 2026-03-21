@@ -914,8 +914,16 @@ class SSHDWorld(World):
         except (ValueError, TypeError):
             trial_treasure_num = 0
         
+        # Individually excluded locations from config.yaml always stay vanilla,
+        # regardless of what any shuffle setting says.
+        manually_excluded = getattr(self, '_sshd_excluded_locations', set())
+        
         for name, data in LOCATION_TABLE.items():
             if data.code is not None:
+                # Skip individually excluded locations (highest priority)
+                if name in manually_excluded:
+                    continue
+                
                 # Skip locations whose types are in the excluded set
                 if any(t in excluded_types for t in data.types):
                     continue
@@ -1002,6 +1010,18 @@ class SSHDWorld(World):
             self._sshd_setting_string = setting_string
             self._sshd_world_cache = world  # Cache for later use in generate_output
             
+            # Store individually excluded locations from config.yaml so both
+            # the logic_converter and _create_basic_regions() paths can filter
+            # them out of the AP world.  These must stay vanilla regardless of
+            # any shuffle setting (excluded_locations has highest priority).
+            excluded_locs = ap_settings.get('excluded_locations', [])
+            if isinstance(excluded_locs, list):
+                self._sshd_excluded_locations = set(excluded_locs)
+            else:
+                self._sshd_excluded_locations = set()
+            if self._sshd_excluded_locations:
+                print(f"[__init__.py] Individually excluded locations ({len(self._sshd_excluded_locations)}): will stay vanilla")
+            
             if starting_item_dict:
                 print(f"[__init__.py] Starting items from Setting String:")
                 for item_name, count in starting_item_dict.items():
@@ -1063,12 +1083,21 @@ class SSHDWorld(World):
                 if excluded_loc_types:
                     print(f"[__init__.py] Excluding location types from item pool: {sorted(excluded_loc_types)}")
                 
+                # Individually excluded locations from config.yaml — items at
+                # these locations must NOT enter the AP pool because the AP world
+                # will not have corresponding Location objects for them.
+                individually_excluded = getattr(self, '_sshd_excluded_locations', set())
+                
                 # Scan all filled locations to reconstruct the placed item pool
                 locations_excluded = 0
                 if hasattr(world, 'location_table'):
                     for loc_name, location in world.location_table.items():
                         if hasattr(location, 'types') and "Hint Location" in location.types:
                             continue  # Skip gossip stones
+                        # Skip individually excluded locations (highest priority)
+                        if loc_name in individually_excluded:
+                            locations_excluded += 1
+                            continue
                         # Skip locations for non-shuffled types
                         if excluded_loc_types and hasattr(location, 'types'):
                             if any(t in excluded_loc_types for t in location.types):
@@ -1188,6 +1217,7 @@ class SSHDWorld(World):
             self._sshd_resolved_settings = {}
             self._sshd_full_item_pool = {}
             self._sshd_starting_pool = {}
+            self._sshd_excluded_locations = set()
     
     def create_item(self, name: str) -> Item:
         """Create an item by name."""

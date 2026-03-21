@@ -1864,10 +1864,20 @@ pub static mut ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER
 
 // Player actions during which we must NOT deliver an Archipelago item.
 // Values match BUSY_PLAYER_ACTIONS in ItemSystemIntegration.py.
-const BUSY_ACTIONS: [player::PLAYER_ACTIONS; 16] = [
+const BUSY_ACTIONS: [player::PLAYER_ACTIONS; 37] = [
+    player::PLAYER_ACTIONS::DIVE_SKY,                    // 0x12
+    player::PLAYER_ACTIONS::PICK_UP,                     // 0x40
+    player::PLAYER_ACTIONS::THROWING,                    // 0x41
+    player::PLAYER_ACTIONS::HOLDING,                     // 0x43
+    player::PLAYER_ACTIONS::USE_BOW,                     // 0x45
+    player::PLAYER_ACTIONS::USE_SLINGSHOT,               // 0x46
     player::PLAYER_ACTIONS::DIE,                         // 0x4A
     player::PLAYER_ACTIONS::REVIVE,                      // 0x4B
     player::PLAYER_ACTIONS::INTERACT,                    // 0x58
+    player::PLAYER_ACTIONS::USE_CLAWSHOTS,               // 0x59
+    player::PLAYER_ACTIONS::BEING_PULLED_BY_CLAWS,       // 0x5A
+    player::PLAYER_ACTIONS::USE_BEETLE,                  // 0x5F
+    player::PLAYER_ACTIONS::USE_BELLOWS,                 // 0x69
     player::PLAYER_ACTIONS::USING_DOOR,                  // 0x6E
     player::PLAYER_ACTIONS::USE_DDOOR,                   // 0x6F
     player::PLAYER_ACTIONS::ZEV_EVENT_MAYBE,             // 0x77
@@ -1875,12 +1885,23 @@ const BUSY_ACTIONS: [player::PLAYER_ACTIONS; 16] = [
     player::PLAYER_ACTIONS::RELATED_TO_NEW_SWORD_IN_CS_, // 0x7B
     player::PLAYER_ACTIONS::OPEN_CHEST,                  // 0x7D
     player::PLAYER_ACTIONS::SWORD_IN_DIAL,               // 0x86
+    player::PLAYER_ACTIONS::ENTER_MINECART,              // 0x87
+    player::PLAYER_ACTIONS::LEAVE_MINECART,              // 0x88
+    player::PLAYER_ACTIONS::IN_TRUCK_MINECART,           // 0x89
     player::PLAYER_ACTIONS::ON_BIRD,                     // 0x8A
+    player::PLAYER_ACTIONS::BIRD_REACH_FOR_STATUETTE,    // 0x8B
+    player::PLAYER_ACTIONS::USE_WHIP,                    // 0x8D
+    player::PLAYER_ACTIONS::WHIP_LOCKED,                 // 0x8E
     player::PLAYER_ACTIONS::RECEIVE_GODDESS_FRUIT,       // 0x91
     player::PLAYER_ACTIONS::SLEEPING,                    // 0x93
+    player::PLAYER_ACTIONS::USE_BUGNET_CATCH,            // 0x94
+    player::PLAYER_ACTIONS::IN_GROOSENATOR,              // 0x95
+    player::PLAYER_ACTIONS::LAUNCH_FROM_GROOSENATOR,     // 0x96
+    player::PLAYER_ACTIONS::IN_BOAT,                     // 0x99
     player::PLAYER_ACTIONS::PLACE_TABLET,                // 0xAF
     player::PLAYER_ACTIONS::ENTER_GODDESS_WALL,          // 0xB4
     player::PLAYER_ACTIONS::EXIT_GODDESS_WALL,           // 0xB6
+    player::PLAYER_ACTIONS::SPIRIT_VESSEL_CHEST_EXIT,    // 0xB7
 ];
 
 /// Returns true if the player is currently in a "busy" action and must not

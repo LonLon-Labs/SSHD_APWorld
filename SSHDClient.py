@@ -1910,6 +1910,8 @@ class SSHDContext(CommonContext):
                 # Tier 1 uses "Progressive Sword" because that's the ITEM_TABLE
                 # name for game_id 10 (the Practice Sword).
                 sword_tiers = ["Progressive Sword", "Goddess Sword", "Goddess Longsword", "Goddess White Sword", "Master Sword", "True Master Sword"]
+                # Game flag IDs for each tier (NOT in numeric order — White Sword is 9)
+                SWORD_FLAG_IDS = [10, 11, 12, 9, 13, 14]
                 actual_item_name = sword_tiers[min(count - 1, 5)]
                 logger.debug(f"Progressive Sword #{count} -> {actual_item_name}")
             elif item_name == "Progressive Bow":
@@ -1973,12 +1975,21 @@ class SSHDContext(CommonContext):
                     if is_progressive:
                         self.progressive_counts[item_name] = next_count
                         
-                        # For tier 2+ progressive items, the buffer used the
-                        # progressive base ID (which sets the base flag, e.g.
-                        # BOW for id=19).  We also need to set the concrete
-                        # tier's flag (e.g. IRON_BOW for id=90) so the game
-                        # recognises the upgraded item in inventory.
-                        if actual_item_name != buffer_item_name and actual_item_name in ITEM_TABLE:
+                        # Set ALL tier flags up to and including the target
+                        # tier.  The Rust resolver uses numeric flag order
+                        # which doesn't match the logical progression
+                        # (White Sword is flag 9, before Practice Sword 10),
+                        # so we force-set every flag from tier 1 to the
+                        # current target to guarantee correct state.
+                        if item_name == "Progressive Sword":
+                            target_idx = min(count - 1, 5)
+                            for i in range(target_idx + 1):
+                                self.game_item_system._ensure_itemflag_set(SWORD_FLAG_IDS[i])
+                            logger.debug(f"Set sword flags for tiers 1-{target_idx + 1}: {SWORD_FLAG_IDS[:target_idx + 1]}")
+                        elif actual_item_name != buffer_item_name and actual_item_name in ITEM_TABLE:
+                            # For other progressive items (bow, beetle, etc.),
+                            # set the concrete tier's flag so the game
+                            # recognises the upgraded item in inventory.
                             concrete_data = ITEM_TABLE[actual_item_name]
                             self.game_item_system._ensure_itemflag_set(concrete_data.original_id)
                             logger.debug(f"Set concrete tier flag: {actual_item_name} (id={concrete_data.original_id})")

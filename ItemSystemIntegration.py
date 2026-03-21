@@ -67,9 +67,19 @@ class GameOffsets:
 # but having both guards is harmless and the Python check lets us skip
 # the buffer write entirely (faster retry).
 BUSY_PLAYER_ACTIONS = frozenset([
+    0x12,  # DIVE_SKY  (diving from sky to surface)
+    0x40,  # PICK_UP
+    0x41,  # THROWING
+    0x43,  # HOLDING
+    0x45,  # USE_BOW
+    0x46,  # USE_SLINGSHOT
     0x4A,  # DIE
     0x4B,  # REVIVE
     0x58,  # INTERACT
+    0x59,  # USE_CLAWSHOTS
+    0x5A,  # BEING_PULLED_BY_CLAWS
+    0x5F,  # USE_BEETLE  (controlling beetle in flight)
+    0x69,  # USE_BELLOWS
     0x6E,  # USING_DOOR
     0x6F,  # USE_DDOOR
     0x77,  # ZEV_EVENT_MAYBE  (cutscene / event)
@@ -77,9 +87,19 @@ BUSY_PLAYER_ACTIONS = frozenset([
     0x7B,  # RELATED_TO_NEW_SWORD_IN_CS_
     0x7D,  # OPEN_CHEST
     0x86,  # SWORD_IN_DIAL
+    0x87,  # ENTER_MINECART
+    0x88,  # LEAVE_MINECART
+    0x89,  # IN_TRUCK_MINECART
     0x8A,  # ON_BIRD  (flying Loftwing)
+    0x8B,  # BIRD_REACH_FOR_STATUETTE
+    0x8D,  # USE_WHIP
+    0x8E,  # WHIP_LOCKED
     0x91,  # RECEIVE_GODDESS_FRUIT
     0x93,  # SLEEPING
+    0x94,  # USE_BUGNET_CATCH
+    0x95,  # IN_GROOSENATOR
+    0x96,  # LAUNCH_FROM_GROOSENATOR
+    0x99,  # IN_BOAT
     0xAF,  # PLACE_TABLET
     0xB4,  # ENTER_GODDESS_WALL
     0xB6,  # EXIT_GODDESS_WALL
@@ -376,33 +396,41 @@ class GameItemSystem:
                 while not self._is_player_ready():
                     _busy_waited += 1
                     if _busy_waited >= _BUSY_WAIT_MAX:
-                        logger.info("Player busy timeout — falling back to direct flag write")
-                        break
+                        # Player is still busy after ~10 seconds (flying,
+                        # cutscene, etc.).  Do NOT deliver via the silent
+                        # flag-write fallback — the player would never see
+                        # the item.  Return False so the item stays queued
+                        # and is retried once the player is free.
+                        logger.info(
+                            "[ItemSystem] Player busy for too long — "
+                            "item will be retried when player is free"
+                        )
+                        return False
                     _time.sleep(1 / 60)
+                
+                # Player is ready — proceed with buffer write
+                slot = self._find_empty_buffer_slot()
+                if slot is None:
+                    logger.debug("Item buffer full — skipping buffer path")
                 else:
-                    # Player is ready — proceed with buffer write
-                    slot = self._find_empty_buffer_slot()
-                    if slot is None:
-                        logger.debug("Item buffer full — skipping buffer path")
+                    # Prepare flags
+                    flags = 0
+                    if show_animation:
+                        flags |= 0x01
+                    if play_jingle:
+                        flags |= 0x02
+                    
+                    # Write to buffer ATOMICALLY using a single 16-bit write.
+                    buffer_offset = self.buffer_addr + (slot * GameOffsets.ARCHIPELAGO_BUFFER_SLOT_SIZE)
+                    slot_value = item_id | (flags << 8)  # little-endian: [item_id, flags]
+                    if self.memory.write_short(buffer_offset, slot_value):
+                        logger.info(f"Wrote item {item_id} to buffer slot {slot} with flags {flags:02x}")
+                        logger.info(f"Buffer address: base+0x{self.buffer_addr:x} = 0x{self.memory.base_address + self.buffer_addr:x}")
+                        buffer_success = self._wait_for_item_processed(
+                            buffer_offset, expected_item_id=item_id
+                        )
                     else:
-                        # Prepare flags
-                        flags = 0
-                        if show_animation:
-                            flags |= 0x01
-                        if play_jingle:
-                            flags |= 0x02
-                        
-                        # Write to buffer ATOMICALLY using a single 16-bit write.
-                        buffer_offset = self.buffer_addr + (slot * GameOffsets.ARCHIPELAGO_BUFFER_SLOT_SIZE)
-                        slot_value = item_id | (flags << 8)  # little-endian: [item_id, flags]
-                        if self.memory.write_short(buffer_offset, slot_value):
-                            logger.info(f"Wrote item {item_id} to buffer slot {slot} with flags {flags:02x}")
-                            logger.info(f"Buffer address: base+0x{self.buffer_addr:x} = 0x{self.memory.base_address + self.buffer_addr:x}")
-                            buffer_success = self._wait_for_item_processed(
-                                buffer_offset, expected_item_id=item_id
-                            )
-                        else:
-                            logger.warning(f"Failed to write item {item_id} to buffer slot {slot}")
+                        logger.warning(f"Failed to write item {item_id} to buffer slot {slot}")
         except Exception as exc:
             logger.warning(f"Buffer delivery error for item {item_id}: {exc}")
         
