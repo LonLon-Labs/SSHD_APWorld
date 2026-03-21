@@ -23,6 +23,7 @@ def main():
     release_dir = source_dir / "release"
     dist_dir = source_dir / "dist"
     client_folder_name = "ArchipelagoSSHDClient"
+    patcher_folder_name = "ArchipelagoSSHDPatcher"
 
     print("=" * 60)
     print("  SSHD Archipelago - Full Release Build")
@@ -31,7 +32,7 @@ def main():
 
     # ── Step 1: Build the standalone client exe ───────────────────
     print("━" * 60)
-    print("Step 1/3: Building standalone client executable...")
+    print("Step 1/4: Building standalone client executable...")
     print("━" * 60)
     print()
 
@@ -46,9 +47,25 @@ def main():
 
     print()
 
-    # ── Step 2: Build the .apworld ────────────────────────────────
+    # ── Step 2: Build the standalone patcher exe ──────────────────
     print("━" * 60)
-    print("Step 2/3: Building sshd.apworld...")
+    print("Step 2/4: Building standalone patcher executable...")
+    print("━" * 60)
+    print()
+
+    from build_patcher_exe import build_patcher_exe
+    patcher_exe_path = build_patcher_exe()
+
+    patcher_exe_file = dist_dir / f"{patcher_folder_name}.exe"
+    if not patcher_exe_file.exists():
+        print(f"[FAIL] Patcher exe not found at {patcher_exe_file}")
+        sys.exit(1)
+
+    print()
+
+    # ── Step 3: Build the .apworld ────────────────────────────────
+    print("━" * 60)
+    print("Step 3/4: Building sshd.apworld...")
     print("━" * 60)
     print()
 
@@ -57,9 +74,9 @@ def main():
 
     print()
 
-    # ── Step 3: Create release package ────────────────────────────
+    # ── Step 4: Create release package ────────────────────────────
     print("━" * 60)
-    print("Step 3/3: Creating release package...")
+    print("Step 4/4: Creating release package...")
     print("━" * 60)
     print()
 
@@ -72,6 +89,10 @@ def main():
     release_client_dir = release_dir / client_folder_name
     shutil.copytree(client_dist_folder, release_client_dir)
     print(f"  Added: {client_folder_name}/ (standalone client)")
+
+    # Copy standalone patcher exe (single file)
+    shutil.copy2(patcher_exe_file, release_dir / f"{patcher_folder_name}.exe")
+    print(f"  Added: {patcher_folder_name}.exe (standalone patcher)")
 
     # Copy individual release files alongside the client folder
     extra_files = {

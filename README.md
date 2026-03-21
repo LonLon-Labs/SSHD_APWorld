@@ -8,12 +8,13 @@ This APWorld allows you to play Skyward Sword HD in a multiworld randomizer with
 
 ## Features
 
-- **800+ Locations**: All chests, goddess cubes, NPCs, dungeons, minigames, and more
+- **800+ Locations**: All chests, closets, NPCs, dungeons, minigames, and more
 - **200+ Items**: Progression items, equipment, tablets, keys, consumables
 - **Full Logic Support**: Ensures you always have items needed to progress
 - **40+ Options**: Customize starting items, logic difficulty, item placement
 - **Custom Logos**: Replace title screen with Archipelago branding
-- **Cross-Platform**: Works on Windows, Linux, and macOS (maybe, I don't have a mac nor do I use Linux)
+- **Standalone Patcher**: Host can generate without the ROM — players patch locally with their own copy
+- **Cross-Platform**: Works on Windows, Linux, and macOS (maybe, I don't have a device that runs macOS)
 
 ## Download
 
@@ -21,6 +22,7 @@ This APWorld allows you to play Skyward Sword HD in a multiworld randomizer with
 Download the latest release zip from the [Releases](https://github.com/LonLon-Labs/SSHD_APWorld/releases) page. It includes:
 - `sshd.apworld` — the Archipelago world file
 - `ArchipelagoSSHDClient.exe` — standalone client (no Python needed)
+- `ArchipelagoSSHDPatcher.exe` — standalone patcher GUI for generating ROM patches from a lightweight `.apsshd`
 - `Skyward Sword HD.yaml` — template YAML for seed generation
 - `launch_sshd.bat` — optional convenience launcher (Windows)
 
@@ -72,6 +74,8 @@ python build_apworld.py
 
 You'll need a legally obtained copy of Skyward Sword HD for Nintendo Switch along with the update data.
 
+> **Note**: If you are only hosting (generating the multiworld) and not playing SSHD yourself, you can skip this step. The host does not need the ROM — players will patch locally using their own ROM extract.
+
 1. Extract the RomFS and ExeFS from your game using Ryujinx (MAKE SURE THE UPDATE IS INSTALLED BEFORE EXTRACTING)
 2. Extract them to your platform's default location:
    - **Windows**: `C:\ProgramData\Archipelago\sshd_extract\`
@@ -81,40 +85,59 @@ You'll need a legally obtained copy of Skyward Sword HD for Nintendo Switch alon
 
 ### 3. Generate Your Seed
 
+#### If You Are the Host (you have the ROM files)
+
 1. Download the [Skyward Sword HD Randomizer](https://github.com/mint-choc-chip-skyblade/sshd-rando/releases/latest)
 2. Configure all of your options (don't generate, that is handled by Archipelago)
 3. Open SkywardSwordHD.yaml for use as a template
 4. Use Method 1 and input the path to your `config.yaml` file (found in the SSHD Rando folder)
 5. Change other optional settings
-5. Put it in `C:\ProgramData\Archipelago\Players`
-6. Generate locally using all player yamls
+6. Put it in `C:\ProgramData\Archipelago\Players`
+7. Make sure your ROM is extracted (see [Step 2](#2-extract-your-game))
+8. Generate locally using all player yamls
     - Open the Archipelago Launcher and click 'Generate'
     - The outputed file should be in `C:\ProgramData\Archipelago\output`
+    - The `.apsshd` files will contain the full ROM patches since you have the ROM
 
-#### From here you have 3 options
-1. Upload the outputed zip to [https://archipelago.randomstuff.cc](https://archipelago.randomstuff.cc) (the official website won't work due to a 64MB file upload limit)
-   - IF YOU USE THIS, THE WEBSOCKET URL IS NOT `archipelago.randomstuff.cc`, YOU NEED TO INPUT `ap.randomstuff.cc:PORT` INTO YOUR CLIENT(S)
+#### If You Are NOT the Host (the host doesn't have the ROM files)
+
+The host does **not** need the ROM to generate — the `.apsshd` files will be lightweight (just JSON data, no ROM patches). Each player then patches locally using their own ROM.
+
+**Host steps:**
+1. Follow the same steps as above (configure options, create YAML, generate)
+2. Generation will succeed even without the ROM extract — the `.apsshd` files will just be smaller
+3. Distribute the `.apsshd` files to each player
+
+**Player steps (after receiving your `.apsshd`):**
+1. Make sure your ROM is extracted (see [Step 2](#2-extract-your-game))
+2. Run `ArchipelagoSSHDPatcher.exe`, select your `.apsshd` file, and click **Patch & Install**
+   - Or simply double-click the `.apsshd` file and open it with the Archipelago Launcher — it will auto-detect that patching is needed and run the patcher for you.
+3. The patcher will generate the ROM patches using your local ROM extract and install them to Ryujinx automatically
+
+> **Tip**: The patcher also supports a CLI mode for advanced use:
+> - `ArchipelagoSSHDPatcher.exe your_file.apsshd --nogui` — run without the GUI
+> - `--extract-path <path>` — if your ROM extract is in a non-default location
+> - `--no-install` — generate patches without installing to Ryujinx
+> - `--save-full-apsshd` — create a full `.apsshd` with ROM patches included (for sharing/archiving)
+
+### 4. Hosting
+
+1. Upload the outputed `.zip` file to [archipelago.gg](https://archipelago.gg)
 2. Host locally (ADVANCED - requires port forwarding or everyone being on the same LAN)
-3. Unzip the outputed zip file and remove the patch file
-   - Unzip the generated `.zip` file
-   - Copy the `.apsshd` file to another spot
-   - Delete it from the unziped folder and rezip
-   - Now either double click the `.apsshd` file and open it with the Archipelago Launcher or extract the `.apsshd` file and copy `romfs` and `exefs` to your Ryujinx mod directory (located at `C:\Users\Your_Username\AppData\Roaming\Ryujinx\sdcard\atmosphere\contents\01002da013484000\Archipelago` on Windows - you will need to create the `Archipelago` folder)
-   - You can now delete the `.apsshd` file and upload the rezipped `.zip` file to [archipelago.gg](https://archipelago.gg)
 
-### 4. Open Ryujinx
+### 5. Open Ryujinx
 Make sure the mod and 1.0.1 update are enabled and open Skyward Sword HD
 
 You should see the custom Archipelago logo - that means it's working
 
 Get into the game far enough to where you can move Link
 
-### 4. Launch the Client
+### 6. Launch the Client
 Double-click `ArchipelagoSSHDClient.exe` (or `launch_sshd.bat`)
 
-If you don't have the exe, launch_sshd.bat will fall back to launching with `python launch_sshd_wrapper.py`
+If you don't have the exe, launch_sshd.bat will fall back to launching with `python launch_sshd_wrapper.py` (requires python dependencies)
 
-### 5. Play!
+### 7. Play!
 > **Note**: WAIT UNTIL YOU SEE `Found SSHD base address` IN THE CLIENT BEFORE PICKING ANYTHING UP
 > NOT DOING SO COULD POSSIBLY BREAK IT AND NOT SEND THE ITEM OVER
 

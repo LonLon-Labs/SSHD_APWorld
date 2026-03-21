@@ -189,19 +189,57 @@ def run_client(*args: str) -> None:
         input("Press Enter to close this window...")
         return
     
-    # If launched WITH a patch file, only install the patch without opening the client
-    from .SSHDClient import install_patch
-    
+    # If launched WITH a patch file, check if it needs patching first
     patch_file = next((arg for arg in args if arg.endswith('.apsshd')), None)
     if patch_file:
-        print(f"\nInstalling patch: {patch_file}")
-        success, _ = install_patch(patch_file)
-        if success:
-            print("\n" + "=" * 60)
-            print("Patch installed successfully!")
-            print("=" * 60)
+        patch_path = Path(patch_file)
+        needs_patching = False
+        
+        # Check if the .apsshd has ROM patches or needs user-side patching
+        try:
+            with zipfile.ZipFile(patch_path, 'r') as zf:
+                has_romfs = any(n.startswith('romfs/') for n in zf.namelist())
+                has_exefs = any(n.startswith('exefs/') for n in zf.namelist())
+                has_patcher_data = 'patcher_data.json' in zf.namelist()
+                
+                if not has_romfs and not has_exefs and has_patcher_data:
+                    needs_patching = True
+        except Exception:
+            pass
+        
+        if needs_patching:
+            # Lightweight .apsshd — run the standalone patcher
+            print(f"\nThis .apsshd does not contain ROM patches.")
+            print(f"Running standalone patcher to generate patches from your ROM...\n")
+            from .SSHDPatcher import read_apsshd, generate_patches, install_to_ryujinx
+            import tempfile
+            
+            _manifest, _patch_data, _patcher_data = read_apsshd(patch_path)
+            extract_path = get_default_sshd_extract_path()
+            temp_out = Path(tempfile.mkdtemp(prefix="sshd_patch_"))
+            try:
+                romfs_path, exefs_path = generate_patches(_patcher_data, extract_path, temp_out)
+                if romfs_path and exefs_path:
+                    install_to_ryujinx(romfs_path, exefs_path)
+                    print("\n" + "=" * 60)
+                    print("Patches generated and installed successfully!")
+                    print("=" * 60)
+                else:
+                    print("\nERROR: Patch generation failed")
+            finally:
+                shutil.rmtree(temp_out, ignore_errors=True)
         else:
-            print("\nERROR: Failed to install patch")
+            # Full .apsshd with ROM patches — install directly
+            from .SSHDClient import install_patch
+            print(f"\nInstalling patch: {patch_file}")
+            success, _ = install_patch(patch_file)
+            if success:
+                print("\n" + "=" * 60)
+                print("Patch installed successfully!")
+                print("=" * 60)
+            else:
+                print("\nERROR: Failed to install patch")
+        
         input("\nPress Enter to close this window...")
 
 
@@ -643,6 +681,12 @@ class SSHDWorld(World):
             print(f"[__init__.py] Full logic built successfully")
             self._using_full_logic = True
             
+            # Apply entrance randomization from the sshd-rando world object.
+            # The logic converter built vanilla topology from YAML files;
+            # now we remap shuffled entrances to match the actual randomized
+            # connections determined by sshd-rando's entrance shuffle.
+            self._apply_entrance_randomization()
+            
         except Exception as e:
             print(f"[__init__.py] WARNING: Full logic conversion failed: {e}")
             import traceback
@@ -650,6 +694,8 @@ class SSHDWorld(World):
             print(f"[__init__.py] Falling back to basic region structure...")
             self._using_full_logic = False
             self._create_basic_regions()
+            # Still apply entrance randomization even with fallback regions
+            self._apply_entrance_randomization()
     
     def _create_initial_locations(self) -> None:
         """
@@ -677,6 +723,91 @@ class SSHDWorld(World):
         # Then the converter adds locations to the correct fine-grained regions.
         # We just need to ensure all locations from LOCATION_TABLE are created.
         pass
+    
+    def _apply_entrance_randomization(self) -> None:
+        """
+        Remap AP entrances to match sshd-rando's shuffled entrance connections.
+        
+        The logic converter builds the vanilla region graph from static YAML files.
+        If entrance randomization is enabled, sshd-rando has already shuffled
+        entrances in the World object (cached in _sshd_world_cache). This method
+        reads those shuffled connections and updates the AP entrance graph so that
+        Archipelago's logic matches the actual in-game entrance layout.
+        """
+        sshd_world = getattr(self, '_sshd_world_cache', None)
+        if not sshd_world:
+            print("[__init__.py] No sshd-rando world cache available — skipping entrance rando overlay")
+            return
+        
+        if not hasattr(sshd_world, 'areas'):
+            print("[__init__.py] sshd-rando world has no areas — skipping entrance rando overlay")
+            return
+
+        # Collect all shuffled entrances from the sshd-rando world
+        shuffled_entrances = []
+        for area in sshd_world.areas.values():
+            for entrance in area.exits:
+                if entrance.shuffled:
+                    shuffled_entrances.append(entrance)
+        
+        if not shuffled_entrances:
+            return
+        
+        print(f"[__init__.py] Applying {len(shuffled_entrances)} shuffled entrance(s) to AP logic")
+        
+        # Build a lookup of AP entrances by name for efficient matching.
+        # AP entrance names follow the pattern "SourceArea -> DestArea" using
+        # the *original* (pre-shuffle) area names, matching sshd-rando's
+        # entrance.original_name format.
+        ap_entrances_by_name: dict = {}
+        for region in self.multiworld.regions:
+            if region.player != self.player:
+                continue
+            for exit_ in region.exits:
+                ap_entrances_by_name[exit_.name] = exit_
+        
+        # Build a lookup of AP regions by name
+        ap_regions: dict = {}
+        for region in self.multiworld.regions:
+            if region.player != self.player:
+                continue
+            ap_regions[region.name] = region
+        
+        remapped = 0
+        for sshd_entrance in shuffled_entrances:
+            original_name = sshd_entrance.original_name  # "ParentArea -> OriginalDest"
+            new_dest_name = sshd_entrance.connected_area.name  # New shuffled destination
+            
+            ap_entrance = ap_entrances_by_name.get(original_name)
+            if not ap_entrance:
+                continue
+            
+            new_dest_region = ap_regions.get(new_dest_name)
+            if not new_dest_region:
+                # Destination region might not exist yet — create it
+                from BaseClasses import Region
+                new_dest_region = Region(new_dest_name, self.player, self.multiworld)
+                self.multiworld.regions.append(new_dest_region)
+                ap_regions[new_dest_name] = new_dest_region
+                print(f"[__init__.py]   Created new region for shuffled dest: {new_dest_name}")
+            
+            old_dest = ap_entrance.connected_region
+            if old_dest and old_dest.name == new_dest_name:
+                continue  # Already pointing to the right place
+            
+            # Disconnect from old destination
+            if old_dest and ap_entrance in old_dest.entrances:
+                old_dest.entrances.remove(ap_entrance)
+            
+            # Connect to new destination
+            ap_entrance.connected_region = new_dest_region
+            new_dest_region.entrances.append(ap_entrance)
+            
+            old_name = old_dest.name if old_dest else "None"
+            print(f"[__init__.py]   Remapped: {original_name} => {new_dest_name} (was {old_name})")
+            remapped += 1
+        
+        print(f"[__init__.py] Entrance rando: remapped {remapped}/{len(shuffled_entrances)} entrances")
     
     def _get_excluded_item_types(self) -> set:
         """
@@ -2164,6 +2295,23 @@ class SSHDWorld(World):
                 print(f"Warning: sshd-rando-backend not available")
                 print("Patch file will only contain item/location mappings")
             
+            # Build patcher_data: all the information needed by the standalone
+            # patcher to reproduce the romfs/exefs from the end user's own ROM.
+            # This allows the host to generate the multiworld WITHOUT needing
+            # the ROM, and lets end users patch locally.
+            patcher_data = {
+                "ap_settings": self._collect_archipelago_settings(),
+                "multiworld_item_mapping": self._build_multiworld_item_mapping(),
+                "custom_flag_mapping": {
+                    str(k): v for k, v in
+                    (self._custom_flag_mapping if hasattr(self, '_custom_flag_mapping')
+                     else self._build_custom_flag_mapping()).items()
+                },
+                "seed": self.multiworld.seed,
+                "sshd_setting_string": getattr(self, '_sshd_setting_string', ""),
+                "sshdr_seed": self.options.sshdr_seed.value if self.options.sshdr_seed.value else None,
+            }
+            
             # Create the .apsshd patch file
             patch_file_name = f"AP_{self.multiworld.seed}_P{self.player}_{self.player_name}.apsshd"
             patch_file_path = os.path.join(output_directory, patch_file_name)
@@ -2176,6 +2324,7 @@ class SSHDWorld(World):
                     "player_id": self.player,
                     "seed": self.multiworld.seed,
                     "version": WORLD_VERSION,
+                    "has_rom_patches": bool(romfs_path and exefs_path),
                 }
                 zip_file.writestr("manifest.json", json.dumps(manifest, indent=2))
                 
@@ -2194,7 +2343,11 @@ class SSHDWorld(World):
                 serializable_patch_data = convert_sets_to_lists(patch_data)
                 zip_file.writestr("patch_data.json", json.dumps(serializable_patch_data, indent=2))
                 
-                # Include romfs if generated
+                # Write patcher data for standalone patcher use
+                serializable_patcher_data = convert_sets_to_lists(patcher_data)
+                zip_file.writestr("patcher_data.json", json.dumps(serializable_patcher_data, indent=2))
+                
+                # Include romfs if generated (host had ROM available)
                 if romfs_path and romfs_path.exists():
                     for root, dirs, files in os.walk(romfs_path):
                         for file in files:
@@ -2202,13 +2355,17 @@ class SSHDWorld(World):
                             arc_path = f"romfs/{file_path.relative_to(romfs_path)}"
                             zip_file.write(file_path, arc_path)
                 
-                # Include exefs if generated
+                # Include exefs if generated (host had ROM available)
                 if exefs_path and exefs_path.exists():
                     for root, dirs, files in os.walk(exefs_path):
                         for file in files:
                             file_path = Path(root) / file
                             arc_path = f"exefs/{file_path.relative_to(exefs_path)}"
                             zip_file.write(file_path, arc_path)
+                
+                if not (romfs_path and exefs_path):
+                    print(f"[__init__.py] .apsshd created WITHOUT rom patches (patcher_data.json included)")
+                    print(f"[__init__.py] End users can generate patches using: ArchipelagoSSHDPatcher.exe {patch_file_name}")
             
         finally:
             # Clean up temp directory

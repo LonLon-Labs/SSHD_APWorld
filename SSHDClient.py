@@ -3538,10 +3538,17 @@ def install_patch(patch_file_path: str) -> tuple[bool, dict]:
             print(f"  - exefs/: {'YES' if has_exefs else 'NO'}")
             
             if not has_romfs and not has_exefs:
-                print(f"\nWARNING: No game mod files found in patch!")
-                print(f"This patch only contains item/location data.")
-                print(f"You may need to apply the base randomizer mod manually.")
-                return False
+                has_patcher_data = 'patcher_data.json' in file_list
+                if has_patcher_data:
+                    print(f"\nThis .apsshd does not contain ROM patches (lightweight patch file).")
+                    print(f"Use the standalone patcher to generate patches from your own ROM:")
+                    print(f"    ArchipelagoSSHDPatcher.exe \"{patch_file_path}\"")
+                    print(f"\nOr double-click the .apsshd file in Archipelago to auto-patch.")
+                else:
+                    print(f"\nWARNING: No game mod files found in patch!")
+                    print(f"This patch only contains item/location data.")
+                    print(f"You may need to apply the base randomizer mod manually.")
+                return False, {}
             
             # Find Ryujinx atmosphere directory for LayeredFS mods
             try:

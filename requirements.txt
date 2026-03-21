@@ -14,6 +14,9 @@ platformdirs
 kivy
 https://github.com/kivymd/KivyMD/archive/master.zip
 
+# GUI dependencies (for patcher)
+PyQt6
+
 
 psutil
 pymem; sys_platform == "win32"
