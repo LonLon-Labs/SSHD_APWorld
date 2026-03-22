@@ -70,6 +70,7 @@ BUSY_PLAYER_ACTIONS = frozenset([
     0x12,  # DIVE_SKY  (diving from sky to surface)
     0x13,  # FREE_FALL
     0x14,  # FALLING
+    0x26,  # VINES_USING_CLAWS
     0x40,  # PICK_UP
     0x41,  # THROWING
     0x43,  # HOLDING
@@ -80,7 +81,13 @@ BUSY_PLAYER_ACTIONS = frozenset([
     0x58,  # INTERACT
     0x59,  # USE_CLAWSHOTS
     0x5A,  # BEING_PULLED_BY_CLAWS
+    0x5B,  # HANG_FROM_PEAHAT
+    0x5C,  # HANG_FROM_PEAHAT_USE_CLAWS_
+    0x5D,  # HANG_FROM_TARGET
+    0x5E,  # HANG_FROM_TARGET_USE_CLAWS_
     0x5F,  # USE_BEETLE  (controlling beetle in flight)
+    0x60,  # FINAL_BLOW
+    0x61,  # FINAL_BLOW_FINISH
     0x69,  # USE_BELLOWS
     0x6E,  # USING_DOOR
     0x6F,  # USE_DDOOR

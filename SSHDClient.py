@@ -1358,6 +1358,27 @@ class SSHDContext(CommonContext):
             "Progressive Pouch": 0,
         }
         
+        # Deferred flag writes for progressive items.
+        # After the buffer is consumed, the game's determineFinalItemid has
+        # already resolved the progressive tier.  We wait a short period
+        # (past the item actor's stateGet) then write the cumulative item
+        # flags so the NEXT progressive item resolves correctly.
+        self._deferred_flag_writes: list = []  # [(ready_time, [flag_ids])]
+        self._DEFERRED_FLAG_DELAY = 2.0  # seconds after buffer consumption
+        
+        # Game item IDs for each progressive tier (cumulative flags needed
+        # so determineFinalItemid resolves the next tier properly).
+        self._PROGRESSIVE_TIER_FLAGS = {
+            "Progressive Sword":     [10, 11, 12, 9, 13, 14],
+            "Progressive Bow":       [19, 90, 91],
+            "Progressive Slingshot": [52, 105],
+            "Progressive Beetle":    [53, 75, 76, 77],
+            "Progressive Mitts":     [56, 99],
+            "Progressive Bug Net":   [71, 140],
+            "Progressive Wallet":    [108, 109, 110, 111],
+            "Progressive Pouch":     [112, 113, 113, 113, 113],
+        }
+        
         # Game state tracking
         self.current_stage: Optional[str] = None
         self.last_stage: Optional[str] = None
@@ -2003,14 +2024,25 @@ class SSHDContext(CommonContext):
                     # Only commit the progressive counter increment on success
                     # so retries don't skip tiers.
                     #
-                    # Do NOT set item flags here — the game's item actor will
-                    # call determineFinalItemid during stateGet and set flags
-                    # itself.  Writing flags before stateGet completes causes
-                    # a race: determineFinalItemid sees the flag already set
-                    # and resolves to the NEXT tier (e.g. Practice Sword flag
-                    # set → game gives Goddess Sword instead).
+                    # Do NOT set item flags synchronously — the game's item
+                    # actor calls determineFinalItemid during stateGet a few
+                    # frames after spawn.  Writing flags before stateGet
+                    # causes a race (wrong tier).  Instead we queue a
+                    # DEFERRED flag write that fires ~2 s later, well past
+                    # stateGet, so the next progressive resolves correctly.
                     if is_progressive:
                         self.progressive_counts[item_name] = next_count
+                        tier_flags = self._PROGRESSIVE_TIER_FLAGS.get(item_name)
+                        if tier_flags:
+                            tier_index = min(next_count, len(tier_flags))
+                            flags_to_set = tier_flags[:tier_index]
+                            ready_time = time.time() + self._DEFERRED_FLAG_DELAY
+                            self._deferred_flag_writes.append((ready_time, flags_to_set))
+                            logger.debug(
+                                f"[DeferredFlag] Queued flags {flags_to_set} "
+                                f"for {item_name} tier {next_count} "
+                                f"(will write in {self._DEFERRED_FLAG_DELAY}s)"
+                            )
                     
                     logger.debug(f"Gave {buffer_item_name} via item buffer (game will handle animation)")
                 else:
@@ -2023,7 +2055,26 @@ class SSHDContext(CommonContext):
             logger.error("GameItemSystem not available. Cannot give item.")
             return False
 
-    async def ryujinx_connection_task(self):
+    def _process_deferred_flag_writes(self):
+        """Write queued progressive-item flags whose delay has elapsed.
+
+        Called from update_game_state every tick.  Each entry is a tuple
+        (ready_time, flag_id_list).  When ready_time has passed we write
+        every flag in the list via _ensure_itemflag_set, which sets bits
+        in BOTH the committed (FA) and working (static) itemflag arrays.
+        """
+        if not self._deferred_flag_writes or not self.game_item_system:
+            return
+        now = time.time()
+        still_pending = []
+        for ready_time, flag_ids in self._deferred_flag_writes:
+            if now >= ready_time:
+                for fid in flag_ids:
+                    self.game_item_system._ensure_itemflag_set(fid)
+                logger.debug(f"[DeferredFlag] Wrote deferred flags {flag_ids}")
+            else:
+                still_pending.append((ready_time, flag_ids))
+        self._deferred_flag_writes = still_pending
         """Background task to maintain connection to Ryujinx."""
         while not self.exit_event.is_set():
             try:
@@ -2081,6 +2132,7 @@ class SSHDContext(CommonContext):
                     self._bird_statue_snapshot = None
                     self._bird_statue_enforcement_log.clear()
                     self._visited_regions.clear()
+                    self._deferred_flag_writes.clear()
 
                     # Immediately attempt a new base-address scan instead of
                     # waiting for the next cycle (which would spin doing
@@ -2158,6 +2210,9 @@ class SSHDContext(CommonContext):
             # Write AP buffers to game memory (item info table + check stats)
             self._write_ap_item_info_table()
             self._update_ap_check_stats()
+            
+            # Process deferred progressive-item flag writes
+            self._process_deferred_flag_writes()
             
             # Give queued items to player
             if self.item_queue:

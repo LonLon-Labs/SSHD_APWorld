@@ -595,22 +595,51 @@ class SSHDWorld(World):
         "junk_item_rate": ("junk_item_rate", "range", None),
     }
 
-    def _sync_ap_options_from_resolved(self, resolved_settings: dict) -> None:
+    def _sync_ap_options_from_resolved(self, resolved_settings: dict,
+                                       config_settings: dict = None) -> None:
         """
-        Update self.options.* fields to match the resolved sshd-rando settings
-        so the spoiler log, fill_slot_data, and other AP subsystems display
-        the actual config.yaml values rather than Archipelago defaults.
+        Update self.options.* fields so Archipelago subsystems (pre_fill,
+        spoiler log, fill_slot_data, etc.) see the correct values.
+
+        When *config_settings* is provided (config.yaml mode) ONLY settings
+        the user explicitly put in their config.yaml are synced.  This avoids
+        overwriting AP-YAML values with sshd-rando defaults for settings the
+        user never configured in config.yaml.
+
+        For sshd-rando settings present in config.yaml, the *resolved* value
+        is preferred (so ``random`` resolutions are concrete).  AP-specific
+        settings that sshd-rando does not know about (e.g. ``triforce_shuffle``)
+        are read directly from config.yaml.
+
+        When *config_settings* is ``None`` (AP-YAML-only mode) every setting
+        found in *resolved_settings* is synced (backward-compatible path used
+        for ``random`` resolution of AP-YAML options).
         """
         synced = 0
+        # Keys the user explicitly provided in their config.yaml.
+        # If None we are in AP-YAML-only mode — treat all resolved keys as explicit.
+        explicit_keys: set | None = set(config_settings.keys()) if config_settings else None
+
         for config_key, (ap_field, mapping_type, value_map) in self._CONFIG_TO_AP_OPTION.items():
-            if config_key not in resolved_settings:
+            # Determine the raw value to sync.
+            raw = None
+            if config_key in resolved_settings:
+                # sshd-rando resolved this setting (handles 'random' → concrete).
+                # Only use it if the user asked for it OR we are in AP-YAML mode.
+                if explicit_keys is None or config_key in explicit_keys:
+                    raw = resolved_settings[config_key]
+            # Fallback: AP-specific settings in config.yaml that sshd-rando
+            # doesn't know about (e.g. triforce_shuffle, triforce_required).
+            if raw is None and config_settings and config_key in config_settings:
+                raw = config_settings[config_key]
+
+            if raw is None:
                 continue
 
             option_obj = getattr(self.options, ap_field, None)
             if option_obj is None:
                 continue
 
-            raw = resolved_settings[config_key]
             try:
                 if mapping_type == "toggle":
                     raw_s = str(raw).lower()
@@ -1195,8 +1224,12 @@ class SSHDWorld(World):
                 self._sshd_resolved_settings = resolved_settings
                 
                 # Sync AP options to match resolved settings so the spoiler log
-                # and fill_slot_data display the real config.yaml values
-                self._sync_ap_options_from_resolved(resolved_settings)
+                # and fill_slot_data display the real config.yaml values.
+                # Pass the original ap_settings (config.yaml input) so that only
+                # settings the user explicitly set are synced — avoids overwriting
+                # AP-YAML values with sshd-rando defaults.
+                self._sync_ap_options_from_resolved(resolved_settings,
+                                                    config_settings=ap_settings)
                 
             except Exception as e:
                 print(f"[__init__.py] Warning: Could not extract resolved settings: {e}")
@@ -1608,8 +1641,11 @@ class SSHDWorld(World):
         small_key_mode = self.options.small_key_shuffle.current_key   # e.g. "own_dungeon"
         boss_key_mode = self.options.boss_key_shuffle.current_key     # e.g. "own_dungeon" 
         map_mode = self.options.map_shuffle.current_key               # e.g. "own_dungeon_restricted"
+        triforce_mode = self.options.triforce_shuffle.current_key     # e.g. "anywhere"
+        required_count = self.options.required_dungeon_count.value
         
-        print(f"[__init__.py] pre_fill: small_keys={small_key_mode}, boss_keys={boss_key_mode}, map_mode={map_mode}")
+        print(f"[__init__.py] pre_fill: small_keys={small_key_mode}, boss_keys={boss_key_mode}, "
+              f"map_mode={map_mode}, triforce={triforce_mode}, required_dungeons={required_count}")
         
         # "anywhere" and "removed" modes need no restriction — AP fill handles them.
         # "vanilla" is handled by sshd-rando's fill, but we also enforce it here.

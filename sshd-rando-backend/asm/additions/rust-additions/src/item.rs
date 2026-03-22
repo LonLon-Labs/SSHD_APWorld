@@ -1864,10 +1864,11 @@ pub static mut ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER
 
 // Player actions during which we must NOT deliver an Archipelago item.
 // Values match BUSY_PLAYER_ACTIONS in ItemSystemIntegration.py.
-const BUSY_ACTIONS: [player::PLAYER_ACTIONS; 39] = [
+const BUSY_ACTIONS: [player::PLAYER_ACTIONS; 46] = [
     player::PLAYER_ACTIONS::DIVE_SKY,                    // 0x12
     player::PLAYER_ACTIONS::FREE_FALL,                   // 0x13
     player::PLAYER_ACTIONS::FALLING,                     // 0x14
+    player::PLAYER_ACTIONS::VINES_USING_CLAWS,           // 0x26
     player::PLAYER_ACTIONS::PICK_UP,                     // 0x40
     player::PLAYER_ACTIONS::THROWING,                    // 0x41
     player::PLAYER_ACTIONS::HOLDING,                     // 0x43
@@ -1878,7 +1879,13 @@ const BUSY_ACTIONS: [player::PLAYER_ACTIONS; 39] = [
     player::PLAYER_ACTIONS::INTERACT,                    // 0x58
     player::PLAYER_ACTIONS::USE_CLAWSHOTS,               // 0x59
     player::PLAYER_ACTIONS::BEING_PULLED_BY_CLAWS,       // 0x5A
+    player::PLAYER_ACTIONS::HANG_FROM_PEAHAT,            // 0x5B
+    player::PLAYER_ACTIONS::HANG_FROM_PEAHAT_USE_CLAWS_, // 0x5C
+    player::PLAYER_ACTIONS::HANG_FROM_TARGET,            // 0x5D
+    player::PLAYER_ACTIONS::HANG_FROM_TARGET_USE_CLAWS_, // 0x5E
     player::PLAYER_ACTIONS::USE_BEETLE,                  // 0x5F
+    player::PLAYER_ACTIONS::FINAL_BLOW,                  // 0x60
+    player::PLAYER_ACTIONS::FINAL_BLOW_FINISH,           // 0x61
     player::PLAYER_ACTIONS::USE_BELLOWS,                 // 0x69
     player::PLAYER_ACTIONS::USING_DOOR,                  // 0x6E
     player::PLAYER_ACTIONS::USE_DDOOR,                   // 0x6F
