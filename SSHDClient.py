@@ -2075,6 +2075,8 @@ class SSHDContext(CommonContext):
             else:
                 still_pending.append((ready_time, flag_ids))
         self._deferred_flag_writes = still_pending
+
+    async def ryujinx_connection_task(self):
         """Background task to maintain connection to Ryujinx."""
         while not self.exit_event.is_set():
             try:
