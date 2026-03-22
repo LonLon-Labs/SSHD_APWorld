@@ -724,9 +724,15 @@ class GameItemSystem:
             action_offset = GameOffsets.PLAYER + GameOffsets.PLAYER_CURRENT_ACTION
             current_action = self.memory.read_int(action_offset)
             if current_action is not None and current_action in BUSY_PLAYER_ACTIONS:
-                logger.debug(
-                    f"Player not ready: current action 0x{current_action:X} is busy"
-                )
+                # Log only every 60th call (~once per second) to avoid spam
+                self._busy_log_counter = getattr(self, '_busy_log_counter', 0) + 1
+                if self._busy_log_counter % 60 == 1:
+                    logger.debug(
+                        f"Player not ready: current action 0x{current_action:X} is busy"
+                    )
+                return False
+            else:
+                self._busy_log_counter = 0
                 return False
         except Exception as e:
             # If we can't read the action, err on the side of caution and

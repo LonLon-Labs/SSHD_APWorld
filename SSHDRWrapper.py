@@ -298,11 +298,14 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
                 setting_map.mixed_entrance_pools = mixed_pools
     
     # Handle starting_sword (add Progressive Sword based on level)
-    # NOTE: Only do this if we're using Archipelago YAML settings (not from config.yaml)
-    if "starting_sword" in settings_dict and "starting_inventory" not in settings_dict:
+    # Always add to setting_map.starting_inventory so that
+    # world.starting_item_pool includes the sword for AP extraction.
+    # (sshd-rando's item_pool.py handles its own fill separately but
+    # that local dict is NOT what AP reads for precollected items.)
+    if "starting_sword" in settings_dict:
         sword_value = settings_dict["starting_sword"]
         sword_levels = {
-            "none": 0,
+            "none": 0, "no_sword": 0,
             "practice_sword": 1,          # Progressive Sword x1
             "goddess_sword": 2,           # Progressive Sword x2
             "goddess_longsword": 3,       # Progressive Sword x3
@@ -315,7 +318,9 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
         else:
             sword_level = sword_levels.get(str(sword_value), 0)
         if sword_level > 0:
-            setting_map.starting_inventory["Progressive Sword"] = sword_level
+            existing = setting_map.starting_inventory.get("Progressive Sword", 0)
+            setting_map.starting_inventory["Progressive Sword"] = existing + sword_level
+            print(f"[SSHDRWrapper] Starting sword '{sword_value}' -> Progressive Sword x{sword_level} (total: {existing + sword_level})")
     
 
 
