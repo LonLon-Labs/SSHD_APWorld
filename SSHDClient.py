@@ -2007,16 +2007,33 @@ class SSHDContext(CommonContext):
                 if not self.game_item_system:
                     self.game_item_system = GameItemSystem(self.memory)
                 
-                # For progressive items, always send the PROGRESSIVE BASE ID to
-                # the game buffer.  The Rust code's resolve_progressive_item_models()
-                # handles model selection for progressive IDs (10, 19, 53, etc.)
-                # correctly, dynamically picking the right model based on current
-                # inventory flags.  Sending concrete stage IDs (e.g. 14 for True
-                # Master Sword, 90 for Iron Bow) breaks because:
-                #  - Concrete IDs may have oarc: null (swords) → green rupee fallback
-                #  - Concrete IDs may need arcs not loaded in the current stage
-                #    (bow, beetle) → invisible/missing model
-                buffer_item_name = actual_item_name
+                # For progressive items, always send the BASE progressive ID
+                # to the buffer.  The Rust buffer processor calls the vanilla
+                # dAcItem__determineFinalItemid(), which resolves the base ID
+                # to the correct tier based on currently-set item flags.
+                # Sending concrete tier IDs (e.g. 11 for Goddess Sword,
+                # 90 for Iron Bow) does NOT work because the vanilla
+                # function may not handle non-base IDs correctly.
+                #
+                # Before writing the buffer, pre-set all PREVIOUS tier
+                # flags so determineFinalItemid resolves the base ID to
+                # the right tier.  Only set flags for tiers BELOW the one
+                # being given (next_count - 1) — setting the current
+                # tier's flag would race with the game's own processing
+                # and bump the resolution up one tier.
+                if is_progressive:
+                    buffer_item_name = item_name  # base progressive name
+                    tier_flags = self._PROGRESSIVE_TIER_FLAGS.get(item_name, [])
+                    for i in range(min(next_count - 1, len(tier_flags))):
+                        self.game_item_system._ensure_itemflag_set(tier_flags[i])
+                    if next_count > 1:
+                        logger.debug(
+                            f"[ProgressivePreset] Pre-set flags "
+                            f"{tier_flags[:next_count-1]} before giving "
+                            f"{item_name} tier {next_count}"
+                        )
+                else:
+                    buffer_item_name = actual_item_name
                 
                 # Use the integrated system (spawns items with animations)
                 success = self.game_item_system.give_item_by_name(buffer_item_name)
@@ -2024,12 +2041,10 @@ class SSHDContext(CommonContext):
                     # Only commit the progressive counter increment on success
                     # so retries don't skip tiers.
                     #
-                    # Do NOT set item flags synchronously — the game's item
-                    # actor calls determineFinalItemid during stateGet a few
-                    # frames after spawn.  Writing flags before stateGet
-                    # causes a race (wrong tier).  Instead we queue a
-                    # DEFERRED flag write that fires ~2 s later, well past
-                    # stateGet, so the next progressive resolves correctly.
+                    # Queue a DEFERRED flag write for the current tier's
+                    # flags (including the current one).  This fires ~2 s
+                    # later — well past the game's determineFinalItemid
+                    # call — so it can safely include the current tier.
                     if is_progressive:
                         self.progressive_counts[item_name] = next_count
                         tier_flags = self._PROGRESSIVE_TIER_FLAGS.get(item_name)
