@@ -1691,7 +1691,8 @@ class SSHDWorld(World):
           5. Triforce Shuffle fallback (vanilla / sky_keep only if not already placed)
         """
         from .Locations import LOCATION_TABLE
-        from Fill import fill_restrictive
+        # fill_restrictive is no longer used — direct placement handles all
+        # dungeon-restricted items since sshd-rando verified completability.
         
         small_key_mode = self.options.small_key_shuffle.current_key   # e.g. "own_dungeon"
         boss_key_mode = self.options.boss_key_shuffle.current_key     # e.g. "own_dungeon" 
@@ -1699,7 +1700,7 @@ class SSHDWorld(World):
         triforce_mode = self.options.triforce_shuffle.current_key     # e.g. "anywhere"
         required_count = self.options.required_dungeon_count.value
         
-        print(f"[__init__.py] pre_fill: small_keys={small_key_mode}, boss_keys={boss_key_mode}, "
+        print(f"[__init__.py] pre_fill (v2-direct): small_keys={small_key_mode}, boss_keys={boss_key_mode}, "
               f"map_mode={map_mode}, triforce={triforce_mode}, required_dungeons={required_count}")
         
         # "anywhere" and "removed" modes need no restriction — AP fill handles them.
@@ -1764,13 +1765,17 @@ class SSHDWorld(World):
                 return []
         
         def _place_restricted_items(item_type: str, mode: str, items_by_dungeon: dict[str, list]):
-            """Place items restricted to valid locations per dungeon.
+            """Place items restricted to valid locations per dungeon using direct placement.
             
-            Uses fill_restrictive first for logical safety, then falls back to
-            direct placement for any remaining items. This handles entrance rando
-            scenarios where AP's reachability sweep can't resolve event-based
-            circular dependencies, making dungeon locations appear unreachable
-            even though sshd-rando verified the world is completable.
+            Uses place_locked_item directly instead of fill_restrictive. This is
+            correct because dungeon key/map restrictions are physical constraints
+            (key belongs in dungeon), not logical reachability constraints.
+            sshd-rando has already verified the seed is completable, so we just
+            need to respect the placement restriction.
+            
+            fill_restrictive fails with entrance rando because AP's reachability
+            sweep can't resolve event-based circular dependencies, making dungeon
+            locations appear unreachable even though the seed is valid.
             """
             if mode in ("anywhere", "removed"):
                 return  # No restriction — leave items in the general pool
@@ -1787,57 +1792,24 @@ class SSHDWorld(World):
                     self.multiworld.itempool.extend(items)
                     continue
                 
-                if len(items) > len(valid_locations):
-                    print(f"[__init__.py] WARNING: {len(items)} {item_type} items for {dungeon} "
-                          f"but only {len(valid_locations)} valid locations with mode={mode}. "
-                          f"Placing what we can, rest goes to general pool.")
-                
                 # Shuffle locations for randomness
                 self.random.shuffle(valid_locations)
                 
-                try:
-                    fill_restrictive(
-                        self.multiworld,
-                        self.multiworld.get_all_state(False),
-                        valid_locations,
-                        items,
-                        single_player_placement=True,
-                        lock=True,
-                        allow_partial=True,
-                        name=f"SSHD {item_type} ({dungeon})",
-                    )
-                except Exception as e:
-                    print(f"[__init__.py] WARNING: fill_restrictive failed for {item_type} "
-                          f"in {dungeon}: {e}. Trying direct placement fallback.")
+                placed_count = 0
+                while items and valid_locations:
+                    item = items.pop(0)
+                    loc = valid_locations.pop(0)
+                    loc.place_locked_item(item)
+                    placed_count += 1
                 
-                # Direct placement fallback for items fill_restrictive couldn't place.
-                # This handles entrance rando causing AP to see dungeon locations as
-                # "unreachable" due to circular event dependencies, even though
-                # sshd-rando verified the seed is completable.
+                if placed_count > 0:
+                    print(f"[__init__.py] Placed {placed_count} {item_type} in {dungeon}")
+                
+                # Only truly excess items (more items than locations) go to general pool
                 if items:
-                    # Refresh valid locations (some may have been filled above)
-                    remaining_locs = [
-                        loc for loc in _get_valid_locations_for_mode(mode, dungeon)
-                        if loc.item is None
-                    ]
-                    self.random.shuffle(remaining_locs)
-                    
-                    direct_placed = 0
-                    while items and remaining_locs:
-                        item = items.pop(0)
-                        loc = remaining_locs.pop(0)
-                        loc.place_locked_item(item)
-                        direct_placed += 1
-                    
-                    if direct_placed > 0:
-                        print(f"[__init__.py] Direct-placed {direct_placed} {item_type} "
-                              f"in {dungeon} (fill_restrictive couldn't verify reachability)")
-                    
-                    # Only truly excess items go to general pool
-                    if items:
-                        print(f"[__init__.py] {len(items)} {item_type} items could not be "
-                              f"placed in {dungeon} (not enough locations), adding to general pool")
-                        self.multiworld.itempool.extend(items)
+                    print(f"[__init__.py] WARNING: {len(items)} excess {item_type} for {dungeon} "
+                          f"(not enough locations), adding to general pool")
+                    self.multiworld.itempool.extend(items)
         
         # ── End-of-Dungeon Priority Placement (FIRST) ───────────────────
         # Place Triforce pieces and important progression items at dungeon
@@ -1903,41 +1875,21 @@ class SSHDWorld(World):
                   f"{selected_dungeons} ({len(available_end_locs)} available end locations)")
             
             # Phase 1: Triforce pieces (highest priority)
+            # Direct placement — sshd-rando verified completability, so we just
+            # need triforces at dungeon end locations without AP reachability checks.
             triforce_end_items = _collect_items_from_pool([
                 "Triforce of Courage", "Triforce of Power", "Triforce of Wisdom"
             ])
             if triforce_end_items:
                 locs = _get_unfilled_end_locations()
                 self.random.shuffle(locs)
-                placed_before = len(triforce_end_items)
-                try:
-                    fill_restrictive(
-                        self.multiworld,
-                        self.multiworld.get_all_state(False),
-                        locs,
-                        triforce_end_items,
-                        single_player_placement=True,
-                        lock=True,
-                        allow_partial=True,
-                        name="SSHD End-of-Dungeon Triforces",
-                    )
-                except Exception as e:
-                    print(f"[__init__.py] WARNING: fill_restrictive failed for end-of-dungeon triforces: {e}")
-                
-                # Direct placement fallback for triforces fill_restrictive couldn't place
-                if triforce_end_items:
-                    fallback_locs = _get_unfilled_end_locations()
-                    self.random.shuffle(fallback_locs)
-                    direct_count = 0
-                    while triforce_end_items and fallback_locs:
-                        item = triforce_end_items.pop(0)
-                        loc = fallback_locs.pop(0)
-                        loc.place_locked_item(item)
-                        direct_count += 1
-                    if direct_count:
-                        print(f"[__init__.py] pre_fill: Direct-placed {direct_count} Triforce pieces at dungeon ends (reachability fallback)")
-                
-                placed_count = placed_before - len(triforce_end_items)
+                self.random.shuffle(triforce_end_items)
+                placed_count = 0
+                while triforce_end_items and locs:
+                    item = triforce_end_items.pop(0)
+                    loc = locs.pop(0)
+                    loc.place_locked_item(item)
+                    placed_count += 1
                 print(f"[__init__.py] pre_fill: Placed {placed_count}/3 Triforce pieces at dungeon ends")
                 if triforce_end_items:
                     self.multiworld.itempool.extend(triforce_end_items)
@@ -1948,34 +1900,13 @@ class SSHDWorld(World):
                 locs = _get_unfilled_end_locations()
                 self.random.shuffle(locs)
                 sword_count = len(sword_end_items)
-                try:
-                    fill_restrictive(
-                        self.multiworld,
-                        self.multiworld.get_all_state(False),
-                        locs,
-                        sword_end_items,
-                        single_player_placement=True,
-                        lock=True,
-                        allow_partial=True,
-                        name="SSHD End-of-Dungeon Swords",
-                    )
-                except Exception as e:
-                    print(f"[__init__.py] WARNING: fill_restrictive failed for end-of-dungeon swords: {e}")
-                
-                # Direct placement fallback for swords
-                if sword_end_items:
-                    fallback_locs = _get_unfilled_end_locations()
-                    self.random.shuffle(fallback_locs)
-                    direct_count = 0
-                    while sword_end_items and fallback_locs:
-                        item = sword_end_items.pop(0)
-                        loc = fallback_locs.pop(0)
-                        loc.place_locked_item(item)
-                        direct_count += 1
-                    if direct_count:
-                        print(f"[__init__.py] pre_fill: Direct-placed {direct_count} swords at dungeon ends (reachability fallback)")
-                
-                print(f"[__init__.py] pre_fill: Placed {sword_count - len(sword_end_items)}/{sword_count} Progressive Swords at dungeon ends")
+                placed = 0
+                while sword_end_items and locs:
+                    item = sword_end_items.pop(0)
+                    loc = locs.pop(0)
+                    loc.place_locked_item(item)
+                    placed += 1
+                print(f"[__init__.py] pre_fill: Placed {placed}/{sword_count} Progressive Swords at dungeon ends")
                 if sword_end_items:
                     self.multiworld.itempool.extend(sword_end_items)
             
@@ -1994,35 +1925,16 @@ class SSHDWorld(World):
                         if id(item) not in other_set
                     ]
                     self.random.shuffle(remaining_end_locs)
+                    self.random.shuffle(other_progression)
                     other_count = len(other_progression)
-                    try:
-                        fill_restrictive(
-                            self.multiworld,
-                            self.multiworld.get_all_state(False),
-                            remaining_end_locs,
-                            other_progression,
-                            single_player_placement=True,
-                            lock=True,
-                            allow_partial=True,
-                            name="SSHD End-of-Dungeon Other Progression",
-                        )
-                    except Exception as e:
-                        print(f"[__init__.py] WARNING: fill_restrictive failed for end-of-dungeon other progression: {e}")
+                    placed = 0
+                    while other_progression and remaining_end_locs:
+                        item = other_progression.pop(0)
+                        loc = remaining_end_locs.pop(0)
+                        loc.place_locked_item(item)
+                        placed += 1
                     
-                    # Direct placement fallback for other progression
-                    if other_progression:
-                        fallback_locs = _get_unfilled_end_locations()
-                        self.random.shuffle(fallback_locs)
-                        direct_count = 0
-                        while other_progression and fallback_locs:
-                            item = other_progression.pop(0)
-                            loc = fallback_locs.pop(0)
-                            loc.place_locked_item(item)
-                            direct_count += 1
-                        if direct_count:
-                            print(f"[__init__.py] pre_fill: Direct-placed {direct_count} other progression at dungeon ends (reachability fallback)")
-                    
-                    print(f"[__init__.py] pre_fill: Placed {other_count - len(other_progression)}/{other_count} other progression items at dungeon ends")
+                    print(f"[__init__.py] pre_fill: Placed {placed}/{other_count} other progression items at dungeon ends")
                     if other_progression:
                         self.multiworld.itempool.extend(other_progression)
         
@@ -2091,34 +2003,15 @@ class SSHDWorld(World):
                 
                 if valid_locs:
                     self.random.shuffle(valid_locs)
-                    try:
-                        fill_restrictive(
-                            self.multiworld,
-                            self.multiworld.get_all_state(False),
-                            valid_locs,
-                            lc_items,
-                            single_player_placement=True,
-                            lock=True,
-                            allow_partial=True,
-                            name="SSHD Lanayru Caves Keys",
-                        )
-                    except Exception as e:
-                        print(f"[__init__.py] WARNING: fill_restrictive failed for Lanayru Caves keys: {e}")
-                
-                # Direct placement fallback
-                if lc_items and valid_locs:
-                    remaining_lc_locs = [l for l in valid_locs if l.item is None]
-                    self.random.shuffle(remaining_lc_locs)
-                    direct_count = 0
-                    while lc_items and remaining_lc_locs:
+                    placed = 0
+                    while lc_items and valid_locs:
                         item = lc_items.pop(0)
-                        loc = remaining_lc_locs.pop(0)
+                        loc = valid_locs.pop(0)
                         loc.place_locked_item(item)
-                        direct_count += 1
-                    if direct_count:
-                        print(f"[__init__.py] Direct-placed {direct_count} Lanayru Caves keys (reachability fallback)")
+                        placed += 1
+                    if placed:
+                        print(f"[__init__.py] Placed {placed} Lanayru Caves keys")
                 
-                # Any remaining go to general pool
                 if lc_items:
                     self.multiworld.itempool.extend(lc_items)
         
@@ -2162,34 +2055,15 @@ class SSHDWorld(World):
                 
                 if valid_locs:
                     self.random.shuffle(valid_locs)
-                    try:
-                        fill_restrictive(
-                            self.multiworld,
-                            self.multiworld.get_all_state(False),
-                            valid_locs,
-                            triforce_items,
-                            single_player_placement=True,
-                            lock=True,
-                            allow_partial=True,
-                            name="SSHD Triforce Pieces",
-                        )
-                    except Exception as e:
-                        print(f"[__init__.py] WARNING: fill_restrictive failed for Triforce pieces: {e}")
-                
-                # Direct placement fallback
-                if triforce_items and valid_locs:
-                    remaining_tri_locs = [l for l in valid_locs if l.item is None]
-                    self.random.shuffle(remaining_tri_locs)
-                    direct_count = 0
-                    while triforce_items and remaining_tri_locs:
+                    placed = 0
+                    while triforce_items and valid_locs:
                         item = triforce_items.pop(0)
-                        loc = remaining_tri_locs.pop(0)
+                        loc = valid_locs.pop(0)
                         loc.place_locked_item(item)
-                        direct_count += 1
-                    if direct_count:
-                        print(f"[__init__.py] Direct-placed {direct_count} Triforce pieces (reachability fallback)")
+                        placed += 1
+                    if placed:
+                        print(f"[__init__.py] Placed {placed} Triforce pieces at {triforce_mode} locations")
                 
-                # Any remaining go to general pool
                 if triforce_items:
                     print(f"[__init__.py] {len(triforce_items)} Triforce pieces could not be placed, adding to general pool")
                     self.multiworld.itempool.extend(triforce_items)

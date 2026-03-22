@@ -545,7 +545,7 @@ class RyujinxMemoryReader:
         self._total_ops: int = 0
         self._total_failures: int = 0
         self._last_successful_op: float = 0.0
-        self._error_log_time: float = 0.0
+        self._error_log_time: float = time.time()
         self._errors_since_log: int = 0
         # Negative cache: buffer name -> timestamp of last failed full scan
         self._scan_negative_cache: Dict[str, float] = {}

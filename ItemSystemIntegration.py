@@ -403,29 +403,13 @@ class GameItemSystem:
             if self.buffer_addr is None:
                 logger.debug("Buffer address not found — skipping buffer path")
             else:
-                # Wait for the player to be ready (not in a busy action).
-                # Instead of immediately falling back to direct-flag-write when
-                # the player is busy, we retry for up to ~10 seconds.  This
-                # ensures the player sees the item-get animation and textbox
-                # for every AP item instead of having it silently added to
-                # inventory.
-                import time as _time
-                _BUSY_WAIT_MAX = 600  # ~10 s at 60 FPS polling rate
-                _busy_waited = 0
-                while not self._is_player_ready():
-                    _busy_waited += 1
-                    if _busy_waited >= _BUSY_WAIT_MAX:
-                        # Player is still busy after ~10 seconds (flying,
-                        # cutscene, etc.).  Do NOT deliver via the silent
-                        # flag-write fallback — the player would never see
-                        # the item.  Return False so the item stays queued
-                        # and is retried once the player is free.
-                        logger.info(
-                            "[ItemSystem] Player busy for too long — "
-                            "item will be retried when player is free"
-                        )
-                        return False
-                    _time.sleep(1 / 60)
+                # Check if the player is ready (not in a busy action).
+                # Instead of a synchronous busy-wait (which blocks the
+                # async event loop and prevents websocket pings/GUI), do
+                # a single check and return False immediately if busy.
+                # The caller's item queue will retry on the next tick.
+                if not self._is_player_ready():
+                    return False
                 
                 # Player is ready — proceed with buffer write
                 slot = self._find_empty_buffer_slot()
@@ -733,7 +717,7 @@ class GameItemSystem:
                 return False
             else:
                 self._busy_log_counter = 0
-                return False
+                return True
         except Exception as e:
             # If we can't read the action, err on the side of caution and
             # allow the item — the Rust-side busy check is the real safety net.
