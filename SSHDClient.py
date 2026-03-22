@@ -2007,32 +2007,16 @@ class SSHDContext(CommonContext):
                 if not self.game_item_system:
                     self.game_item_system = GameItemSystem(self.memory)
                 
-                # Progressive Sword needs special handling: the vanilla game's
-                # determineFinalItemid follows the numeric item-ID chain
-                # (10→11→12→13→14) which skips White Sword (ID 9).  The
-                # randomizer's correct order is 10→11→12→9→13→14.
-                #
-                # For swords we send the CONCRETE tier game ID directly and
-                # pre-set all previous-tier flags so determineFinalItemid
-                # (if it still runs) doesn't misresolve.
-                #
-                # For all other progressives the numeric ID order matches the
-                # progression order, so the vanilla determineFinalItemid
-                # resolves correctly — we keep sending the base ID for those.
-                if is_progressive and item_name == "Progressive Sword":
-                    buffer_item_name = actual_item_name  # concrete tier name
-                    # Pre-set previous tier flags so the game knows we own them
-                    tier_flags = self._PROGRESSIVE_TIER_FLAGS["Progressive Sword"]
-                    for i in range(min(next_count - 1, len(tier_flags))):
-                        self.game_item_system._ensure_itemflag_set(tier_flags[i])
-                    logger.debug(
-                        f"[SwordFix] Pre-set flags {tier_flags[:next_count-1]} "
-                        f"before giving {actual_item_name} (tier {next_count})"
-                    )
-                elif is_progressive:
-                    buffer_item_name = item_name  # progressive base name
-                else:
-                    buffer_item_name = actual_item_name
+                # For progressive items, always send the PROGRESSIVE BASE ID to
+                # the game buffer.  The Rust code's resolve_progressive_item_models()
+                # handles model selection for progressive IDs (10, 19, 53, etc.)
+                # correctly, dynamically picking the right model based on current
+                # inventory flags.  Sending concrete stage IDs (e.g. 14 for True
+                # Master Sword, 90 for Iron Bow) breaks because:
+                #  - Concrete IDs may have oarc: null (swords) → green rupee fallback
+                #  - Concrete IDs may need arcs not loaded in the current stage
+                #    (bow, beetle) → invisible/missing model
+                buffer_item_name = actual_item_name
                 
                 # Use the integrated system (spawns items with animations)
                 success = self.game_item_system.give_item_by_name(buffer_item_name)
@@ -2040,13 +2024,12 @@ class SSHDContext(CommonContext):
                     # Only commit the progressive counter increment on success
                     # so retries don't skip tiers.
                     #
-                    # Queue a DEFERRED flag write for the current tier.
-                    # For non-sword progressives, do NOT set item flags
-                    # synchronously — the game's item actor calls
-                    # determineFinalItemid during stateGet and writing flags
-                    # before that causes a race (wrong tier).
-                    # For swords the deferred write still ensures the current
-                    # tier's flag is set after stateGet completes.
+                    # Do NOT set item flags synchronously — the game's item
+                    # actor calls determineFinalItemid during stateGet a few
+                    # frames after spawn.  Writing flags before stateGet
+                    # causes a race (wrong tier).  Instead we queue a
+                    # DEFERRED flag write that fires ~2 s later, well past
+                    # stateGet, so the next progressive resolves correctly.
                     if is_progressive:
                         self.progressive_counts[item_name] = next_count
                         tier_flags = self._PROGRESSIVE_TIER_FLAGS.get(item_name)
