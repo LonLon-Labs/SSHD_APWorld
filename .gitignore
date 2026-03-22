@@ -25,6 +25,8 @@ sshd-rando-backend/asm/additions/rust-additions/target/
 # Development/test files
 _test_*.py
 *_test.py
+test*
+diag*
 
 # IDE/Editor
 .vscode/

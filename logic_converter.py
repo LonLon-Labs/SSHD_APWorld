@@ -502,6 +502,13 @@ class SSHDLogicConverter:
         # picks them up through normal in-game actions, not via AP.
         vanilla_items = self._compute_vanilla_items()
         
+        # Diagnostic: check if shortcut settings are in resolved_settings
+        shortcut_count = sum(1 for k in self.resolved_settings if k.startswith("shortcut_"))
+        shortcut_on = sum(1 for k, v in self.resolved_settings.items() if k.startswith("shortcut_") and v == "on")
+        logger.info(f"Resolved settings: {len(self.resolved_settings)} total, {shortcut_count} shortcuts ({shortcut_on} on)")
+        if shortcut_count == 0:
+            logger.warning(f"NO shortcut settings found! Keys sample: {list(self.resolved_settings.keys())[:20]}")
+        
         # Parser instance
         self.parser = _ReqParser(self.resolved_settings, self.known_items,
                                  backend_dir=self._backend_dir,

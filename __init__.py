@@ -340,6 +340,7 @@ class SSHDWorld(World):
     
     topology_present: bool = True
     required_client_version: tuple[int, int, int] = (0, 5, 1)
+    explicit_indirect_conditions: bool = False
     
     # Hint blacklist - locations that should not be hinted
     hint_blacklist: ClassVar[set[str]] = {
@@ -1141,27 +1142,35 @@ class SSHDWorld(World):
                 _generic_map_converted = 0
                 
                 if hasattr(world, 'location_table'):
+                    _items_from_excluded = []
+                    
                     for loc_name, location in world.location_table.items():
                         if hasattr(location, 'types') and "Hint Location" in location.types:
-                            continue  # Skip gossip stones
-                        # Skip individually excluded locations (highest priority)
+                            continue  # Skip gossip stones — no meaningful items
+                        
+                        # Determine if this location is excluded from AP
+                        is_excluded = False
                         if loc_name in individually_excluded:
+                            is_excluded = True
                             locations_excluded += 1
-                            continue
-                        # Skip locations for non-shuffled types
-                        if excluded_loc_types and hasattr(location, 'types'):
+                        elif excluded_loc_types and hasattr(location, 'types'):
                             if any(t in excluded_loc_types for t in location.types):
+                                is_excluded = True
                                 locations_excluded += 1
-                                continue
-                        # Dusk Relic per-location check
-                        if hasattr(location, 'types') and "Dusk Relic" in location.types and not trial_treasure_is_random_early:
+                        elif hasattr(location, 'types') and "Dusk Relic" in location.types and not trial_treasure_is_random_early:
                             try:
                                 relic_num = int(loc_name.split(" ")[-1])
                             except (ValueError, IndexError):
                                 relic_num = 0
                             if relic_num > trial_treasure_num_early:
+                                is_excluded = True
                                 locations_excluded += 1
-                                continue
+                        
+                        # Always extract items — even from excluded locations.
+                        # Excluded locations won't have AP Location objects, but
+                        # their items must still enter the pool so progression
+                        # items (e.g. Water Dragon's Scale at Silent Realms)
+                        # aren't lost. create_items handles pool sizing.
                         if hasattr(location, 'current_item') and location.current_item:
                             item_name = location.current_item.name
                             
@@ -1189,12 +1198,17 @@ class SSHDWorld(World):
                                             _generic_map_converted += 1
                             
                             sshd_item_pool[item_name] += 1
+                            if is_excluded:
+                                _items_from_excluded.append((loc_name, item_name))
                 
                 if _generic_key_converted > 0 or _generic_map_converted > 0:
                     print(f"[__init__.py] Converted generic items: {_generic_key_converted} Small Keys, {_generic_map_converted} Maps -> dungeon-specific names")
                 
                 if locations_excluded > 0:
-                    print(f"[__init__.py] Skipped {locations_excluded} non-shuffled locations from item pool")
+                    print(f"[__init__.py] Excluded {locations_excluded} locations (items still in pool)")
+                
+                if _items_from_excluded:
+                    print(f"[__init__.py] Recovered {len(_items_from_excluded)} items from excluded locations into pool")
                 
                 # Also count starting items (they were removed from pool during generation)
                 sshd_starting_pool = Counter()
@@ -1542,9 +1556,16 @@ class SSHDWorld(World):
             item_pool.append(self.create_item(junk_name))
             junk_idx += 1
         
-        # If we have more items than locations (shouldn't happen normally), trim
+        # If we have more items than locations (can happen when items from
+        # excluded locations are recovered into the pool), trim non-progression first
         if len(item_pool) > total_locations:
-            print(f"[__init__.py] WARNING: Pool has {len(item_pool)} items but only {total_locations} locations, trimming excess")
+            excess = len(item_pool) - total_locations
+            print(f"[__init__.py] Pool has {len(item_pool)} items but only {total_locations} locations, trimming {excess} items")
+            # Sort: progression first, then useful, then filler/trap — trim from the end
+            item_pool.sort(key=lambda i: (
+                0 if i.classification == IC.progression else
+                1 if i.classification == IC.useful else 2
+            ))
             item_pool = item_pool[:total_locations]
         
         print(f"[__init__.py] Created item pool:")
@@ -1600,6 +1621,85 @@ class SSHDWorld(World):
     
     # All dungeons (AP location regions that are considered "dungeons")
     ALL_DUNGEON_REGIONS: set[str] = set(DUNGEON_ITEM_NAMES.keys())
+    
+    # Minimum small-key count required to reach each AP region (YAML area) inside
+    # a dungeon.  Derived from the sshd-rando YAML exit requirements.  Regions
+    # not listed default to 0 (reachable from the dungeon entrance without keys).
+    # Used by _place_restricted_items to prevent placing a key behind its own door.
+    _KEY_GATED_REGIONS: dict[str, dict[str, int]] = {
+        "Skyview Temple": {
+            # 1-key door: SVT First Hub Center Room → SVT Second Hub Center Room
+            "SVT Second Hub Center Room": 1,
+            "SVT Miniboss Room": 1,
+            "SVT Second Hub Left Rooms": 1,
+            # 2-key door: SVT Second Hub Center Room → SVT Staldra Room
+            "SVT Staldra Room": 2,
+            "SVT Last Room Before Spider": 2,
+            "SVT Last Room Before Rope": 2,
+            "SVT Last Room After Rope": 2,
+            "SVT Last Room Near Chest after Vines": 2,
+            "Skyview Boss Room": 2,
+            "Skyview Spring": 2,
+        },
+        "Lanayru Mining Facility": {
+            # 1-key door: LMF First Hub → LMF Key Locked Room
+            "LMF Key Locked Room": 1,
+        },
+        "Ancient Cistern": {
+            # Both key doors require all 2 keys
+            "AC Back Room": 2,
+            "AC Inside Statue": 2,
+            "AC Basement": 2,
+            "AC Under the Statue": 2,
+            "AC Basement Rotating Vines": 2,
+            "AC Basement Bone Pile with Long Thread": 2,
+            "AC Platform with Thread to Basement": 2,
+            "AC Platform Before Boss": 2,
+            "Ancient Cistern Boss Room": 2,
+            "Ancient Cistern Flame Room": 2,
+        },
+        "Fire Sanctuary": {
+            # 1-key door: FS First Room Past Water Plants → FS First Outside
+            "FS First Outside Section": 1,
+            "FS First Magmanos Room": 1,
+            "FS First Magmanos Room Balcony": 1,
+            "FS South Bridge": 1,
+            "FS Room with First Lava River": 1,
+            "FS Room with First Lava River Past River": 1,
+            "FS First Trapped Mogma Room Upper": 1,
+            "FS North Bridge West Side": 1,
+            "FS North Bridge Bottom": 1,
+            "FS North Bridge East Side": 1,
+            "FS Second Trapped Mogma Room": 1,
+            "FS Under Magmanos Fight Room Past Sliding Door": 1,
+            # 2-key door: FS Room w/ First Lava River Past River → FS Water Fruit Room
+            "FS Water Fruit Room": 2,
+            "FS Water Fruit Room After Frog": 2,
+            "FS Magmanos Fight Room": 2,
+            "FS First Trapped Mogma Room Lower": 2,
+            "FS Under Magmanos Fight Room": 2,
+            # 3-key door: FS Under Magmanos Fight Room → FS West of Boss Door Before Lava River
+            "FS West of Boss Door Before Lava River": 3,
+            "FS West of Boss Door": 3,
+            "FS In Front of Boss Door": 3,
+            "FS In Front of Boss Door Past Bars": 3,
+            "FS Lizalfos Fight Room": 3,
+            "FS Staircase Room Lower": 3,
+            "FS Staricase Room Upper": 3,
+            "FS Boss Key Room": 3,
+            "Fire Sanctuary Boss Room": 3,
+            "Fire Sanctuary Flame Room": 3,
+        },
+        "Sandship": {
+            # All key doors require all 2 keys
+            "Sandship Captain's Cabin": 2,
+            "Sandship Ship's Bow": 2,
+        },
+        "Sky Keep": {
+            # 1-key door: SK Ancient Cistern Room South → SK Sacred Power of Farore Room
+            "SK Sacred Power of Farore Room": 1,
+        },
+    }
     
     # Maps each dungeon to its parent "hint region" (the overworld area outside the dungeon).
     # Used for "own_region" key shuffle mode.
@@ -1767,15 +1867,13 @@ class SSHDWorld(World):
         def _place_restricted_items(item_type: str, mode: str, items_by_dungeon: dict[str, list]):
             """Place items restricted to valid locations per dungeon using direct placement.
             
-            Uses place_locked_item directly instead of fill_restrictive. This is
-            correct because dungeon key/map restrictions are physical constraints
-            (key belongs in dungeon), not logical reachability constraints.
-            sshd-rando has already verified the seed is completable, so we just
-            need to respect the placement restriction.
+            For small keys, uses _KEY_GATED_REGIONS to ensure keys are never placed
+            behind the doors they open (e.g., the 2nd AC Small Key can't go in a
+            location behind the 2-key door).  Keys are placed greedily: key K of N
+            is placed only in a location reachable with K-1 keys.
             
-            fill_restrictive fails with entrance rando because AP's reachability
-            sweep can't resolve event-based circular dependencies, making dungeon
-            locations appear unreachable even though the seed is valid.
+            For boss keys and maps, simple random placement is fine since they don't
+            gate access to the regions where they can be found.
             """
             if mode in ("anywhere", "removed"):
                 return  # No restriction — leave items in the general pool
@@ -1786,30 +1884,90 @@ class SSHDWorld(World):
                     
                 valid_locations = _get_valid_locations_for_mode(mode, dungeon)
                 
+                # Boss keys must NEVER go in boss-locked locations (behind the
+                # boss door): "Defeat Boss" and dungeon reward/flame locations.
+                if item_type == "boss_keys":
+                    boss_locked = set(DUNGEON_END_LOCATIONS.get(dungeon, []))
+                    boss_locked.add(f"{dungeon} - Defeat Boss")
+                    before = len(valid_locations)
+                    valid_locations = [loc for loc in valid_locations
+                                       if loc.name not in boss_locked]
+                    excluded = before - len(valid_locations)
+                    if excluded:
+                        print(f"[__init__.py] Excluded {excluded} boss-locked location(s) "
+                              f"from {dungeon} boss key placement")
+                
                 if not valid_locations:
                     print(f"[__init__.py] WARNING: No valid locations for {item_type} "
                           f"in {dungeon} with mode={mode}. Leaving in general pool.")
                     self.multiworld.itempool.extend(items)
                     continue
                 
-                # Shuffle locations for randomness
-                self.random.shuffle(valid_locations)
-                
-                placed_count = 0
-                while items and valid_locations:
-                    item = items.pop(0)
-                    loc = valid_locations.pop(0)
-                    loc.place_locked_item(item)
-                    placed_count += 1
-                
-                if placed_count > 0:
-                    print(f"[__init__.py] Placed {placed_count} {item_type} in {dungeon}")
-                
-                # Only truly excess items (more items than locations) go to general pool
-                if items:
-                    print(f"[__init__.py] WARNING: {len(items)} excess {item_type} for {dungeon} "
-                          f"(not enough locations), adding to general pool")
-                    self.multiworld.itempool.extend(items)
+                # For small keys, place in logic order to avoid self-locking.
+                key_gates = self._KEY_GATED_REGIONS.get(dungeon, {})
+                if item_type == "small_keys" and key_gates:
+                    # Classify each location by the minimum keys needed to reach it.
+                    locs_by_tier: dict[int, list] = {}
+                    for loc in valid_locations:
+                        region_name = loc.parent_region.name if loc.parent_region else ""
+                        min_keys = key_gates.get(region_name, 0)
+                        locs_by_tier.setdefault(min_keys, []).append(loc)
+                    
+                    # Shuffle within each tier
+                    for tier_locs in locs_by_tier.values():
+                        self.random.shuffle(tier_locs)
+                    
+                    n_keys = len(items)
+                    placed_count = 0
+                    for k in range(n_keys):
+                        # Key (k+1) needs a location reachable with at most k keys.
+                        # Collect all locations from tiers 0..k.
+                        candidates = []
+                        for tier in sorted(locs_by_tier.keys()):
+                            if tier <= k:
+                                candidates.extend(locs_by_tier[tier])
+                        
+                        if candidates:
+                            loc = candidates.pop(0)
+                            # Remove from the tier so it's not reused
+                            tier_key = key_gates.get(
+                                loc.parent_region.name if loc.parent_region else "", 0
+                            )
+                            if loc in locs_by_tier.get(tier_key, []):
+                                locs_by_tier[tier_key].remove(loc)
+                            
+                            item = items.pop(0)
+                            loc.place_locked_item(item)
+                            placed_count += 1
+                        else:
+                            print(f"[__init__.py] WARNING: No safe location for "
+                                  f"key {k+1}/{n_keys} in {dungeon}")
+                            break
+                    
+                    if placed_count > 0:
+                        print(f"[__init__.py] Placed {placed_count} {item_type} in {dungeon} "
+                              f"(logic-aware)")
+                    if items:
+                        print(f"[__init__.py] WARNING: {len(items)} excess {item_type} for {dungeon}")
+                        self.multiworld.itempool.extend(items)
+                else:
+                    # Non-key items or dungeons with no key gates: simple random placement
+                    self.random.shuffle(valid_locations)
+                    
+                    placed_count = 0
+                    while items and valid_locations:
+                        item = items.pop(0)
+                        loc = valid_locations.pop(0)
+                        loc.place_locked_item(item)
+                        placed_count += 1
+                    
+                    if placed_count > 0:
+                        print(f"[__init__.py] Placed {placed_count} {item_type} in {dungeon}")
+                    
+                    if items:
+                        print(f"[__init__.py] WARNING: {len(items)} excess {item_type} for {dungeon} "
+                              f"(not enough locations), adding to general pool")
+                        self.multiworld.itempool.extend(items)
         
         # ── End-of-Dungeon Priority Placement (FIRST) ───────────────────
         # Place Triforce pieces and important progression items at dungeon
@@ -1950,8 +2108,11 @@ class SSHDWorld(World):
             print(f"[__init__.py] pre_fill: Placing {total_sk} small keys with mode={small_key_mode}")
             _place_restricted_items("small_keys", small_key_mode, small_key_items)
         
-        # ── Boss Keys ────────────────────────────────────────────────────
+        # ── Boss Keys (logic-aware placement) ─────────────────────────
         if boss_key_mode not in ("anywhere", "removed"):
+            from Fill import sweep_from_pool
+            from BaseClasses import CollectionState
+
             boss_key_items: dict[str, list] = {}
             for dungeon, info in self.DUNGEON_ITEM_NAMES.items():
                 items = _collect_items_from_pool(info["boss_keys"])
@@ -1960,7 +2121,61 @@ class SSHDWorld(World):
             
             total_bk = sum(len(v) for v in boss_key_items.values())
             print(f"[__init__.py] pre_fill: Placing {total_bk} boss keys with mode={boss_key_mode}")
-            _place_restricted_items("boss_keys", boss_key_mode, boss_key_items)
+
+            # Sweep with the FULL item pool to find the maximum reachability.
+            # This tells us which dungeon locations are reachable if all items
+            # are placed optimally.
+            pool_list = list(self.multiworld.itempool)
+            max_state = sweep_from_pool(
+                CollectionState(self.multiworld),
+                pool_list
+            )
+
+            reachable_set = max_state.reachable_regions.get(self.player, set())
+            all_regions = list(self.multiworld.regions.region_cache.get(self.player, {}).values())
+            print(f"[__init__.py] sweep_from_pool: {len(reachable_set)}/{len(all_regions)} regions reachable")
+
+            for dungeon, items in boss_key_items.items():
+                if not items:
+                    continue
+                valid_locations = _get_valid_locations_for_mode(boss_key_mode, dungeon)
+                # Exclude boss-locked locations (Defeat Boss + dungeon reward)
+                boss_locked = set(DUNGEON_END_LOCATIONS.get(dungeon, []))
+                boss_locked.add(f"{dungeon} - Defeat Boss")
+                before = len(valid_locations)
+                valid_locations = [loc for loc in valid_locations
+                                   if loc.name not in boss_locked]
+                excluded = before - len(valid_locations)
+                if excluded:
+                    print(f"[__init__.py] Excluded {excluded} boss-locked location(s) "
+                          f"from {dungeon} boss key placement")
+
+                if not valid_locations:
+                    print(f"[__init__.py] WARNING: No valid locations for boss_keys "
+                          f"in {dungeon}. Adding to general pool.")
+                    self.multiworld.itempool.extend(items)
+                    continue
+
+                # Prefer locations reachable with maximum exploration
+                reachable = [loc for loc in valid_locations
+                             if loc.can_reach(max_state)]
+                self.random.shuffle(reachable)
+                
+                if reachable:
+                    loc = reachable[0]
+                    loc.place_locked_item(items.pop(0))
+                    print(f"[__init__.py] Placed 1 boss_keys in {dungeon} "
+                          f"(reachable: {loc.name})")
+                else:
+                    # Fallback: place in any valid location (best effort)
+                    self.random.shuffle(valid_locations)
+                    loc = valid_locations[0]
+                    loc.place_locked_item(items.pop(0))
+                    print(f"[__init__.py] Placed 1 boss_keys in {dungeon} "
+                          f"(fallback, no reachable location found: {loc.name})")
+                
+                if items:
+                    self.multiworld.itempool.extend(items)
         
         # ── Dungeon Maps ─────────────────────────────────────────────────
         if map_mode not in ("anywhere",):
