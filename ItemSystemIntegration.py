@@ -862,6 +862,68 @@ class GameItemSystem:
 
         return confirmed
 
+    def _clear_itemflag(self, item_id: int) -> bool:
+        """Clear (unset) the itemflag for the given item in both flag copies.
+
+        Mirrors _ensure_itemflag_set but ANDs with ~mask instead of ORing.
+        Used to clean up stale progressive flags before re-presetting the
+        correct state so determineFinalItemid resolves to the right tier.
+        """
+        if not self.memory or not self.memory.connected:
+            return False
+        if item_id > 215:
+            return True
+
+        flag_id = item_id
+        word_idx = flag_id // 16
+        bit_idx = flag_id % 16
+        byte_off = word_idx * 2
+        mask = 1 << bit_idx
+
+        cleared = False
+        bases = (GameOffsets.FA_ITEMFLAGS, GameOffsets.STATIC_ITEMFLAGS)
+        for base in bases:
+            try:
+                current = self.memory.read_short(base + byte_off)
+                if current is None:
+                    continue
+                if current & mask:
+                    new_val = current & (~mask & 0xFFFF)
+                    self.memory.write_short(base + byte_off, new_val)
+                    verify = self.memory.read_short(base + byte_off)
+                    if verify is not None and not (verify & mask):
+                        logger.info(
+                            f"[DirectFlag] Cleared itemflag {flag_id} "
+                            f"(word {word_idx}, bit {bit_idx}) at base 0x{base:x} "
+                            f"[verified]"
+                        )
+                        cleared = True
+                    else:
+                        logger.warning(
+                            f"[DirectFlag] Clear of flag {flag_id} at 0x{base:x} "
+                            f"did NOT stick!"
+                        )
+                else:
+                    cleared = True  # already clear
+            except Exception as exc:
+                logger.warning(f"[DirectFlag] Could not clear flag {flag_id}: {exc}")
+        return cleared
+
+    def _read_itemflags_word(self, word_idx: int) -> tuple:
+        """Read a u16 word from both flag copies. Returns (fa_val, static_val)."""
+        byte_off = word_idx * 2
+        fa_val = None
+        static_val = None
+        try:
+            fa_val = self.memory.read_short(GameOffsets.FA_ITEMFLAGS + byte_off)
+        except Exception:
+            pass
+        try:
+            static_val = self.memory.read_short(GameOffsets.STATIC_ITEMFLAGS + byte_off)
+        except Exception:
+            pass
+        return (fa_val, static_val)
+
     def clear_buffer(self):
         """Clear all slots in item buffer."""
         if not self.buffer_addr:

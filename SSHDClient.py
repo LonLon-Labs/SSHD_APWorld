@@ -1358,16 +1358,15 @@ class SSHDContext(CommonContext):
             "Progressive Pouch": 0,
         }
         
-        # Deferred flag writes for progressive items.
-        # After the buffer is consumed, the game's determineFinalItemid has
-        # already resolved the progressive tier.  We wait a short period
-        # (past the item actor's stateGet) then write the cumulative item
-        # flags so the NEXT progressive item resolves correctly.
-        self._deferred_flag_writes: list = []  # [(ready_time, [flag_ids])]
-        self._DEFERRED_FLAG_DELAY = 2.0  # seconds after buffer consumption
+        # Deferred flag writes — no longer used.
+        # The game's own item actor stateGet handles flag management
+        # through the FlagMgr vtable, which Python cannot directly
+        # access.  Kept as empty list for API compatibility.
+        self._deferred_flag_writes: list = []
+        self._DEFERRED_FLAG_DELAY = 2.0  # seconds (unused, kept for reference)
         
-        # Game item IDs for each progressive tier (cumulative flags needed
-        # so determineFinalItemid resolves the next tier properly).
+        # Game item IDs for each progressive tier (kept for reference;
+        # the game's determineFinalItemid resolves tiers natively).
         self._PROGRESSIVE_TIER_FLAGS = {
             "Progressive Sword":     [10, 11, 12, 9, 13, 14],
             "Progressive Bow":       [19, 90, 91],
@@ -1961,8 +1960,6 @@ class SSHDContext(CommonContext):
                 # Tier 1 uses "Progressive Sword" because that's the ITEM_TABLE
                 # name for game_id 10 (the Practice Sword).
                 sword_tiers = ["Progressive Sword", "Goddess Sword", "Goddess Longsword", "Goddess White Sword", "Master Sword", "True Master Sword"]
-                # Game flag IDs for each tier (NOT in numeric order — White Sword is 9)
-                SWORD_FLAG_IDS = [10, 11, 12, 9, 13, 14]
                 actual_item_name = sword_tiers[min(count - 1, 5)]
                 logger.debug(f"Progressive Sword #{count} -> {actual_item_name}")
             elif item_name == "Progressive Bow":
@@ -2007,61 +2004,37 @@ class SSHDContext(CommonContext):
                 if not self.game_item_system:
                     self.game_item_system = GameItemSystem(self.memory)
                 
-                # For progressive items, always send the BASE progressive ID
-                # to the buffer.  The Rust buffer processor calls the vanilla
-                # dAcItem__determineFinalItemid(), which resolves the base ID
-                # to the correct tier based on currently-set item flags.
-                # Sending concrete tier IDs (e.g. 11 for Goddess Sword,
-                # 90 for Iron Bow) does NOT work because the vanilla
-                # function may not handle non-base IDs correctly.
+                # For progressive items, send the CONCRETE tier game ID to
+                # the buffer — NOT the base progressive ID.
                 #
-                # Before writing the buffer, pre-set all PREVIOUS tier
-                # flags so determineFinalItemid resolves the base ID to
-                # the right tier.  Only set flags for tiers BELOW the one
-                # being given (next_count - 1) — setting the current
-                # tier's flag would race with the game's own processing
-                # and bump the resolution up one tier.
+                # Buffer-spawned item actors do NOT set itemflags via
+                # FlagMgr, so determineFinalItemid always sees the same
+                # flag state and returns the same tier forever.  By
+                # sending the concrete ID (e.g. 11 for Goddess Sword
+                # instead of 10 for Progressive Sword), we bypass the
+                # broken progressive resolution entirely.  Python
+                # tracks tier counts independently.
                 if is_progressive:
-                    buffer_item_name = item_name  # base progressive name
-                    tier_flags = self._PROGRESSIVE_TIER_FLAGS.get(item_name, [])
-                    for i in range(min(next_count - 1, len(tier_flags))):
-                        self.game_item_system._ensure_itemflag_set(tier_flags[i])
-                    if next_count > 1:
-                        logger.debug(
-                            f"[ProgressivePreset] Pre-set flags "
-                            f"{tier_flags[:next_count-1]} before giving "
-                            f"{item_name} tier {next_count}"
-                        )
+                    tier_ids = self._PROGRESSIVE_TIER_FLAGS.get(item_name)
+                    if tier_ids:
+                        concrete_id = tier_ids[min(next_count - 1, len(tier_ids) - 1)]
+                        logger.debug(f"[Progressive] Sending concrete game_id {concrete_id} for {item_name} #{next_count} ({actual_item_name})")
+                        success = self.game_item_system.give_item(concrete_id)
+                    else:
+                        # Unknown progressive — fall back to name lookup
+                        success = self.game_item_system.give_item_by_name(item_name)
                 else:
-                    buffer_item_name = actual_item_name
+                    success = self.game_item_system.give_item_by_name(actual_item_name)
                 
-                # Use the integrated system (spawns items with animations)
-                success = self.game_item_system.give_item_by_name(buffer_item_name)
                 if success:
                     # Only commit the progressive counter increment on success
                     # so retries don't skip tiers.
-                    #
-                    # Queue a DEFERRED flag write for the current tier's
-                    # flags (including the current one).  This fires ~2 s
-                    # later — well past the game's determineFinalItemid
-                    # call — so it can safely include the current tier.
                     if is_progressive:
                         self.progressive_counts[item_name] = next_count
-                        tier_flags = self._PROGRESSIVE_TIER_FLAGS.get(item_name)
-                        if tier_flags:
-                            tier_index = min(next_count, len(tier_flags))
-                            flags_to_set = tier_flags[:tier_index]
-                            ready_time = time.time() + self._DEFERRED_FLAG_DELAY
-                            self._deferred_flag_writes.append((ready_time, flags_to_set))
-                            logger.debug(
-                                f"[DeferredFlag] Queued flags {flags_to_set} "
-                                f"for {item_name} tier {next_count} "
-                                f"(will write in {self._DEFERRED_FLAG_DELAY}s)"
-                            )
                     
-                    logger.debug(f"Gave {buffer_item_name} via item buffer (game will handle animation)")
+                    logger.debug(f"Gave {actual_item_name} via item buffer (game will handle animation)")
                 else:
-                    logger.debug(f"Failed to give {buffer_item_name} via item system (player may be busy)")
+                    logger.debug(f"Failed to give {actual_item_name} via item system (player may be busy)")
                 return success
             except Exception as e:
                 logger.warning(f"Item system error for {actual_item_name}: {e}")
@@ -2071,25 +2044,10 @@ class SSHDContext(CommonContext):
             return False
 
     def _process_deferred_flag_writes(self):
-        """Write queued progressive-item flags whose delay has elapsed.
-
-        Called from update_game_state every tick.  Each entry is a tuple
-        (ready_time, flag_id_list).  When ready_time has passed we write
-        every flag in the list via _ensure_itemflag_set, which sets bits
-        in BOTH the committed (FA) and working (static) itemflag arrays.
-        """
-        if not self._deferred_flag_writes or not self.game_item_system:
-            return
-        now = time.time()
-        still_pending = []
-        for ready_time, flag_ids in self._deferred_flag_writes:
-            if now >= ready_time:
-                for fid in flag_ids:
-                    self.game_item_system._ensure_itemflag_set(fid)
-                logger.debug(f"[DeferredFlag] Wrote deferred flags {flag_ids}")
-            else:
-                still_pending.append((ready_time, flag_ids))
-        self._deferred_flag_writes = still_pending
+        """No-op.  Flag management is now handled entirely by the game's
+        own item actor stateGet through the FlagMgr vtable.  Python-side
+        writes to STATIC_ITEMFLAGS do not affect determineFinalItemid."""
+        pass
 
     async def ryujinx_connection_task(self):
         """Background task to maintain connection to Ryujinx."""

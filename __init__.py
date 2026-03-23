@@ -2015,6 +2015,9 @@ class SSHDWorld(World):
             self.random.shuffle(eligible_dungeons)
             selected_dungeons = eligible_dungeons[:selected_count]
             
+            # Store the selection so _generate_sshd_patches can sync Fi's text
+            self._ap_required_dungeons = list(selected_dungeons)
+            
             # Collect unfilled end-of-dungeon locations for the selected dungeons
             end_loc_names: set[str] = set()
             for dungeon in selected_dungeons:
@@ -2750,6 +2753,13 @@ class SSHDWorld(World):
             from .SSHDRWrapper import inject_custom_flags_into_world
             inject_custom_flags_into_world(world, self._custom_flag_mapping, self.multiworld, self.player)
             print(f"[__init__.py] ✓ Injected {len(self._custom_flag_mapping)} custom flags")
+            
+            # Sync required-dungeon flags so Fi's text matches AP's selection
+            ap_required = getattr(self, '_ap_required_dungeons', None)
+            if ap_required is not None:
+                for name, dun in world.dungeons.items():
+                    dun.required = name in ap_required
+                print(f"[__init__.py] Synced required dungeons to AP selection: {ap_required}")
             
             # Apply patches with the overlaid items
             # This generates the romfs/exefs with Archipelago items in them
