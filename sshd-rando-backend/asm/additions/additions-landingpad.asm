@@ -216,23 +216,6 @@ b.eq prevent_pyrup_fire_when_underground2
 cmp w8, #65
 b.eq set_top_dowsing_icon
 
-ret ; safety: return if no case matched
-
-; Wrapper for custom_event_commands.
-; Executes the two replaced game instructions (ldrh w8 + mov w21)
-; OUTSIDE the Rust function's epilogue, so the compiler can never
-; clobber w21 — fixing the type-3 event-flow crash.
-_ce_wrapper:
-    stp x30, x0, [sp, #-32]!
-    str x1, [sp, #16]
-    bl custom_event_commands
-    ldr x1, [sp, #16]
-    ldp x30, x0, [sp], #32
-    ; Replaced instructions
-    ldrh w8, [x1, #0xa]
-    mov w21, #1
-    ret
-
 cmp w8, #66
 b.eq load_additional_sfx
 
@@ -333,5 +316,20 @@ cmp w8, #98
 b.eq setup_gossip_stone_item_params
 
 ret ; this should never be reached
+
+; Wrapper for custom_event_commands.
+; Executes the two replaced game instructions (ldrh w8 + mov w21)
+; OUTSIDE the Rust function's epilogue, so the compiler can never
+; clobber w21 — fixing the type-3 event-flow crash.
+_ce_wrapper:
+    stp x30, x0, [sp, #-32]!
+    str x1, [sp, #16]
+    bl custom_event_commands
+    ldr x1, [sp, #16]
+    ldp x30, x0, [sp], #32
+    ; Replaced instructions
+    ldrh w8, [x1, #0xa]
+    mov w21, #1
+    ret
 
 ; ends at 0x712e0a7000
