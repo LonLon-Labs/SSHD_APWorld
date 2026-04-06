@@ -1446,6 +1446,13 @@ class SSHDContext(CommonContext):
         self._bird_statue_enforcement_log: Set[str] = set()  # avoid log spam
         self._visited_regions: Set[str] = set()  # regions where entry statue was auto-enabled
         
+        # Goal completion flag — once Demise is defeated and CLIENT_GOAL
+        # is sent, ALL memory writes are suppressed.  The post-Demise
+        # cutscene and credits tear down gameplay structures (player,
+        # room manager, flag manager, etc.); any write to those offsets
+        # during that window can corrupt game state and trigger a PANIC.
+        self.goal_completed: bool = False
+
         # Tracker bridge for autotracking
         self.tracker_bridge = TrackerBridge() if TrackerBridge else None
         if self.tracker_bridge:
@@ -2195,6 +2202,13 @@ class SSHDContext(CommonContext):
         if not self.memory.connected or not self.memory.base_address:
             return
         
+        # After goal completion (Demise defeated), stop ALL game memory
+        # interaction.  The post-Demise cutscene and credits tear down
+        # gameplay structures; any read/write to player, flag, or room
+        # offsets risks hitting freed memory and crashing the game.
+        if self.goal_completed:
+            return
+        
         try:
             # Verify game is loaded by reading stage name
             stage_name = self.memory.read_string(OFFSET_CURRENT_STAGE + OFFSET_STAGE_NAME, 16)
@@ -2272,7 +2286,12 @@ class SSHDContext(CommonContext):
             # Reads (locations, death/breath link, custom flags) are safe.
             _in_transition = time.time() < self._scene_transition_cooldown_until
             
-            if not _in_transition:
+            # Also suppress ALL memory writes after goal completion.
+            # The post-Demise cutscene and credits tear down gameplay
+            # structures; writing to player/flag/room offsets crashes.
+            _block_writes = _in_transition or self.goal_completed
+            
+            if not _block_writes:
                 # Write AP buffers to game memory (item info table + check stats)
                 self._write_ap_item_info_table()
                 self._update_ap_check_stats()
@@ -2294,7 +2313,7 @@ class SSHDContext(CommonContext):
             self._process_deferred_flag_writes()
             
             # Give queued items to player
-            if self.item_queue and not _in_transition:
+            if self.item_queue and not _block_writes:
                 item_data = self.item_queue[0]
                 
                 # Start-inventory items (precollected) are already baked into the
@@ -2419,23 +2438,28 @@ class SSHDContext(CommonContext):
             # (cheat_loop_task) for minimal input lag.
             # ============================================================
             
-            # Check for completed locations using custom flags
-            if self.custom_flag_to_location:
-                # Use custom flag system (preferred for SSHD)
-                await self.check_custom_flags()
-                # Supplement: shop purchases don't set custom scene/dungeon flags,
-                # so also check Beedle's sold-out storyflags from the save file.
-                await self.check_beedle_shop_storyflags()
-            
-            # Boss fight rewards (HeartCo actors) and Demise defeat don't
-            # set custom sceneflags, so monitor their vanilla flags directly.
-            await self.check_boss_defeat_flags()
-            
-            # Enforce bird-statue flags: clear any that the game's
-            # HD-progression system auto-unlocked without the player
-            # physically visiting the statue.
-            if not _in_transition:
-                self._enforce_bird_statue_flags()
+            # After goal completion, skip location polling entirely.
+            # The end-game cutscene / credits destroy the scene/flag
+            # structures these functions read, and there is nothing left
+            # to check once Demise is defeated.
+            if not self.goal_completed:
+                # Check for completed locations using custom flags
+                if self.custom_flag_to_location:
+                    # Use custom flag system (preferred for SSHD)
+                    await self.check_custom_flags()
+                    # Supplement: shop purchases don't set custom scene/dungeon flags,
+                    # so also check Beedle's sold-out storyflags from the save file.
+                    await self.check_beedle_shop_storyflags()
+                
+                # Boss fight rewards (HeartCo actors) and Demise defeat don't
+                # set custom sceneflags, so monitor their vanilla flags directly.
+                await self.check_boss_defeat_flags()
+                
+                # Enforce bird-statue flags: clear any that the game's
+                # HD-progression system auto-unlocked without the player
+                # physically visiting the statue.
+                if not _block_writes:
+                    self._enforce_bird_statue_flags()
             
             # Send any newly checked locations to server (locations not yet sent)
             new_locations = self.checked_locations.difference(self.sent_locations)
@@ -2458,7 +2482,12 @@ class SSHDContext(CommonContext):
                         "cmd": "StatusUpdate",
                         "status": ClientStatus.CLIENT_GOAL
                     }])
-                    # Server will automatically release all remaining items if auto-release is enabled
+                    # Suppress ALL further memory writes.  The post-Demise
+                    # cutscene and credits sequence tear down gameplay
+                    # structures; writing to player/flag/room offsets during
+                    # that window causes the game to PANIC.
+                    self.goal_completed = True
+                    logger.info("Goal completed — memory writes suspended to protect end-game sequence")
                     
         except Exception as e:
             logger.error(f"Error updating game state: {e}")
@@ -2471,6 +2500,10 @@ class SSHDContext(CommonContext):
         cannot prevent the others from running.
         """
         if not self.memory.connected or not self.memory.base_address:
+            return
+
+        # Suppress all memory writes after goal completion (Demise defeated).
+        if self.goal_completed:
             return
 
         # Guard: skip all cheat writes during scene transitions / loading
@@ -3709,6 +3742,10 @@ class SSHDContext(CommonContext):
             logger.warning("DeathLink: Cannot kill player - not connected to game")
             return
 
+        if self.goal_completed:
+            logger.debug("DeathLink: Ignoring - goal already completed")
+            return
+
         source = data.get('source', 'Unknown')
         cause = data.get('cause', '') or f"{source} died"
         logger.info(f"DeathLink: {cause}")
@@ -3753,6 +3790,10 @@ class SSHDContext(CommonContext):
 
         if not self.memory.connected or not self.memory.base_address:
             logger.warning("BreathLink: Cannot drain stamina - not connected to game")
+            return
+
+        if self.goal_completed:
+            logger.debug("BreathLink: Ignoring - goal already completed")
             return
 
         source = data.get('source', 'Unknown')
