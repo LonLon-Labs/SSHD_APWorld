@@ -359,11 +359,18 @@ class PeatriceConversations(Range):
 
 # === Quality of Life ===
 
-class OpenLakeFloriaGate(DefaultOnToggle):
+class OpenLakeFloriaGate(Choice):
     """
-    If enabled, the gate to Lake Floria is open from the start.
+    Controls the Lake Floria gate.
+    Vanilla: You must climb the Great Tree, talk to Yerbal, and open the gates with the Goddess Sword.
+    Yerbal: You must climb the Great Tree and talk to Yerbal to enter Lake Floria.
+    Open: The Lake Floria gates are open from the start.
     """
     display_name = "Open Lake Floria Gate"
+    option_vanilla = 0
+    option_yerbal = 1
+    option_open = 2
+    default = 2
 
 
 class OpenThunderhead(DefaultOnToggle):
@@ -373,18 +380,32 @@ class OpenThunderhead(DefaultOnToggle):
     display_name = "Open Thunderhead"
 
 
-class OpenEarthTemple(Toggle):
+class OpenEarthTemple(Choice):
     """
-    If enabled, the Earth Temple is open from the start.
+    Controls the Earth Temple door.
+    Open: The Earth Temple door is open from the start.
+    Shuffle Eldin: Collect all Earth Temple Key Pieces, shuffled within the Eldin Volcano region.
+    Shuffle Anywhere: Collect all Earth Temple Key Pieces, shuffled anywhere.
     """
     display_name = "Open Earth Temple"
+    option_open = 0
+    option_shuffle_eldin = 1
+    option_shuffle_anywhere = 2
+    default = 0
 
 
-class OpenLmf(Toggle):
+class OpenLmf(Choice):
     """
-    If enabled, the Lanayru Mining Facility is open from the start.
+    Controls the Lanayru Mining Facility.
+    Nodes: You must activate each of the 3 nodes and the main node to raise the facility.
+    Main Node: You must activate the main node to raise the facility.
+    Open: The Lanayru Mining Facility is raised from the start.
     """
     display_name = "Open Lanayru Mining Facility"
+    option_nodes = 0
+    option_main_node = 1
+    option_open = 2
+    default = 2
 
 
 class OpenBatraeuxShed(Toggle):

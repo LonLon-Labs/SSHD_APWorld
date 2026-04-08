@@ -489,10 +489,10 @@ class SSHDWorld(World):
         "empty_unrequired_dungeons": ("empty_unrequired_dungeons", "toggle", None),
         "lanayru_caves_keys": ("lanayru_caves_keys", "choice", {"vanilla": 0, "overworld": 1, "anywhere": 2, "removed": 3}),
         # QoL - Open Locations (some use "open" instead of "on")
-        "open_lake_floria": ("open_lake_floria", "toggle_custom", {"vanilla": 0, "yerbal": 1, "open": 1}),
+        "open_lake_floria": ("open_lake_floria", "choice", {"vanilla": 0, "yerbal": 1, "open": 2}),
         "open_thunderhead": ("open_thunderhead", "toggle", None),
-        "open_earth_temple": ("open_earth_temple", "toggle_custom", {"open": 1, "shuffle_eldin": 0, "shuffle_anywhere": 0}),
-        "open_lmf": ("open_lmf", "toggle_custom", {"nodes": 0, "main_node": 0, "open": 1}),
+        "open_earth_temple": ("open_earth_temple", "choice", {"open": 0, "shuffle_eldin": 1, "shuffle_anywhere": 2}),
+        "open_lmf": ("open_lmf", "choice", {"nodes": 0, "main_node": 1, "open": 2}),
         "open_batreaux_shed": ("open_batreaux_shed", "toggle", None),
         "skip_skykeep_door_cutscene": ("skip_skykeep_door_cutscene", "toggle", None),
         "skip_harp_playing": ("skip_harp_playing", "toggle", None),
