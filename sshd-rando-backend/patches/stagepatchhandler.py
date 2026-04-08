@@ -1099,11 +1099,15 @@ class StagePatchHandler:
                 room_bzs = parse_bzs(room_bzs_bytes)
 
                 # Only inject AP item OARCs when the room has randomized
-                # checks or object patches that may spawn AP item actors.
-                # Boss arenas like B400 (Demise) have zero patches and the
-                # extra ~80 OARCs overwhelm the game's resource loader,
-                # causing a PANIC on the SSystem::mDvd thread.
-                if check_patches_for_current_room or obj_patches_for_current_room:
+                # checks (item locations).  Rooms with only structural
+                # object patches (objadd/objdelete/objpatch) do NOT need
+                # the full ~80 AP OARCs and adding them can overwhelm the
+                # game's resource loader — causing a PANIC on SSystem::mDvd
+                # (observed in F404 during the B400→F404 Demise transition).
+                # Network-received items in rooms without these OARCs will
+                # gracefully fall back to GetRupee via the OARC-lookup-
+                # failure path in get_arc_model_from_item.
+                if check_patches_for_current_room:
                     l0 = room_bzs["LAY "]["l0"]
                     l0_arcn = set(l0.get("ARCN", []))
                     l0_arcn |= AP_ITEM_OARC_NAMES
