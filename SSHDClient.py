@@ -2214,17 +2214,37 @@ class SSHDContext(CommonContext):
                 self.current_stage = stage_name
 
                 # ── Goal detection via stage transition ──────────────────
-                # "Defeat Demise" (goal 0): detect B400 → F404 transition.
-                #   Demise has no in-game story flag; this transition only
-                #   occurs after defeating Demise.
-                # "Defeat Ghirahim 3" (goal 1) and "Defeat Horde" (goal 2)
-                #   are detected via storyflags polled below.
-                _DEFEAT_DEMISE_CODE = 2773238
-                if (self.goal_type == 0
-                        and old_stage == "B400" and stage_name == "F404"
-                        and _DEFEAT_DEMISE_CODE not in self.checked_locations):
-                    self.checked_locations.add(_DEFEAT_DEMISE_CODE)
-                    logger.info("=== Demise defeated! ===")
+                # Goal 0 (Defeat Demise):      B400 → F404
+                # Goal 1 (Defeat Ghirahim 3):  F403 → F404  (skip_demise=on)
+                # Goal 2 (Defeat Horde):        F403 → F404  (skip_demise+skip_g3=on)
+                # The storyflags (134, 486) are only written to the
+                # committed-heap copy during gameplay, NOT to the FA /
+                # STATIC save-file copies, so stage transitions are the
+                # primary detection method.  Storyflag polling below is
+                # kept as a secondary fallback.
+                _GOAL_LOC_CODE = 2773238
+                _goal_detected = False
+                if _GOAL_LOC_CODE not in self.checked_locations:
+                    if (self.goal_type == 0
+                            and old_stage == "B400" and stage_name == "F404"):
+                        _goal_detected = True
+                        _goal_label = "Demise"
+                    elif (self.goal_type in (1, 2)
+                            and old_stage == "F403" and stage_name == "F404"):
+                        _goal_label = ("Ghirahim 3" if self.goal_type == 1
+                                       else "Horde")
+                        _goal_detected = True
+                    # Fallback: if player somehow reaches a later
+                    # transition than their goal requires, still count it.
+                    elif (self.goal_type in (1, 2)
+                            and old_stage == "B400" and stage_name == "F404"):
+                        _goal_label = ("Ghirahim 3 (fallback: Demise transition)"
+                                       if self.goal_type == 1
+                                       else "Horde (fallback: Demise transition)")
+                        _goal_detected = True
+                if _goal_detected:
+                    self.checked_locations.add(_GOAL_LOC_CODE)
+                    logger.info(f"=== {_goal_label} defeated! ===")
                     self.update_tracker_state()
                 
                 # Scene-transition cooldown: block ALL memory writes for
@@ -2261,23 +2281,35 @@ class SSHDContext(CommonContext):
                                 f"(first visit to {region})"
                             )
 
-            # ── Goal detection via storyflags (G3 / Horde goals) ─────
-            _DEFEAT_DEMISE_CODE = 2773238
+            # ── Goal detection fallback via storyflags (G3 / Horde) ──
+            # The game typically only writes flags 134/486 to the
+            # committed-heap copy, not to FA/STATIC, so stage transitions
+            # above are the primary method.  This polls both FA and STATIC
+            # as a safety net (e.g. after an auto-save or manual save).
+            _GOAL_LOC_CODE = 2773238
             if (self.goal_type in (1, 2)
-                    and _DEFEAT_DEMISE_CODE not in self.checked_locations):
+                    and _GOAL_LOC_CODE not in self.checked_locations):
                 # goal 1 = Defeat Ghirahim 3 → storyflag 486
                 # goal 2 = Defeat Horde      → storyflag 134
                 _goal_flag = 486 if self.goal_type == 1 else 134
                 _word_idx = _goal_flag // 16
                 _bit_idx  = _goal_flag % 16
-                _offset = (OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
-                           + _word_idx * 2)
-                _val = self.memory.read_short(_offset)
-                if _val is not None and (_val & (1 << _bit_idx)):
-                    self.checked_locations.add(_DEFEAT_DEMISE_CODE)
+                _fa_offset = (OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
+                              + _word_idx * 2)
+                _static_offset = OFFSET_STORY_FLAGS_STATIC + _word_idx * 2
+                _fa_val = self.memory.read_short(_fa_offset)
+                _st_val = self.memory.read_short(_static_offset)
+                _fa_set = _fa_val is not None and bool(_fa_val & (1 << _bit_idx))
+                _st_set = _st_val is not None and bool(_st_val & (1 << _bit_idx))
+                if _fa_set or _st_set:
+                    self.checked_locations.add(_GOAL_LOC_CODE)
+                    _src = "FA" if _fa_set else "STATIC"
                     _goal_label = ("Ghirahim 3" if self.goal_type == 1
                                    else "Horde")
-                    logger.info(f"=== {_goal_label} defeated! ===")
+                    logger.info(
+                        f"=== {_goal_label} defeated! "
+                        f"(storyflag {_goal_flag} detected in {_src}) ==="
+                    )
                     self.update_tracker_state()
 
             # Skip all memory writes during scene-transition cooldown.
@@ -2471,9 +2503,8 @@ class SSHDContext(CommonContext):
                 self.sent_locations.update(new_locations)
                 
                 # Check if the goal location (2773238) was just checked — victory!
-                # Goal 0: B400→F404 stage transition (Demise)
-                # Goal 1: storyflag 486 (Ghirahim 3)
-                # Goal 2: storyflag 134 (Horde)
+                # Primary: stage transitions (B400→F404 or F403→F404)
+                # Fallback: storyflag polling (134 / 486 in FA or STATIC)
                 _GOAL_LOCATION = 2773238
                 if _GOAL_LOCATION in new_locations:
                     _goal_names = {0: "Demise", 1: "Ghirahim 3", 2: "Horde"}
