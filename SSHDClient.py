@@ -1438,6 +1438,7 @@ class SSHDContext(CommonContext):
         self._ap_item_info_offset: Optional[int] = None  # Memory offset of AP_ITEM_INFO_TABLE
         self._ap_check_stats_offset: Optional[int] = None  # Memory offset of AP_CHECK_STATS
         self._ap_item_info_written: bool = False  # Whether we've written the info table
+        self._ap_item_info_last_refresh: float = 0.0  # Last time we refreshed the count field
         
         # Bird statue HD-progression enforcement
         # Snapshot of legitimate bird statue flags, captured on first game-state poll.
@@ -2275,6 +2276,7 @@ class SSHDContext(CommonContext):
             if not _in_transition:
                 # Write AP buffers to game memory (item info table + check stats)
                 self._write_ap_item_info_table()
+                self._refresh_ap_item_info_count()
                 self._update_ap_check_stats()
 
                 # After a scene transition the game reloads flag data from
@@ -2988,10 +2990,41 @@ class SSHDContext(CommonContext):
             self.memory.pm.write_bytes(table_addr + 4, count_data, len(count_data))
             
             self._ap_item_info_written = True
+            self._ap_item_info_last_refresh = time.time()
             logger.debug(f"Wrote {count} AP item info entries to game memory")
             
         except Exception as e:
             logger.warning(f"Failed to write AP item info table: {e}")
+
+    def _refresh_ap_item_info_count(self):
+        """
+        Periodically re-write just the count field of AP_ITEM_INFO_TABLE.
+        
+        This is a lightweight 4-byte write (every ~5 s) that keeps the
+        table's count visible to the emulator, guarding against any edge
+        case where the initial write was lost or the JIT cached a stale
+        zero count.  Without a valid count the Rust lookup returns
+        immediately and the textbox falls back to generic text.
+        """
+        if not self._ap_item_info_written or not self.ap_item_info:
+            return
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return
+        if self._ap_item_info_offset is None:
+            return
+        
+        now = time.time()
+        if now - self._ap_item_info_last_refresh < 5.0:
+            return
+        
+        try:
+            table_addr = self.memory.base_address + self._ap_item_info_offset
+            count = min(len(self.ap_item_info), 512)
+            count_data = struct.pack('<HH', count, 0)
+            self.memory.pm.write_bytes(table_addr + 4, count_data, len(count_data))
+            self._ap_item_info_last_refresh = now
+        except Exception:
+            pass  # Non-critical; next refresh will retry
 
     def _update_ap_check_stats(self):
         """

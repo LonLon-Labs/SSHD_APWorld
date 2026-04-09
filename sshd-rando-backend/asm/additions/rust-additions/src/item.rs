@@ -525,25 +525,14 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
             }
         }
 
-        // Track the custom flag for item 216 (Archipelago Item) pickups
-        // so the event flow can look up item name + player name
-        let itemid = (*item_actor).itemid;
-        if itemid == 216 && flag != 0x7F {
-            let scene_raw: u32 = match sceneindex {
-                6 => 0,
-                13 => 1,
-                16 => 2,
-                19 => 3,
-                _ => 0,
-            };
-            let computed_flag_id = (flag & 0x7F) | (scene_raw << 7) | (flag_space_trigger << 9);
-            // Volatile write ensures the store is committed immediately
-            // before the game triggers the 003_216 event flow.
-            core::ptr::write_volatile(
-                core::ptr::addr_of_mut!(LAST_AP_ITEM_FLAG_ID),
-                computed_flag_id as u16,
-            );
-        }
+        // NOTE: LAST_AP_ITEM_FLAG_ID is NOT set here.
+        // handle_custom_item_get runs in stateGet which fires AFTER the
+        // event flow.  Writing the flag_id here would RE-SET it after
+        // cmd 81 already consumed and cleared it, leaving a stale value
+        // that the NEXT item-216 pickup could read.  setup_traps()
+        // (stateWait*GetDemoUpdate) and cmd 80 (NPC event flows) both
+        // set LAST_AP_ITEM_FLAG_ID BEFORE the event fires, which is the
+        // correct timing.
 
         return (*item_actor).final_determined_itemid;
     }
@@ -2333,7 +2322,11 @@ pub static mut AP_ITEM_INFO_TABLE: ApItemInfoTable = ApItemInfoTable {
 };
 
 // Tracks which item-216 location was most recently picked up.
-// Set in handle_custom_item_get(); read in the custom event command.
+// Set in setup_traps() (stateWait*GetDemoUpdate, BEFORE the event fires) and
+// cmd 80 (NPC event flows).  Read and reset by cmd 81
+// (set_ap_item_string_args). NOT set in handle_custom_item_get() — stateGet
+// runs AFTER the event, so writing here would re-create a stale value after
+// cmd 81 already cleared it.
 #[no_mangle]
 pub static mut LAST_AP_ITEM_FLAG_ID: u16 = 0xFFFF;
 
