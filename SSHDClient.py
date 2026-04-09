@@ -2206,17 +2206,16 @@ class SSHDContext(CommonContext):
                 self.current_stage = stage_name
 
                 # ── Demise defeat via stage transition ───────────────────
-                # "Defeat Demise" (location 2773238) has no reliable in-game
-                # story flag — storyflags 956+ are repurposed by the rando
-                # for gossip-stone tracking.  Instead, detect the transition
+                # "Defeat Demise" (location 2773238) has no in-game
+                # story flag.  Instead, detect the transition
                 # B400 (Demise boss room) → F404 (Temple of Hylia post-fight)
                 # which only occurs after Demise is defeated.
                 _DEFEAT_DEMISE_CODE = 2773238
                 if (old_stage == "B400" and stage_name == "F404"
                         and _DEFEAT_DEMISE_CODE not in self.checked_locations):
                     self.checked_locations.add(_DEFEAT_DEMISE_CODE)
-                    logger.info(
-                        "=== Demise defeated (B400 → F404 transition) ==="
+                    logger.debug(
+                        "=== Demise defeated! ==="
                     )
                     self.update_tracker_state()
                 
@@ -2445,11 +2444,10 @@ class SSHDContext(CommonContext):
                 self.sent_locations.update(new_locations)
                 
                 # Check if "Defeat Demise" location (2773238) was just checked - this means victory!
-                # Detected either via custom flags (if location exists in AP world)
-                # or via story flag 959 monitoring in check_boss_defeat_flags().
+                # Detected via the stage transition B400 -> F404
                 DEFEAT_DEMISE_LOCATION = 2773238
                 if DEFEAT_DEMISE_LOCATION in new_locations:
-                    logger.info("=== VICTORY! Demise defeated - sending goal completion to server ===")
+                    logger.info("=== VICTORY! Demise defeated - releasing all remaining items ===")
                     await self.send_msgs([{
                         "cmd": "StatusUpdate",
                         "status": ClientStatus.CLIENT_GOAL
@@ -2459,7 +2457,7 @@ class SSHDContext(CommonContext):
                     # structures; writing to player/flag/room offsets during
                     # that window causes the game to PANIC.
                     self.goal_completed = True
-                    logger.info("Goal completed — memory writes suspended to protect end-game sequence")
+                    logger.debug("Goal completed — memory writes suspended to protect end-game sequence")
                     
         except Exception as e:
             logger.error(f"Error updating game state: {e}")

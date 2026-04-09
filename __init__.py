@@ -913,7 +913,7 @@ class SSHDWorld(World):
         #   2. Placing a fill item there crashes the game during the Demise
         #      defeat cutscene.
         # Victory is handled via the "Victory - Game Beatable" event (address=None)
-        # and the client detects the defeat via story flag 959.
+        # and the client detects the defeat via the stage transition from B400 to F404.
         excluded.add("Game Beatable")
 
         return excluded
