@@ -1402,12 +1402,15 @@ class SSHDContext(CommonContext):
         self._bird_statue_enforcement_log: Set[str] = set()  # avoid log spam
         self._visited_regions: Set[str] = set()  # regions where entry statue was auto-enabled
         
-        # Goal completion flag — once Demise is defeated and CLIENT_GOAL
-        # is sent, ALL memory writes are suppressed.  The post-Demise
+        # Goal completion flag — once the goal is met and CLIENT_GOAL
+        # is sent, ALL memory writes are suppressed.  The post-boss
         # cutscene and credits tear down gameplay structures (player,
         # room manager, flag manager, etc.); any write to those offsets
         # during that window can corrupt game state and trigger a PANIC.
         self.goal_completed: bool = False
+        
+        # Goal type from slot_data (0=defeat_demise, 1=defeat_ghirahim3, 2=defeat_horde)
+        self.goal_type: int = 0
 
         # Tracker bridge for autotracking
         self.tracker_bridge = TrackerBridge() if TrackerBridge else None
@@ -1690,6 +1693,11 @@ class SSHDContext(CommonContext):
                 self._write_ap_item_info_table()
             else:
                 logger.debug("No AP item info in slot data")
+
+            # Load goal type (0=defeat_demise, 1=defeat_ghirahim3, 2=defeat_horde)
+            self.goal_type = int(slot_data.get("option_goal", 0))
+            goal_names = {0: "Defeat Demise", 1: "Defeat Ghirahim 3", 2: "Defeat Horde"}
+            logger.info(f"Goal: {goal_names.get(self.goal_type, 'Unknown')} (type {self.goal_type})")
 
             # Enable DeathLink if the player configured it
             death_link_enabled = slot_data.get("option_death_link", 0)  # Options use "option_" prefix
@@ -2205,18 +2213,18 @@ class SSHDContext(CommonContext):
                 logger.debug(f"Entered stage: {stage_name}")
                 self.current_stage = stage_name
 
-                # ── Demise defeat via stage transition ───────────────────
-                # "Defeat Demise" (location 2773238) has no in-game
-                # story flag.  Instead, detect the transition
-                # B400 (Demise boss room) → F404 (Temple of Hylia post-fight)
-                # which only occurs after Demise is defeated.
+                # ── Goal detection via stage transition ──────────────────
+                # "Defeat Demise" (goal 0): detect B400 → F404 transition.
+                #   Demise has no in-game story flag; this transition only
+                #   occurs after defeating Demise.
+                # "Defeat Ghirahim 3" (goal 1) and "Defeat Horde" (goal 2)
+                #   are detected via storyflags polled below.
                 _DEFEAT_DEMISE_CODE = 2773238
-                if (old_stage == "B400" and stage_name == "F404"
+                if (self.goal_type == 0
+                        and old_stage == "B400" and stage_name == "F404"
                         and _DEFEAT_DEMISE_CODE not in self.checked_locations):
                     self.checked_locations.add(_DEFEAT_DEMISE_CODE)
-                    logger.debug(
-                        "=== Demise defeated! ==="
-                    )
+                    logger.info("=== Demise defeated! ===")
                     self.update_tracker_state()
                 
                 # Scene-transition cooldown: block ALL memory writes for
@@ -2252,7 +2260,26 @@ class SSHDContext(CommonContext):
                                 f"[BirdStatue] Auto-enabled entry statue: {entry_name} "
                                 f"(first visit to {region})"
                             )
-            
+
+            # ── Goal detection via storyflags (G3 / Horde goals) ─────
+            _DEFEAT_DEMISE_CODE = 2773238
+            if (self.goal_type in (1, 2)
+                    and _DEFEAT_DEMISE_CODE not in self.checked_locations):
+                # goal 1 = Defeat Ghirahim 3 → storyflag 486
+                # goal 2 = Defeat Horde      → storyflag 134
+                _goal_flag = 486 if self.goal_type == 1 else 134
+                _word_idx = _goal_flag // 16
+                _bit_idx  = _goal_flag % 16
+                _offset = (OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
+                           + _word_idx * 2)
+                _val = self.memory.read_short(_offset)
+                if _val is not None and (_val & (1 << _bit_idx)):
+                    self.checked_locations.add(_DEFEAT_DEMISE_CODE)
+                    _goal_label = ("Ghirahim 3" if self.goal_type == 1
+                                   else "Horde")
+                    logger.info(f"=== {_goal_label} defeated! ===")
+                    self.update_tracker_state()
+
             # Skip all memory writes during scene-transition cooldown.
             # Reads (locations, death/breath link, custom flags) are safe.
             _in_transition = time.time() < self._scene_transition_cooldown_until
@@ -2443,16 +2470,20 @@ class SSHDContext(CommonContext):
                 # Mark these locations as sent to avoid re-sending
                 self.sent_locations.update(new_locations)
                 
-                # Check if "Defeat Demise" location (2773238) was just checked - this means victory!
-                # Detected via the stage transition B400 -> F404
-                DEFEAT_DEMISE_LOCATION = 2773238
-                if DEFEAT_DEMISE_LOCATION in new_locations:
-                    logger.info("=== VICTORY! Demise defeated - releasing all remaining items ===")
+                # Check if the goal location (2773238) was just checked — victory!
+                # Goal 0: B400→F404 stage transition (Demise)
+                # Goal 1: storyflag 486 (Ghirahim 3)
+                # Goal 2: storyflag 134 (Horde)
+                _GOAL_LOCATION = 2773238
+                if _GOAL_LOCATION in new_locations:
+                    _goal_names = {0: "Demise", 1: "Ghirahim 3", 2: "Horde"}
+                    _gname = _goal_names.get(self.goal_type, "Unknown")
+                    logger.info(f"=== VICTORY! {_gname} defeated — releasing all remaining items ===")
                     await self.send_msgs([{
                         "cmd": "StatusUpdate",
                         "status": ClientStatus.CLIENT_GOAL
                     }])
-                    # Suppress ALL further memory writes.  The post-Demise
+                    # Suppress ALL further memory writes.  The post-boss
                     # cutscene and credits sequence tear down gameplay
                     # structures; writing to player/flag/room offsets during
                     # that window causes the game to PANIC.
@@ -3453,13 +3484,6 @@ class SSHDContext(CommonContext):
                     self.update_tracker_state()
             except Exception as e:
                 logger.debug(f"Error reading boss defeat flag for loc {loc_code}: {e}")
-
-        # ── Demise defeat ────────────────────────────────────────────────
-        # NOTE: Demise defeat is now detected via the B400 → F404 stage
-        # transition in update_game_state(), NOT via a story flag.
-        # The previous flag-959 check was incorrect: the sshd-rando
-        # repurposes storyflags 956+ for gossip-stone tracking, so
-        # flag 959 is actually "4th gossip stone read", not Demise.
 
     # ------------------------------------------------------------------
     # Bird-statue HD-progression enforcement

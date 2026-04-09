@@ -54,7 +54,18 @@ Skyward Sword HD:
   # ========================================
   # ARCHIPELAGO OPTIONS
   # ========================================
-  
+
+  # Goal
+  # Determines the victory condition for this world in the multiworld.
+  # 0 (defeat_demise): Defeat Demise at the end of the boss gauntlet (default).
+  #     The full Horde → Ghirahim 3 → Demise sequence must be completed.
+  # 1 (defeat_ghirahim3): Defeat Ghirahim 3 in Hylia's Realm.
+  #     Demise is skipped; victory triggers when Ghirahim 3 is defeated.
+  # 2 (defeat_horde): Defeat The Horde in Hylia's Realm.
+  #     Both Ghirahim 3 and Demise are skipped; victory triggers when
+  #     The Horde is defeated.
+  goal: 0
+
   # Death Link: When you die, everyone dies (and vice versa)
   death_link: false
   

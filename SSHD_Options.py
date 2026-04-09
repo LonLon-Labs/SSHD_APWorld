@@ -114,9 +114,24 @@ class Imp2Skip(DefaultOnToggle):
     display_name = "Imp 2 Skip"
 
 
+class Goal(Choice):
+    """
+    Determines what the victory condition is for completing the game.
+    Defeat Demise: Beat the Horde, Ghirahim 3, and Demise (full endgame).
+    Defeat Ghirahim 3: Beat the Horde and Ghirahim 3 (Demise fight is skipped).
+    Defeat Horde: Beat the Horde (Ghirahim 3 and Demise are skipped).
+    """
+    display_name = "Goal"
+    option_defeat_demise = 0
+    option_defeat_ghirahim3 = 1
+    option_defeat_horde = 2
+    default = 0
+
+
 class SkipHorde(Toggle):
     """
     If enabled, the requirement to defeat The Horde at the end is skipped.
+    Note: This is ignored when Goal is set to Defeat Horde (the horde fight is always required).
     """
     display_name = "Skip Horde"
 
@@ -124,6 +139,7 @@ class SkipHorde(Toggle):
 class SkipGhirahim3(Toggle):
     """
     If enabled, the requirement to defeat Ghirahim 3 at the end is skipped.
+    Note: This is ignored when Goal is set to Defeat Ghirahim 3 or Defeat Horde.
     """
     display_name = "Skip Ghirahim 3"
 
@@ -1499,6 +1515,7 @@ class SSHDOptions(PerGameCommonOptions):
     gate_of_time_sword_requirement: GateOfTimeSwordRequirement
     gate_of_time_dungeon_requirements: GateOfTimeDungeonRequirements
     imp2_skip: Imp2Skip
+    goal: Goal
     skip_horde: SkipHorde
     skip_ghirahim3: SkipGhirahim3
     
