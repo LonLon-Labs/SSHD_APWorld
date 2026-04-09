@@ -93,6 +93,14 @@ AP_ITEM_OARC_NAMES: frozenset[str] = frozenset({
     "GetGoldRupee", "GetRupoor",
 })
 
+# Stages where the blanket AP_ITEM_OARC_NAMES injection is skipped even
+# when check_patches exist.  These stages are loaded during the post-Demise
+# ending cutscene chain (B400→F404→F402→credits) under high resource
+# pressure; the extra ~80 OARCs cause a PANIC on SSystem::mDvd.
+# Per-item OARCs from add_arcn_for_check are still applied so randomised
+# check pickups display the correct model.
+_SKIP_AP_OARC_STAGES: frozenset[str] = frozenset({"F402"})
+
 
 def patch_tbox(
     bzs: dict, itemid: int, object_id_str: str, trapid: int, tbox_subtype: int,
@@ -1099,15 +1107,22 @@ class StagePatchHandler:
                 room_bzs = parse_bzs(room_bzs_bytes)
 
                 # Only inject AP item OARCs when the room has randomized
-                # checks (item locations).  Rooms with only structural
-                # object patches (objadd/objdelete/objpatch) do NOT need
+                # checks (item locations) AND the stage is not in the
+                # ending-cutscene exclusion list.
+                #
+                # Rooms with only structural object patches do NOT need
                 # the full ~80 AP OARCs and adding them can overwhelm the
                 # game's resource loader — causing a PANIC on SSystem::mDvd
-                # (observed in F404 during the B400→F404 Demise transition).
-                # Network-received items in rooms without these OARCs will
-                # gracefully fall back to GetRupee via the OARC-lookup-
-                # failure path in get_arc_model_from_item.
-                if check_patches_for_current_room:
+                # (observed in F404 during the B400→F404 Demise transition
+                # and in F402 during the F404→F402 ending cutscene).
+                #
+                # Stages in _SKIP_AP_OARC_STAGES (currently F402) still
+                # receive per-item OARCs via add_arcn_for_check, so their
+                # randomised check pickups display the correct model.
+                # Only blanket network-item OARCs are skipped; those items
+                # fall back to GetRupee via the OARC-lookup-failure path.
+                if (check_patches_for_current_room
+                        and stage_name not in _SKIP_AP_OARC_STAGES):
                     l0 = room_bzs["LAY "]["l0"]
                     l0_arcn = set(l0.get("ARCN", []))
                     l0_arcn |= AP_ITEM_OARC_NAMES
