@@ -1595,19 +1595,61 @@ class SSHDWorld(World):
                     if starting_count == 0:
                         item_pool.append(self.create_item(name))
         
-        # Fill remaining slots with junk filler items
-        JUNK_FILL_ITEMS = [
-            "Blue Rupee", "Red Rupee",
-            "10 Arrows", "5 Bombs", "10 Bombs",
-            "5 Deku Seeds", "10 Deku Seeds",
+        # Fill remaining slots with weighted junk filler items.
+        # Rupees are the most common filler, with bugs and materials mixed in.
+        # NOTE: Bugs and materials must NOT be placed in chests (causes crash).
+        # Placement restrictions are enforced in set_rules() via item_rule.
+        JUNK_FILL_WEIGHTS = [
+            # Rupees — high weight for variety
+            # Green Rupee excluded: capped at 1 in the main pool above
+            ("Blue Rupee", 15),
+            ("Red Rupee", 15),
+            ("Silver Rupee", 8),
+            ("Gold Rupee", 3),
+            # Ammo
+            ("10 Arrows", 3),
+            ("5 Bombs", 3),
+            ("10 Bombs", 2),
+            ("5 Deku Seeds", 2),
+            ("10 Deku Seeds", 2),
+            # Bugs
+            ("Faron Grasshopper", 1),
+            ("Woodland Rhino Beetle", 1),
+            ("Deku Hornet", 1),
+            ("Skyloft Mantis", 1),
+            ("Volcanic Ladybug", 1),
+            ("Blessed Butterfly", 1),
+            ("Lanayru Ant", 1),
+            ("Sand Cicada", 1),
+            ("Gerudo Dragonfly", 1),
+            ("Eldin Roller", 1),
+            ("Sky Stag Beetle", 1),
+            ("Starry Firefly", 1),
+            # Materials
+            ("Hornet Larvae", 1),
+            ("Bird Feather", 1),
+            ("Tumbleweed", 1),
+            ("Lizard Tail", 1),
+            ("Eldin Ore", 1),
+            ("Ancient Flower", 1),
+            ("Amber Relic", 1),
+            ("Dusk Relic", 1),
+            ("Jelly Blob", 1),
+            ("Monster Claw", 1),
+            ("Monster Horn", 1),
+            ("Ornamental Skull", 1),
+            ("Evil Crystal", 1),
+            ("Blue Bird Feather", 1),
+            ("Golden Skull", 1),
+            ("Goddess Plume", 1),
         ]
-        junk_items = [name for name in JUNK_FILL_ITEMS if name in ITEM_TABLE]
+        junk_items = [(name, w) for name, w in JUNK_FILL_WEIGHTS if name in ITEM_TABLE]
+        junk_names = [name for name, _ in junk_items]
+        junk_weights = [w for _, w in junk_items]
         
-        junk_idx = 0
         while len(item_pool) < total_locations:
-            junk_name = junk_items[junk_idx % len(junk_items)]
+            junk_name = self.random.choices(junk_names, weights=junk_weights, k=1)[0]
             item_pool.append(self.create_item(junk_name))
-            junk_idx += 1
         
         # If we have more items than locations (can happen when items from
         # excluded locations are recovered into the pool), trim non-progression first
@@ -2390,6 +2432,41 @@ class SSHDWorld(World):
                 print(f"[__init__.py] Applied Beedle restrictions ({mode_name}): "
                       f"{beedle_count} locations — own-player items only"
                       + (", junk/filler only" if beedle_shop_val == 1 else ""))
+        
+        # ── Bug/Material chest restriction ──────────────────────────────────
+        # Bugs and materials crash the game when placed in chests.
+        # Restrict them to non-chest locations only (freestanding, closets,
+        # other players' games, etc.).
+        CHEST_UNSAFE_ITEMS: set[str] = {
+            # Bugs
+            "Faron Grasshopper", "Woodland Rhino Beetle", "Deku Hornet",
+            "Skyloft Mantis", "Volcanic Ladybug", "Blessed Butterfly",
+            "Lanayru Ant", "Sand Cicada", "Gerudo Dragonfly",
+            "Eldin Roller", "Sky Stag Beetle", "Starry Firefly",
+            # Materials
+            "Hornet Larvae", "Bird Feather", "Tumbleweed", "Lizard Tail",
+            "Eldin Ore", "Ancient Flower", "Amber Relic", "Dusk Relic",
+            "Jelly Blob", "Monster Claw", "Monster Horn", "Ornamental Skull",
+            "Evil Crystal", "Blue Bird Feather", "Golden Skull", "Goddess Plume",
+        }
+        chest_restricted_count = 0
+        for region in self.multiworld.regions:
+            if region.player != self.player:
+                continue
+            for location in region.locations:
+                loc_data = LOCATION_TABLE.get(location.name)
+                if not loc_data:
+                    continue
+                if "Chests" in loc_data.types or "Goddess Chests" in loc_data.types:
+                    # Combine with any existing item_rule
+                    existing_rule = location.item_rule
+                    location.item_rule = lambda item, _er=existing_rule, _unsafe=CHEST_UNSAFE_ITEMS: (
+                        _er(item) and item.name not in _unsafe
+                    )
+                    chest_restricted_count += 1
+        if chest_restricted_count:
+            print(f"[__init__.py] Applied bug/material chest restrictions: "
+                  f"{chest_restricted_count} chest locations blocked")
     
     def post_fill(self) -> None:
         """
