@@ -672,11 +672,16 @@ class ChestTypeMatchesContents(Choice):
     default = 2
 
 
-class RandomTrialObjectPositions(Toggle):
+class RandomTrialObjectPositions(Choice):
     """
-    If enabled, object positions in Silent Realm trials will be randomized.
+    Controls whether and how object positions in Silent Realm trials are randomized.
     """
     display_name = "Random Trial Object Positions"
+    option_none = 0
+    option_simple = 1
+    option_advanced = 2
+    option_full = 3
+    default = 0
 
 
 class UpgradedSkywardStrike(DefaultOnToggle):

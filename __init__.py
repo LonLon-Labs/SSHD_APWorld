@@ -479,7 +479,7 @@ class SSHDWorld(World):
         "full_wallet_upgrades": ("full_wallet_upgrades", "toggle", None),
         "chest_type_matches_contents": ("chest_type_matches_contents", "choice", {"off": 0, "only_dungeon_items": 1, "all_contents": 2}),
         "small_keys_in_fancy_chests": ("small_keys_in_fancy_chests", "toggle", None),
-        "random_trial_object_positions": ("random_trial_object_positions", "toggle", None),
+        "random_trial_object_positions": ("random_trial_object_positions", "choice", {"none": 0, "simple": 1, "advanced": 2, "full": 3}),
         "upgraded_skyward_strike": ("upgraded_skyward_strike", "toggle", None),
         "faster_air_meter_depletion": ("faster_air_meter_depletion", "toggle", None),
         "unlock_all_groosenator_destinations": ("unlock_all_groosenator_destinations", "toggle", None),
@@ -3271,7 +3271,8 @@ class SSHDWorld(World):
         settings_dict["chest_type_matches_contents"] = chest_type_map[self.options.chest_type_matches_contents.value]
         
         settings_dict["small_keys_in_fancy_chests"] = "on" if self.options.small_keys_in_fancy_chests.value else "off"
-        settings_dict["random_trial_object_positions"] = "on" if self.options.random_trial_object_positions.value else "off"
+        trial_obj_map = {0: "none", 1: "simple", 2: "advanced", 3: "full"}
+        settings_dict["random_trial_object_positions"] = trial_obj_map[self.options.random_trial_object_positions.value]
         settings_dict["upgraded_skyward_strike"] = "on" if self.options.upgraded_skyward_strike.value else "off"
         settings_dict["faster_air_meter_depletion"] = "on" if self.options.faster_air_meter_depletion.value else "off"
         settings_dict["unlock_all_groosenator_destinations"] = "on" if self.options.unlock_all_groosenator_destinations.value else "off"

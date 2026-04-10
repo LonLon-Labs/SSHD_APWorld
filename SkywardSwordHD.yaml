@@ -608,9 +608,11 @@ Skyward Sword HD:
   full_wallet_upgrades: false
   
   # Random Trial Object Positions
-  # false: Trial objects appear in their vanilla locations (default)
-  # true: The positions of tears, light fruits, dusk relics, and stamina fruits will be shuffled amongst each other
-  random_trial_object_positions: false
+  # none: Trial objects appear in their vanilla locations (default)
+  # simple: Tears and light fruits are shuffled amongst each other
+  # advanced: Tears, light fruits, and dusk relics are shuffled amongst each other
+  # full: Tears, light fruits, dusk relics, and stamina fruits are shuffled amongst each other
+  random_trial_object_positions: none
   
   # Upgraded Skyward Strike
   # false: Only the True Master Sword will have the fully upgraded Skyward Strike.
