@@ -19,7 +19,7 @@ The patcher will:
 3. Overlay the Archipelago multiworld items
 4. Inject custom flags
 5. Apply ROM patches using the user's extracted ROM
-6. Install the resulting mod to Ryujinx's LayeredFS directory
+6. Install the resulting mod to the emulator's LayeredFS directory
 """
 
 import argparse
@@ -96,38 +96,46 @@ def _find_extract_path() -> Path:
         return Path.home() / ".local" / "share" / "Archipelago" / "sshd_extract"
 
 
-def _find_ryujinx_mod_dir() -> Optional[Path]:
-    """Return the Ryujinx LayeredFS mod path for SSHD, or None."""
+def _find_emulator_mod_dir() -> Optional[Path]:
+    """Return the emulator LayeredFS mod path for SSHD, or None."""
     try:
-        from platform_utils import get_ryujinx_mod_dirs
-        for p in get_ryujinx_mod_dirs():
-            if p.parent.parent.parent.exists():
-                p.mkdir(parents=True, exist_ok=True)
-                return p
+        from platform_utils import find_emulator_mod_dir
+        p = find_emulator_mod_dir()
+        if p is not None:
+            p.mkdir(parents=True, exist_ok=True)
+            return p
     except ImportError:
         pass
 
-    # Manual fallback
+    # Manual fallback — try all supported emulators
     game_id = "01002da013484000"
+    candidates = []
     if sys.platform == "win32":
         appdata = Path(os.environ.get("APPDATA", ""))
-        candidates = [
-            appdata / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / game_id,
-        ]
+        for emu in ["Ryujinx", "yuzu", "suyu", "sudachi"]:
+            candidates.append(appdata / emu / "sdcard" / "atmosphere" / "contents" / game_id)
+            candidates.append(appdata / emu / "load" / game_id)
     elif sys.platform == "linux":
-        candidates = [
-            Path.home() / ".config" / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / game_id,
-        ]
+        for emu_dir, emu_base in [(".config/Ryujinx", "sdcard/atmosphere/contents"),
+                                   (".local/share/yuzu", "load"),
+                                   (".local/share/suyu", "load"),
+                                   (".local/share/sudachi", "load")]:
+            candidates.append(Path.home() / emu_dir / emu_base / game_id)
     else:
-        candidates = [
-            Path.home() / "Library" / "Application Support" / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / game_id,
-        ]
+        app_support = Path.home() / "Library" / "Application Support"
+        for emu in ["Ryujinx", "yuzu", "suyu", "sudachi"]:
+            candidates.append(app_support / emu / "sdcard" / "atmosphere" / "contents" / game_id)
+            candidates.append(app_support / emu / "load" / game_id)
 
     for p in candidates:
-        if p.parent.parent.parent.exists():
+        if p.parent.exists():
             p.mkdir(parents=True, exist_ok=True)
             return p
     return None
+
+
+# Keep old name as alias
+_find_ryujinx_mod_dir = _find_emulator_mod_dir
 
 
 # ---------------------------------------------------------------------------
@@ -348,13 +356,13 @@ def generate_patches(
         return None, None
 
 
-def install_to_ryujinx(romfs_path: Path, exefs_path: Path) -> bool:
-    """Install generated romfs/exefs to Ryujinx's LayeredFS mod directory."""
-    mod_dir = _find_ryujinx_mod_dir()
+def install_to_emulator(romfs_path: Path, exefs_path: Path) -> bool:
+    """Install generated romfs/exefs to the emulator's LayeredFS mod directory."""
+    mod_dir = _find_emulator_mod_dir()
     if mod_dir is None:
-        print("[Patcher] Could not locate Ryujinx mod directory automatically.")
-        print("[Patcher] Copy the romfs/ and exefs/ folders manually to your Ryujinx")
-        print("          sdcard/atmosphere/contents/01002da013484000/Archipelago/")
+        print("[Patcher] Could not locate emulator mod directory automatically.")
+        print("[Patcher] Copy the romfs/ and exefs/ folders manually to your emulator's")
+        print("          mod directory (e.g. sdcard/atmosphere/contents/01002da013484000/Archipelago/)")
         return False
 
     install_dir = mod_dir / "Archipelago"
@@ -369,6 +377,10 @@ def install_to_ryujinx(romfs_path: Path, exefs_path: Path) -> bool:
 
     print("[Patcher] Mod installed successfully!")
     return True
+
+
+# Keep old name as alias for backward compatibility
+install_to_ryujinx = install_to_emulator
 
 
 def update_apsshd_with_patches(
@@ -583,10 +595,10 @@ def _run_gui(initial_patch_file: Optional[str] = None):
                     self.log.emit("Installing existing patches...")
                     self.progress.emit(50)
 
-                    mod_dir = _find_ryujinx_mod_dir()
+                    mod_dir = _find_emulator_mod_dir()
                     if mod_dir is None:
-                        self.info.emit("Ryujinx mod directory not found", "#ff7700")
-                        self.log.emit("\nCould not locate Ryujinx mod directory.")
+                        self.info.emit("Emulator mod directory not found", "#ff7700")
+                        self.log.emit("\nCould not locate emulator mod directory.")
                         self.log.emit("Extract romfs/ and exefs/ from the .apsshd manually.")
                         return
 
@@ -606,7 +618,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
 
                     self.progress.emit(100)
                     self.info.emit("Installed successfully!", "#00ff7f")
-                    self.log.emit("\nDone! Launch Skyward Sword HD in Ryujinx.")
+                    self.log.emit("\nDone! Launch Skyward Sword HD in your emulator.")
                     return
 
                 self.log.emit("\nGenerating ROM patches from your ROM extract...")
@@ -643,17 +655,17 @@ def _run_gui(initial_patch_file: Optional[str] = None):
                         return
 
                     self.progress.emit(85)
-                    self.log.emit("\nInstalling to Ryujinx...")
-                    success = install_to_ryujinx(romfs_path, exefs_path)
+                    self.log.emit("\nInstalling to emulator...")
+                    success = install_to_emulator(romfs_path, exefs_path)
 
                     self.progress.emit(100)
                     if success:
                         self.info.emit("Patched and installed successfully!", "#00ff7f")
-                        self.log.emit("\nDone! Launch Skyward Sword HD in Ryujinx and connect to the server.")
+                        self.log.emit("\nDone! Launch Skyward Sword HD in your emulator and connect to the server.")
                     else:
                         self.info.emit("Patches generated — manual install needed", "#ff7700")
                         self.log.emit(f"\nPatches generated at: {temp_dir}")
-                        self.log.emit("Copy romfs/ and exefs/ to your Ryujinx mod directory manually.")
+                        self.log.emit("Copy romfs/ and exefs/ to your emulator's mod directory manually.")
                         return  # Don't clean up temp dir if manual install needed
 
                 finally:
@@ -925,7 +937,7 @@ def main():
     parser.add_argument(
         "--no-install",
         action="store_true",
-        help="Generate patches but do not install to Ryujinx automatically.",
+        help="Generate patches but do not install to emulator automatically.",
     )
     parser.add_argument(
         "--save-full-apsshd",
@@ -983,7 +995,7 @@ def main():
                 from SSHDClient import install_patch
                 success, _ = install_patch(str(patch_path))
                 if success:
-                    print("\nDone! Launch Skyward Sword HD in Ryujinx.")
+                    print("\nDone! Launch Skyward Sword HD in your emulator.")
                 else:
                     print("\nInstallation failed. Check the output above.")
             sys.exit(0)
@@ -1004,7 +1016,7 @@ def main():
         # ---- Install ----
         if not args.no_install:
             print()
-            install_to_ryujinx(romfs_path, exefs_path)
+            install_to_emulator(romfs_path, exefs_path)
 
         # ---- Optionally save full .apsshd ----
         if args.save_full_apsshd:
@@ -1012,7 +1024,7 @@ def main():
 
         print("\nDone!")
         if not args.no_install:
-            print("Launch Skyward Sword HD in Ryujinx and connect to the Archipelago server.")
+            print("Launch Skyward Sword HD in your emulator and connect to the Archipelago server.")
 
     finally:
         # Clean up temp directory only if we created it
