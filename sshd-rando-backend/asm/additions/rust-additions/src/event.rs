@@ -517,16 +517,11 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
             set_string_arg(GLOBAL_TEXT_MGR, player_ptr, 1);
         }
 
-<<<<<<< Updated upstream
-        // Write to the message-window layout's TextMgr if available.
-        let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
-=======
         let text_mgr = if !LYT_MSG_WINDOW.is_null() {
             (*LYT_MSG_WINDOW).text_mgr
         } else {
             core::ptr::null_mut()
         };
->>>>>>> Stashed changes
         if !text_mgr.is_null() {
             set_string_arg(text_mgr, item_ptr, 0);
             set_string_arg(text_mgr, player_ptr, 1);
