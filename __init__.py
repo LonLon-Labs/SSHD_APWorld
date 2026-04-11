@@ -2,7 +2,7 @@
 Skyward Sword HD (SSHD) Archipelago World
 
 This is an Archipelago integration for The Legend of Zelda: Skyward Sword HD
-running on a supported Switch emulator (Ryujinx, yuzu, suyu, sudachi).
+running on a supported Switch emulator (Ryujinx, yuzu, suyu, sudachi, eden).
 
 Based on the original Skyward Sword (Wii/Dolphin) integration.
 """

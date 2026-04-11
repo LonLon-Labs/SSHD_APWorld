@@ -61,7 +61,7 @@ def get_default_sshd_extract_path() -> Path:
 
 # Supported emulators and their data directory names per OS.
 # Order matters: the first match wins for process detection and mod install.
-SUPPORTED_EMULATORS = ["Ryujinx", "yuzu", "suyu", "sudachi"]
+SUPPORTED_EMULATORS = ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]
 
 # Map of emulator name (lowercase) -> Linux config dir name.
 # Most yuzu-family emulators use lowercase directories on Linux.
@@ -70,6 +70,7 @@ _LINUX_DIR_NAMES = {
     "yuzu":    "yuzu",
     "suyu":    "suyu",
     "sudachi": "sudachi",
+    "eden":    "eden",
 }
 
 

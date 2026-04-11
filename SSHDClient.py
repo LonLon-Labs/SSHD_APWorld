@@ -2,7 +2,7 @@
 Skyward Sword HD Client for Archipelago with emulator memory access support.
 
 This client connects to a supported Switch emulator (Ryujinx, yuzu, suyu,
-sudachi) via direct memory access and communicates with the Archipelago
+sudachi, eden) via direct memory access and communicates with the Archipelago
 server to enable multiworld randomizer support.
 """
 
@@ -517,9 +517,9 @@ EmulatorMemoryError = RyujinxMemoryError
 
 # Supported emulator process names by platform
 _EMULATOR_PROCESS_NAMES = {
-    "win32":  ["Ryujinx.exe", "yuzu.exe", "suyu.exe", "sudachi.exe"],
-    "linux":  ["Ryujinx", "yuzu", "suyu", "sudachi"],
-    "darwin": ["Ryujinx", "yuzu", "suyu", "sudachi"],
+    "win32":  ["Ryujinx.exe", "yuzu.exe", "suyu.exe", "sudachi.exe", "eden.exe"],
+    "linux":  ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"],
+    "darwin": ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"],
 }
 
 
@@ -527,7 +527,7 @@ class EmulatorMemoryReader:
     """
     Class to handle memory reading/writing for a Switch emulator.
 
-    Supports Ryujinx, yuzu, suyu, and sudachi.
+    Supports Ryujinx, yuzu, suyu, sudachi, and eden.
     This provides direct access to SSHD's memory through the emulator's process.
     """
     
@@ -631,7 +631,7 @@ class EmulatorMemoryReader:
         """
         Connect to a supported Switch emulator process.
 
-        Searches for Ryujinx, yuzu, suyu, and sudachi.
+        Searches for Ryujinx, yuzu, suyu, sudachi, and eden.
         
         Returns:
             True if successfully connected, False otherwise
@@ -3909,18 +3909,19 @@ def install_patch(patch_file_path: str) -> tuple[bool, dict]:
                 fallback_paths = []
                 if sys.platform == "win32":
                     appdata = Path(os.environ.get('APPDATA', ''))
-                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi"]:
+                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
                         fallback_paths.append(appdata / emu / "sdcard" / "atmosphere" / "contents" / game_id)
                         fallback_paths.append(appdata / emu / "load" / game_id)
                 elif sys.platform == "linux":
                     for emu_dir, emu_base in [(".config/Ryujinx", "sdcard/atmosphere/contents"),
                                                (".local/share/yuzu", "load"),
                                                (".local/share/suyu", "load"),
-                                               (".local/share/sudachi", "load")]:
+                                               (".local/share/sudachi", "load"),
+                                               (".local/share/eden", "load")]:
                         fallback_paths.append(Path.home() / emu_dir / emu_base / game_id)
                 else:  # macOS
                     app_support = Path.home() / "Library" / "Application Support"
-                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi"]:
+                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
                         fallback_paths.append(app_support / emu / "sdcard" / "atmosphere" / "contents" / game_id)
                         fallback_paths.append(app_support / emu / "load" / game_id)
 
