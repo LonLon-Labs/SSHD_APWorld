@@ -645,6 +645,14 @@
     - "off": "You will need to fight Demise after exiting the portal at the bottom of the spiral in Hylia's Realm."
     - "on": "The Demise fight after exiting the portal at the bottom of the spiral in Hylia's Realm will be skipped."
 
+- name: demise_count
+  default_option: 1
+  pretty_name: Demise Count
+  pretty_options:
+    - 1-10
+  options:
+    - 1-10: "Choose how many Demise bosses will spawn in the final fight arena. Setting this higher than 1 spawns additional Demise bosses."
+
 - name: required_dungeons
   default_option: 2
   pretty_name: Required Dungeons

@@ -18,6 +18,7 @@ from patches.entrancepatchhandler import (
 )
 from patches.stagepatchhandler import (
     StagePatchHandler,
+    create_demise_patches,
     create_shuffled_trial_object_patches,
 )
 from patches.eventpatchhandler import EventPatchHandler
@@ -106,6 +107,7 @@ class AllPatchHandler:
 
         update_progress_value(59)
         create_shuffled_trial_object_patches(self.world, self.stage_patch_handler)
+        create_demise_patches(self.world, self.stage_patch_handler)
 
         update_progress_value(60)
         print_progress_text("Patching Stages")

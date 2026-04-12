@@ -127,6 +127,16 @@ class SkipGhirahim3(Toggle):
     """
     display_name = "Skip Ghirahim 3"
 
+class DemiseCount(Range):
+    """
+    The number of Demise bosses to fight in the final arena.
+    Setting this higher than 1 spawns additional Demise bosses.
+    """
+    display_name = "Demise Count"
+    range_start = 1
+    range_end = 10
+    default = 1
+
 
 # === Randomization Settings ===
 
@@ -1522,6 +1532,7 @@ class SSHDOptions(PerGameCommonOptions):
     imp2_skip: Imp2Skip
     skip_horde: SkipHorde
     skip_ghirahim3: SkipGhirahim3
+    demise_count: DemiseCount
     
     # Randomization
     gratitude_crystal_shuffle: GratitudeCrystalShuffle

@@ -1730,3 +1730,42 @@ def create_shuffled_trial_object_patches(
                     stage_patch_handler.stage_patches[stage] = []
 
                 stage_patch_handler.stage_patches[stage].append(position_patch)
+
+
+def create_demise_patches(
+    world: World, stage_patch_handler: StagePatchHandler
+) -> None:
+    """Add extra Demise bosses to the final fight arena (B400) based on the demise_count setting."""
+    demise_count = int(world.setting("demise_count"))
+    if demise_count <= 1:
+        return
+
+    if "B400" not in stage_patch_handler.stage_patches:
+        stage_patch_handler.stage_patches["B400"] = []
+
+    orig_demise = {
+        "params1": 0xFFFFFFC0,
+        "params2": 0xFFFFFFFF,
+        "posx": 0,
+        "posy": 0,
+        "posz": -500,
+        "anglex": 0,
+        "angley": 0,
+        "anglez": 0,
+        "id": 0xFC00,
+        "name": "BLasBos",
+    }
+
+    for idx in range(1, demise_count):
+        demise = orig_demise.copy()
+        demise["posy"] = 1000 * idx
+        stage_patch_handler.stage_patches["B400"].append(
+            {
+                "name": f"Demise add {idx}",
+                "type": "objadd",
+                "room": 0,
+                "layer": 1,
+                "objtype": "OBJ",
+                "object": demise,
+            }
+        )

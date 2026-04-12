@@ -430,6 +430,7 @@ class SSHDWorld(World):
         "imp_2_skip": ("imp2_skip", "toggle", None),
         "skip_horde": ("skip_horde", "toggle", None),
         "skip_g3": ("skip_ghirahim3", "toggle", None),
+        "demise_count": ("demise_count", "range", None),
         # Shuffles
         "gratitude_crystal_shuffle": ("gratitude_crystal_shuffle", "toggle", None),
         "stamina_fruit_shuffle": ("stamina_fruit_shuffle", "toggle", None),
@@ -3241,6 +3242,7 @@ class SSHDWorld(World):
         settings_dict["required_dungeons"] = str(self.options.required_dungeon_count.value)
         settings_dict["skip_horde"] = "on" if self.options.skip_horde.value else "off"
         settings_dict["skip_g3"] = "on" if self.options.skip_ghirahim3.value else "off"
+        settings_dict["demise_count"] = str(self.options.demise_count.value)
         settings_dict["skip_demise"] = "off"  # Keep for Archipelago
         
         # Gate of Time
