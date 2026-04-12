@@ -2796,6 +2796,19 @@ class SSHDWorld(World):
             patch_file_path = os.path.join(output_directory, patch_file_name)
             
             with zipfile.ZipFile(patch_file_path, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                # Write archipelago.json — required by the AP web host to
+                # recognise this zip as a downloadable patch file.
+                ap_manifest = {
+                    "compatible_version": 5,
+                    "version": 7,
+                    "server": "",
+                    "player": self.player,
+                    "player_name": self.player_name,
+                    "game": "Skyward Sword HD",
+                    "patch_file_ending": ".apsshd",
+                }
+                zip_file.writestr("archipelago.json", json.dumps(ap_manifest))
+
                 # Always write the manifest
                 manifest = {
                     "game": "Skyward Sword HD",
