@@ -589,6 +589,7 @@ class SSHDWorld(World):
         "lightning_skyward_strike": ("lightning_skyward_strike", "toggle", None),
         "starry_skies": ("starry_skies", "toggle", None),
         "remove_enemy_music": ("remove_enemy_music", "toggle", None),
+        "text_shuffle": ("text_shuffle", "choice", {"off": 0, "baby": 1, "crazy": 2, "extreme": 3, "european_extreme": 4, "psychopath": 5}),
         # Difficulty
         "damage_multiplier": ("damage_multiplier", "choice", {"half": 0, "1": 1, "normal": 1, "2": 2, "double": 2, "4": 3, "quadruple": 3, "ohko": 4}),
         "no_spoiler_log": ("no_spoiler_log", "toggle", None),
@@ -3417,6 +3418,8 @@ class SSHDWorld(World):
         settings_dict["lightning_skyward_strike"] = "on" if self.options.lightning_skyward_strike.value else "off"
         settings_dict["starry_skies"] = "on" if self.options.starry_skies.value else "off"
         settings_dict["remove_enemy_music"] = "on" if self.options.remove_enemy_music.value else "off"
+        text_shuffle_map = {0: "off", 1: "baby", 2: "crazy", 3: "extreme", 4: "european_extreme", 5: "psychopath"}
+        settings_dict["text_shuffle"] = text_shuffle_map.get(self.options.text_shuffle.value, "off")
         
         # Extra Starting Inventory
         settings_dict["starting_hearts"] = str(self.options.starting_hearts.value)
