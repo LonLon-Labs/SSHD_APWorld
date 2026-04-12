@@ -164,6 +164,40 @@ def find_emulator_mod_dir() -> Optional[Path]:
     return None
 
 
+def find_all_emulator_mod_dirs() -> List[Path]:
+    """
+    Find ALL existing emulator mod directories for SSHD.
+
+    Returns every emulator mod path whose parent structure exists.
+    Useful for installing to all installed emulators at once.
+    """
+    found: List[Path] = []
+    for path in get_emulator_mod_dirs():
+        parent = path.parent
+        if parent.exists():
+            found.append(path)
+    return found
+
+
+def find_mod_dir_for_emulator(emulator: str) -> Optional[Path]:
+    """
+    Find the mod directory for a specific emulator.
+
+    Returns the mod path if the emulator's directory structure exists, or None.
+    """
+    path = _mod_dir_for_emulator(emulator)
+    if path.parent.exists():
+        return path
+    return None
+
+
+def detect_installed_emulators() -> List[str]:
+    """
+    Return the names of emulators whose base data directory exists.
+    """
+    return [emu for emu in SUPPORTED_EMULATORS if get_emulator_dir(emu).exists()]
+
+
 # Keep old name as alias
 def find_ryujinx_mod_dir() -> Optional[Path]:
     return find_emulator_mod_dir()

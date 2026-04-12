@@ -96,43 +96,91 @@ def _find_extract_path() -> Path:
         return Path.home() / ".local" / "share" / "Archipelago" / "sshd_extract"
 
 
-def _find_emulator_mod_dir() -> Optional[Path]:
-    """Return the emulator LayeredFS mod path for SSHD, or None."""
+_GAME_ID = "01002da013484000"
+_ALL_EMULATORS = ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]
+
+
+def _emulator_mod_path(emulator: str) -> Optional[Path]:
+    """Return the expected mod directory path for a specific emulator, or None if base dir missing."""
+    if sys.platform == "win32":
+        base = Path(os.environ.get("APPDATA", "")) / emulator
+    elif sys.platform == "linux":
+        linux_dirs = {
+            "Ryujinx": ".config/Ryujinx",
+            "yuzu": ".local/share/yuzu",
+            "suyu": ".local/share/suyu",
+            "sudachi": ".local/share/sudachi",
+            "eden": ".local/share/eden",
+        }
+        dir_name = linux_dirs.get(emulator)
+        if dir_name is None:
+            return None
+        base = Path.home() / dir_name
+    else:  # macOS
+        base = Path.home() / "Library" / "Application Support" / emulator
+
+    if not base.exists():
+        return None
+
+    if emulator == "Ryujinx":
+        return base / "sdcard" / "atmosphere" / "contents" / _GAME_ID
+    return base / "load" / _GAME_ID
+
+
+def _detect_installed_emulators() -> list:
+    """Return list of emulator names whose base directory exists."""
     try:
-        from platform_utils import find_emulator_mod_dir
-        p = find_emulator_mod_dir()
+        from platform_utils import detect_installed_emulators
+        result = detect_installed_emulators()
+        if result:
+            return result
+    except ImportError:
+        pass
+    return [emu for emu in _ALL_EMULATORS if _emulator_mod_path(emu) is not None]
+
+
+def _find_emulator_mod_dir(emulator: Optional[str] = None) -> Optional[Path]:
+    """Return the emulator LayeredFS mod path for SSHD, or None.
+
+    If *emulator* is given, only check that specific emulator.
+    """
+    try:
+        from platform_utils import find_emulator_mod_dir, find_mod_dir_for_emulator
+        if emulator:
+            p = find_mod_dir_for_emulator(emulator)
+        else:
+            p = find_emulator_mod_dir()
         if p is not None:
             p.mkdir(parents=True, exist_ok=True)
             return p
     except ImportError:
         pass
 
-    # Manual fallback — try all supported emulators
-    game_id = "01002da013484000"
-    candidates = []
-    if sys.platform == "win32":
-        appdata = Path(os.environ.get("APPDATA", ""))
-        for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
-            candidates.append(appdata / emu / "sdcard" / "atmosphere" / "contents" / game_id)
-            candidates.append(appdata / emu / "load" / game_id)
-    elif sys.platform == "linux":
-        for emu_dir, emu_base in [(".config/Ryujinx", "sdcard/atmosphere/contents"),
-                                   (".local/share/yuzu", "load"),
-                                   (".local/share/suyu", "load"),
-                                   (".local/share/sudachi", "load"),
-                                   (".local/share/eden", "load")]:
-            candidates.append(Path.home() / emu_dir / emu_base / game_id)
-    else:
-        app_support = Path.home() / "Library" / "Application Support"
-        for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
-            candidates.append(app_support / emu / "sdcard" / "atmosphere" / "contents" / game_id)
-            candidates.append(app_support / emu / "load" / game_id)
-
-    for p in candidates:
-        if p.parent.exists():
+    # Manual fallback
+    targets = [emulator] if emulator else _ALL_EMULATORS
+    for emu in targets:
+        p = _emulator_mod_path(emu)
+        if p is not None:
             p.mkdir(parents=True, exist_ok=True)
             return p
     return None
+
+
+def _find_all_emulator_mod_dirs() -> list:
+    """Return list of Paths for all installed emulators."""
+    try:
+        from platform_utils import find_all_emulator_mod_dirs
+        result = find_all_emulator_mod_dirs()
+        if result:
+            return result
+    except ImportError:
+        pass
+    dirs = []
+    for emu in _ALL_EMULATORS:
+        p = _emulator_mod_path(emu)
+        if p is not None:
+            dirs.append(p)
+    return dirs
 
 
 # Keep old name as alias
@@ -357,26 +405,45 @@ def generate_patches(
         return None, None
 
 
-def install_to_emulator(romfs_path: Path, exefs_path: Path) -> bool:
-    """Install generated romfs/exefs to the emulator's LayeredFS mod directory."""
-    mod_dir = _find_emulator_mod_dir()
-    if mod_dir is None:
+def install_to_emulator(
+    romfs_path: Path,
+    exefs_path: Path,
+    emulator: Optional[str] = None,
+) -> bool:
+    """Install generated romfs/exefs to the emulator's LayeredFS mod directory.
+
+    Args:
+        emulator: ``"all"`` to install to every detected emulator,
+                  a specific name (e.g. ``"yuzu"``) for one emulator,
+                  or ``None`` to install to the first found.
+    """
+    if emulator == "all":
+        mod_dirs = _find_all_emulator_mod_dirs()
+    elif emulator:
+        d = _find_emulator_mod_dir(emulator)
+        mod_dirs = [d] if d else []
+    else:
+        d = _find_emulator_mod_dir()
+        mod_dirs = [d] if d else []
+
+    if not mod_dirs:
         print("[Patcher] Could not locate emulator mod directory automatically.")
         print("[Patcher] Copy the romfs/ and exefs/ folders manually to your emulator's")
         print("          mod directory (e.g. sdcard/atmosphere/contents/01002da013484000/Archipelago/)")
         return False
 
-    install_dir = mod_dir / "Archipelago"
-    print(f"[Patcher] Installing to: {install_dir}")
+    for mod_dir in mod_dirs:
+        install_dir = mod_dir / "Archipelago"
+        print(f"[Patcher] Installing to: {install_dir}")
 
-    if install_dir.exists():
-        shutil.rmtree(install_dir)
-    install_dir.mkdir(parents=True, exist_ok=True)
+        if install_dir.exists():
+            shutil.rmtree(install_dir)
+        install_dir.mkdir(parents=True, exist_ok=True)
 
-    shutil.copytree(str(romfs_path), str(install_dir / "romfs"))
-    shutil.copytree(str(exefs_path), str(install_dir / "exefs"))
+        shutil.copytree(str(romfs_path), str(install_dir / "romfs"))
+        shutil.copytree(str(exefs_path), str(install_dir / "exefs"))
 
-    print("[Patcher] Mod installed successfully!")
+    print(f"[Patcher] Mod installed to {len(mod_dirs)} emulator(s) successfully!")
     return True
 
 
@@ -563,7 +630,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
     from PyQt6.QtWidgets import (
         QApplication, QWidget, QVBoxLayout, QHBoxLayout,
         QLabel, QLineEdit, QPushButton, QTextEdit, QProgressBar,
-        QFileDialog, QFrame, QSizePolicy,
+        QFileDialog, QFrame, QSizePolicy, QComboBox,
     )
     from PyQt6.QtGui import QFont, QTextCursor, QColor, QPalette, QIcon
 
@@ -573,10 +640,11 @@ def _run_gui(initial_patch_file: Optional[str] = None):
         info = pyqtSignal(str, str)  # text, color
         finished_signal = pyqtSignal()
 
-        def __init__(self, patch_path: Path, extract_path: Path):
+        def __init__(self, patch_path: Path, extract_path: Path, emulator: str = "all"):
             super().__init__()
             self._patch_path = patch_path
             self._extract_path = extract_path
+            self._emulator = emulator
 
         def run(self):
             try:
@@ -596,26 +664,33 @@ def _run_gui(initial_patch_file: Optional[str] = None):
                     self.log.emit("Installing existing patches...")
                     self.progress.emit(50)
 
-                    mod_dir = _find_emulator_mod_dir()
-                    if mod_dir is None:
+                    if self._emulator == "all":
+                        mod_dirs = _find_all_emulator_mod_dirs()
+                    else:
+                        d = _find_emulator_mod_dir(self._emulator)
+                        mod_dirs = [d] if d else []
+
+                    if not mod_dirs:
                         self.info.emit("Emulator mod directory not found", "#ff7700")
                         self.log.emit("\nCould not locate emulator mod directory.")
                         self.log.emit("Extract romfs/ and exefs/ from the .apsshd manually.")
                         return
 
-                    install_dir = mod_dir / "Archipelago"
-                    self.log.emit(f"Installing to: {install_dir}")
-                    if install_dir.exists():
-                        shutil.rmtree(install_dir)
-                    install_dir.mkdir(parents=True, exist_ok=True)
+                    for mod_dir in mod_dirs:
+                        mod_dir.mkdir(parents=True, exist_ok=True)
+                        install_dir = mod_dir / "Archipelago"
+                        self.log.emit(f"Installing to: {install_dir}")
+                        if install_dir.exists():
+                            shutil.rmtree(install_dir)
+                        install_dir.mkdir(parents=True, exist_ok=True)
 
-                    with zipfile.ZipFile(self._patch_path, "r") as zf:
-                        for name in zf.namelist():
-                            if name.startswith("romfs/") or name.startswith("exefs/"):
-                                target = install_dir / name
-                                target.parent.mkdir(parents=True, exist_ok=True)
-                                with zf.open(name) as src, open(target, "wb") as dst:
-                                    dst.write(src.read())
+                        with zipfile.ZipFile(self._patch_path, "r") as zf:
+                            for name in zf.namelist():
+                                if name.startswith("romfs/") or name.startswith("exefs/"):
+                                    target = install_dir / name
+                                    target.parent.mkdir(parents=True, exist_ok=True)
+                                    with zf.open(name) as src, open(target, "wb") as dst:
+                                        dst.write(src.read())
 
                     self.progress.emit(100)
                     self.info.emit("Installed successfully!", "#00ff7f")
@@ -657,7 +732,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
 
                     self.progress.emit(85)
                     self.log.emit("\nInstalling to emulator...")
-                    success = install_to_emulator(romfs_path, exefs_path)
+                    success = install_to_emulator(romfs_path, exefs_path, self._emulator)
 
                     self.progress.emit(100)
                     if success:
@@ -749,6 +824,21 @@ def _run_gui(initial_patch_file: Optional[str] = None):
             browse_ext.clicked.connect(self._browse_extract)
             row2.addWidget(browse_ext)
             layout.addLayout(row2)
+
+            layout.addSpacing(8)
+
+            # ── Emulator selection row ────────────────────────
+            row3 = QHBoxLayout()
+            row3.setSpacing(8)
+            lbl3 = QLabel("Install to:")
+            lbl3.setProperty("class", "FieldLabel")
+            row3.addWidget(lbl3)
+            self.emulator_combo = QComboBox()
+            self.emulator_combo.addItem("All Installed Emulators", "all")
+            for emu in _detect_installed_emulators():
+                self.emulator_combo.addItem(emu, emu)
+            row3.addWidget(self.emulator_combo, stretch=1)
+            layout.addLayout(row3)
 
             layout.addSpacing(12)
 
@@ -879,7 +969,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
             self.progress.setValue(0)
             self._set_info("Patching...", "#6d8be8")
 
-            self._worker = PatchWorker(Path(patch_path), Path(extract_path))
+            self._worker = PatchWorker(Path(patch_path), Path(extract_path), self.emulator_combo.currentData())
             self._worker.log.connect(self._append_log)
             self._worker.progress.connect(self.progress.setValue)
             self._worker.info.connect(self._set_info)

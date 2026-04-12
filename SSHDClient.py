@@ -3896,14 +3896,15 @@ def install_patch(patch_file_path: str) -> tuple[bool, dict]:
                     print(f"You may need to apply the base randomizer mod manually.")
                 return False, {}
             
-            # Find emulator mod directory for LayeredFS mods
+            # Find ALL emulator mod directories and install to each
+            emulator_mod_dirs = []
             try:
-                from platform_utils import find_emulator_mod_dir
-                emulator_mod_dir = find_emulator_mod_dir()
+                from platform_utils import find_all_emulator_mod_dirs
+                emulator_mod_dirs = find_all_emulator_mod_dirs()
             except ImportError:
-                emulator_mod_dir = None
+                pass
 
-            if emulator_mod_dir is None:
+            if not emulator_mod_dirs:
                 # Fallback: try common paths for all supported emulators
                 game_id = "01002da013484000"
                 fallback_paths = []
@@ -3927,37 +3928,34 @@ def install_patch(patch_file_path: str) -> tuple[bool, dict]:
 
                 for path in fallback_paths:
                     if path.parent.exists():
-                        emulator_mod_dir = path
-                        emulator_mod_dir.mkdir(parents=True, exist_ok=True)
-                        break
+                        emulator_mod_dirs.append(path)
             
-            if emulator_mod_dir:
-                print(f"\nFound emulator mod directory: {emulator_mod_dir}")
+            if emulator_mod_dirs:
+                print(f"\nFound {len(emulator_mod_dirs)} emulator mod director{'y' if len(emulator_mod_dirs) == 1 else 'ies'}:")
                 
-                # Install to Archipelago folder (LayeredFS will merge with game files)
-                mod_install_dir = emulator_mod_dir / "Archipelago"
+                for emulator_mod_dir in emulator_mod_dirs:
+                    emulator_mod_dir.mkdir(parents=True, exist_ok=True)
+                    mod_install_dir = emulator_mod_dir / "Archipelago"
+                    
+                    print(f"  Installing to: {mod_install_dir}")
+                    
+                    # Remove existing mod if present
+                    if mod_install_dir.exists():
+                        shutil.rmtree(mod_install_dir)
+                    
+                    # Extract romfs and exefs
+                    mod_install_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    for file_name in file_list:
+                        if file_name.startswith('romfs/') or file_name.startswith('exefs/'):
+                            target_path = mod_install_dir / file_name
+                            target_path.parent.mkdir(parents=True, exist_ok=True)
+                            
+                            with zip_file.open(file_name) as source:
+                                with open(target_path, 'wb') as target:
+                                    target.write(source.read())
                 
-                print(f"Installing to: {mod_install_dir}")
-                
-                # Remove existing mod if present
-                if mod_install_dir.exists():
-                    print(f"  Removing existing mod...")
-                    shutil.rmtree(mod_install_dir)
-                
-                # Extract romfs and exefs
-                mod_install_dir.mkdir(parents=True, exist_ok=True)
-                
-                for file_name in file_list:
-                    if file_name.startswith('romfs/') or file_name.startswith('exefs/'):
-                        # Extract to mod directory
-                        target_path = mod_install_dir / file_name
-                        target_path.parent.mkdir(parents=True, exist_ok=True)
-                        
-                        with zip_file.open(file_name) as source:
-                            with open(target_path, 'wb') as target:
-                                target.write(source.read())
-                
-                print(f"\n✓ Patch installed successfully!")
+                print(f"\n✓ Patch installed to {len(emulator_mod_dirs)} emulator(s)!")
                 print(f"\nNext steps:")
                 print(f"  1. Launch Skyward Sword HD in your emulator")
                 print(f"  2. The LayeredFS mod will be automatically applied")
