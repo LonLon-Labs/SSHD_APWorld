@@ -118,7 +118,7 @@ def build_client_exe():
 
     # SSHD world modules the client imports
     sshd_files = [
-        "LocationFlags.py", "Locations.py", "Items.py", "Hints.py",
+        "Locations.py", "Items.py", "Hints.py",
         "TrackerBridge.py", "ItemSystemIntegration.py", "SSHD_Options.py",
         "platform_utils.py", "archipelago.json",
     ]

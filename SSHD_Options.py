@@ -114,9 +114,24 @@ class Imp2Skip(DefaultOnToggle):
     display_name = "Imp 2 Skip"
 
 
+class Goal(Choice):
+    """
+    Determines what the victory condition is for completing the game.
+    Defeat Demise: Beat the Horde, Ghirahim 3, and Demise (full endgame).
+    Defeat Ghirahim 3: Beat the Horde and Ghirahim 3 (Demise fight is skipped).
+    Defeat Horde: Beat the Horde (Ghirahim 3 and Demise are skipped).
+    """
+    display_name = "Goal"
+    option_defeat_demise = 0
+    option_defeat_ghirahim3 = 1
+    option_defeat_horde = 2
+    default = 0
+
+
 class SkipHorde(Toggle):
     """
     If enabled, the requirement to defeat The Horde at the end is skipped.
+    Note: This is ignored when Goal is set to Defeat Horde (the horde fight is always required).
     """
     display_name = "Skip Horde"
 
@@ -124,6 +139,7 @@ class SkipHorde(Toggle):
 class SkipGhirahim3(Toggle):
     """
     If enabled, the requirement to defeat Ghirahim 3 at the end is skipped.
+    Note: This is ignored when Goal is set to Defeat Ghirahim 3 or Defeat Horde.
     """
     display_name = "Skip Ghirahim 3"
 
@@ -359,11 +375,18 @@ class PeatriceConversations(Range):
 
 # === Quality of Life ===
 
-class OpenLakeFloriaGate(DefaultOnToggle):
+class OpenLakeFloriaGate(Choice):
     """
-    If enabled, the gate to Lake Floria is open from the start.
+    Controls the Lake Floria gate.
+    Vanilla: You must climb the Great Tree, talk to Yerbal, and open the gates with the Goddess Sword.
+    Yerbal: You must climb the Great Tree and talk to Yerbal to enter Lake Floria.
+    Open: The Lake Floria gates are open from the start.
     """
     display_name = "Open Lake Floria Gate"
+    option_vanilla = 0
+    option_yerbal = 1
+    option_open = 2
+    default = 2
 
 
 class OpenThunderhead(DefaultOnToggle):
@@ -373,18 +396,32 @@ class OpenThunderhead(DefaultOnToggle):
     display_name = "Open Thunderhead"
 
 
-class OpenEarthTemple(Toggle):
+class OpenEarthTemple(Choice):
     """
-    If enabled, the Earth Temple is open from the start.
+    Controls the Earth Temple door.
+    Open: The Earth Temple door is open from the start.
+    Shuffle Eldin: Collect all Earth Temple Key Pieces, shuffled within the Eldin Volcano region.
+    Shuffle Anywhere: Collect all Earth Temple Key Pieces, shuffled anywhere.
     """
     display_name = "Open Earth Temple"
+    option_open = 0
+    option_shuffle_eldin = 1
+    option_shuffle_anywhere = 2
+    default = 0
 
 
-class OpenLmf(Toggle):
+class OpenLmf(Choice):
     """
-    If enabled, the Lanayru Mining Facility is open from the start.
+    Controls the Lanayru Mining Facility.
+    Nodes: You must activate each of the 3 nodes and the main node to raise the facility.
+    Main Node: You must activate the main node to raise the facility.
+    Open: The Lanayru Mining Facility is raised from the start.
     """
     display_name = "Open Lanayru Mining Facility"
+    option_nodes = 0
+    option_main_node = 1
+    option_open = 2
+    default = 2
 
 
 class OpenBatraeuxShed(Toggle):
@@ -656,11 +693,16 @@ class ChestTypeMatchesContents(Choice):
     default = 2
 
 
-class RandomTrialObjectPositions(Toggle):
+class RandomTrialObjectPositions(Choice):
     """
-    If enabled, object positions in Silent Realm trials will be randomized.
+    Controls whether and how object positions in Silent Realm trials are randomized.
     """
     display_name = "Random Trial Object Positions"
+    option_none = 0
+    option_simple = 1
+    option_advanced = 2
+    option_full = 3
+    default = 0
 
 
 class UpgradedSkywardStrike(DefaultOnToggle):
@@ -1499,6 +1541,7 @@ class SSHDOptions(PerGameCommonOptions):
     gate_of_time_sword_requirement: GateOfTimeSwordRequirement
     gate_of_time_dungeon_requirements: GateOfTimeDungeonRequirements
     imp2_skip: Imp2Skip
+    goal: Goal
     skip_horde: SkipHorde
     skip_ghirahim3: SkipGhirahim3
     

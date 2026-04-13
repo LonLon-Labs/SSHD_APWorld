@@ -479,7 +479,7 @@ class SSHDWorld(World):
         "full_wallet_upgrades": ("full_wallet_upgrades", "toggle", None),
         "chest_type_matches_contents": ("chest_type_matches_contents", "choice", {"off": 0, "only_dungeon_items": 1, "all_contents": 2}),
         "small_keys_in_fancy_chests": ("small_keys_in_fancy_chests", "toggle", None),
-        "random_trial_object_positions": ("random_trial_object_positions", "toggle", None),
+        "random_trial_object_positions": ("random_trial_object_positions", "choice", {"none": 0, "simple": 1, "advanced": 2, "full": 3}),
         "upgraded_skyward_strike": ("upgraded_skyward_strike", "toggle", None),
         "faster_air_meter_depletion": ("faster_air_meter_depletion", "toggle", None),
         "unlock_all_groosenator_destinations": ("unlock_all_groosenator_destinations", "toggle", None),
@@ -489,10 +489,10 @@ class SSHDWorld(World):
         "empty_unrequired_dungeons": ("empty_unrequired_dungeons", "toggle", None),
         "lanayru_caves_keys": ("lanayru_caves_keys", "choice", {"vanilla": 0, "overworld": 1, "anywhere": 2, "removed": 3}),
         # QoL - Open Locations (some use "open" instead of "on")
-        "open_lake_floria": ("open_lake_floria", "toggle_custom", {"vanilla": 0, "yerbal": 1, "open": 1}),
+        "open_lake_floria": ("open_lake_floria", "choice", {"vanilla": 0, "yerbal": 1, "open": 2}),
         "open_thunderhead": ("open_thunderhead", "toggle", None),
-        "open_earth_temple": ("open_earth_temple", "toggle_custom", {"open": 1, "shuffle_eldin": 0, "shuffle_anywhere": 0}),
-        "open_lmf": ("open_lmf", "toggle_custom", {"nodes": 0, "main_node": 0, "open": 1}),
+        "open_earth_temple": ("open_earth_temple", "choice", {"open": 0, "shuffle_eldin": 1, "shuffle_anywhere": 2}),
+        "open_lmf": ("open_lmf", "choice", {"nodes": 0, "main_node": 1, "open": 2}),
         "open_batreaux_shed": ("open_batreaux_shed", "toggle", None),
         "skip_skykeep_door_cutscene": ("skip_skykeep_door_cutscene", "toggle", None),
         "skip_harp_playing": ("skip_harp_playing", "toggle", None),
@@ -907,13 +907,13 @@ class SSHDWorld(World):
         # They have no in-game model and must never be in the AP pool.
         excluded.add("Goddess Cube")
 
-        # "Game Beatable" is the Demise victory pseudo-location.  It must NOT
+        # "Game Beatable" is the victory pseudo-location.  It must NOT
         # exist as a real AP location (with an int address) because:
         #   1. The sshd-rando patcher has no actor to patch for this event.
-        #   2. Placing a fill item there crashes the game during the Demise
-        #      defeat cutscene.
+        #   2. Placing a fill item there crashes the game during the
+        #      end-game cutscene.
         # Victory is handled via the "Victory - Game Beatable" event (address=None)
-        # and the client detects the defeat via story flag 959.
+        # and the client detects the goal via stage transitions / story flags.
         excluded.add("Game Beatable")
 
         return excluded
@@ -992,8 +992,15 @@ class SSHDWorld(World):
         try:
             from BaseClasses import Item as APItem, ItemClassification
             
-            # Find the Temple of Hylia region (where Defeat Demise is)
-            target_region = regions_dict.get("Temple of Hylia") or regions_dict.get("Hylia's Realm")
+            # Place the victory event in the region that matches the goal.
+            goal_value = self.options.goal.value
+            if goal_value == 0:  # defeat_demise
+                target_region = regions_dict.get("Temple of Hylia") or regions_dict.get("Hylia's Realm")
+            elif goal_value == 1:  # defeat_ghirahim3
+                target_region = regions_dict.get("Hylia's Realm") or regions_dict.get("Temple of Hylia")
+            else:  # defeat_horde (2)
+                target_region = regions_dict.get("Hylia's Realm") or regions_dict.get("Temple of Hylia")
+            
             if target_region:
                 event_location = Location(
                     self.player,
@@ -1595,19 +1602,61 @@ class SSHDWorld(World):
                     if starting_count == 0:
                         item_pool.append(self.create_item(name))
         
-        # Fill remaining slots with junk filler items
-        JUNK_FILL_ITEMS = [
-            "Blue Rupee", "Red Rupee",
-            "10 Arrows", "5 Bombs", "10 Bombs",
-            "5 Deku Seeds", "10 Deku Seeds",
+        # Fill remaining slots with weighted junk filler items.
+        # Rupees are the most common filler, with bugs and materials mixed in.
+        # NOTE: Bugs and materials must NOT be placed in chests (causes crash).
+        # Placement restrictions are enforced in set_rules() via item_rule.
+        JUNK_FILL_WEIGHTS = [
+            # Rupees — high weight for variety
+            # Green Rupee excluded: capped at 1 in the main pool above
+            ("Blue Rupee", 15),
+            ("Red Rupee", 15),
+            ("Silver Rupee", 8),
+            ("Gold Rupee", 3),
+            # Ammo
+            ("10 Arrows", 3),
+            ("5 Bombs", 3),
+            ("10 Bombs", 2),
+            ("5 Deku Seeds", 2),
+            ("10 Deku Seeds", 2),
+            # Bugs
+            ("Faron Grasshopper", 1),
+            ("Woodland Rhino Beetle", 1),
+            ("Deku Hornet", 1),
+            ("Skyloft Mantis", 1),
+            ("Volcanic Ladybug", 1),
+            ("Blessed Butterfly", 1),
+            ("Lanayru Ant", 1),
+            ("Sand Cicada", 1),
+            ("Gerudo Dragonfly", 1),
+            ("Eldin Roller", 1),
+            ("Sky Stag Beetle", 1),
+            ("Starry Firefly", 1),
+            # Materials
+            ("Hornet Larvae", 1),
+            ("Bird Feather", 1),
+            ("Tumbleweed", 1),
+            ("Lizard Tail", 1),
+            ("Eldin Ore", 1),
+            ("Ancient Flower", 1),
+            ("Amber Relic", 1),
+            ("Dusk Relic", 1),
+            ("Jelly Blob", 1),
+            ("Monster Claw", 1),
+            ("Monster Horn", 1),
+            ("Ornamental Skull", 1),
+            ("Evil Crystal", 1),
+            ("Blue Bird Feather", 1),
+            ("Golden Skull", 1),
+            ("Goddess Plume", 1),
         ]
-        junk_items = [name for name in JUNK_FILL_ITEMS if name in ITEM_TABLE]
+        junk_items = [(name, w) for name, w in JUNK_FILL_WEIGHTS if name in ITEM_TABLE]
+        junk_names = [name for name, _ in junk_items]
+        junk_weights = [w for _, w in junk_items]
         
-        junk_idx = 0
         while len(item_pool) < total_locations:
-            junk_name = junk_items[junk_idx % len(junk_items)]
+            junk_name = self.random.choices(junk_names, weights=junk_weights, k=1)[0]
             item_pool.append(self.create_item(junk_name))
-            junk_idx += 1
         
         # If we have more items than locations (can happen when items from
         # excluded locations are recovered into the pool), trim non-progression first
@@ -2390,6 +2439,41 @@ class SSHDWorld(World):
                 print(f"[__init__.py] Applied Beedle restrictions ({mode_name}): "
                       f"{beedle_count} locations — own-player items only"
                       + (", junk/filler only" if beedle_shop_val == 1 else ""))
+        
+        # ── Bug/Material chest restriction ──────────────────────────────────
+        # Bugs and materials crash the game when placed in chests.
+        # Restrict them to non-chest locations only (freestanding, closets,
+        # other players' games, etc.).
+        CHEST_UNSAFE_ITEMS: set[str] = {
+            # Bugs
+            "Faron Grasshopper", "Woodland Rhino Beetle", "Deku Hornet",
+            "Skyloft Mantis", "Volcanic Ladybug", "Blessed Butterfly",
+            "Lanayru Ant", "Sand Cicada", "Gerudo Dragonfly",
+            "Eldin Roller", "Sky Stag Beetle", "Starry Firefly",
+            # Materials
+            "Hornet Larvae", "Bird Feather", "Tumbleweed", "Lizard Tail",
+            "Eldin Ore", "Ancient Flower", "Amber Relic", "Dusk Relic",
+            "Jelly Blob", "Monster Claw", "Monster Horn", "Ornamental Skull",
+            "Evil Crystal", "Blue Bird Feather", "Golden Skull", "Goddess Plume",
+        }
+        chest_restricted_count = 0
+        for region in self.multiworld.regions:
+            if region.player != self.player:
+                continue
+            for location in region.locations:
+                loc_data = LOCATION_TABLE.get(location.name)
+                if not loc_data:
+                    continue
+                if "Chests" in loc_data.types or "Goddess Chests" in loc_data.types:
+                    # Combine with any existing item_rule
+                    existing_rule = location.item_rule
+                    location.item_rule = lambda item, _er=existing_rule, _unsafe=CHEST_UNSAFE_ITEMS: (
+                        _er(item) and item.name not in _unsafe
+                    )
+                    chest_restricted_count += 1
+        if chest_restricted_count:
+            print(f"[__init__.py] Applied bug/material chest restrictions: "
+                  f"{chest_restricted_count} chest locations blocked")
     
     def post_fill(self) -> None:
         """
@@ -2719,6 +2803,19 @@ class SSHDWorld(World):
             patch_file_path = os.path.join(output_directory, patch_file_name)
             
             with zipfile.ZipFile(patch_file_path, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                # Write archipelago.json — required by the AP web host to
+                # recognise this zip as a downloadable patch file.
+                ap_manifest = {
+                    "compatible_version": 5,
+                    "version": 7,
+                    "server": "",
+                    "player": self.player,
+                    "player_name": self.player_name,
+                    "game": "Skyward Sword HD",
+                    "patch_file_ending": ".apsshd",
+                }
+                zip_file.writestr("archipelago.json", json.dumps(ap_manifest))
+
                 # Always write the manifest
                 manifest = {
                     "game": "Skyward Sword HD",
@@ -3086,8 +3183,21 @@ class SSHDWorld(World):
             # These must be set regardless of what's in config.yaml
             print("[__init__.py] Applying Archipelago-required setting overrides...")
             
-            # Demise must be enabled for Archipelago (it's the goal)
-            settings_dict["skip_demise"] = "off"
+            # Set skip_demise / skip_g3 / skip_horde based on the goal option.
+            # The goal determines which endgame bosses must be fought; the rest
+            # are skipped so the game transitions directly to the ending.
+            goal_value = self.options.goal.value
+            if goal_value == 0:  # defeat_demise — full endgame
+                settings_dict["skip_demise"] = "off"
+                # skip_horde and skip_g3 stay as-is from config (user can still skip them)
+            elif goal_value == 1:  # defeat_ghirahim3 — skip Demise, force Horde + G3 on
+                settings_dict["skip_demise"] = "on"
+                settings_dict["skip_g3"] = "off"
+                # skip_horde stays as-is (user can still skip it — goal only requires G3)
+            else:  # defeat_horde (2) — skip Demise + G3, force Horde on
+                settings_dict["skip_demise"] = "on"
+                settings_dict["skip_g3"] = "on"
+                settings_dict["skip_horde"] = "off"
             
             # Hints are disabled - Archipelago uses its own hint system
             settings_dict["path_hints"] = "0"
@@ -3128,7 +3238,7 @@ class SSHDWorld(World):
             _hearts_val = settings_dict.get("starting_hearts", "NOT SET")
             print(f"[__init__.py] Config.yaml starting settings: tablets={_tablet_val!r}, sword={_sword_val!r}, hearts={_hearts_val!r}")
             
-            print("[__init__.py] Applied overrides: skip_demise=off, all hints disabled, spawn_hearts=on, progressive_items=on")
+            print("[__init__.py] Applied overrides: goal-based skip settings, all hints disabled, spawn_hearts=on, progressive_items=on")
             
             # AP-only settings that don't exist in config.yaml — always read from AP options
             item_model_map = {0: "letter", 1: "archipelago_logo", 2: "unofficial_archipelago_logo"}
@@ -3149,9 +3259,21 @@ class SSHDWorld(World):
         
         # Completion Requirements
         settings_dict["required_dungeons"] = str(self.options.required_dungeon_count.value)
-        settings_dict["skip_horde"] = "on" if self.options.skip_horde.value else "off"
-        settings_dict["skip_g3"] = "on" if self.options.skip_ghirahim3.value else "off"
-        settings_dict["skip_demise"] = "off"  # Keep for Archipelago
+        
+        # Set skip settings based on goal (same logic as the config.yaml path above)
+        goal_value = self.options.goal.value
+        if goal_value == 0:  # defeat_demise
+            settings_dict["skip_demise"] = "off"
+            settings_dict["skip_horde"] = "on" if self.options.skip_horde.value else "off"
+            settings_dict["skip_g3"] = "on" if self.options.skip_ghirahim3.value else "off"
+        elif goal_value == 1:  # defeat_ghirahim3
+            settings_dict["skip_demise"] = "on"
+            settings_dict["skip_g3"] = "off"
+            settings_dict["skip_horde"] = "on" if self.options.skip_horde.value else "off"
+        else:  # defeat_horde (2)
+            settings_dict["skip_demise"] = "on"
+            settings_dict["skip_g3"] = "on"
+            settings_dict["skip_horde"] = "off"
         
         # Gate of Time
         got_sword_map = {
@@ -3239,7 +3361,8 @@ class SSHDWorld(World):
         settings_dict["chest_type_matches_contents"] = chest_type_map[self.options.chest_type_matches_contents.value]
         
         settings_dict["small_keys_in_fancy_chests"] = "on" if self.options.small_keys_in_fancy_chests.value else "off"
-        settings_dict["random_trial_object_positions"] = "on" if self.options.random_trial_object_positions.value else "off"
+        trial_obj_map = {0: "none", 1: "simple", 2: "advanced", 3: "full"}
+        settings_dict["random_trial_object_positions"] = trial_obj_map[self.options.random_trial_object_positions.value]
         settings_dict["upgraded_skyward_strike"] = "on" if self.options.upgraded_skyward_strike.value else "off"
         settings_dict["faster_air_meter_depletion"] = "on" if self.options.faster_air_meter_depletion.value else "off"
         settings_dict["unlock_all_groosenator_destinations"] = "on" if self.options.unlock_all_groosenator_destinations.value else "off"

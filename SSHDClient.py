@@ -76,25 +76,6 @@ except ImportError as e:
     input("Press Enter to exit...")
     sys.exit(1)
 
-try:
-    from .LocationFlags import LOCATION_FLAG_MAP, FLAG_STORY, FLAG_SCENE, FLAG_SPECIAL
-    print(f"[Import] Successfully imported LocationFlags from package (.LocationFlags)")
-    print(f"[Import] LOCATION_FLAG_MAP has {len(LOCATION_FLAG_MAP)} entries")
-except ImportError as e:
-    print(f"[Import] Failed to import .LocationFlags: {e}")
-    # Fallback if running as standalone
-    try:
-        from LocationFlags import LOCATION_FLAG_MAP, FLAG_STORY, FLAG_SCENE, FLAG_SPECIAL
-        print(f"[Import] Successfully imported LocationFlags from standalone (LocationFlags)")
-        print(f"[Import] LOCATION_FLAG_MAP has {len(LOCATION_FLAG_MAP)} entries")
-    except ImportError as e2:
-        print(f"[Import] Failed to import LocationFlags: {e2}")
-        print(f"[Import] LOCATION_FLAG_MAP will be empty - location checking DISABLED")
-        LOCATION_FLAG_MAP = {}
-        FLAG_STORY = "STORY"
-        FLAG_SCENE = "SCENE"
-        FLAG_SPECIAL = "SPECIAL"
-
 # Import tracker bridge
 try:
     from .TrackerBridge import TrackerBridge
@@ -427,31 +408,6 @@ def _stage_to_region(stage: str) -> Optional[str]:
     return None
 
 # Scene name to scene flag base address mapping (base-relative offsets for SSHD)
-# These are the offsets from base_address where scene flags are stored
-# Scene flags are organized by scene in the static scene flag array
-SCENE_FLAG_ADDRESSES = {
-    "Skyloft": 0x182DF00,              # Skyloft scene flags (base-relative)
-    "Sky": 0x182DF10,                  # Sky scene flags
-    "Sealed Grounds": 0x182DF20,       # Sealed Grounds
-    "Faron Woods": 0x182DF30,          # Faron Woods
-    "Lake Floria": 0x182DF40,          # Lake Floria
-    "Skyview": 0x182DF50,              # Skyview Temple
-    "Eldin Volcano": 0x182DF60,        # Eldin Volcano
-    "Earth Temple": 0x182DF70,         # Earth Temple
-    "Lanayru Desert": 0x182DF80,       # Lanayru Desert
-    "Lanayru Mining Facility": 0x182DF90,  # Lanayru Mining Facility
-    "Ancient Cistern": 0x182DFA0,      # Ancient Cistern
-    "Sandship": 0x182DFB0,             # Sandship
-    "Fire Sanctuary": 0x182DFC0,       # Fire Sanctuary
-    "Sky Keep": 0x182DFD0,             # Sky Keep
-}
-
-# Story flags base address (base-relative)
-STORY_FLAGS_BASE = OFFSET_STORY_FLAGS_STATIC
-
-# Scene flags base address (base-relative)
-SCENE_FLAGS_BASE = OFFSET_SCENE_FLAGS_STATIC
-
 # Stage name mapping (internal codes to friendly names)
 STAGE_NAMES = {
     "F000": "Skyloft",
@@ -689,6 +645,21 @@ class RyujinxMemoryReader:
             
             if result:
                 logger.debug(f"Scan successful - base address: 0x{self.base_address:X}")
+                try:
+                    import struct as _struct  # noqa
+                    # EQUIPPED_SWORD is at base+0x1671c6c (confirmed across multiple sessions)
+                    eqsw_addr = self.base_address + 0x1671c6c
+                    self._eqsw_addr = self.base_address + 0x1675c6c  # keep old monitoring addr too
+
+                    # Read current EQUIPPED_SWORD to log it (6 = no sword, 0 = Practice Sword)
+                    try:
+                        raw = self.pm.read_bytes(eqsw_addr, 1)
+                        eqsw_val = raw[0] if raw else '?'
+                        logger.debug(f"[EQSW] EQUIPPED_SWORD at startup = {eqsw_val} (addr 0x{eqsw_addr:x})")
+                    except Exception as re:
+                        logger.info(f"[EQSW] read failed: {re}")
+                except Exception as e:
+                    logger.info(f"[EQSW] setup failed: {e}")
             else:
                 logger.error("Scan failed - signature not found")
             
@@ -1339,6 +1310,9 @@ class SSHDContext(CommonContext):
         self.item_queue: list = []  # Items waiting to be given
         self.location_to_item: Dict[str, Dict] = {}  # Maps location names to item info from patch
         self.item_to_location: Dict[int, int] = {}  # Maps item code -> location code for tracking
+        self.location_to_item_map: Dict[int, Any] = {}  # location_code -> item info from slot_data
+        self.sword_location_codes: Set[int] = set()  # location codes containing our own Progressive Sword
+        self.beetle_location_codes: Set[int] = set()  # location codes containing our own Progressive Beetle
         self.slot_data: dict = {}  # Slot data from server containing location-to-item mapping
         
         # Debug: Verify tags are set correctly
@@ -1389,7 +1363,11 @@ class SSHDContext(CommonContext):
         self.last_stage: Optional[str] = None
         self.last_hearts: Optional[int] = None
         self.last_death_link: float = 0.0   # For DeathLink echo prevention
-        self.delivered_item_count: int = 0  # Items actually given (persisted across restarts)
+        self.delivered_item_count: int = 0  # Items marked "Safe" (persisted in game save via AP DataStorage)
+        self._unsafe_items_count: int = 0  # Items marked "Unsafe" (in game memory, waiting for autosave)
+        self._datastorage_loaded: bool = False  # True once DataStorage delivery index is restored
+        self._pending_received_items: list = []  # Buffer ReceivedItems until DataStorage loads
+        self._skip_sword_sync: bool = False  # True while unsafe items are being re-delivered
         self.connection_time: float = 0.0   # When we connected (to avoid false death on startup)
         self.slot_options: Dict[str, Any] = {}  # Player options from slot data
         self.killed_by_deathlink: bool = False  # Flag to prevent sending death when killed by death link
@@ -1402,7 +1380,6 @@ class SSHDContext(CommonContext):
         self._scene_transition_cooldown_until: float = 0.0
         self._SCENE_TRANSITION_COOLDOWN_SECS: float = 4.0
         self._last_next_stage: Optional[str] = None  # For early transition detection via NEXT_STAGE
-        self._progressive_flags_dirty: bool = False  # Set True on scene transition; triggers flag re-apply
         
         # BreathLink state tracking
         self.last_breath_link: float = 0.0      # For BreathLink echo prevention
@@ -1447,6 +1424,16 @@ class SSHDContext(CommonContext):
         self._bird_statue_enforcement_log: Set[str] = set()  # avoid log spam
         self._visited_regions: Set[str] = set()  # regions where entry statue was auto-enabled
         
+        # Goal completion flag — once the goal is met and CLIENT_GOAL
+        # is sent, ALL memory writes are suppressed.  The post-boss
+        # cutscene and credits tear down gameplay structures (player,
+        # room manager, flag manager, etc.); any write to those offsets
+        # during that window can corrupt game state and trigger a PANIC.
+        self.goal_completed: bool = False
+        
+        # Goal type from slot_data (0=defeat_demise, 1=defeat_ghirahim3, 2=defeat_horde)
+        self.goal_type: int = 0
+
         # Tracker bridge for autotracking
         self.tracker_bridge = TrackerBridge() if TrackerBridge else None
         if self.tracker_bridge:
@@ -1575,43 +1562,107 @@ class SSHDContext(CommonContext):
     async def connection_closed(self):
         """Handle disconnection from server."""
         await super().connection_closed()
+        self._datastorage_loaded = False
+        self.delivered_item_count = 0
         logger.info("Connection to Archipelago server closed")
 
-    # Progress persistence (prevents re-giving items on client restart)
-    def _get_save_file(self) -> str:
-        import os
-        return os.path.join(os.path.expanduser("~"), "sshd_ap_progress.json")
+    def _get_datastorage_key(self) -> str | None:
+        """Get the DataStorage key for persisting the delivery index."""
+        if not self.auth:
+            return None
+        seed = self.seed_name or "default"
+        return f"sshd_{seed}_{self.auth}_delivery_index"
 
-    def load_progress(self):
-        """Load persisted item delivery count for the current slot."""
-        import json, os
-        save_file = self._get_save_file()
-        try:
-            if os.path.exists(save_file) and self.auth:
-                with open(save_file, "r") as f:
-                    data = json.load(f)
-                count = data.get(self.auth, 0)
-                if count > self.delivered_item_count:
-                    self.delivered_item_count = count
-                    logger.info(f"[Progress] Restored delivery count: {self.delivered_item_count} items already given for {self.auth}")
-        except Exception as e:
-            logger.debug(f"[Progress] Could not load progress file: {e}")
+    def _persist_delivery_index(self):
+        """Persist delivered_item_count to AP DataStorage (fire-and-forget)."""
+        ds_key = self._get_datastorage_key()
+        if not ds_key:
+            return
+        asyncio.create_task(self.send_msgs([{
+            "cmd": "Set",
+            "key": ds_key,
+            "default": 0,
+            "want_reply": False,
+            "operations": [{"operation": "replace", "value": self.delivered_item_count}]
+        }]))
 
-    def save_progress(self):
-        """Persist item delivery count so restarts don't re-give items."""
-        import json, os
-        save_file = self._get_save_file()
-        try:
-            existing: dict = {}
-            if os.path.exists(save_file):
-                with open(save_file, "r") as f:
-                    existing = json.load(f)
-            if self.auth:
-                existing[self.auth] = self.delivered_item_count
-            with open(save_file, "w") as f:
-                json.dump(existing, f)
-        except Exception as e:
-            logger.debug(f"[Progress] Could not save progress: {e}")
+    async def _datastorage_timeout_guard(self):
+        """Unblock item processing if Retrieved never arrives (e.g. old server)."""
+        await asyncio.sleep(5.0)
+        if not self._datastorage_loaded:
+            logger.warning("[DataStorage] Retrieved not received within 5s; proceeding with count=0")
+            self._datastorage_loaded = True
+            for pending_args in self._pending_received_items:
+                self._process_received_items(pending_args)
+            self._pending_received_items.clear()
+
+    def _process_received_items(self, args: dict):
+        """Process a ReceivedItems packet — extract and queue items from server."""
+        # Received items from other players
+        start_index = args.get("index", 0)
+        items_list = args.get("items", [])
+
+        # When the server sends a full resync (start_index == 0), reset
+        # progressive counters so they are rebuilt from the authoritative
+        # item list.  This prevents stale counters from a previous
+        # connection from causing wrong tier resolution.
+        if start_index == 0:
+            for key in self.progressive_counts:
+                self.progressive_counts[key] = 0
+
+        for i, network_item in enumerate(items_list):
+            item_global_index = start_index + i
+
+            # Skip items already delivered in a previous session (safe items only; unsafe items must be re-delivered),
+            # but still rebuild progressive counters so the next progressive item resolves to the correct tier.
+            if item_global_index < self.delivered_item_count:
+                item_id = network_item.item
+                try:
+                    skipped_name = self.item_names.lookup_in_slot(item_id, self.slot)
+                except Exception:
+                    skipped_name = None
+                if skipped_name and skipped_name in self.progressive_counts:
+                    self.progressive_counts[skipped_name] += 1
+                    logger.debug(
+                        f"[ReceivedItems] Rebuilt progressive count for "
+                        f"already-delivered {skipped_name} -> "
+                        f"{self.progressive_counts[skipped_name]}"
+                    )
+                logger.debug(f"[ReceivedItems] Skipping already-delivered item at index {item_global_index}")
+                continue
+
+            item_id = network_item.item
+            location_id = network_item.location
+            location_player = network_item.player  # Player whose location was checked
+
+            # Look up names - item is from OUR game (SSHD), location is from sender's game
+            item_name = self.item_names.lookup_in_slot(item_id, self.slot)
+            location_name = self.location_names.lookup_in_slot(location_id, location_player)
+            try:
+                sender_name = self.player_names[location_player]
+            except (KeyError, TypeError):
+                sender_name = f"Player {location_player}"
+
+            # Precollected / start-inventory items have location_id == -2.
+            # The sshd-rando patches already bake these into the game save,
+            # so we must NOT give them again via the memory buffer.
+            is_start_inventory = (location_id == -2)
+            if is_start_inventory:
+                logger.debug(f"[ReceivedItems] START INVENTORY item_id={item_id}, item_name='{item_name}' (will skip in-game delivery)")
+            else:
+                logger.debug(f"[ReceivedItems] item_id={item_id}, item_name='{item_name}', location='{location_name}', from={sender_name}")
+
+            # Add to queue to be given in-game
+            self.item_queue.append({
+                "id": item_id,
+                "name": item_name,
+                "location": location_name,
+                "location_id": location_id,
+                "location_player": location_player,  # Who found it
+                "player_name": sender_name,
+                "index": start_index + i,
+                "is_start_inventory": is_start_inventory,
+            })
 
     def update_tracker_state(self):
         """Update the tracker bridge with current state for autotracking."""
@@ -1689,6 +1740,36 @@ class SSHDContext(CommonContext):
             
             # Build the item-to-location mapping now that we have slot_data
             self.item_to_location = self.build_item_to_location_map()
+
+            # Load location_to_item_map: location_code -> {item_id, item_name, player, ...}
+            # Used to detect whether a locally-checked location contains a sword.
+            raw_loc_item = slot_data.get("location_to_item_map", {})
+            if raw_loc_item:
+                self.location_to_item_map = {int(k): v for k, v in raw_loc_item.items()}
+                logger.debug(f"Loaded location_to_item_map with {len(self.location_to_item_map)} entries")
+                # Pre-compute the set of location codes that contain our own Progressive Sword
+                PROGRESSIVE_SWORD_ID = 2773010
+                self.sword_location_codes = {
+                    loc_code
+                    for loc_code, item_info in self.location_to_item_map.items()
+                    if (isinstance(item_info, dict) and item_info.get("item_id") == PROGRESSIVE_SWORD_ID
+                        and item_info.get("player") == self.slot)
+                    or (isinstance(item_info, int) and item_info == PROGRESSIVE_SWORD_ID)
+                }
+
+                PROGRESSIVE_BEETLE_ID = 2773053
+                self.beetle_location_codes = {
+                    loc_code
+                    for loc_code, item_info in self.location_to_item_map.items()
+                    if (isinstance(item_info, dict) and item_info.get("item_id") == PROGRESSIVE_BEETLE_ID
+                        and item_info.get("player") == self.slot)
+                    or (isinstance(item_info, int) and item_info == PROGRESSIVE_BEETLE_ID)
+                }
+            else:
+                self.location_to_item_map = {}
+                self.sword_location_codes = set()
+                self.beetle_location_codes = set()
+                logger.debug("No location_to_item_map in slot data")
             
             # Load custom flag to location mapping for location detection
             custom_flag_mapping = slot_data.get("custom_flag_to_location", {})
@@ -1728,6 +1809,11 @@ class SSHDContext(CommonContext):
                 self._write_ap_item_info_table()
             else:
                 logger.debug("No AP item info in slot data")
+
+            # Load goal type (0=defeat_demise, 1=defeat_ghirahim3, 2=defeat_horde)
+            self.goal_type = int(slot_data.get("option_goal", 0))
+            goal_names = {0: "Defeat Demise", 1: "Defeat Ghirahim 3", 2: "Defeat Horde"}
+            logger.info(f"Goal: {goal_names.get(self.goal_type, 'Unknown')} (type {self.goal_type})")
 
             # Enable DeathLink if the player configured it
             death_link_enabled = slot_data.get("option_death_link", 0)  # Options use "option_" prefix
@@ -1788,80 +1874,46 @@ class SSHDContext(CommonContext):
             asyncio.create_task(self.send_msgs([{"cmd": "ConnectUpdate", "tags": list(self.tags)}]))
             logger.debug(f"Sent ConnectUpdate with tags: {list(self.tags)}")
 
-            # Load persisted delivery count so we don't re-give items on reconnect
-            self.load_progress()
-            
+            # Request persisted delivery index from AP DataStorage
+            self._datastorage_loaded = False
+            self._pending_received_items.clear()
+            ds_key = self._get_datastorage_key()
+            asyncio.create_task(self.send_msgs([{"cmd": "Get", "keys": [ds_key]}]))
+            asyncio.create_task(self._datastorage_timeout_guard())
+            logger.debug(f"[DataStorage] Requested delivery index key: {ds_key}")
+
             # Initialize tracker state file on connection
             logger.info("Creating initial tracker state file")
             self.update_tracker_state()
             
         elif cmd == "ReceivedItems":
-            # Received items from other players
-            start_index = args.get("index", 0)
-            items_list = args.get("items", [])
+            # Buffer ReceivedItems until DataStorage delivery index is loaded
+            if not self._datastorage_loaded:
+                self._pending_received_items.append(args)
+            else:
+                self._process_received_items(args)
 
-            # When the server sends a full resync (start_index == 0), reset
-            # progressive counters so they are rebuilt from the authoritative
-            # item list.  This prevents stale counters from a previous
-            # connection from causing wrong tier resolution.
-            if start_index == 0:
-                for key in self.progressive_counts:
-                    self.progressive_counts[key] = 0
-
-            for i, network_item in enumerate(items_list):
-                item_global_index = start_index + i
-
-                # Skip items already delivered in a previous session,
-                # but still rebuild progressive counters so the next
-                # progressive item resolves to the correct tier.
-                if item_global_index < self.delivered_item_count:
-                    item_id = network_item.item
-                    try:
-                        skipped_name = self.item_names.lookup_in_slot(item_id, self.slot)
-                    except Exception:
-                        skipped_name = None
-                    if skipped_name and skipped_name in self.progressive_counts:
-                        self.progressive_counts[skipped_name] += 1
-                        logger.debug(
-                            f"[ReceivedItems] Rebuilt progressive count for "
-                            f"already-delivered {skipped_name} -> "
-                            f"{self.progressive_counts[skipped_name]}"
-                        )
-                    logger.debug(f"[ReceivedItems] Skipping already-delivered item at index {item_global_index}")
-                    continue
-
-                item_id = network_item.item
-                location_id = network_item.location
-                location_player = network_item.player  # Player whose location was checked
-                
-                # Look up names - item is from OUR game (SSHD), location is from sender's game
-                item_name = self.item_names.lookup_in_slot(item_id, self.slot)
-                location_name = self.location_names.lookup_in_slot(location_id, location_player)
-                try:
-                    sender_name = self.player_names[location_player]
-                except (KeyError, TypeError):
-                    sender_name = f"Player {location_player}"
-                
-                # Precollected / start-inventory items have location_id == -2.
-                # The sshd-rando patches already bake these into the game save,
-                # so we must NOT give them again via the memory buffer.
-                is_start_inventory = (location_id == -2)
-                if is_start_inventory:
-                    logger.debug(f"[ReceivedItems] START INVENTORY item_id={item_id}, item_name='{item_name}' (will skip in-game delivery)")
+        elif cmd == "Retrieved":
+            # DataStorage response - restore persisted delivery index
+            ds_key = self._get_datastorage_key()
+            if ds_key and ds_key in args.get("keys", {}):
+                value = args["keys"][ds_key]
+                if value is not None:
+                    count = int(value)
+                    if count > self.delivered_item_count:
+                        self.delivered_item_count = count
+                        logger.info(f"[DataStorage] Restored delivery count: {self.delivered_item_count} for {self.auth}")
                 else:
-                    logger.debug(f"[ReceivedItems] item_id={item_id}, item_name='{item_name}', location='{location_name}', from={sender_name}")
-                
-                # Add to queue to be given in-game
-                self.item_queue.append({
-                    "id": item_id,
-                    "name": item_name,
-                    "location": location_name,
-                    "location_player": location_player,  # Who found it
-                    "player_name": sender_name,
-                    "index": start_index + i,
-                    "is_start_inventory": is_start_inventory,
-                })
-        
+                    logger.info("[DataStorage] No stored delivery count (first connect or new slot)")
+                self._datastorage_loaded = True
+                # Check if there are items waiting to be re-delivered (not in safe items yet)
+                # These came from previous session but weren't autosaved before crash
+                # We'll re-deliver them now, but skip sword/beetle sync until they're all processed
+                self._skip_sword_sync = True
+                for pending_args in self._pending_received_items:
+                    self._process_received_items(pending_args)
+                self._pending_received_items.clear()
+
         elif cmd == "LocationInfo":
             # Information about locations - used for hints
             if self.hints:
@@ -2062,11 +2114,19 @@ class SSHDContext(CommonContext):
                         # re-initialises FlagMgr from the save, ensuring
                         # determineFinalItemid sees the correct flags even after
                         # a session restart.
-                        tier_ids = self._PROGRESSIVE_TIER_FLAGS.get(item_name)
-                        if tier_ids and self.game_item_system:
-                            for t in range(min(next_count, len(tier_ids))):
-                                self.game_item_system._ensure_itemflag_set(tier_ids[t])
-                    
+                        # Skip cumulative flag-setting for swords — setting all lower
+                        # sword flags causes the vanilla EQUIPPED_SWORD calc to cascade
+                        # to the wrong (higher) tier. Rust handles sword flags correctly.
+                        if item_name != "Progressive Sword":
+                            tier_ids = self._PROGRESSIVE_TIER_FLAGS.get(item_name)
+                            if tier_ids and self.game_item_system:
+                                for t in range(min(next_count, len(tier_ids))):
+                                    self.game_item_system._ensure_itemflag_set(tier_ids[t])
+                        else:
+                            # For swords: write sf906-911 directly since Rust no longer manages them.
+                            # Python is the sole counter manager. next_count is the new tier.
+                            self._update_sword_storyflags_for_count(next_count)
+
                     logger.debug(f"Gave {actual_item_name} via item buffer (game will handle animation)")
                 else:
                     logger.debug(f"Failed to give {actual_item_name} via item system (player may be busy)")
@@ -2196,6 +2256,13 @@ class SSHDContext(CommonContext):
         if not self.memory.connected or not self.memory.base_address:
             return
         
+        # After goal completion (Demise defeated), stop ALL game memory
+        # interaction.  The post-Demise cutscene and credits tear down
+        # gameplay structures; any read/write to player, flag, or room
+        # offsets risks hitting freed memory and crashing the game.
+        if self.goal_completed:
+            return
+        
         try:
             # Verify game is loaded by reading stage name
             stage_name = self.memory.read_string(OFFSET_CURRENT_STAGE + OFFSET_STAGE_NAME, 16)
@@ -2203,7 +2270,6 @@ class SSHDContext(CommonContext):
                 # Game not loaded yet (title screen, loading, etc.)
                 return
             
-            # Early transition detection via NEXT_STAGE.
             # The game sets NEXT_STAGE before tearing down ROOM_MGR and
             # other scene structures, whereas CURRENT_STAGE only changes
             # once loading is underway.  Monitoring NEXT_STAGE lets us
@@ -2232,28 +2298,68 @@ class SSHDContext(CommonContext):
             
             # Update current stage
             if stage_name != self.current_stage:
+                old_stage = self.current_stage
                 logger.debug(f"Entered stage: {stage_name}")
+
+                # Game autosave happens on scene transition — unsafe items are now safe
+                if self._unsafe_items_count > 0:
+                    self.delivered_item_count += self._unsafe_items_count
+                    self._persist_delivery_index()
+                    logger.info(f"[AutoSave] Committed {self._unsafe_items_count} unsafe items to safe after scene transition")
+                    self._unsafe_items_count = 0
+                    self._skip_sword_sync = False  # Re-enable sword/beetle sync
+
                 self.current_stage = stage_name
-                
+
+                # ── Goal detection via stage transition ──────────────────
+                # Goal 0 (Defeat Demise):      B400 → F404
+                # Goal 1 (Defeat Ghirahim 3):  F403 → F404  (skip_demise=on)
+                # Goal 2 (Defeat Horde):       F403 → F404  (skip_demise+skip_g3=on)
+                _GOAL_LOC_CODE = 2773238
+                _goal_detected = False
+
+                if _GOAL_LOC_CODE not in self.checked_locations:
+                    if (self.goal_type == 0
+                            and old_stage == "B400" and stage_name == "F404"):
+                        _goal_detected = True
+                        _goal_label = "Demise"
+
+                    elif (self.goal_type in (1, 2)
+                            and old_stage == "F403" and stage_name == "F404"):
+                        _goal_label = ("Ghirahim 3" if self.goal_type == 1 else "Horde")
+                        _goal_detected = True
+
+                    # Fallback
+                    elif (self.goal_type in (1, 2)
+                            and old_stage == "B400" and stage_name == "F404"):
+                        _goal_label = (
+                            "Ghirahim 3 (fallback: Demise transition)"
+                            if self.goal_type == 1
+                            else "Horde (fallback: Demise transition)"
+                        )
+                        _goal_detected = True
+
+                if _goal_detected:
+                    self.checked_locations.add(_GOAL_LOC_CODE)
+                    logger.info(f"=== {_goal_label} defeated! ===")
+                    self.update_tracker_state()
+
                 # Scene-transition cooldown: block ALL memory writes for
                 # a few seconds so the engine finishes tearing down / rebuilding
-                # scene structures, actors, and heaps.  This prevents cheat
-                # writes, bird-statue enforcement, and AP stats writes from
-                # corrupting game memory mid-transition.
+                # scene structures, actors, and heaps.
                 self._scene_transition_cooldown_until = (
                     time.time() + self._SCENE_TRANSITION_COOLDOWN_SECS
                 )
-                self._progressive_flags_dirty = True
-
-                # Invalidate the GameItemSystem's committed-flag pointer
-                # cache — heap addresses can move during scene transitions.
-                if self.game_item_system:
-                    self.game_item_system._invalidate_committed_cache()
 
                 logger.debug(
                     f"Scene transition cooldown active until "
                     f"{self._scene_transition_cooldown_until:.1f}"
                 )
+
+                # Sync progressive sword/beetle on scene transition.
+                # Catches purchases from Beedle's shop (local items) and any
+                # other source that gives items without going through AP buffer.
+                self._sync_progressive_items_on_transition()
                 
                 # Auto-enable the entry bird statue when first visiting a
                 # surface region so the player always has a spawn point.
@@ -2268,35 +2374,58 @@ class SSHDContext(CommonContext):
                                 f"[BirdStatue] Auto-enabled entry statue: {entry_name} "
                                 f"(first visit to {region})"
                             )
-            
+
+            # ── Goal detection fallback via storyflags (G3 / Horde) ──
+            # The game typically only writes flags 134/486 to the
+            # committed-heap copy, not to FA/STATIC, so stage transitions
+            # above are the primary method.  This polls both FA and STATIC
+            # as a safety net (e.g. after an auto-save or manual save).
+            _GOAL_LOC_CODE = 2773238
+            if (self.goal_type in (1, 2)
+                    and _GOAL_LOC_CODE not in self.checked_locations):
+                # goal 1 = Defeat Ghirahim 3 → storyflag 486
+                # goal 2 = Defeat Horde      → storyflag 134
+                _goal_flag = 486 if self.goal_type == 1 else 134
+                _word_idx = _goal_flag // 16
+                _bit_idx  = _goal_flag % 16
+                _fa_offset = (OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
+                              + _word_idx * 2)
+                _static_offset = OFFSET_STORY_FLAGS_STATIC + _word_idx * 2
+                _fa_val = self.memory.read_short(_fa_offset)
+                _st_val = self.memory.read_short(_static_offset)
+                _fa_set = _fa_val is not None and bool(_fa_val & (1 << _bit_idx))
+                _st_set = _st_val is not None and bool(_st_val & (1 << _bit_idx))
+                if _fa_set or _st_set:
+                    self.checked_locations.add(_GOAL_LOC_CODE)
+                    _src = "FA" if _fa_set else "STATIC"
+                    _goal_label = ("Ghirahim 3" if self.goal_type == 1
+                                   else "Horde")
+                    logger.info(
+                        f"=== {_goal_label} defeated! "
+                        f"(storyflag {_goal_flag} detected in {_src}) ==="
+                    )
+                    self.update_tracker_state()
+
             # Skip all memory writes during scene-transition cooldown.
             # Reads (locations, death/breath link, custom flags) are safe.
             _in_transition = time.time() < self._scene_transition_cooldown_until
             
-            if not _in_transition:
+            # Also suppress ALL memory writes after goal completion.
+            # The post-Demise cutscene and credits tear down gameplay
+            # structures; writing to player/flag/room offsets crashes.
+            _block_writes = _in_transition or self.goal_completed
+            
+            if not _block_writes:
                 # Write AP buffers to game memory (item info table + check stats)
                 self._write_ap_item_info_table()
                 self._refresh_ap_item_info_count()
                 self._update_ap_check_stats()
-
-                # After a scene transition the game reloads flag data from
-                # the save file and commits it, so the committed copy that
-                # determineFinalItemid reads may be stale.  Re-apply all
-                # progressive tier flags to all three flag copies to ensure
-                # the next local progressive pickup resolves correctly.
-                if self._progressive_flags_dirty and self.game_item_system:
-                    self._progressive_flags_dirty = False
-                    self.game_item_system.reapply_progressive_flags(
-                        self.progressive_counts,
-                        self._PROGRESSIVE_TIER_FLAGS,
-                    )
-                    logger.debug("[SceneTransition] Re-applied progressive flags to committed memory")
             
             # Process deferred progressive-item flag writes
             self._process_deferred_flag_writes()
             
             # Give queued items to player
-            if self.item_queue and not _in_transition:
+            if self.item_queue and not _block_writes:
                 item_data = self.item_queue[0]
                 
                 # Start-inventory items (precollected) are already baked into the
@@ -2310,79 +2439,117 @@ class SSHDContext(CommonContext):
                         logger.debug(f"[StartInventory] Tracked {item_name} progressive count -> {self.progressive_counts[item_name]}")
                     logger.debug(f"[StartInventory] Skipped in-game delivery of {item_name} (already in save from patches)")
                     self.item_queue.pop(0)
+                    # Mark as delivered immediately since game already has it
                     self.delivered_item_count += 1
-                    self.save_progress()
+                    self._persist_delivery_index()
                     self.update_tracker_state()
                 elif item_data.get("location_player") == self.slot:
-                    # LOCAL item: the game already gave this natively when the
-                    # player checked the location (patched ROM actor).  Do NOT
-                    # re-deliver via buffer — that would cause a duplicate and,
-                    # for progressive items, potentially the wrong tier.
-                    # Just advance the progressive counter and bookkeeping.
+                    # LOCAL item from our own world.
+                    # Only skip buffer delivery if the game natively gave this item
+                    # via its own actor (chest, crystal, NPC) — marked _native_delivery.
+                    # Beedle shop items and other non-native locations fall through to
+                    # give_item_to_player for normal buffer delivery.
                     item_name = item_data["name"]
-                    if item_name in self.progressive_counts:
-                        self.progressive_counts[item_name] += 1
-                        logger.debug(
-                            f"[LocalItem] Tracked {item_name} progressive "
-                            f"count -> {self.progressive_counts[item_name]}"
-                        )
-                        # Write item flags for all received tiers as insurance.
-                        # The game's stateGet should have set them natively,
-                        # but if a prior REMOTE progressive was delivered via
-                        # buffer and didn't set FlagMgr flags, this keeps the
-                        # save file + static flags in sync so the next
-                        # determineFinalItemid call in-game sees all tiers.
-                        tier_ids = self._PROGRESSIVE_TIER_FLAGS.get(item_name)
-                        if tier_ids and self.game_item_system:
-                            for t in range(min(self.progressive_counts[item_name], len(tier_ids))):
-                                self.game_item_system._ensure_itemflag_set(tier_ids[t])
-                    location_name = item_data.get("location", "unknown location")
-                    logger.info(f"[LocalItem] {item_name} ({location_name}) - already given by game, skipped buffer")
-                    self.item_queue.pop(0)
-                    self.delivered_item_count += 1
-                    self.save_progress()
-                    self.update_tracker_state()
-                elif self.give_item_to_player(item_data["name"], item_data["id"]):
-                    # Successfully gave item
-                    player_name = item_data.get("player_name", "another player")
-                    location_name = item_data.get("location", "unknown location")
-                    is_own_item = (item_data.get("location_player") == self.slot)
-                    
-                    if not is_own_item:
-                        # Received item from another player
-                        logger.info(f"Received {item_data['name']} from {player_name} ({location_name})")
-                    else:
-                        # Received own item
-                        logger.info(f"Received {item_data['name']} ({location_name})")
-                    
-                    # Clear retry counter on success
-                    item_data.pop("_retry_count", None)
-                    
-                    # Remove from queue and persist delivery count
-                    self.item_queue.pop(0)
-                    self.delivered_item_count += 1
-                    self.save_progress()
-                    
-                    # Update tracker with new item
-                    self.update_tracker_state()
-                else:
-                    # Item delivery failed - track retries to avoid infinite loops
-                    MAX_ITEM_RETRIES = 50  # ~50 attempts × 5s timeout = ~4 min max
-                    retry_count = item_data.get("_retry_count", 0) + 1
-                    item_data["_retry_count"] = retry_count
-                    
-                    if retry_count >= MAX_ITEM_RETRIES:
-                        item_name = item_data["name"]
-                        logger.error(
-                            f"[ItemDelivery] Giving up on {item_name} after {retry_count} attempts. "
-                            f"Item will be re-delivered on next reconnect."
-                        )
-                        # Move to back of queue instead of dropping forever,
-                        # so it can be retried after other items succeed
-                        # (which may fix the buffer address via cycling)
+
+                    if item_data.get("_concrete_sword_id"):
+                        # Synthetic upgrade entry: deliver correct concrete tier via buffer.
+                        concrete_id = item_data["_concrete_sword_id"]
+                        if not self.game_item_system:
+                            self.game_item_system = GameItemSystem(self.memory)
+                        success = self.game_item_system.give_item(concrete_id)
+                        if not success:
+                            retry_count = item_data.get("_retry_count", 0) + 1
+                            item_data["_retry_count"] = retry_count
+                            if retry_count < 50:
+                                return  # Retry next cycle
+                        item_data.pop("_retry_count", None)
+                        logger.info(f"[LocalItem] Delivered local upgrade (id {concrete_id}) for {item_name}")
                         self.item_queue.pop(0)
-                        item_data["_retry_count"] = 0  # Reset for next round
-                        self.item_queue.append(item_data)
+                        # Do NOT increment delivered_item_count — synthetic entry,
+                        # not a real AP item delivery.
+                        self.update_tracker_state()
+                        return
+
+                    elif item_data.get("_native_delivery", False) or (
+                        item_data.get("location_id") in self.custom_flag_to_location.values()
+                    ):
+                        # Game already gave this via its own actor — skip buffer.
+                        if item_name in self.progressive_counts:
+                            self.progressive_counts[item_name] += 1
+                            logger.debug(
+                                f"[LocalItem] Tracked {item_name} progressive "
+                                f"count -> {self.progressive_counts[item_name]}"
+                            )
+                            if item_name != "Progressive Sword" and item_name != "Progressive Beetle":
+                                tier_ids = self._PROGRESSIVE_TIER_FLAGS.get(item_name)
+                                if tier_ids and self.game_item_system:
+                                    for t in range(min(self.progressive_counts[item_name], len(tier_ids))):
+                                        self.game_item_system._ensure_itemflag_set(tier_ids[t])
+                        location_name = item_data.get("location", "unknown location")
+                        logger.info(f"[LocalItem] {item_name} ({location_name}) - already given by game, skipped buffer")
+                        self.item_queue.pop(0)
+                        # Mark as delivered immediately since game already has it (from own location check)
+                        self.delivered_item_count += 1
+                        self._persist_delivery_index()
+                        self.update_tracker_state()
+                        return
+
+                    # Not natively delivered (e.g. Beedle shop) — fall through to
+                    # give_item_to_player for normal buffer delivery below.
+                    # Mark as unsafe (will become safe after next scene transition/autosave)
+                    self._unsafe_items_count += 1
+                    if self.give_item_to_player(item_data["name"], item_data["id"]):
+                        player_name = item_data.get("player_name", "another player")
+                        location_name = item_data.get("location", "unknown location")
+                        logger.info(f"Received {item_data['name']} ({location_name}) [awaiting autosave]")
+                        item_data.pop("_retry_count", None)
+                        self.item_queue.pop(0)
+                        self.update_tracker_state()
+                    else:
+                        # Delivery failed — revert the unsafe count and retry next cycle
+                        self._unsafe_items_count -= 1
+                else:
+                    # Remote item — mark as unsafe (will become safe after next scene transition/autosave)
+                    self._unsafe_items_count += 1
+                    if self.give_item_to_player(item_data["name"], item_data["id"]):
+                        # Successfully gave item
+                        player_name = item_data.get("player_name", "another player")
+                        location_name = item_data.get("location", "unknown location")
+                        is_own_item = (item_data.get("location_player") == self.slot)
+
+                        if not is_own_item:
+                            # Received item from another player
+                            logger.info(f"Received {item_data['name']} from {player_name} ({location_name}) [awaiting autosave]")
+                        else:
+                            # Received own item
+                            logger.info(f"Received {item_data['name']} ({location_name}) [awaiting autosave]")
+
+                        # Clear retry counter on success
+                        item_data.pop("_retry_count", None)
+
+                        # Remove from queue and update tracker
+                        self.item_queue.pop(0)
+                        self.update_tracker_state()
+                    else:
+                        # Item delivery failed — revert the unsafe count and retry next cycle
+                        self._unsafe_items_count -= 1
+                        # Track retries to avoid infinite loops
+                        MAX_ITEM_RETRIES = 50  # ~50 attempts × 5s timeout = ~4 min max
+                        retry_count = item_data.get("_retry_count", 0) + 1
+                        item_data["_retry_count"] = retry_count
+
+                        if retry_count >= MAX_ITEM_RETRIES:
+                            item_name = item_data["name"]
+                            logger.error(
+                                f"[ItemDelivery] Giving up on {item_name} after {retry_count} attempts. "
+                                f"Item will be re-delivered on next reconnect."
+                            )
+                            # Move to back of queue instead of dropping forever,
+                            # so it can be retried after other items succeed
+                            # (which may fix the buffer address via cycling)
+                            self.item_queue.pop(0)
+                            item_data["_retry_count"] = 0  # Reset for next round
+                            self.item_queue.append(item_data)
             
             # Check for death (for death link)
             current_health = self.memory.read_short(OFFSET_CURRENT_HEALTH)
@@ -2421,23 +2588,28 @@ class SSHDContext(CommonContext):
             # (cheat_loop_task) for minimal input lag.
             # ============================================================
             
-            # Check for completed locations using custom flags
-            if self.custom_flag_to_location:
-                # Use custom flag system (preferred for SSHD)
-                await self.check_custom_flags()
-                # Supplement: shop purchases don't set custom scene/dungeon flags,
-                # so also check Beedle's sold-out storyflags from the save file.
-                await self.check_beedle_shop_storyflags()
-            
-            # Boss fight rewards (HeartCo actors) and Demise defeat don't
-            # set custom sceneflags, so monitor their vanilla flags directly.
-            await self.check_boss_defeat_flags()
-            
-            # Enforce bird-statue flags: clear any that the game's
-            # HD-progression system auto-unlocked without the player
-            # physically visiting the statue.
-            if not _in_transition:
-                self._enforce_bird_statue_flags()
+            # After goal completion, skip location polling entirely.
+            # The end-game cutscene / credits destroy the scene/flag
+            # structures these functions read, and there is nothing left
+            # to check once Demise is defeated.
+            if not self.goal_completed:
+                # Check for completed locations using custom flags
+                if self.custom_flag_to_location:
+                    # Use custom flag system (preferred for SSHD)
+                    await self.check_custom_flags()
+                    # Supplement: shop purchases don't set custom scene/dungeon flags,
+                    # so also check Beedle's sold-out storyflags from the save file.
+                    await self.check_beedle_shop_storyflags()
+                
+                # Boss fight rewards (HeartCo actors) and Demise defeat don't
+                # set custom sceneflags, so monitor their vanilla flags directly.
+                await self.check_boss_defeat_flags()
+                
+                # Enforce bird-statue flags: clear any that the game's
+                # HD-progression system auto-unlocked without the player
+                # physically visiting the statue.
+                if not _block_writes:
+                    self._enforce_bird_statue_flags()
             
             # Send any newly checked locations to server (locations not yet sent)
             new_locations = self.checked_locations.difference(self.sent_locations)
@@ -2450,17 +2622,24 @@ class SSHDContext(CommonContext):
                 # Mark these locations as sent to avoid re-sending
                 self.sent_locations.update(new_locations)
                 
-                # Check if "Defeat Demise" location (2773238) was just checked - this means victory!
-                # Detected either via custom flags (if location exists in AP world)
-                # or via story flag 959 monitoring in check_boss_defeat_flags().
-                DEFEAT_DEMISE_LOCATION = 2773238
-                if DEFEAT_DEMISE_LOCATION in new_locations:
-                    logger.info("=== VICTORY! Demise defeated - sending goal completion to server ===")
+                # Check if the goal location (2773238) was just checked — victory!
+                # Primary: stage transitions (B400→F404 or F403→F404)
+                # Fallback: storyflag polling (134 / 486 in FA or STATIC)
+                _GOAL_LOCATION = 2773238
+                if _GOAL_LOCATION in new_locations:
+                    _goal_names = {0: "Demise", 1: "Ghirahim 3", 2: "Horde"}
+                    _gname = _goal_names.get(self.goal_type, "Unknown")
+                    logger.info(f"=== VICTORY! {_gname} defeated — releasing all remaining items ===")
                     await self.send_msgs([{
                         "cmd": "StatusUpdate",
                         "status": ClientStatus.CLIENT_GOAL
                     }])
-                    # Server will automatically release all remaining items if auto-release is enabled
+                    # Suppress ALL further memory writes.  The post-boss
+                    # cutscene and credits sequence tear down gameplay
+                    # structures; writing to player/flag/room offsets during
+                    # that window causes the game to PANIC.
+                    self.goal_completed = True
+                    logger.debug("Goal completed — memory writes suspended to protect end-game sequence")
                     
         except Exception as e:
             logger.error(f"Error updating game state: {e}")
@@ -2473,6 +2652,10 @@ class SSHDContext(CommonContext):
         cannot prevent the others from running.
         """
         if not self.memory.connected or not self.memory.base_address:
+            return
+
+        # Suppress all memory writes after goal completion (Demise defeated).
+        if self.goal_completed:
             return
 
         # Guard: skip all cheat writes during scene transitions / loading
@@ -3075,6 +3258,145 @@ class SSHDContext(CommonContext):
         except Exception as e:
             logger.debug(f"Failed to update AP check stats: {e}")
 
+    def _sync_progressive_items_on_transition(self):
+        """On scene transition, check if sword/beetle counts in memory are
+        ahead of progressive_counts (e.g. from a local Beedle purchase) and
+        queue upgrade animations if so.
+        """
+        try:
+            if not self.memory.connected or not self.memory.base_address:
+                return
+
+            # Skip sync while unsafe items are being re-delivered (progressive counts will be incorrect)
+            if self._skip_sword_sync or self._unsafe_items_count > 0:
+                return
+
+            # ── Sword sync ──────────────────────────────────────────────
+            SF_WORD_OFFSET = 112  # u16[56] * 2
+            fa_sf_base = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
+            sf_val = self.memory.read_short(fa_sf_base + SF_WORD_OFFSET)
+            if sf_val is not None:
+                actual_sword_count = sum(1 for b in range(10, 16) if sf_val & (1 << b))
+                expected_sword_count = self.progressive_counts.get("Progressive Sword", 0)
+                logger.debug(f"[Sync] Sword: memory={actual_sword_count}, progressive_counts={expected_sword_count}, sf_val=0x{sf_val:04X}")
+                if actual_sword_count > expected_sword_count:
+                    diff = actual_sword_count - expected_sword_count
+                    logger.info(f"[Sync] Sword count in memory ({actual_sword_count}) > progressive_counts ({expected_sword_count}), queuing {diff} upgrade(s)")
+                    for _ in range(diff):
+                        self._update_sword_storyflags()
+
+            # ── Beetle sync ─────────────────────────────────────────────
+            fa_item_base = OFFSET_SAVEFILE_A + OFFSET_FA_ITEMFLAGS
+            BEETLE_IDS = [53, 75, 76, 77]
+            actual_beetle_count = 0
+            for item_id in BEETLE_IDS:
+                byte_off = item_id // 8
+                bit = item_id % 8
+                byte_val = self.memory.read_bytes(fa_item_base + byte_off, 1)
+                if byte_val and (byte_val[0] & (1 << bit)):
+                    actual_beetle_count += 1
+                else:
+                    break
+            expected_beetle_count = self.progressive_counts.get("Progressive Beetle", 0)
+            logger.debug(f"[Sync] Beetle: memory={actual_beetle_count}, progressive_counts={expected_beetle_count}")
+            if actual_beetle_count > expected_beetle_count:
+                diff = actual_beetle_count - expected_beetle_count
+                logger.info(f"[Sync] Beetle count in memory ({actual_beetle_count}) > progressive_counts ({expected_beetle_count}), queuing {diff} upgrade(s)")
+                for _ in range(diff):
+                    self._update_beetle_storyflags()
+
+        except Exception as e:
+            logger.debug(f"[Sync] Error during progressive item sync: {e}")
+
+    def _location_has_own_sword(self, location_code: int) -> bool:
+        """Return True if this location contains our own Progressive Sword."""
+        return location_code in self.sword_location_codes
+
+    def _update_sword_storyflags_for_count(self, new_count: int):
+        """Write sf906-911 and unset sf28 for a given sword tier count (1-6).
+
+        sf906-911 are in u16[56] (byte offset 112), bits 10-15.
+        sf28 is in u16[1] (byte offset 2), bit 12.
+        Writes to both FA and STATIC copies.
+        """
+        try:
+            SF_WORD_OFFSET = 112
+            SF_BITS = [10, 11, 12, 13, 14, 15]
+            SF28_WORD_OFFSET = 2
+            SF28_BIT = 12
+            bases = [
+                OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS,
+                OFFSET_STORY_FLAGS_STATIC,
+            ]
+            for base in bases:
+                addr = base + SF_WORD_OFFSET
+                current_val = self.memory.read_short(addr)
+                if current_val is not None:
+                    new_val = current_val
+                    for i, bit in enumerate(SF_BITS):
+                        if i < new_count:
+                            new_val |= (1 << bit)
+                        else:
+                            new_val &= ~(1 << bit) & 0xFFFF
+                    if new_val != current_val:
+                        self.memory.write_short(addr, new_val)
+                addr28 = base + SF28_WORD_OFFSET
+                val28 = self.memory.read_short(addr28)
+                if val28 is not None and (val28 & (1 << SF28_BIT)):
+                    self.memory.write_short(addr28, val28 & ~(1 << SF28_BIT) & 0xFFFF)
+        except Exception as e:
+            logger.warning(f"[Sword] Failed to write sword storyflags: {e}")
+
+    def _update_sword_storyflags(self):
+        """Increment sword counter from a local pickup and queue a buffer
+        delivery of the correct concrete sword tier for tier 2+ upgrades.
+        Rust handles writing sf906-911 at game speed during the animation.
+        Python just tracks progressive_counts and queues the upgrade animation.
+        """
+        current_count = self.progressive_counts.get("Progressive Sword", 0)
+        new_count = min(current_count + 1, 6)
+        self.progressive_counts["Progressive Sword"] = new_count
+        logger.info(f"[Sword] Local pickup: sword count {current_count} -> {new_count}")
+
+        # Only queue upgrade animation for tier 2+.
+        SWORD_IDS_BY_TIER = {1: 10, 2: 11, 3: 12, 4: 9, 5: 13, 6: 14}
+        concrete_id = SWORD_IDS_BY_TIER.get(new_count)
+        if concrete_id and new_count > 1:
+            self.item_queue.append({
+                "id": 2773010,
+                "name": "Progressive Sword",
+                "location": "Local Pickup",
+                "location_player": self.slot,
+                "_concrete_sword_id": concrete_id,
+            })
+            logger.info(f"[Sword] Queued buffer delivery of sword id {concrete_id} for upgrade animation")
+
+    def _update_beetle_storyflags(self):
+        """Increment beetle counter from a local pickup and queue a buffer
+        delivery of the correct concrete beetle tier so it updates correctly.
+        Mirrors the sword fix — local pickups always give base ID 53 regardless
+        of progression, so a second buffer delivery is needed for the upgrade.
+        """
+        current_count = self.progressive_counts.get("Progressive Beetle", 0)
+        new_count = min(current_count + 1, 4)
+        self.progressive_counts["Progressive Beetle"] = new_count
+        logger.info(f"[Beetle] Local pickup: beetle count {current_count} -> {new_count}")
+
+        # Tier IDs: 1=53 (Beetle), 2=75 (Hook), 3=76 (Quick), 4=77 (Tough)
+        # Only queue an upgrade delivery for tier 2+ — tier 1 is already
+        # correct from the chest's own item actor.
+        BEETLE_IDS_BY_TIER = {1: 53, 2: 75, 3: 76, 4: 77}
+        concrete_id = BEETLE_IDS_BY_TIER.get(new_count)
+        if concrete_id and new_count > 1:
+            self.item_queue.append({
+                "id": 2773053,
+                "name": "Progressive Beetle",
+                "location": "Local Pickup",
+                "location_player": self.slot,
+                "_concrete_sword_id": concrete_id,
+            })
+            logger.info(f"[Beetle] Queued buffer delivery of beetle id {concrete_id} for upgrade animation")
+
     async def check_custom_flags(self):
         """Check custom flags for location completion (SSHD-specific)."""
         if not self.memory.connected or not self.memory.base_address:
@@ -3211,7 +3533,17 @@ class SSHDContext(CommonContext):
                         logger.debug(f"Location checked: {location_name}")
                         logger.debug(f"   Flag details: type={flag_type}, scene={sceneindex}, flag={lower_flag}, u16=0x{current_u16:04X}, bit={lower_flag}")
                         logger.debug(f"   Previous was {previous_state}, now is {flag_state}")
-                        
+
+                        # ARCHIPELAGO: If this location contains our own Progressive Sword,
+                        # increment the sword counter and write sf906-911 to memory so
+                        # dPlayer::calcSword computes the correct EQUIPPED_SWORD immediately.
+                        # handle_custom_item_get doesn't fire for local chest pickups,
+                        # so Python must update the sword storyflags here instead.
+                        if self._location_has_own_sword(location_code):
+                            self._update_sword_storyflags()
+                        elif location_code in self.beetle_location_codes:
+                            self._update_beetle_storyflags()
+
                         # Update tracker with new location
                         self.update_tracker_state()
                         self.previous_custom_flags[flag_id] = flag_state
@@ -3423,6 +3755,11 @@ class SSHDContext(CommonContext):
                 elif flag_state == 1 and prev_state == 0:
                     self.checked_locations.add(location_code)
                     logger.debug(f"[Beedle] Location checked: {location_name} (sf{storyflag_num}, detected in {source})")
+                    # Trigger sword/beetle upgrade if this is a local progressive item.
+                    if self._location_has_own_sword(location_code):
+                        self._update_sword_storyflags()
+                    elif location_code in self.beetle_location_codes:
+                        self._update_beetle_storyflags()
                     self.update_tracker_state()
                     self._prev_beedle_flags[storyflag_num] = flag_state
                 else:
@@ -3440,18 +3777,18 @@ class SSHDContext(CommonContext):
     
     async def check_boss_defeat_flags(self):
         """
-        Detect boss fight reward collection and Demise defeat via vanilla
-        sceneflags / storyflags in the save file.
+        Detect boss fight reward collection via vanilla sceneflags in the
+        save file.
 
-        These locations use actors (HeartCo / story-event) whose vanilla
-        flags are checked directly.  No transition tracking is needed:
-        once the flag is set and the location hasn't been sent to the
-        server yet, it will be picked up by the new_locations diff in
-        the update loop.  ``sent_locations`` (populated from the server
-        on connect) prevents duplicate sends.
+        These locations use actors (HeartCo) whose vanilla flags are
+        checked directly.  No transition tracking is needed: once the
+        flag is set and the location hasn't been sent to the server yet,
+        it will be picked up by the new_locations diff in the update
+        loop.  ``sent_locations`` (populated from the server on connect)
+        prevents duplicate sends.
 
-        Also detects the Demise defeat (story flag 959) and sends
-        CLIENT_GOAL so the server can release remaining items.
+        NOTE: Demise defeat is handled separately via the B400 → F404
+        stage transition in update_game_state().
         """
         if not self.memory.connected or not self.memory.base_address:
             return
@@ -3484,70 +3821,6 @@ class SSHDContext(CommonContext):
             except Exception as e:
                 logger.debug(f"Error reading boss defeat flag for loc {loc_code}: {e}")
 
-        # ── Demise defeat – story flag 959 ───────────────────────────────
-        DEFEAT_DEMISE_CODE = 2773238
-        if DEFEAT_DEMISE_CODE not in self.checked_locations:
-            try:
-                # Story flag 959: byte 119, bit 7 (mask 0x80)
-                sf_addr = file_a_offset + OFFSET_FA_STORYFLAGS + 119
-                byte_val = self.memory.read_byte(sf_addr)
-                if byte_val is not None and (byte_val & 0x80):
-                    self.checked_locations.add(DEFEAT_DEMISE_CODE)
-                    logger.info("=== Demise defeated (story flag 959) ===")
-                    self.update_tracker_state()
-            except Exception as e:
-                logger.debug(f"Error reading Demise story flag: {e}")
-
-    async def check_all_locations(self):
-        """Check all locations using LocationFlags.py data (Wii addresses - may not work on Switch)."""
-        if not self.memory.connected or not self.memory.base_address:
-            return
-        
-        for location_name, (flag_type, flag_bit, flag_value, scene_or_addr) in LOCATION_FLAG_MAP.items():
-            # Get proper location ID from LOCATION_TABLE
-            if location_name in LOCATION_TABLE:
-                location_id = LOCATION_TABLE[location_name].code
-            else:
-                # Skip locations not in table
-                continue
-            
-            # Skip if already checked
-            if location_id in self.checked_locations:
-                continue
-            
-            try:
-                is_checked = False
-                
-                if flag_type == FLAG_STORY:
-                    # Story flags use static addresses (base-relative)
-                    story_addr = scene_or_addr
-                    if isinstance(story_addr, int):
-                        byte_val = self.memory.read_byte(story_addr)
-                        if byte_val is not None:
-                            is_checked = bool(byte_val & (1 << flag_bit))
-                
-                elif flag_type == FLAG_SCENE:
-                    # Scene flags use scene name and are stored in static scene flag array
-                    scene_name = scene_or_addr
-                    if scene_name in SCENE_FLAG_ADDRESSES:
-                        # SCENE_FLAG_ADDRESSES contains base-relative offsets, not absolute addresses
-                        scene_base = SCENE_FLAG_ADDRESSES[scene_name]
-                        flag_addr = scene_base + flag_bit
-                        byte_val = self.memory.read_byte(flag_addr)
-                        if byte_val is not None:
-                            is_checked = bool(byte_val & flag_value)
-                
-                if is_checked:
-                    self.checked_locations.add(location_id)
-                    location_name_display = location_name[:50]  # Truncate long names
-                    logger.info(f"Location checked: {location_name_display}")
-                    
-                    # Update tracker with new location
-                    self.update_tracker_state()
-                    
-            except Exception as e:
-                logger.debug(f"Error checking location {location_name}: {e}")
-    
     # ------------------------------------------------------------------
     # Bird-statue HD-progression enforcement
     # ------------------------------------------------------------------
@@ -3717,21 +3990,6 @@ class SSHDContext(CommonContext):
         logger.debug("No item placement data found - item_to_location map is empty")
         return item_to_loc
 
-    def check_locations(self):
-        """
-        Check for completed locations.
-        
-        NOTE: Location checking is now item-based instead of memory-based.
-        When an item is given to the player via give_item_to_player(),
-        the corresponding location is automatically marked as checked.
-        
-        This function is kept for compatibility but no longer reads memory flags
-        (LocationFlags.py addresses are from Wii game and incompatible with SSHD).
-        """
-        # Item-based location checking is handled in give_item_to_player()
-        # No additional memory-based checking needed
-        pass
-    
     def on_deathlink(self, data: dict):
         """
         Handle death link - kill the player when someone else dies.
@@ -3740,6 +3998,10 @@ class SSHDContext(CommonContext):
 
         if not self.memory.connected or not self.memory.base_address:
             logger.warning("DeathLink: Cannot kill player - not connected to game")
+            return
+
+        if self.goal_completed:
+            logger.debug("DeathLink: Ignoring - goal already completed")
             return
 
         source = data.get('source', 'Unknown')
@@ -3786,6 +4048,10 @@ class SSHDContext(CommonContext):
 
         if not self.memory.connected or not self.memory.base_address:
             logger.warning("BreathLink: Cannot drain stamina - not connected to game")
+            return
+
+        if self.goal_completed:
+            logger.debug("BreathLink: Ignoring - goal already completed")
             return
 
         source = data.get('source', 'Unknown')

@@ -246,13 +246,21 @@ pub fn apply_pending_ap_string_args() {
                         set_string_arg(GLOBAL_TEXT_MGR, ip, 0);
                         set_string_arg(GLOBAL_TEXT_MGR, pp, 1);
                     }
-                    let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
-                    if !text_mgr.is_null() {
-                        set_string_arg(text_mgr, ip, 0);
-                        set_string_arg(text_mgr, pp, 1);
-                        PENDING_AP_STRING_ARGS = false; // also clears mode-B
+                    if !LYT_MSG_WINDOW.is_null() {
+                        let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+                        if !text_mgr.is_null() {
+                            set_string_arg(text_mgr, ip, 0);
+                            set_string_arg(text_mgr, pp, 1);
+                            PENDING_AP_STRING_ARGS = false; // also clears
+                                                            // mode-B
+                        } else {
+                            // Lookup worked but text_mgr still null → mode B
+                            PENDING_AP_ITEM_PTR = ip;
+                            PENDING_AP_PLAYER_PTR = pp;
+                            PENDING_AP_STRING_ARGS = true;
+                        }
                     } else {
-                        // Lookup worked but text_mgr still null → mode B
+                        // Layout torn down — defer to mode B
                         PENDING_AP_ITEM_PTR = ip;
                         PENDING_AP_PLAYER_PTR = pp;
                         PENDING_AP_STRING_ARGS = true;
@@ -271,11 +279,13 @@ pub fn apply_pending_ap_string_args() {
 
         // ── Retry path B: deferred TextMgr write ───────────────────────
         if PENDING_AP_STRING_ARGS {
-            let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
-            if !text_mgr.is_null() {
-                set_string_arg(text_mgr, PENDING_AP_ITEM_PTR, 0);
-                set_string_arg(text_mgr, PENDING_AP_PLAYER_PTR, 1);
-                PENDING_AP_STRING_ARGS = false;
+            if !LYT_MSG_WINDOW.is_null() {
+                let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+                if !text_mgr.is_null() {
+                    set_string_arg(text_mgr, PENDING_AP_ITEM_PTR, 0);
+                    set_string_arg(text_mgr, PENDING_AP_PLAYER_PTR, 1);
+                    PENDING_AP_STRING_ARGS = false;
+                }
             }
         }
     }
@@ -332,30 +342,17 @@ pub extern "C" fn custom_event_commands(
         // Set global flag for Archipelago custom flag detection
         // param1 = flag index (0-127), param2 = actual scene index (6, 13, 16, or 19)
         // param4 = flag_space_trigger (0 = sceneflag, 1 = dungeonflag)
-        //
-        // IMPORTANT: The body is in a separate #[inline(never)] function to keep
-        // register pressure low in this function. The asm epilogue below sets w21
-        // (a callee-saved register). If the compiler needs x21 for local variables,
-        // it will save/restore x21 in the prologue/epilogue, UNDOING the
-        // "mov w21, #1" replaced instruction and breaking ALL type3 event flows.
         80 => set_global_sceneflag_for_ap(event_flow_element),
         // Set string args for Archipelago Item (216) textbox.
-        // (Same #[inline(never)] reasoning as above.)
         81 => set_ap_item_string_args(actor_event_flow_mgr),
         _ => (),
     }
 
-    unsafe {
-        asm!(
-            "mov x0, {0:x}",
-            "mov x1, {1:x}",
-            // Replaced instructions
-            "ldrh w8, [x1, #0xa]",
-            "mov w21, #1",
-            in(reg) actor_event_flow_mgr,
-            in(reg) p_event_flow_element,
-        );
-    }
+    // The replaced instructions (ldrh w8, [x1, #0xa]; mov w21, #1) are now
+    // executed by the ASM wrapper `_ce_wrapper` in the landing pad, AFTER
+    // this function's epilogue.  This prevents the compiler from clobbering
+    // w21 (a callee-saved register) in the epilogue — which would break all
+    // type-3 event flows.
 }
 
 /// Set global flag for Archipelago custom flag detection.
@@ -517,6 +514,8 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
             set_string_arg(GLOBAL_TEXT_MGR, player_ptr, 1);
         }
 
+
+        // Write to the message-window layout's TextMgr if available.
         let text_mgr = if !LYT_MSG_WINDOW.is_null() {
             (*LYT_MSG_WINDOW).text_mgr
         } else {
