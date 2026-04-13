@@ -54,7 +54,18 @@ Skyward Sword HD:
   # ========================================
   # ARCHIPELAGO OPTIONS
   # ========================================
-  
+
+  # Goal
+  # Determines the victory condition for this world in the multiworld.
+  # 0 (defeat_demise): Defeat Demise at the end of the boss gauntlet (default).
+  #     The full Horde → Ghirahim 3 → Demise sequence must be completed.
+  # 1 (defeat_ghirahim3): Defeat Ghirahim 3 in Hylia's Realm.
+  #     Demise is skipped; victory triggers when Ghirahim 3 is defeated.
+  # 2 (defeat_horde): Defeat The Horde in Hylia's Realm.
+  #     Both Ghirahim 3 and Demise are skipped; victory triggers when
+  #     The Horde is defeated.
+  goal: 0
+
   # Death Link: When you die, everyone dies (and vice versa)
   death_link: false
   
@@ -597,9 +608,11 @@ Skyward Sword HD:
   full_wallet_upgrades: false
   
   # Random Trial Object Positions
-  # false: Trial objects appear in their vanilla locations (default)
-  # true: The positions of tears, light fruits, dusk relics, and stamina fruits will be shuffled amongst each other
-  random_trial_object_positions: false
+  # none: Trial objects appear in their vanilla locations (default)
+  # simple: Tears and light fruits are shuffled amongst each other
+  # advanced: Tears, light fruits, and dusk relics are shuffled amongst each other
+  # full: Tears, light fruits, dusk relics, and stamina fruits are shuffled amongst each other
+  random_trial_object_positions: none
   
   # Upgraded Skyward Strike
   # false: Only the True Master Sword will have the fully upgraded Skyward Strike.

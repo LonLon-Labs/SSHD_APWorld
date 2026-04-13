@@ -76,25 +76,6 @@ except ImportError as e:
     input("Press Enter to exit...")
     sys.exit(1)
 
-try:
-    from .LocationFlags import LOCATION_FLAG_MAP, FLAG_STORY, FLAG_SCENE, FLAG_SPECIAL
-    print(f"[Import] Successfully imported LocationFlags from package (.LocationFlags)")
-    print(f"[Import] LOCATION_FLAG_MAP has {len(LOCATION_FLAG_MAP)} entries")
-except ImportError as e:
-    print(f"[Import] Failed to import .LocationFlags: {e}")
-    # Fallback if running as standalone
-    try:
-        from LocationFlags import LOCATION_FLAG_MAP, FLAG_STORY, FLAG_SCENE, FLAG_SPECIAL
-        print(f"[Import] Successfully imported LocationFlags from standalone (LocationFlags)")
-        print(f"[Import] LOCATION_FLAG_MAP has {len(LOCATION_FLAG_MAP)} entries")
-    except ImportError as e2:
-        print(f"[Import] Failed to import LocationFlags: {e2}")
-        print(f"[Import] LOCATION_FLAG_MAP will be empty - location checking DISABLED")
-        LOCATION_FLAG_MAP = {}
-        FLAG_STORY = "STORY"
-        FLAG_SCENE = "SCENE"
-        FLAG_SPECIAL = "SPECIAL"
-
 # Import tracker bridge
 try:
     from .TrackerBridge import TrackerBridge
@@ -427,31 +408,6 @@ def _stage_to_region(stage: str) -> Optional[str]:
     return None
 
 # Scene name to scene flag base address mapping (base-relative offsets for SSHD)
-# These are the offsets from base_address where scene flags are stored
-# Scene flags are organized by scene in the static scene flag array
-SCENE_FLAG_ADDRESSES = {
-    "Skyloft": 0x182DF00,              # Skyloft scene flags (base-relative)
-    "Sky": 0x182DF10,                  # Sky scene flags
-    "Sealed Grounds": 0x182DF20,       # Sealed Grounds
-    "Faron Woods": 0x182DF30,          # Faron Woods
-    "Lake Floria": 0x182DF40,          # Lake Floria
-    "Skyview": 0x182DF50,              # Skyview Temple
-    "Eldin Volcano": 0x182DF60,        # Eldin Volcano
-    "Earth Temple": 0x182DF70,         # Earth Temple
-    "Lanayru Desert": 0x182DF80,       # Lanayru Desert
-    "Lanayru Mining Facility": 0x182DF90,  # Lanayru Mining Facility
-    "Ancient Cistern": 0x182DFA0,      # Ancient Cistern
-    "Sandship": 0x182DFB0,             # Sandship
-    "Fire Sanctuary": 0x182DFC0,       # Fire Sanctuary
-    "Sky Keep": 0x182DFD0,             # Sky Keep
-}
-
-# Story flags base address (base-relative)
-STORY_FLAGS_BASE = OFFSET_STORY_FLAGS_STATIC
-
-# Scene flags base address (base-relative)
-SCENE_FLAGS_BASE = OFFSET_SCENE_FLAGS_STATIC
-
 # Stage name mapping (internal codes to friendly names)
 STAGE_NAMES = {
     "F000": "Skyloft",
@@ -1467,6 +1423,16 @@ class SSHDContext(CommonContext):
         self._bird_statue_enforcement_log: Set[str] = set()  # avoid log spam
         self._visited_regions: Set[str] = set()  # regions where entry statue was auto-enabled
         
+        # Goal completion flag — once the goal is met and CLIENT_GOAL
+        # is sent, ALL memory writes are suppressed.  The post-boss
+        # cutscene and credits tear down gameplay structures (player,
+        # room manager, flag manager, etc.); any write to those offsets
+        # during that window can corrupt game state and trigger a PANIC.
+        self.goal_completed: bool = False
+        
+        # Goal type from slot_data (0=defeat_demise, 1=defeat_ghirahim3, 2=defeat_horde)
+        self.goal_type: int = 0
+
         # Tracker bridge for autotracking
         self.tracker_bridge = TrackerBridge() if TrackerBridge else None
         if self.tracker_bridge:
@@ -1842,6 +1808,11 @@ class SSHDContext(CommonContext):
                 self._write_ap_item_info_table()
             else:
                 logger.debug("No AP item info in slot data")
+
+            # Load goal type (0=defeat_demise, 1=defeat_ghirahim3, 2=defeat_horde)
+            self.goal_type = int(slot_data.get("option_goal", 0))
+            goal_names = {0: "Defeat Demise", 1: "Defeat Ghirahim 3", 2: "Defeat Horde"}
+            logger.info(f"Goal: {goal_names.get(self.goal_type, 'Unknown')} (type {self.goal_type})")
 
             # Enable DeathLink if the player configured it
             death_link_enabled = slot_data.get("option_death_link", 0)  # Options use "option_" prefix
@@ -2284,6 +2255,13 @@ class SSHDContext(CommonContext):
         if not self.memory.connected or not self.memory.base_address:
             return
         
+        # After goal completion (Demise defeated), stop ALL game memory
+        # interaction.  The post-Demise cutscene and credits tear down
+        # gameplay structures; any read/write to player, flag, or room
+        # offsets risks hitting freed memory and crashing the game.
+        if self.goal_completed:
+            return
+        
         try:
             # Verify game is loaded by reading stage name
             stage_name = self.memory.read_string(OFFSET_CURRENT_STAGE + OFFSET_STAGE_NAME, 16)
@@ -2319,6 +2297,7 @@ class SSHDContext(CommonContext):
             
             # Update current stage
             if stage_name != self.current_stage:
+                old_stage = self.current_stage
                 logger.debug(f"Entered stage: {stage_name}")
 
                 # Game autosave happens on scene transition — unsafe items are now safe
@@ -2331,14 +2310,46 @@ class SSHDContext(CommonContext):
 
                 self.current_stage = stage_name
 
+                # ── Goal detection via stage transition ──────────────────
+                # Goal 0 (Defeat Demise):      B400 → F404
+                # Goal 1 (Defeat Ghirahim 3):  F403 → F404  (skip_demise=on)
+                # Goal 2 (Defeat Horde):       F403 → F404  (skip_demise+skip_g3=on)
+                _GOAL_LOC_CODE = 2773238
+                _goal_detected = False
+
+                if _GOAL_LOC_CODE not in self.checked_locations:
+                    if (self.goal_type == 0
+                            and old_stage == "B400" and stage_name == "F404"):
+                        _goal_detected = True
+                        _goal_label = "Demise"
+
+                    elif (self.goal_type in (1, 2)
+                            and old_stage == "F403" and stage_name == "F404"):
+                        _goal_label = ("Ghirahim 3" if self.goal_type == 1 else "Horde")
+                        _goal_detected = True
+
+                    # Fallback
+                    elif (self.goal_type in (1, 2)
+                            and old_stage == "B400" and stage_name == "F404"):
+                        _goal_label = (
+                            "Ghirahim 3 (fallback: Demise transition)"
+                            if self.goal_type == 1
+                            else "Horde (fallback: Demise transition)"
+                        )
+                        _goal_detected = True
+
+                if _goal_detected:
+                    self.checked_locations.add(_GOAL_LOC_CODE)
+                    logger.info(f"=== {_goal_label} defeated! ===")
+                    self.update_tracker_state()
+
                 # Scene-transition cooldown: block ALL memory writes for
                 # a few seconds so the engine finishes tearing down / rebuilding
-                # scene structures, actors, and heaps.  This prevents cheat
-                # writes, bird-statue enforcement, and AP stats writes from
-                # corrupting game memory mid-transition.
+                # scene structures, actors, and heaps.
                 self._scene_transition_cooldown_until = (
                     time.time() + self._SCENE_TRANSITION_COOLDOWN_SECS
                 )
+
                 logger.debug(
                     f"Scene transition cooldown active until "
                     f"{self._scene_transition_cooldown_until:.1f}"
@@ -2362,12 +2373,48 @@ class SSHDContext(CommonContext):
                                 f"[BirdStatue] Auto-enabled entry statue: {entry_name} "
                                 f"(first visit to {region})"
                             )
-            
+
+            # ── Goal detection fallback via storyflags (G3 / Horde) ──
+            # The game typically only writes flags 134/486 to the
+            # committed-heap copy, not to FA/STATIC, so stage transitions
+            # above are the primary method.  This polls both FA and STATIC
+            # as a safety net (e.g. after an auto-save or manual save).
+            _GOAL_LOC_CODE = 2773238
+            if (self.goal_type in (1, 2)
+                    and _GOAL_LOC_CODE not in self.checked_locations):
+                # goal 1 = Defeat Ghirahim 3 → storyflag 486
+                # goal 2 = Defeat Horde      → storyflag 134
+                _goal_flag = 486 if self.goal_type == 1 else 134
+                _word_idx = _goal_flag // 16
+                _bit_idx  = _goal_flag % 16
+                _fa_offset = (OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
+                              + _word_idx * 2)
+                _static_offset = OFFSET_STORY_FLAGS_STATIC + _word_idx * 2
+                _fa_val = self.memory.read_short(_fa_offset)
+                _st_val = self.memory.read_short(_static_offset)
+                _fa_set = _fa_val is not None and bool(_fa_val & (1 << _bit_idx))
+                _st_set = _st_val is not None and bool(_st_val & (1 << _bit_idx))
+                if _fa_set or _st_set:
+                    self.checked_locations.add(_GOAL_LOC_CODE)
+                    _src = "FA" if _fa_set else "STATIC"
+                    _goal_label = ("Ghirahim 3" if self.goal_type == 1
+                                   else "Horde")
+                    logger.info(
+                        f"=== {_goal_label} defeated! "
+                        f"(storyflag {_goal_flag} detected in {_src}) ==="
+                    )
+                    self.update_tracker_state()
+
             # Skip all memory writes during scene-transition cooldown.
             # Reads (locations, death/breath link, custom flags) are safe.
             _in_transition = time.time() < self._scene_transition_cooldown_until
             
-            if not _in_transition:
+            # Also suppress ALL memory writes after goal completion.
+            # The post-Demise cutscene and credits tear down gameplay
+            # structures; writing to player/flag/room offsets crashes.
+            _block_writes = _in_transition or self.goal_completed
+            
+            if not _block_writes:
                 # Write AP buffers to game memory (item info table + check stats)
                 self._write_ap_item_info_table()
                 self._update_ap_check_stats()
@@ -2376,7 +2423,7 @@ class SSHDContext(CommonContext):
             self._process_deferred_flag_writes()
             
             # Give queued items to player
-            if self.item_queue and not _in_transition:
+            if self.item_queue and not _block_writes:
                 item_data = self.item_queue[0]
                 
                 # Start-inventory items (precollected) are already baked into the
@@ -2539,23 +2586,28 @@ class SSHDContext(CommonContext):
             # (cheat_loop_task) for minimal input lag.
             # ============================================================
             
-            # Check for completed locations using custom flags
-            if self.custom_flag_to_location:
-                # Use custom flag system (preferred for SSHD)
-                await self.check_custom_flags()
-                # Supplement: shop purchases don't set custom scene/dungeon flags,
-                # so also check Beedle's sold-out storyflags from the save file.
-                await self.check_beedle_shop_storyflags()
-            
-            # Boss fight rewards (HeartCo actors) and Demise defeat don't
-            # set custom sceneflags, so monitor their vanilla flags directly.
-            await self.check_boss_defeat_flags()
-            
-            # Enforce bird-statue flags: clear any that the game's
-            # HD-progression system auto-unlocked without the player
-            # physically visiting the statue.
-            if not _in_transition:
-                self._enforce_bird_statue_flags()
+            # After goal completion, skip location polling entirely.
+            # The end-game cutscene / credits destroy the scene/flag
+            # structures these functions read, and there is nothing left
+            # to check once Demise is defeated.
+            if not self.goal_completed:
+                # Check for completed locations using custom flags
+                if self.custom_flag_to_location:
+                    # Use custom flag system (preferred for SSHD)
+                    await self.check_custom_flags()
+                    # Supplement: shop purchases don't set custom scene/dungeon flags,
+                    # so also check Beedle's sold-out storyflags from the save file.
+                    await self.check_beedle_shop_storyflags()
+                
+                # Boss fight rewards (HeartCo actors) and Demise defeat don't
+                # set custom sceneflags, so monitor their vanilla flags directly.
+                await self.check_boss_defeat_flags()
+                
+                # Enforce bird-statue flags: clear any that the game's
+                # HD-progression system auto-unlocked without the player
+                # physically visiting the statue.
+                if not _block_writes:
+                    self._enforce_bird_statue_flags()
             
             # Send any newly checked locations to server (locations not yet sent)
             new_locations = self.checked_locations.difference(self.sent_locations)
@@ -2568,17 +2620,24 @@ class SSHDContext(CommonContext):
                 # Mark these locations as sent to avoid re-sending
                 self.sent_locations.update(new_locations)
                 
-                # Check if "Defeat Demise" location (2773238) was just checked - this means victory!
-                # Detected either via custom flags (if location exists in AP world)
-                # or via story flag 959 monitoring in check_boss_defeat_flags().
-                DEFEAT_DEMISE_LOCATION = 2773238
-                if DEFEAT_DEMISE_LOCATION in new_locations:
-                    logger.info("=== VICTORY! Demise defeated - sending goal completion to server ===")
+                # Check if the goal location (2773238) was just checked — victory!
+                # Primary: stage transitions (B400→F404 or F403→F404)
+                # Fallback: storyflag polling (134 / 486 in FA or STATIC)
+                _GOAL_LOCATION = 2773238
+                if _GOAL_LOCATION in new_locations:
+                    _goal_names = {0: "Demise", 1: "Ghirahim 3", 2: "Horde"}
+                    _gname = _goal_names.get(self.goal_type, "Unknown")
+                    logger.info(f"=== VICTORY! {_gname} defeated — releasing all remaining items ===")
                     await self.send_msgs([{
                         "cmd": "StatusUpdate",
                         "status": ClientStatus.CLIENT_GOAL
                     }])
-                    # Server will automatically release all remaining items if auto-release is enabled
+                    # Suppress ALL further memory writes.  The post-boss
+                    # cutscene and credits sequence tear down gameplay
+                    # structures; writing to player/flag/room offsets during
+                    # that window causes the game to PANIC.
+                    self.goal_completed = True
+                    logger.debug("Goal completed — memory writes suspended to protect end-game sequence")
                     
         except Exception as e:
             logger.error(f"Error updating game state: {e}")
@@ -2591,6 +2650,10 @@ class SSHDContext(CommonContext):
         cannot prevent the others from running.
         """
         if not self.memory.connected or not self.memory.base_address:
+            return
+
+        # Suppress all memory writes after goal completion (Demise defeated).
+        if self.goal_completed:
             return
 
         # Guard: skip all cheat writes during scene transitions / loading
@@ -3681,18 +3744,18 @@ class SSHDContext(CommonContext):
     
     async def check_boss_defeat_flags(self):
         """
-        Detect boss fight reward collection and Demise defeat via vanilla
-        sceneflags / storyflags in the save file.
+        Detect boss fight reward collection via vanilla sceneflags in the
+        save file.
 
-        These locations use actors (HeartCo / story-event) whose vanilla
-        flags are checked directly.  No transition tracking is needed:
-        once the flag is set and the location hasn't been sent to the
-        server yet, it will be picked up by the new_locations diff in
-        the update loop.  ``sent_locations`` (populated from the server
-        on connect) prevents duplicate sends.
+        These locations use actors (HeartCo) whose vanilla flags are
+        checked directly.  No transition tracking is needed: once the
+        flag is set and the location hasn't been sent to the server yet,
+        it will be picked up by the new_locations diff in the update
+        loop.  ``sent_locations`` (populated from the server on connect)
+        prevents duplicate sends.
 
-        Also detects the Demise defeat (story flag 959) and sends
-        CLIENT_GOAL so the server can release remaining items.
+        NOTE: Demise defeat is handled separately via the B400 → F404
+        stage transition in update_game_state().
         """
         if not self.memory.connected or not self.memory.base_address:
             return
@@ -3725,70 +3788,6 @@ class SSHDContext(CommonContext):
             except Exception as e:
                 logger.debug(f"Error reading boss defeat flag for loc {loc_code}: {e}")
 
-        # ── Demise defeat – story flag 959 ───────────────────────────────
-        DEFEAT_DEMISE_CODE = 2773238
-        if DEFEAT_DEMISE_CODE not in self.checked_locations:
-            try:
-                # Story flag 959: byte 119, bit 7 (mask 0x80)
-                sf_addr = file_a_offset + OFFSET_FA_STORYFLAGS + 119
-                byte_val = self.memory.read_byte(sf_addr)
-                if byte_val is not None and (byte_val & 0x80):
-                    self.checked_locations.add(DEFEAT_DEMISE_CODE)
-                    logger.info("=== Demise defeated (story flag 959) ===")
-                    self.update_tracker_state()
-            except Exception as e:
-                logger.debug(f"Error reading Demise story flag: {e}")
-
-    async def check_all_locations(self):
-        """Check all locations using LocationFlags.py data (Wii addresses - may not work on Switch)."""
-        if not self.memory.connected or not self.memory.base_address:
-            return
-        
-        for location_name, (flag_type, flag_bit, flag_value, scene_or_addr) in LOCATION_FLAG_MAP.items():
-            # Get proper location ID from LOCATION_TABLE
-            if location_name in LOCATION_TABLE:
-                location_id = LOCATION_TABLE[location_name].code
-            else:
-                # Skip locations not in table
-                continue
-            
-            # Skip if already checked
-            if location_id in self.checked_locations:
-                continue
-            
-            try:
-                is_checked = False
-                
-                if flag_type == FLAG_STORY:
-                    # Story flags use static addresses (base-relative)
-                    story_addr = scene_or_addr
-                    if isinstance(story_addr, int):
-                        byte_val = self.memory.read_byte(story_addr)
-                        if byte_val is not None:
-                            is_checked = bool(byte_val & (1 << flag_bit))
-                
-                elif flag_type == FLAG_SCENE:
-                    # Scene flags use scene name and are stored in static scene flag array
-                    scene_name = scene_or_addr
-                    if scene_name in SCENE_FLAG_ADDRESSES:
-                        # SCENE_FLAG_ADDRESSES contains base-relative offsets, not absolute addresses
-                        scene_base = SCENE_FLAG_ADDRESSES[scene_name]
-                        flag_addr = scene_base + flag_bit
-                        byte_val = self.memory.read_byte(flag_addr)
-                        if byte_val is not None:
-                            is_checked = bool(byte_val & flag_value)
-                
-                if is_checked:
-                    self.checked_locations.add(location_id)
-                    location_name_display = location_name[:50]  # Truncate long names
-                    logger.info(f"Location checked: {location_name_display}")
-                    
-                    # Update tracker with new location
-                    self.update_tracker_state()
-                    
-            except Exception as e:
-                logger.debug(f"Error checking location {location_name}: {e}")
-    
     # ------------------------------------------------------------------
     # Bird-statue HD-progression enforcement
     # ------------------------------------------------------------------
@@ -3958,21 +3957,6 @@ class SSHDContext(CommonContext):
         logger.debug("No item placement data found - item_to_location map is empty")
         return item_to_loc
 
-    def check_locations(self):
-        """
-        Check for completed locations.
-        
-        NOTE: Location checking is now item-based instead of memory-based.
-        When an item is given to the player via give_item_to_player(),
-        the corresponding location is automatically marked as checked.
-        
-        This function is kept for compatibility but no longer reads memory flags
-        (LocationFlags.py addresses are from Wii game and incompatible with SSHD).
-        """
-        # Item-based location checking is handled in give_item_to_player()
-        # No additional memory-based checking needed
-        pass
-    
     def on_deathlink(self, data: dict):
         """
         Handle death link - kill the player when someone else dies.
@@ -3981,6 +3965,10 @@ class SSHDContext(CommonContext):
 
         if not self.memory.connected or not self.memory.base_address:
             logger.warning("DeathLink: Cannot kill player - not connected to game")
+            return
+
+        if self.goal_completed:
+            logger.debug("DeathLink: Ignoring - goal already completed")
             return
 
         source = data.get('source', 'Unknown')
@@ -4027,6 +4015,10 @@ class SSHDContext(CommonContext):
 
         if not self.memory.connected or not self.memory.base_address:
             logger.warning("BreathLink: Cannot drain stamina - not connected to game")
+            return
+
+        if self.goal_completed:
+            logger.debug("BreathLink: Ignoring - goal already completed")
             return
 
         source = data.get('source', 'Unknown')
