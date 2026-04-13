@@ -514,7 +514,6 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
             set_string_arg(GLOBAL_TEXT_MGR, player_ptr, 1);
         }
 
-
         // Write to the message-window layout's TextMgr if available.
         let text_mgr = if !LYT_MSG_WINDOW.is_null() {
             (*LYT_MSG_WINDOW).text_mgr
