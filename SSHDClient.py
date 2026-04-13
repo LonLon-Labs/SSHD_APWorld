@@ -2208,6 +2208,11 @@ class SSHDContext(CommonContext):
                     self._visited_regions.clear()
                     self._deferred_flag_writes.clear()
                     self._last_next_stage = None
+                    # Reset death/breath link state so stale zeros from
+                    # the old (cleared) memory don't carry into the next
+                    # session after rescan.
+                    self.last_hearts = None
+                    self.last_stamina = None
 
                     # Immediately attempt a new base-address scan instead of
                     # waiting for the next cycle (which would spin doing
@@ -2559,8 +2564,20 @@ class SSHDContext(CommonContext):
                 if time_since_connect > 10.0:
                     # Player just died if health went to 0 (from any positive value OR if we had None before)
                     if current_health == 0 and (self.last_hearts is None or self.last_hearts > 0):
-                        # Player just died - but skip sending if we killed them via death link
-                        if self.killed_by_deathlink:
+                        # Guard: verify the save file is still loaded.
+                        # When the player saves & quits at a bird statue the
+                        # game zeroes the entire save area, making health AND
+                        # health-capacity read as 0.  In a real death only
+                        # current health drops to 0 while capacity stays
+                        # positive.  If capacity is also 0 (or unreadable)
+                        # the save was unloaded — skip the send.
+                        health_capacity = self.memory.read_short(OFFSET_CURRENT_HEALTH - 4)
+                        if health_capacity is None or health_capacity <= 0:
+                            logger.debug(
+                                "[DeathLink] Ignoring health=0: health capacity "
+                                "also 0/unreadable (save/quit or memory cleared)"
+                            )
+                        elif self.killed_by_deathlink:
                             logger.debug("Death detected, but caused by receiving death link - not sending")
                             self.killed_by_deathlink = False  # Clear flag
                         elif "DeathLink" in self.tags:
@@ -2575,7 +2592,17 @@ class SSHDContext(CommonContext):
                 if time_since_connect > 10.0:
                     # Stamina just ran out if it went from >0 to 0
                     if current_stamina == 0 and (self.last_stamina is not None and self.last_stamina > 0):
-                        if self.exhausted_by_breathlink:
+                        # Guard: verify the save file is still loaded (same
+                        # rationale as the DeathLink guard above).  When the
+                        # save area is zeroed on quit, stamina AND health
+                        # capacity both read as 0.
+                        health_capacity = self.memory.read_short(OFFSET_CURRENT_HEALTH - 4)
+                        if health_capacity is None or health_capacity <= 0:
+                            logger.debug(
+                                "[BreathLink] Ignoring stamina=0: health capacity "
+                                "also 0/unreadable (save/quit or memory cleared)"
+                            )
+                        elif self.exhausted_by_breathlink:
                             logger.debug("Stamina exhaustion detected, but caused by receiving breath link - not sending")
                             self.exhausted_by_breathlink = False  # Clear flag
                         elif "BreathLink" in self.tags:
