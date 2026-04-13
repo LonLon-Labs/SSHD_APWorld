@@ -80,8 +80,10 @@ pub extern "C" fn setup_traps(item_actor: *mut item::dAcItem) -> u16 {
         // triggers event 003_216.  By setting the flag_id here, cmd 81 can
         // read the correct value when it runs.
         //
-        // handle_custom_item_get (in stateGet) also sets this, but stateGet
-        // runs AFTER the event fires, making it too late for the textbox.
+        // For NPC-given items, cmd 80 sets this in the same event flow
+        // instead.  handle_custom_item_get (stateGet) deliberately does NOT
+        // set this — stateGet runs AFTER the event fires, so writing there
+        // would leave stale values for the next item pickup.
         let itemid = (*item_actor).itemid;
         if itemid == 216 {
             let params = item::unpack_custom_item_params(item_actor);
