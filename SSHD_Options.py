@@ -308,7 +308,7 @@ class StartingSword(Choice):
     Which sword to start with.
     """
     display_name = "Starting Sword"
-    option_none = 0
+    option_no_sword = 0
     option_practice_sword = 1
     option_goddess_sword = 2
     option_goddess_longsword = 3
@@ -606,10 +606,11 @@ class MinigameDifficulty(Choice):
     Determines the difficulty of minigames.
     """
     display_name = "Minigame Difficulty"
-    option_easy = 0
-    option_medium = 1
-    option_hard = 2
-    default = 0
+    option_guaranteed_win = 0
+    option_easy = 1
+    option_vanilla = 2
+    option_hard = 3
+    default = 1
 
 
 class TrapMode(Choice):

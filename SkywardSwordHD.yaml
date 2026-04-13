@@ -582,9 +582,10 @@ Skyward Sword HD:
   boss_key_puzzles: vanilla_orientation
   
   # Minigame Difficulty
-  # easy: Easy minigames (default)
-  # medium: Medium difficulty
-  # hard: Challenging minigames
+  # guaranteed_win: Completing the minigame will guarantee the best reward
+  # easy: The threshold needed to earn a reward from each minigame will be reduced (default)
+  # vanilla: The threshold needed to earn a reward from each minigame will be unchanged
+  # hard: The threshold needed to earn a reward from each minigame will be increased
   minigame_difficulty: easy
   
   # ========================================

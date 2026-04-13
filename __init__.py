@@ -466,7 +466,7 @@ class SSHDWorld(World):
         "randomize_shop_prices": ("randomize_shop_prices", "toggle", None),
         "ammo_availability": ("ammo_availability", "choice", {"scarce": 0, "vanilla": 1, "useful": 2, "plentiful": 3}),
         "boss_key_puzzles": ("boss_key_puzzles", "choice", {"correct_orientation": 0, "vanilla_orientation": 1, "random_orientation": 2}),
-        "minigame_difficulty": ("minigame_difficulty", "choice", {"easy": 0, "medium": 1, "hard": 2}),
+        "minigame_difficulty": ("minigame_difficulty", "choice", {"guaranteed_win": 0, "easy": 1, "vanilla": 2, "hard": 3}),
         "trap_mode": ("trap_mode", "choice", {"no_traps": 0, "trapish": 1, "trapsome": 2, "traps_o_plenty": 3, "traptacular": 4}),
         "trappable_items": ("trappable_items", "choice", {"major_items": 0, "non_major_items": 1, "any_items": 2}),
         # Trap Types
@@ -3338,7 +3338,7 @@ class SSHDWorld(World):
         boss_key_map = {0: "correct_orientation", 1: "vanilla_orientation", 2: "random_orientation"}
         settings_dict["boss_key_puzzles"] = boss_key_map[self.options.boss_key_puzzles.value]
         
-        minigame_map = {0: "easy", 1: "medium", 2: "hard"}
+        minigame_map = {0: "guaranteed_win", 1: "easy", 2: "vanilla", 3: "hard"}
         settings_dict["minigame_difficulty"] = minigame_map[self.options.minigame_difficulty.value]
         
         trap_mode_map = {0: "no_traps", 1: "trapish", 2: "trapsome", 3: "traps_o_plenty", 4: "traptacular"}
