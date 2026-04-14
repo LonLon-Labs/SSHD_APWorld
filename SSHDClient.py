@@ -2274,6 +2274,21 @@ class SSHDContext(CommonContext):
             if not stage_name or len(stage_name) == 0:
                 # Game not loaded yet (title screen, loading, etc.)
                 return
+
+            # Save-file-alive guard: when the player saves & quits at a
+            # bird statue the game zeroes the entire save area while the
+            # stage name may still read as valid.  Health capacity lives
+            # inside the save data; if it reads 0 (or is unreadable) the
+            # save has been unloaded and ANY read/write to save or player
+            # structures would operate on freed memory, causing false
+            # BreathLink/DeathLink sends and emulator crashes.
+            health_cap = self.memory.read_short(OFFSET_CURRENT_HEALTH - 4)
+            if health_cap is None or health_cap <= 0:
+                # Reset tracking state so stale zeros don't trigger
+                # false events once the game reloads.
+                self.last_hearts = None
+                self.last_stamina = None
+                return
             
             # The game sets NEXT_STAGE before tearing down ROOM_MGR and
             # other scene structures, whereas CURRENT_STAGE only changes
@@ -2711,6 +2726,17 @@ class SSHDContext(CommonContext):
                     return
             except Exception:
                 pass
+
+            # Save-file-alive guard: when the player saves & quits at a
+            # bird statue, the game zeroes the entire save area while the
+            # stage name can still read as valid for a few frames.
+            # Health-capacity lives inside the save data; if it reads as 0
+            # (or is unreadable) the save file has been unloaded and we
+            # must not write to player/save structures — doing so corrupts
+            # the teardown state and crashes the emulator.
+            health_cap = self.memory.read_short(OFFSET_CURRENT_HEALTH - 4)
+            if health_cap is None or health_cap <= 0:
+                return
         except Exception:
             return
 
