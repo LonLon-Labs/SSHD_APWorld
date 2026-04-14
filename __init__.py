@@ -1373,7 +1373,66 @@ class SSHDWorld(World):
             self._sshd_full_item_pool = {}
             self._sshd_starting_pool = {}
             self._sshd_excluded_locations = set()
+
+        # Always ensure critical settings are populated from AP options as fallback.
+        # If sshd-rando extraction succeeded, these are already set and won't be overwritten.
+        # If it failed, this prevents the logic converter from treating all
+        # setting comparisons as False (which makes regions like Temple of Hylia unreachable).
+        self._ensure_critical_resolved_settings()
     
+    def _ensure_critical_resolved_settings(self):
+        """
+        Populate _sshd_resolved_settings with fallback values derived from
+        Archipelago options for any critical settings that are missing.
+
+        The logic converter's _resolve_setting_comparison returns ALWAYS_FALSE
+        for unknown settings, which can make the Gate of Time Sword Requirement
+        macro (and similar) evaluate to False on every branch, blocking access
+        to Temple of Hylia and making the game unbeatable.
+        """
+        if not hasattr(self, '_sshd_resolved_settings'):
+            self._sshd_resolved_settings = {}
+
+        s = self._sshd_resolved_settings
+
+        # got_sword_requirement — used by Gate of Time Sword Requirement macro
+        if 'got_sword_requirement' not in s:
+            got_sword_map = {
+                0: "goddess_sword", 1: "goddess_longsword",
+                2: "goddess_white_sword", 3: "master_sword",
+                4: "true_master_sword",
+            }
+            s['got_sword_requirement'] = got_sword_map.get(
+                self.options.gate_of_time_sword_requirement.value, 'true_master_sword')
+            print(f"[__init__.py] Fallback: got_sword_requirement = {s['got_sword_requirement']}")
+
+        # required_dungeons — used by victory access rule for boss key count
+        if 'required_dungeons' not in s:
+            s['required_dungeons'] = str(self.options.required_dungeon_count.value)
+            print(f"[__init__.py] Fallback: required_dungeons = {s['required_dungeons']}")
+
+        # boss_keys — used by victory access rule to decide if boss keys are needed
+        if 'boss_keys' not in s:
+            key_mode_map = {
+                0: "vanilla", 1: "own_dungeon", 2: "any_dungeon",
+                3: "own_region", 4: "overworld", 5: "anywhere", 6: "removed",
+            }
+            s['boss_keys'] = key_mode_map.get(
+                self.options.boss_key_shuffle.value, 'own_dungeon')
+            print(f"[__init__.py] Fallback: boss_keys = {s['boss_keys']}")
+
+        # Open world settings used by logic macros
+        if 'open_thunderhead' not in s:
+            s['open_thunderhead'] = "on" if self.options.open_thunderhead.value else "off"
+        if 'open_lake_floria' not in s:
+            floria_map = {0: "vanilla", 1: "yerbal", 2: "open"}
+            s['open_lake_floria'] = floria_map.get(
+                self.options.open_lake_floria_gate.value, 'vanilla')
+        if 'open_et' not in s:
+            s['open_et'] = "on" if self.options.open_earth_temple.value else "off"
+        if 'open_lmf' not in s:
+            s['open_lmf'] = "on" if self.options.open_lmf.value else "off"
+
     def create_item(self, name: str) -> Item:
         """Create an item by name."""
         data = ITEM_TABLE[name]

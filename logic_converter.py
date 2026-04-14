@@ -415,7 +415,8 @@ class _ReqParser:
         
         actual_value = self.resolved_settings.get(setting_name, None)
         if actual_value is None:
-            logger.debug(f"Unknown setting '{setting_name}' in comparison — treating as False")
+            logger.warning(f"Unknown setting '{setting_name}' in comparison — treating as False "
+                           f"(this may block region access; check _sshd_resolved_settings)")
             return ALWAYS_FALSE
         
         # For numeric comparisons (>= , <=), use the option index
