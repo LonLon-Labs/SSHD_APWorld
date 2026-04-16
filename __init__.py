@@ -41,7 +41,7 @@ from worlds.LauncherComponents import (
 
 from .Items import ITEM_TABLE
 from .Locations import LOCATION_TABLE
-from .SSHD_Options import SSHDOptions
+from .SSHD_Options import SSHDOptions, sshd_option_groups
 from .Rules import set_rules, set_completion_condition
 from .rando.ArcPatcher import patch_archipelago_logo, patch_archipelago_item_oarc
 from .SSHDRWrapper import generate_sshd_rando_mod, extract_location_item_mapping, extract_custom_flag_mapping
@@ -270,6 +270,7 @@ class SSHDWeb(WebWorld):
     )]
     theme = "ice"
     rich_text_options_doc = True
+    option_groups = sshd_option_groups
 
 
 class SSHDContainer(APPlayerContainer):
