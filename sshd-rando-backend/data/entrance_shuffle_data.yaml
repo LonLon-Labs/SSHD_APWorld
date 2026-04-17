@@ -497,6 +497,36 @@
         entrance: 4
 
 ###############################
+#        GATE OF TIME         #
+###############################
+
+- type: Gate of Time
+  forward:
+    connection: Sealed Temple -> Temple of Hylia
+    alias: Sealed Temple -> Gate of Time
+    exit_infos:
+      - stage: F402
+        room: 2
+        index: 5
+    spawn_info:
+      - stage: F404
+        layer: 1
+        room: 2
+        entrance: 4
+  return:
+    connection: Temple of Hylia -> Sealed Temple
+    alias: Gate of Time -> Sealed Temple
+    exit_infos:
+      - stage: F404
+        room: 2
+        index: 0
+    spawn_info:
+      - stage: F402
+        layer: 0
+        room: 2
+        entrance: 2
+
+###############################
 #            DOORS            #
 ###############################
 

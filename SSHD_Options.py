@@ -271,6 +271,15 @@ class RandomizeInteriorEntrances(Toggle):
     display_name = "Randomize Interior Entrances"
 
 
+class RandomizeGateOfTime(Toggle):
+    """
+    Randomize the Gate of Time entrance.
+    The Gate of Time connection (Sealed Grounds to Temple of Hylia) will be shuffled
+    into the entrance pool. Requires Randomize Entrances to be enabled.
+    """
+    display_name = "Randomize Gate of Time"
+
+
 class RandomizeOverworldEntrances(Toggle):
     """
     Randomize overworld region entrances.
@@ -1565,6 +1574,7 @@ class SSHDOptions(PerGameCommonOptions):
     randomize_trials: RandomizeTrials
     randomize_door_entrances: RandomizeDoorEntrances
     decouple_skykeep_layout: DecoupleSkykeepLayout
+    randomize_gate_of_time: RandomizeGateOfTime
     randomize_interior_entrances: RandomizeInteriorEntrances
     randomize_overworld_entrances: RandomizeOverworldEntrances
     decouple_entrances: DecoupleEntrances
@@ -1781,6 +1791,7 @@ sshd_option_groups = [
         RandomizeTrials,
         RandomizeDoorEntrances,
         DecoupleSkykeepLayout,
+        RandomizeGateOfTime,
         RandomizeInteriorEntrances,
         RandomizeOverworldEntrances,
         DecoupleEntrances,
