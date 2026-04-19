@@ -341,6 +341,12 @@ BIRD_STATUE_FLAGS = {
     "Volcano East Statue":       ("story",  0, 805),
     "Volcano Ascent Statue":     ("story",  0, 806),
     "Temple Entrance Statue":    ("story",  0, 807),
+    # Eldin region — dungeon statues (scene-flag based)
+    # Flag numbers extracted from BZS actor data (saveObj params1[7:0]):
+    #   F201_3/room0 params1=0x02020165 → flag 101, scene 5 (Eldin Volcano Summit)
+    #   D201/room10  params1=0x02030172 → flag 114, scene 15 (Fire Sanctuary)
+    "Inside the Volcano Statue":        ("scene",  5, 101),
+    "Inside the Fire Sanctuary Statue": ("scene", 15, 114),
     # Lanayru region — scene-flag statues
     "Lanayru Mine Entry Statue": ("scene",  7, 68),
     "Desert Entrance Statue":    ("scene",  7, 66),
@@ -369,8 +375,9 @@ _STAGE_TO_BIRD_STATUE_SCENES: dict[str, set[int]] = {
     "F103":   {1},        # Flooded Faron Woods (Great Tree statue activatable here)
     "F200":   set(),      # Eldin Volcano (statues use story flags, handled separately)
     "F201":   set(),      # Volcano Summit
-    "F201_3": set(),      # Inside the Volcano
-    "D201":   set(),      # Inside the Fire Sanctuary
+    "F201_3": {5},        # Inside the Volcano (Eldin Volcano Summit scene)
+    "D201":   {15},       # Fire Sanctuary (Inside the Fire Sanctuary Statue)
+    "D201_1": {15},       # Fire Sanctuary (sub-area)
     "F300":   {7},        # Lanayru Desert
     "F300_1": {7},        # Lanayru Mine
     "F300_4": {7},        # Temple of Time / Desert Gorge area
@@ -382,7 +389,7 @@ _STAGE_TO_BIRD_STATUE_SCENES: dict[str, set[int]] = {
 }
 
 # Stages where Eldin story-flag statues (804-807) may legitimately activate.
-_ELDIN_STAGES = {"F200", "F201", "F201_3", "F210", "F211", "D201"}
+_ELDIN_STAGES = {"F200", "F201", "F201_3", "F210", "F211", "D201", "D201_1"}
 # Stages where Faron story-flag statues (800-803) may legitimately activate.
 _FARON_STAGES = {"F100", "F101", "F102", "F102_1", "F103", "F401", "F400"}
 
@@ -446,12 +453,12 @@ STAGE_NAMES = {
     "D000": "Skyview Temple",
     "D100": "Earth Temple",
     "D200": "Lanayru Mining Facility",
-    "D201": "Temple of Time",
+    "D201": "Fire Sanctuary",
     "D300": "Ancient Cistern",
     "D301": "Sandship",
     "D302": "Pirate Stronghold",
-    "D003": "Fire Sanctuary",
-    "D003_1": "Fire Sanctuary (Underwater)",
+    "D003": "Sky Keep",
+    "D003_1": "Sky Keep",
     "S000": "Sealed Grounds",
     "S100": "Hylia's Temple",
     "S200": "Sealed Temple",
@@ -3988,8 +3995,18 @@ class SSHDContext(CommonContext):
     # Bird-statue HD-progression enforcement
     # ------------------------------------------------------------------
     def _read_bird_statue_flag(self, flag_type: str, scene_index: int, flag_number: int) -> Optional[bool]:
-        """Read a single bird statue activation flag from the save file.
-        Returns True if set, False if unset, None on read failure."""
+        """Read a single bird statue activation flag from BOTH save file
+        and static (runtime) memory.  Returns True if set in *either*
+        copy, False if unset in both, None on read failure.
+
+        For story flags the game keeps a runtime copy at
+        OFFSET_STORY_FLAGS_STATIC that is authoritative — the save-file
+        copy is only synced periodically.  Reading both copies gives the
+        earliest possible detection of an HD-progression auto-unlock.
+
+        For scene flags the static copy only covers the *current* scene
+        (16 bytes), so we read from the save file which has all scenes.
+        """
         if flag_type == "scene":
             upper = (flag_number & 0xF0) >> 4
             lower = flag_number & 0x0F
@@ -4001,33 +4018,77 @@ class SSHDContext(CommonContext):
         else:  # story
             word_idx = flag_number // 16
             bit_idx = flag_number % 16
-            offset = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS + word_idx * 2
-            val = self.memory.read_short(offset)
-            if val is None:
+            mask = 1 << bit_idx
+            # Save-file copy
+            fa_offset = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS + word_idx * 2
+            fa_val = self.memory.read_short(fa_offset)
+            if fa_val is None:
                 return None
-            return bool(val & (1 << bit_idx))
+            fa_set = bool(fa_val & mask)
+            # Static / runtime copy
+            static_offset = OFFSET_STORY_FLAGS_STATIC + word_idx * 2
+            static_val = self.memory.read_short(static_offset)
+            static_set = bool(static_val & mask) if static_val is not None else False
+            return fa_set or static_set
 
     def _clear_bird_statue_flag(self, flag_type: str, scene_index: int, flag_number: int) -> bool:
-        """Clear a single bird statue activation flag in the save file.
-        Returns True on success."""
+        """Clear a single bird statue activation flag from BOTH save file
+        and static (runtime) memory.  Returns True on success.
+
+        For story flags the game syncs static → save file periodically,
+        so clearing only the save copy would be undone on the next sync.
+        We must clear both copies to break the ping-pong cycle.
+
+        For scene flags the static copy only holds the *current* scene's
+        data (16 bytes at OFFSET_SCENE_FLAGS_STATIC).  We always clear
+        the save-file copy; when the flag belongs to the currently loaded
+        scene we also clear the static copy.
+        """
         if flag_type == "scene":
             upper = (flag_number & 0xF0) >> 4
             lower = flag_number & 0x0F
+            clear_mask = ~(1 << lower) & 0xFFFF
+            # Save-file copy (all scenes)
             offset = OFFSET_SAVEFILE_A + OFFSET_FA_SCENEFLAGS + scene_index * 16 + upper * 2
             val = self.memory.read_short(offset)
             if val is None:
                 return False
-            self.memory.write_short(offset, val & ~(1 << lower))
+            self.memory.write_short(offset, val & clear_mask)
+            # Static copy — only valid if the current stage is in this scene
+            current_scene = self._get_current_scene_index()
+            if current_scene is not None and current_scene == scene_index:
+                static_offset = OFFSET_SCENE_FLAGS_STATIC + upper * 2
+                static_val = self.memory.read_short(static_offset)
+                if static_val is not None:
+                    self.memory.write_short(static_offset, static_val & clear_mask)
             return True
         else:  # story
             word_idx = flag_number // 16
             bit_idx = flag_number % 16
-            offset = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS + word_idx * 2
-            val = self.memory.read_short(offset)
-            if val is None:
+            clear_mask = ~(1 << bit_idx) & 0xFFFF
+            # Save-file copy
+            fa_offset = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS + word_idx * 2
+            fa_val = self.memory.read_short(fa_offset)
+            if fa_val is None:
                 return False
-            self.memory.write_short(offset, val & ~(1 << bit_idx))
+            self.memory.write_short(fa_offset, fa_val & clear_mask)
+            # Static / runtime copy
+            static_offset = OFFSET_STORY_FLAGS_STATIC + word_idx * 2
+            static_val = self.memory.read_short(static_offset)
+            if static_val is not None:
+                self.memory.write_short(static_offset, static_val & clear_mask)
             return True
+
+    def _get_current_scene_index(self) -> Optional[int]:
+        """Return the scene flag index for the currently loaded stage,
+        or None if the stage is unknown / not mapped to a bird-statue scene."""
+        stage = (self.current_stage or "")[:6]
+        scene_set = _STAGE_TO_BIRD_STATUE_SCENES.get(stage)
+        if scene_set is None:
+            scene_set = _STAGE_TO_BIRD_STATUE_SCENES.get(stage[:4])
+        if scene_set and len(scene_set) == 1:
+            return next(iter(scene_set))
+        return None
 
     def _enforce_bird_statue_flags(self) -> None:
         """Prevent the game's HD-progression system from auto-unlocking
