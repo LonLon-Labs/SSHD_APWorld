@@ -1409,6 +1409,13 @@ class SSHDContext(CommonContext):
         self.custom_flag_to_location: Dict[int, int] = {}  # custom_flag_id -> location_code
         self.location_to_custom_flag: Dict[int, int] = {}  # location_code -> custom_flag_id (for vanilla pickups)
         
+        # Goddess chest scene flag checking
+        # Goddess chests can't use custom flags (would corrupt their storyflag spawn gate).
+        # Instead, the AP client polls the vanilla set_sceneflag that the game sets on open.
+        # Format: {location_code: [scene_index, set_sceneflag]}
+        self.goddess_chest_scene_flags: Dict[int, list] = {}
+        self.previous_goddess_chest_flags: Dict[int, int] = {}  # location_code -> last_state (0 or 1)
+        
         # AP item info table (for item 216 textbox display) and check stats (for help menu)
         self.ap_item_info: Dict[int, dict] = {}  # custom_flag_id -> {"item": name, "player": name}
         self.ap_location_codes: Set[int] = set()  # Location codes that have cross-world items
@@ -1788,6 +1795,15 @@ class SSHDContext(CommonContext):
                 logger.debug(f"Loaded {len(self.location_to_custom_flag)} location -> flag mappings for vanilla pickups")
             else:
                 logger.debug("No location→flag mapping found - vanilla pickups disabled")
+
+            # Load goddess chest scene flag mapping for location detection
+            # Goddess chests can't use custom flags, so we poll their vanilla scene flags
+            goddess_chest_raw = slot_data.get("goddess_chest_scene_flags", {})
+            if goddess_chest_raw:
+                self.goddess_chest_scene_flags = {int(k): v for k, v in goddess_chest_raw.items()}
+                logger.info(f"Loaded {len(self.goddess_chest_scene_flags)} goddess chest scene flag mappings")
+            else:
+                logger.debug("No goddess chest scene flag mappings in slot data")
 
             # Load AP item info for cross-world item textbox display
             ap_item_info_raw = slot_data.get("ap_item_info", {})
@@ -2642,6 +2658,10 @@ class SSHDContext(CommonContext):
                     # Supplement: shop purchases don't set custom scene/dungeon flags,
                     # so also check Beedle's sold-out storyflags from the save file.
                     await self.check_beedle_shop_storyflags()
+                
+                # Goddess chests use vanilla scene flags instead of custom flags
+                if self.goddess_chest_scene_flags:
+                    await self.check_goddess_chest_flags()
                 
                 # Boss fight rewards (HeartCo actors) and Demise defeat don't
                 # set custom sceneflags, so monitor their vanilla flags directly.
@@ -3638,6 +3658,96 @@ class SSHDContext(CommonContext):
             else:
                 logger.debug(f"[FlagInit] Partial init: {initialized_count}/{expected_count} flags read - staying in init mode")
     
+    async def check_goddess_chest_flags(self):
+        """Check goddess chest scene flags for location completion.
+        
+        Goddess chests can't use AP custom flags (writing to params2 would corrupt
+        their storyflag spawn gate). Instead, we poll the vanilla set_sceneflag
+        that the game engine sets when the chest is opened.
+        
+        The mapping location_code -> [scene_index, set_sceneflag] is provided
+        in slot_data as goddess_chest_scene_flags.
+        """
+        if not self.memory.connected or not self.memory.base_address:
+            return
+        
+        if not hasattr(self, '_goddess_flags_initializing'):
+            self._goddess_flags_initializing = True
+            logger.debug(f"[GoddessChest] Initializing {len(self.goddess_chest_scene_flags)} goddess chest flags")
+        
+        # Cache for scene data to avoid re-reading the same scene multiple times
+        scene_cache: Dict[int, list] = {}
+        
+        for location_code, (scene_index, set_sceneflag) in self.goddess_chest_scene_flags.items():
+            # Skip if already checked
+            if location_code in self.checked_locations:
+                continue
+            
+            # Calculate u16 position and bit position within that u16
+            upper_flag = set_sceneflag // 16  # Which u16 in the scene's 8 u16s (0-7)
+            lower_flag = set_sceneflag % 16   # Which bit in that u16 (0-15)
+            
+            if upper_flag > 7:
+                logger.error(f"[GoddessChest] Invalid sceneflag {set_sceneflag} for location {location_code}: upper_flag={upper_flag}")
+                continue
+            
+            try:
+                if scene_index not in scene_cache:
+                    # Read 16 bytes (8 u16 values) for this scene from SaveFile A sceneflags
+                    scene_offset = OFFSET_SAVEFILE_A + OFFSET_FA_SCENEFLAGS + (scene_index * 16)
+                    scene_data = self.memory.read_bytes(scene_offset, 16)
+                    
+                    if scene_data and len(scene_data) == 16:
+                        scene_u16s = [
+                            int.from_bytes(scene_data[i:i+2], byteorder='little')
+                            for i in range(0, 16, 2)
+                        ]
+                        scene_cache[scene_index] = scene_u16s
+                    else:
+                        scene_cache[scene_index] = None
+                
+                scene_u16s = scene_cache.get(scene_index)
+                if scene_u16s is not None and upper_flag < len(scene_u16s):
+                    current_u16 = scene_u16s[upper_flag]
+                    flag_state = (current_u16 >> lower_flag) & 0x1
+                    previous_state = self.previous_goddess_chest_flags.get(location_code, 0)
+                    
+                    if self._goddess_flags_initializing:
+                        # First poll: record current state and recover unsent checks
+                        self.previous_goddess_chest_flags[location_code] = flag_state
+                        if flag_state == 1 and location_code not in self.sent_locations:
+                            self.checked_locations.add(location_code)
+                            location_name = self.location_names.lookup_in_slot(location_code, self.slot)
+                            logger.info(f"[GoddessChest] Recovered unsent check: {location_name}")
+                            self.update_tracker_state()
+                    elif flag_state == 1 and previous_state == 0:
+                        # Flag was just set - goddess chest opened!
+                        self.checked_locations.add(location_code)
+                        location_name = self.location_names.lookup_in_slot(location_code, self.slot)
+                        logger.info(f"[GoddessChest] Location checked: {location_name} (scene={scene_index}, flag={set_sceneflag})")
+                        self.update_tracker_state()
+                        self.previous_goddess_chest_flags[location_code] = flag_state
+                    else:
+                        self.previous_goddess_chest_flags[location_code] = flag_state
+                
+            except Exception as e:
+                if not hasattr(self, '_goddess_error_logged'):
+                    self._goddess_error_logged = set()
+                if scene_index not in self._goddess_error_logged:
+                    logger.error(f"[GoddessChest] Error reading scene {scene_index}: {e}")
+                    self._goddess_error_logged.add(scene_index)
+        
+        # Clear initialization flag after first complete poll
+        if self._goddess_flags_initializing:
+            expected = len(self.goddess_chest_scene_flags) - len([
+                lc for lc in self.goddess_chest_scene_flags if lc in self.checked_locations
+            ])
+            initialized = len(self.previous_goddess_chest_flags)
+            if initialized >= expected:
+                self._goddess_flags_initializing = False
+                already_set = sum(1 for v in self.previous_goddess_chest_flags.values() if v == 1)
+                logger.debug(f"[GoddessChest] Initialized {initialized} flags ({already_set} already set)")
+
     async def check_beedle_shop_storyflags(self):
         """
         Detect Beedle's Airshop purchases by monitoring multiple signal sources:
