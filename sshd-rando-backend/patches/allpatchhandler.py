@@ -132,6 +132,10 @@ class AllPatchHandler:
         )
 
         update_progress_value(90)
+        # Pass crest custom flags from stage patcher to ASM patcher so
+        # init_global_variables can write them into the CREST_CUSTOM_FLAGS
+        # Rust static.
+        self.asm_patch_handler.crest_custom_flags = self.stage_patch_handler.crest_custom_flags
         self.asm_patch_handler.patch_all_asm(self.world, self.conditional_patch_handler)
         copy_extra_mod_files(
             self.world.setting_map.other_mods, self.world.config.output_dir

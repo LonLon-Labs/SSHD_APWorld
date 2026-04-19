@@ -142,6 +142,35 @@ class ASMPatchHandler:
 
                 # print(f"data {bytes(data)}")
 
+        # Get new decompressed sizes
+        new_text_decompressed_size = len(text_segment.getvalue())
+        new_rodata_decompressed_size = len(rodata_segment.getvalue())
+        new_data_decompressed_size = len(data_segment.getvalue())
+
+        # Update decompressed sizes in NSO header if segments grew.
+        # DecompressedSize is at offset +8 within each segment header.
+        if new_text_decompressed_size > text_header.get_decompressed_size():
+            write_u32(
+                nso,
+                SegmentHeader.SEGMENT_HEADER_SIZE + 8,
+                new_text_decompressed_size,
+                is_little_endian=True,
+            )
+        if new_rodata_decompressed_size > rodata_header.get_decompressed_size():
+            write_u32(
+                nso,
+                SegmentHeader.SEGMENT_HEADER_SIZE * 2 + 8,
+                new_rodata_decompressed_size,
+                is_little_endian=True,
+            )
+        if new_data_decompressed_size > data_header.get_decompressed_size():
+            write_u32(
+                nso,
+                SegmentHeader.SEGMENT_HEADER_SIZE * 3 + 8,
+                new_data_decompressed_size,
+                is_little_endian=True,
+            )
+
         new_compressed_text = self.compress(text_segment.getvalue())
         new_compressed_rodata = self.compress(rodata_segment.getvalue())
         new_compressed_data = self.compress(data_segment.getvalue())
@@ -154,7 +183,6 @@ class ASMPatchHandler:
         #
         # Each segment size can change due to the compression.
         # If the new size is smaller, don't bother updating it - there's no point.
-        # The MemoryOffset and Size fields are left unchanged as this doesn't appear to cause problems.
         if new_text_size_diff > 0:
             # Update rodata and data file offsets in their segment headers.
             write_u32(
@@ -636,6 +664,14 @@ class ASMPatchHandler:
                 0x0,
             ],  # BOSS_RUSH_STORYFLAG_STATES
         }
+
+        # Write crest custom flags (defaults to 0x3FF = no flag per slot)
+        flags = getattr(self, 'crest_custom_flags', [0x3FF, 0x3FF, 0x3FF])
+        init_rw_globals_dict[SUBSDK_CREST_CUSTOM_FLAGS_OFFSET] = [
+            flags[0] & 0xFF, (flags[0] >> 8) & 0xFF,
+            flags[1] & 0xFF, (flags[1] >> 8) & 0xFF,
+            flags[2] & 0xFF, (flags[2] >> 8) & 0xFF,
+        ]  # CREST_CUSTOM_FLAGS
 
         yaml_write(output_path, init_rw_globals_dict)
 

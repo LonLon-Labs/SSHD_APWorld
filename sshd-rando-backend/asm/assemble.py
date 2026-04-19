@@ -304,16 +304,17 @@ def assemble(temp_dir_name: Path, asmPaths: list[Path], outputPath: Path):
             if asm_file_path == ASM_RUST_ADDITIONS_PATH:
                 # Keep track of custom symbols so they can be passed in the linker script to future assembler calls.
                 with open(map_file_name, encoding="utf-8") as f:
-                    on_custom_symbols = False
+                    in_symbol_section = False
 
                     for line in f.read().splitlines():
-                        if line.startswith(" .text          "):
-                            on_custom_symbols = True
+                        if line.startswith((" .text ", " .rodata ", " .data ", " .bss ")):
+                            in_symbol_section = True
                             continue
 
-                        if on_custom_symbols:
+                        if in_symbol_section:
                             if not line:
-                                break
+                                in_symbol_section = False
+                                continue
 
                             match = re.search(
                                 r" +0x000000(?:0000000000)?([0-9a-f]{10}) +([a-zA-Z]\S+)",

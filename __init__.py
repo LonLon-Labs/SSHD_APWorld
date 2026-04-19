@@ -3430,6 +3430,24 @@ class SSHDWorld(World):
         settings_dict["natural_night_connections"] = "on" if self.options.natural_night_connections.value else "off"
         settings_dict["peatrice_conversations"] = str(self.options.peatrice_conversations.value)
         
+        # Quality of Life - Open Locations
+        settings_dict["open_thunderhead"] = "on" if self.options.open_thunderhead.value else "off"
+        
+        floria_map = {0: "vanilla", 1: "yerbal", 2: "open"}
+        settings_dict["open_lake_floria"] = floria_map[self.options.open_lake_floria.value]
+        
+        et_map = {0: "open", 1: "shuffle_eldin", 2: "shuffle_anywhere"}
+        settings_dict["open_earth_temple"] = et_map[self.options.open_earth_temple.value]
+        
+        lmf_map = {0: "nodes", 1: "main_node", 2: "open"}
+        settings_dict["open_lmf"] = lmf_map[self.options.open_lmf.value]
+        
+        settings_dict["open_batreaux_shed"] = "on" if self.options.open_batreaux_shed.value else "off"
+        
+        # Quality of Life - Skips
+        settings_dict["skip_harp_playing"] = "on" if self.options.skip_harp_playing.value else "off"
+        settings_dict["skip_misc_small_cutscenes"] = "on" if self.options.skip_misc_cutscenes.value else "off"
+        
         # Quality of Life - Shortcuts
         settings_dict["shortcut_ios_bridge_complete"] = "on" if self.options.shortcut_ios_bridge_complete.value else "off"
         settings_dict["shortcut_spiral_log_to_btt"] = "on" if self.options.shortcut_spiral_log_to_btt.value else "off"

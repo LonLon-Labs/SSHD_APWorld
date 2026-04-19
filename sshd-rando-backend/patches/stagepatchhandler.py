@@ -534,25 +534,25 @@ def patch_goddess_crest(bzs: dict, itemid: int, index: str, trapid: int, custom_
 
     # 3 items patched into same object at different points in the params
     # Item IDs: params1[24:31], params1[16:23], params2[24:31]
-    # Custom flags (10 bits each): params1[0:9], params2[0:9], params2[10:19]
+    #
+    # IMPORTANT: Do NOT write Archipelago custom flags into params1 or params2.
+    # The game engine reads low bits of params1 (and possibly params2) during
+    # dAcOSwSwordBeam's init/update to control crest behaviour (hit detection,
+    # reward-giving animation, etc.).  Overwriting those bits with custom flag
+    # values corrupts the actor and prevents the game from ever reaching the
+    # crest-hit hook at 0x7100930844.
+    #
+    # Custom flags for the three crest rewards are instead stored in the
+    # CREST_CUSTOM_FLAGS Rust static (populated via init_global_variables)
+    # and propagated to spawned item actors via the NEXT_CUSTOM_FLAG mechanism.
     if index == "0":
         crest["params1"] = mask_shift_set(crest["params1"], 0xFF, 0x18, itemid)
-        if custom_flag != 0x3FF:
-            crest["params1"] = mask_shift_set(crest["params1"], 0x3FF, 0, custom_flag)
     elif index == "1":
         crest["params1"] = mask_shift_set(crest["params1"], 0xFF, 0x10, itemid)
-        if custom_flag != 0x3FF:
-            crest["params2"] = mask_shift_set(
-                crest.get("params2", 0xFFFFFFFF), 0x3FF, 0, custom_flag
-            )
     elif index == "2":
         crest["params2"] = mask_shift_set(
             crest.get("params2", 0xFFFFFFFF), 0xFF, 0x18, itemid
         )
-        if custom_flag != 0x3FF:
-            crest["params2"] = mask_shift_set(
-                crest.get("params2", 0xFFFFFFFF), 0x3FF, 10, custom_flag
-            )
 
 
 def patch_squirrels(bzs: dict, itemid: int, object_id_str: str, trapid: int):
@@ -1024,6 +1024,10 @@ class StagePatchHandler:
         # Populated during handle_stage_patches(): custom_flag → [scene_index, set_sceneflag]
         # Used by the AP client to detect goddess chest completions via vanilla scene flags
         self.goddess_chest_scene_flags: dict[int, list[int]] = {}
+        # Crest custom flags: [flag_for_index_0, flag_for_index_1, flag_for_index_2]
+        # Populated during handle_stage_patches() when SwSB check patches are processed.
+        # Written to the CREST_CUSTOM_FLAGS Rust static via init_global_variables.
+        self.crest_custom_flags: list[int] = [0x3FF, 0x3FF, 0x3FF]
 
     def handle_stage_patches(self, onlyif_handler: ConditionalPatchHandler):
         for stage in self.stage_patches:
@@ -1270,6 +1274,12 @@ class StagePatchHandler:
                             trapid,
                             custom_flag,
                         )
+                        # Store crest custom flags for the CREST_CUSTOM_FLAGS
+                        # Rust static (populated via init_global_variables).
+                        idx = int(objectid)
+                        print(f"[StagePatch] CREST DEBUG: SwSB objectid={objectid} idx={idx} custom_flag=0x{custom_flag:03X} itemid={itemid}")
+                        if 0 <= idx <= 2 and custom_flag != 0x3FF:
+                            self.crest_custom_flags[idx] = custom_flag
                     elif object_name == "MssbTag":
                         patch_squirrels(
                             room_bzs["LAY "][f"l{layer}"],
