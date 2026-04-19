@@ -249,7 +249,7 @@ components: List[Component] = [
 
     # Skyward Sword HD
     Component('SSHD Client', 'SSHDClient', file_identifier=SuffixIdentifier('.apsshd'),
-              description="Connect to Ryujinx for Skyward Sword HD multiworld."),
+              description="Connect to your emulator for Skyward Sword HD multiworld."),
 
     Component("Export Datapackage", func=export_datapackage, component_type=Type.TOOL,
               description="Write item/location data for installed worlds to a file and open it."),

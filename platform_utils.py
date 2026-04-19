@@ -59,61 +59,148 @@ def get_default_sshd_extract_path() -> Path:
     return get_archipelago_dir() / "sshd_extract"
 
 
-def get_ryujinx_dir() -> Path:
+# Supported emulators and their data directory names per OS.
+# Order matters: the first match wins for process detection and mod install.
+SUPPORTED_EMULATORS = ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]
+
+# Map of emulator name (lowercase) -> Linux config dir name.
+# Most yuzu-family emulators use lowercase directories on Linux.
+_LINUX_DIR_NAMES = {
+    "ryujinx": "Ryujinx",
+    "yuzu":    "yuzu",
+    "suyu":    "suyu",
+    "sudachi": "sudachi",
+    "eden":    "eden",
+}
+
+
+def get_emulator_dir(emulator: str = "Ryujinx") -> Path:
     """
-    Get the Ryujinx base directory for the current OS.
-    
-    Windows: %APPDATA%\\Ryujinx
-    Linux: ~/.config/Ryujinx
-    macOS: ~/Library/Application Support/Ryujinx
+    Get the base data directory for the given emulator on the current OS.
+
+    Windows: %APPDATA%\\<emulator>
+    Linux: ~/.config/<emulator>  (or ~/.local/share/<emulator> for yuzu-family)
+    macOS: ~/Library/Application Support/<emulator>
     """
+    emu_lower = emulator.lower()
+    linux_name = _LINUX_DIR_NAMES.get(emu_lower, emulator)
+
     if get_os_name() == "windows":
         if "APPDATA" in os.environ:
-            return Path(os.environ["APPDATA"]) / "Ryujinx"
-        return Path.home() / "AppData" / "Roaming" / "Ryujinx"
-    
+            return Path(os.environ["APPDATA"]) / emulator
+        return Path.home() / "AppData" / "Roaming" / emulator
+
     elif get_os_name() == "linux":
-        return Path.home() / ".config" / "Ryujinx"
-    
-    elif get_os_name() == "darwin":  # macOS
-        return Path.home() / "Library" / "Application Support" / "Ryujinx"
-    
+        # yuzu-family stores data in ~/.local/share/<name>
+        if emu_lower != "ryujinx":
+            xdg = os.environ.get("XDG_DATA_HOME", "")
+            if xdg:
+                return Path(xdg) / linux_name
+            return Path.home() / ".local" / "share" / linux_name
+        # Ryujinx uses ~/.config/Ryujinx
+        return Path.home() / ".config" / linux_name
+
+    elif get_os_name() == "darwin":
+        return Path.home() / "Library" / "Application Support" / emulator
+
     else:
-        return Path.home() / "Ryujinx"
+        return Path.home() / emulator
 
 
-def get_ryujinx_mod_dirs() -> List[Path]:
+# Keep the old name as an alias for backward compatibility
+def get_ryujinx_dir() -> Path:
+    return get_emulator_dir("Ryujinx")
+
+
+def _mod_dir_for_emulator(emulator: str) -> Path:
+    """Return the LayeredFS / atmosphere mod path for one emulator."""
+    game_id = "01002da013484000"
+    base = get_emulator_dir(emulator)
+    if emulator.lower() == "ryujinx":
+        return base / "sdcard" / "atmosphere" / "contents" / game_id
+    # yuzu-family: <data>/load/01002da013484000/Archipelago
+    # But the atmosphere path layout also works if people set it up that way.
+    # yuzu uses: <data>/load/<title_id>/<mod_name>/  (romfs/ and exefs/ inside)
+    return base / "load" / game_id
+
+
+def get_emulator_mod_dirs() -> List[Path]:
     """
-    Get possible Ryujinx LayeredFS mod directories for SSHD (01002da013484000).
-    
+    Get possible LayeredFS mod directories for SSHD across all supported emulators.
+
     Returns a list of paths to check, in order of preference.
     """
-    ryujinx_base = get_ryujinx_dir()
-    game_id = "01002da013484000"
-    
-    paths = [
-        ryujinx_base / "sdcard" / "atmosphere" / "contents" / game_id,
-    ]
-    
-    # On Windows, also check alternative locations
+    paths: List[Path] = []
+    for emu in SUPPORTED_EMULATORS:
+        paths.append(_mod_dir_for_emulator(emu))
+
+    # On Windows, also check alternative APPDATA locations for Ryujinx
     if get_os_name() == "windows":
         appdata = Path(os.environ.get("APPDATA", ""))
         if appdata.exists():
+            game_id = "01002da013484000"
             paths.append(appdata / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / game_id)
-    
+
     return paths
 
 
-def find_ryujinx_mod_dir() -> Optional[Path]:
+# Keep old name as alias
+def get_ryujinx_mod_dirs() -> List[Path]:
+    return get_emulator_mod_dirs()
+
+
+def find_emulator_mod_dir() -> Optional[Path]:
     """
-    Find the Ryujinx LayeredFS mod directory for SSHD.
-    
-    Returns the first existing directory, or None if not found.
+    Find the first existing emulator mod directory for SSHD.
+
+    Returns the first directory whose parent structure exists, or None.
     """
-    for path in get_ryujinx_mod_dirs():
-        if path.parent.parent.parent.exists():  # Check if sdcard/atmosphere exists
+    for path in get_emulator_mod_dirs():
+        # For Ryujinx-style: check sdcard/atmosphere exists
+        # For yuzu-style: check load/ dir exists
+        parent = path.parent
+        if parent.exists():
             return path
     return None
+
+
+def find_all_emulator_mod_dirs() -> List[Path]:
+    """
+    Find ALL existing emulator mod directories for SSHD.
+
+    Returns every emulator mod path whose parent structure exists.
+    Useful for installing to all installed emulators at once.
+    """
+    found: List[Path] = []
+    for path in get_emulator_mod_dirs():
+        parent = path.parent
+        if parent.exists():
+            found.append(path)
+    return found
+
+
+def find_mod_dir_for_emulator(emulator: str) -> Optional[Path]:
+    """
+    Find the mod directory for a specific emulator.
+
+    Returns the mod path if the emulator's directory structure exists, or None.
+    """
+    path = _mod_dir_for_emulator(emulator)
+    if path.parent.exists():
+        return path
+    return None
+
+
+def detect_installed_emulators() -> List[str]:
+    """
+    Return the names of emulators whose base data directory exists.
+    """
+    return [emu for emu in SUPPORTED_EMULATORS if get_emulator_dir(emu).exists()]
+
+
+# Keep old name as alias
+def find_ryujinx_mod_dir() -> Optional[Path]:
+    return find_emulator_mod_dir()
 
 
 def normalize_path(path_str: str) -> Path:
@@ -142,5 +229,7 @@ def print_os_info():
     print(f"OS: {os_name}")
     print(f"Archipelago dir: {get_archipelago_dir()}")
     print(f"Default SSHD extract: {get_default_sshd_extract_path()}")
-    print(f"Ryujinx dir: {get_ryujinx_dir()}")
-    print(f"Possible mod dirs: {get_ryujinx_mod_dirs()}")
+    for emu in SUPPORTED_EMULATORS:
+        print(f"{emu} dir: {get_emulator_dir(emu)}")
+    print(f"Possible mod dirs: {get_emulator_mod_dirs()}")
+    print(f"Found mod dir: {find_emulator_mod_dir()}")

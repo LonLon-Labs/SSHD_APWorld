@@ -19,7 +19,7 @@ The patcher will:
 3. Overlay the Archipelago multiworld items
 4. Inject custom flags
 5. Apply ROM patches using the user's extracted ROM
-6. Install the resulting mod to Ryujinx's LayeredFS directory
+6. Install the resulting mod to the emulator's LayeredFS directory
 """
 
 import argparse
@@ -96,38 +96,95 @@ def _find_extract_path() -> Path:
         return Path.home() / ".local" / "share" / "Archipelago" / "sshd_extract"
 
 
-def _find_ryujinx_mod_dir() -> Optional[Path]:
-    """Return the Ryujinx LayeredFS mod path for SSHD, or None."""
+_GAME_ID = "01002da013484000"
+_ALL_EMULATORS = ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]
+
+
+def _emulator_mod_path(emulator: str) -> Optional[Path]:
+    """Return the expected mod directory path for a specific emulator, or None if base dir missing."""
+    if sys.platform == "win32":
+        base = Path(os.environ.get("APPDATA", "")) / emulator
+    elif sys.platform == "linux":
+        linux_dirs = {
+            "Ryujinx": ".config/Ryujinx",
+            "yuzu": ".local/share/yuzu",
+            "suyu": ".local/share/suyu",
+            "sudachi": ".local/share/sudachi",
+            "eden": ".local/share/eden",
+        }
+        dir_name = linux_dirs.get(emulator)
+        if dir_name is None:
+            return None
+        base = Path.home() / dir_name
+    else:  # macOS
+        base = Path.home() / "Library" / "Application Support" / emulator
+
+    if not base.exists():
+        return None
+
+    if emulator == "Ryujinx":
+        return base / "sdcard" / "atmosphere" / "contents" / _GAME_ID
+    return base / "load" / _GAME_ID
+
+
+def _detect_installed_emulators() -> list:
+    """Return list of emulator names whose base directory exists."""
     try:
-        from platform_utils import get_ryujinx_mod_dirs
-        for p in get_ryujinx_mod_dirs():
-            if p.parent.parent.parent.exists():
-                p.mkdir(parents=True, exist_ok=True)
-                return p
+        from platform_utils import detect_installed_emulators
+        result = detect_installed_emulators()
+        if result:
+            return result
+    except ImportError:
+        pass
+    return [emu for emu in _ALL_EMULATORS if _emulator_mod_path(emu) is not None]
+
+
+def _find_emulator_mod_dir(emulator: Optional[str] = None) -> Optional[Path]:
+    """Return the emulator LayeredFS mod path for SSHD, or None.
+
+    If *emulator* is given, only check that specific emulator.
+    """
+    try:
+        from platform_utils import find_emulator_mod_dir, find_mod_dir_for_emulator
+        if emulator:
+            p = find_mod_dir_for_emulator(emulator)
+        else:
+            p = find_emulator_mod_dir()
+        if p is not None:
+            p.mkdir(parents=True, exist_ok=True)
+            return p
     except ImportError:
         pass
 
     # Manual fallback
-    game_id = "01002da013484000"
-    if sys.platform == "win32":
-        appdata = Path(os.environ.get("APPDATA", ""))
-        candidates = [
-            appdata / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / game_id,
-        ]
-    elif sys.platform == "linux":
-        candidates = [
-            Path.home() / ".config" / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / game_id,
-        ]
-    else:
-        candidates = [
-            Path.home() / "Library" / "Application Support" / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / game_id,
-        ]
-
-    for p in candidates:
-        if p.parent.parent.parent.exists():
+    targets = [emulator] if emulator else _ALL_EMULATORS
+    for emu in targets:
+        p = _emulator_mod_path(emu)
+        if p is not None:
             p.mkdir(parents=True, exist_ok=True)
             return p
     return None
+
+
+def _find_all_emulator_mod_dirs() -> list:
+    """Return list of Paths for all installed emulators."""
+    try:
+        from platform_utils import find_all_emulator_mod_dirs
+        result = find_all_emulator_mod_dirs()
+        if result:
+            return result
+    except ImportError:
+        pass
+    dirs = []
+    for emu in _ALL_EMULATORS:
+        p = _emulator_mod_path(emu)
+        if p is not None:
+            dirs.append(p)
+    return dirs
+
+
+# Keep old name as alias
+_find_ryujinx_mod_dir = _find_emulator_mod_dir
 
 
 # ---------------------------------------------------------------------------
@@ -358,27 +415,50 @@ def generate_patches(
         return None, None
 
 
-def install_to_ryujinx(romfs_path: Path, exefs_path: Path) -> bool:
-    """Install generated romfs/exefs to Ryujinx's LayeredFS mod directory."""
-    mod_dir = _find_ryujinx_mod_dir()
-    if mod_dir is None:
-        print("[Patcher] Could not locate Ryujinx mod directory automatically.")
-        print("[Patcher] Copy the romfs/ and exefs/ folders manually to your Ryujinx")
-        print("          sdcard/atmosphere/contents/01002da013484000/Archipelago/")
+def install_to_emulator(
+    romfs_path: Path,
+    exefs_path: Path,
+    emulator: Optional[str] = None,
+) -> bool:
+    """Install generated romfs/exefs to the emulator's LayeredFS mod directory.
+
+    Args:
+        emulator: ``"all"`` to install to every detected emulator,
+                  a specific name (e.g. ``"yuzu"``) for one emulator,
+                  or ``None`` to install to the first found.
+    """
+    if emulator == "all":
+        mod_dirs = _find_all_emulator_mod_dirs()
+    elif emulator:
+        d = _find_emulator_mod_dir(emulator)
+        mod_dirs = [d] if d else []
+    else:
+        d = _find_emulator_mod_dir()
+        mod_dirs = [d] if d else []
+
+    if not mod_dirs:
+        print("[Patcher] Could not locate emulator mod directory automatically.")
+        print("[Patcher] Copy the romfs/ and exefs/ folders manually to your emulator's")
+        print("          mod directory (e.g. sdcard/atmosphere/contents/01002da013484000/Archipelago/)")
         return False
 
-    install_dir = mod_dir / "Archipelago"
-    print(f"[Patcher] Installing to: {install_dir}")
+    for mod_dir in mod_dirs:
+        install_dir = mod_dir / "Archipelago"
+        print(f"[Patcher] Installing to: {install_dir}")
 
-    if install_dir.exists():
-        shutil.rmtree(install_dir)
-    install_dir.mkdir(parents=True, exist_ok=True)
+        if install_dir.exists():
+            shutil.rmtree(install_dir)
+        install_dir.mkdir(parents=True, exist_ok=True)
 
-    shutil.copytree(str(romfs_path), str(install_dir / "romfs"))
-    shutil.copytree(str(exefs_path), str(install_dir / "exefs"))
+        shutil.copytree(str(romfs_path), str(install_dir / "romfs"))
+        shutil.copytree(str(exefs_path), str(install_dir / "exefs"))
 
-    print("[Patcher] Mod installed successfully!")
+    print(f"[Patcher] Mod installed to {len(mod_dirs)} emulator(s) successfully!")
     return True
+
+
+# Keep old name as alias for backward compatibility
+install_to_ryujinx = install_to_emulator
 
 
 def update_apsshd_with_patches(
@@ -560,7 +640,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
     from PyQt6.QtWidgets import (
         QApplication, QWidget, QVBoxLayout, QHBoxLayout,
         QLabel, QLineEdit, QPushButton, QTextEdit, QProgressBar,
-        QFileDialog, QFrame, QSizePolicy,
+        QFileDialog, QFrame, QSizePolicy, QComboBox,
     )
     from PyQt6.QtGui import QFont, QTextCursor, QColor, QPalette, QIcon
 
@@ -570,10 +650,11 @@ def _run_gui(initial_patch_file: Optional[str] = None):
         info = pyqtSignal(str, str)  # text, color
         finished_signal = pyqtSignal()
 
-        def __init__(self, patch_path: Path, extract_path: Path):
+        def __init__(self, patch_path: Path, extract_path: Path, emulator: str = "all"):
             super().__init__()
             self._patch_path = patch_path
             self._extract_path = extract_path
+            self._emulator = emulator
 
         def run(self):
             try:
@@ -593,30 +674,37 @@ def _run_gui(initial_patch_file: Optional[str] = None):
                     self.log.emit("Installing existing patches...")
                     self.progress.emit(50)
 
-                    mod_dir = _find_ryujinx_mod_dir()
-                    if mod_dir is None:
-                        self.info.emit("Ryujinx mod directory not found", "#ff7700")
-                        self.log.emit("\nCould not locate Ryujinx mod directory.")
+                    if self._emulator == "all":
+                        mod_dirs = _find_all_emulator_mod_dirs()
+                    else:
+                        d = _find_emulator_mod_dir(self._emulator)
+                        mod_dirs = [d] if d else []
+
+                    if not mod_dirs:
+                        self.info.emit("Emulator mod directory not found", "#ff7700")
+                        self.log.emit("\nCould not locate emulator mod directory.")
                         self.log.emit("Extract romfs/ and exefs/ from the .apsshd manually.")
                         return
 
-                    install_dir = mod_dir / "Archipelago"
-                    self.log.emit(f"Installing to: {install_dir}")
-                    if install_dir.exists():
-                        shutil.rmtree(install_dir)
-                    install_dir.mkdir(parents=True, exist_ok=True)
+                    for mod_dir in mod_dirs:
+                        mod_dir.mkdir(parents=True, exist_ok=True)
+                        install_dir = mod_dir / "Archipelago"
+                        self.log.emit(f"Installing to: {install_dir}")
+                        if install_dir.exists():
+                            shutil.rmtree(install_dir)
+                        install_dir.mkdir(parents=True, exist_ok=True)
 
-                    with zipfile.ZipFile(self._patch_path, "r") as zf:
-                        for name in zf.namelist():
-                            if name.startswith("romfs/") or name.startswith("exefs/"):
-                                target = install_dir / name
-                                target.parent.mkdir(parents=True, exist_ok=True)
-                                with zf.open(name) as src, open(target, "wb") as dst:
-                                    dst.write(src.read())
+                        with zipfile.ZipFile(self._patch_path, "r") as zf:
+                            for name in zf.namelist():
+                                if name.startswith("romfs/") or name.startswith("exefs/"):
+                                    target = install_dir / name
+                                    target.parent.mkdir(parents=True, exist_ok=True)
+                                    with zf.open(name) as src, open(target, "wb") as dst:
+                                        dst.write(src.read())
 
                     self.progress.emit(100)
                     self.info.emit("Installed successfully!", "#00ff7f")
-                    self.log.emit("\nDone! Launch Skyward Sword HD in Ryujinx.")
+                    self.log.emit("\nDone! Launch Skyward Sword HD in your emulator.")
                     return
 
                 self.log.emit("\nGenerating ROM patches from your ROM extract...")
@@ -653,17 +741,17 @@ def _run_gui(initial_patch_file: Optional[str] = None):
                         return
 
                     self.progress.emit(85)
-                    self.log.emit("\nInstalling to Ryujinx...")
-                    success = install_to_ryujinx(romfs_path, exefs_path)
+                    self.log.emit("\nInstalling to emulator...")
+                    success = install_to_emulator(romfs_path, exefs_path, self._emulator)
 
                     self.progress.emit(100)
                     if success:
                         self.info.emit("Patched and installed successfully!", "#00ff7f")
-                        self.log.emit("\nDone! Launch Skyward Sword HD in Ryujinx and connect to the server.")
+                        self.log.emit("\nDone! Launch Skyward Sword HD in your emulator and connect to the server.")
                     else:
                         self.info.emit("Patches generated — manual install needed", "#ff7700")
                         self.log.emit(f"\nPatches generated at: {temp_dir}")
-                        self.log.emit("Copy romfs/ and exefs/ to your Ryujinx mod directory manually.")
+                        self.log.emit("Copy romfs/ and exefs/ to your emulator's mod directory manually.")
                         return  # Don't clean up temp dir if manual install needed
 
                 finally:
@@ -746,6 +834,21 @@ def _run_gui(initial_patch_file: Optional[str] = None):
             browse_ext.clicked.connect(self._browse_extract)
             row2.addWidget(browse_ext)
             layout.addLayout(row2)
+
+            layout.addSpacing(8)
+
+            # ── Emulator selection row ────────────────────────
+            row3 = QHBoxLayout()
+            row3.setSpacing(8)
+            lbl3 = QLabel("Install to:")
+            lbl3.setProperty("class", "FieldLabel")
+            row3.addWidget(lbl3)
+            self.emulator_combo = QComboBox()
+            self.emulator_combo.addItem("All Installed Emulators", "all")
+            for emu in _detect_installed_emulators():
+                self.emulator_combo.addItem(emu, emu)
+            row3.addWidget(self.emulator_combo, stretch=1)
+            layout.addLayout(row3)
 
             layout.addSpacing(12)
 
@@ -876,7 +979,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
             self.progress.setValue(0)
             self._set_info("Patching...", "#6d8be8")
 
-            self._worker = PatchWorker(Path(patch_path), Path(extract_path))
+            self._worker = PatchWorker(Path(patch_path), Path(extract_path), self.emulator_combo.currentData())
             self._worker.log.connect(self._append_log)
             self._worker.progress.connect(self.progress.setValue)
             self._worker.info.connect(self._set_info)
@@ -935,7 +1038,7 @@ def main():
     parser.add_argument(
         "--no-install",
         action="store_true",
-        help="Generate patches but do not install to Ryujinx automatically.",
+        help="Generate patches but do not install to emulator automatically.",
     )
     parser.add_argument(
         "--save-full-apsshd",
@@ -993,7 +1096,7 @@ def main():
                 from SSHDClient import install_patch
                 success, _ = install_patch(str(patch_path))
                 if success:
-                    print("\nDone! Launch Skyward Sword HD in Ryujinx.")
+                    print("\nDone! Launch Skyward Sword HD in your emulator.")
                 else:
                     print("\nInstallation failed. Check the output above.")
             sys.exit(0)
@@ -1014,7 +1117,7 @@ def main():
         # ---- Install ----
         if not args.no_install:
             print()
-            install_to_ryujinx(romfs_path, exefs_path)
+            install_to_emulator(romfs_path, exefs_path)
 
         # ---- Optionally save full .apsshd ----
         if args.save_full_apsshd:
@@ -1022,7 +1125,7 @@ def main():
 
         print("\nDone!")
         if not args.no_install:
-            print("Launch Skyward Sword HD in Ryujinx and connect to the Archipelago server.")
+            print("Launch Skyward Sword HD in your emulator and connect to the Archipelago server.")
 
     finally:
         # Clean up temp directory only if we created it

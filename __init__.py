@@ -2,7 +2,7 @@
 Skyward Sword HD (SSHD) Archipelago World
 
 This is an Archipelago integration for The Legend of Zelda: Skyward Sword HD
-running on the Ryujinx emulator.
+running on a supported Switch emulator (Ryujinx, yuzu, suyu, sudachi, eden).
 
 Based on the original Skyward Sword (Wii/Dolphin) integration.
 """
@@ -211,7 +211,7 @@ def run_client(*args: str) -> None:
             # Lightweight .apsshd — run the standalone patcher
             print(f"\nThis .apsshd does not contain ROM patches.")
             print(f"Running standalone patcher to generate patches from your ROM...\n")
-            from .SSHDPatcher import read_apsshd, generate_patches, install_to_ryujinx
+            from .SSHDPatcher import read_apsshd, generate_patches, install_to_emulator
             import tempfile
             
             _manifest, _patch_data, _patcher_data = read_apsshd(patch_path)
@@ -220,7 +220,7 @@ def run_client(*args: str) -> None:
             try:
                 romfs_path, exefs_path = generate_patches(_patcher_data, extract_path, temp_out)
                 if romfs_path and exefs_path:
-                    install_to_ryujinx(romfs_path, exefs_path)
+                    install_to_emulator(romfs_path, exefs_path)
                     print("\n" + "=" * 60)
                     print("Patches generated and installed successfully!")
                     print("=" * 60)
@@ -262,7 +262,7 @@ class SSHDWeb(WebWorld):
     """
     tutorials = [Tutorial(
         "Skyward Sword HD Setup Guide",
-        "A guide to setting up SSHD for Archipelago with Ryujinx.",
+        "A guide to setting up SSHD for Archipelago.",
         "English",
         "setup_en.md",
         "setup/en",
@@ -321,7 +321,7 @@ PROGRESSIVE_STAGE_ITEMS: set[str] = {
 
 class SSHDWorld(World):
     """
-    The Legend of Zelda: Skyward Sword HD for Ryujinx
+    The Legend of Zelda: Skyward Sword HD
     
     An epic adventure where Link must rescue Zelda and stop the Demon King Ghirahim.
     Travel between the Surface and Sky, explore dungeons, and collect items across

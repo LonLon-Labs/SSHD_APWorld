@@ -1,8 +1,9 @@
 """
-Skyward Sword HD Client for Archipelago with Ryujinx support.
+Skyward Sword HD Client for Archipelago with emulator memory access support.
 
-This client connects to Ryujinx via direct memory access and communicates
-with the Archipelago server to enable multiworld randomizer support.
+This client connects to a supported Switch emulator (Ryujinx, yuzu, suyu,
+sudachi, eden) via direct memory access and communicates with the Archipelago
+server to enable multiworld randomizer support.
 """
 
 import asyncio
@@ -470,16 +471,27 @@ STAGE_NAMES = {
 }
 
 
+# Keep old name for backward compatibility
 class RyujinxMemoryError(Exception):
-    """Exception raised for Ryujinx memory access errors."""
+    """Exception raised for emulator memory access errors."""
     pass
 
+EmulatorMemoryError = RyujinxMemoryError
 
-class RyujinxMemoryReader:
+# Supported emulator process names by platform
+_EMULATOR_PROCESS_NAMES = {
+    "win32":  ["Ryujinx.exe", "yuzu.exe", "suyu.exe", "sudachi.exe", "eden.exe"],
+    "linux":  ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"],
+    "darwin": ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"],
+}
+
+
+class EmulatorMemoryReader:
     """
-    Class to handle memory reading/writing for Ryujinx emulator.
-    
-    This provides direct access to SSHD's memory through Ryujinx's process.
+    Class to handle memory reading/writing for a Switch emulator.
+
+    Supports Ryujinx, yuzu, suyu, sudachi, and eden.
+    This provides direct access to SSHD's memory through the emulator's process.
     """
     
     # Magic signatures for Rust static buffers that we scan for during the
@@ -504,6 +516,7 @@ class RyujinxMemoryReader:
         self.pm = None  # ProcessMemory instance (cross-platform)
         self.base_address: Optional[int] = None
         self.connected = False
+        self.emulator_name: Optional[str] = None  # Name of the connected emulator process
         # Absolute addresses found during the base-address scan for each magic
         # pattern.  Keyed by pattern name -> list of absolute addresses.
         self.prescan_results: Dict[str, list] = {}
@@ -579,33 +592,33 @@ class RyujinxMemoryReader:
 
     def connect(self) -> bool:
         """
-        Connect to the Ryujinx process.
+        Connect to a supported Switch emulator process.
+
+        Searches for Ryujinx, yuzu, suyu, sudachi, and eden.
         
         Returns:
             True if successfully connected, False otherwise
         """
         try:
-            # Find Ryujinx process (cross-platform)
-            ryujinx_process = None
-            
+            # Find emulator process (cross-platform)
+            emulator_process = None
+
             # Process names by OS
-            if sys.platform == "win32":
-                process_names = ["Ryujinx.exe"]
-            elif sys.platform == "linux":
-                process_names = ["Ryujinx"]
-            elif sys.platform == "darwin":  # macOS
-                process_names = ["Ryujinx"]
+            platform_key = sys.platform if sys.platform in _EMULATOR_PROCESS_NAMES else None
+            if platform_key:
+                process_names = _EMULATOR_PROCESS_NAMES[platform_key]
             else:
-                process_names = ["Ryujinx.exe", "Ryujinx"]  # Try both as fallback
+                # Fallback: try all known names
+                process_names = list({n for names in _EMULATOR_PROCESS_NAMES.values() for n in names})
             
             for proc in psutil.process_iter(['name']):
                 if proc.info['name'] in process_names:
-                    ryujinx_process = proc
+                    emulator_process = proc
                     break
             
-            if not ryujinx_process:
-                expected_names = " or ".join(f"'{name}'" for name in process_names)
-                logger.info(f"Ryujinx process ({expected_names}) not found. Please start Ryujinx.")
+            if not emulator_process:
+                expected_names = ", ".join(f"'{name}'" for name in process_names)
+                logger.info(f"No supported emulator found ({expected_names}). Please start your emulator.")
                 return False
             
             # Open process (cross-platform)
@@ -614,17 +627,18 @@ class RyujinxMemoryReader:
             except ProcessMemoryError as e:
                 logger.error(f"Platform not supported for memory access: {e}")
                 return False
-            self.pm.open_process_from_id(ryujinx_process.pid)
-            
-            logger.info(f"Connected to Ryujinx (PID: {ryujinx_process.pid})")
+            self.pm.open_process_from_id(emulator_process.pid)
+
+            self.emulator_name = emulator_process.info['name']
+            logger.info(f"Connected to {self.emulator_name} (PID: {emulator_process.pid})")
             self.connected = True
             return True
             
         except ProcessMemoryError as e:
-            logger.error(f"Failed to connect to Ryujinx: {e}")
+            logger.error(f"Failed to connect to emulator: {e}")
             return False
         except Exception as e:
-            logger.error(f"Failed to connect to Ryujinx: {e}")
+            logger.error(f"Failed to connect to emulator: {e}")
             return False
     
     async def find_base_address(self) -> bool:
@@ -638,7 +652,7 @@ class RyujinxMemoryReader:
             True if base address found, False otherwise
         """
         if not self.connected or not self.pm:
-            logger.error("Not connected to Ryujinx")
+            logger.error("Not connected to emulator")
             return False
         
         logger.info("Scanning memory for SSHD signature... (this may take 8-10 seconds)")
@@ -1239,7 +1253,7 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
     def _cmd_sshd(self):
         """Show SSHD client status."""
         if isinstance(self.ctx, SSHDContext):
-            logger.debug(f"Connected to Ryujinx: {self.ctx.memory.connected}")
+            logger.debug(f"Connected to emulator: {self.ctx.memory.connected}")
             if self.ctx.memory.base_address:
                 logger.debug(f"Base address: 0x{self.ctx.memory.base_address:X}")
             logger.debug(f"Locations checked: {len(self.ctx.checked_locations)}")
@@ -1300,7 +1314,7 @@ class SSHDContext(CommonContext):
     """
     Main context for SSHD client.
     
-    Handles connection to both Archipelago server and Ryujinx emulator.
+    Handles connection to both Archipelago server and the Switch emulator.
     """
     
     command_processor = SSHDClientCommandProcessor
@@ -1311,7 +1325,7 @@ class SSHDContext(CommonContext):
     def __init__(self, server_address: Optional[str], password: Optional[str]):
         super().__init__(server_address, password)
         
-        self.memory = RyujinxMemoryReader()
+        self.memory = EmulatorMemoryReader()
         self.checked_locations: Set[int] = set()
         self.sent_locations: Set[int] = set()  # Locations already sent to server
         self.item_queue: list = []  # Items waiting to be given
@@ -2171,8 +2185,8 @@ class SSHDContext(CommonContext):
         """
         pass
 
-    async def ryujinx_connection_task(self):
-        """Background task to maintain connection to Ryujinx."""
+    async def emulator_connection_task(self):
+        """Background task to maintain connection to the Switch emulator."""
         while not self.exit_event.is_set():
             try:
                 # Try to connect if not connected
@@ -2255,9 +2269,12 @@ class SSHDContext(CommonContext):
                 await asyncio.sleep(0.1)  # Update 10 times per second
                 
             except Exception as e:
-                logger.error(f"Error in Ryujinx connection task: {e}")
+                logger.error(f"Error in emulator connection task: {e}")
                 self.memory.connected = False
                 await asyncio.sleep(5)
+
+    # Keep old name as alias for backward compatibility
+    ryujinx_connection_task = emulator_connection_task
 
     async def cheat_loop_task(self):
         """
@@ -4342,7 +4359,7 @@ class SSHDContext(CommonContext):
 
 def install_patch(patch_file_path: str) -> tuple[bool, dict]:
     """
-    Extract and install .apsshd patch to Ryujinx mod directory.
+    Extract and install .apsshd patch to emulator mod directory.
     
     Returns (success: bool, location_to_item: dict).
     """
@@ -4402,68 +4419,74 @@ def install_patch(patch_file_path: str) -> tuple[bool, dict]:
                     print(f"You may need to apply the base randomizer mod manually.")
                 return False, {}
             
-            # Find Ryujinx atmosphere directory for LayeredFS mods
+            # Find ALL emulator mod directories and install to each
+            emulator_mod_dirs = []
             try:
-                from platform_utils import get_ryujinx_mod_dirs
-                ryujinx_paths = get_ryujinx_mod_dirs()
+                from platform_utils import find_all_emulator_mod_dirs
+                emulator_mod_dirs = find_all_emulator_mod_dirs()
             except ImportError:
-                # Fallback if platform_utils not available - use OS-specific paths
+                pass
+
+            if not emulator_mod_dirs:
+                # Fallback: try common paths for all supported emulators
+                game_id = "01002da013484000"
+                fallback_paths = []
                 if sys.platform == "win32":
-                    ryujinx_paths = [
-                        Path.home() / "AppData" / "Roaming" / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / "01002da013484000",
-                        Path(os.environ.get('APPDATA', '')) / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / "01002da013484000",
-                    ]
+                    appdata = Path(os.environ.get('APPDATA', ''))
+                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
+                        fallback_paths.append(appdata / emu / "sdcard" / "atmosphere" / "contents" / game_id)
+                        fallback_paths.append(appdata / emu / "load" / game_id)
                 elif sys.platform == "linux":
-                    ryujinx_paths = [
-                        Path.home() / ".config" / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / "01002da013484000",
-                    ]
+                    for emu_dir, emu_base in [(".config/Ryujinx", "sdcard/atmosphere/contents"),
+                                               (".local/share/yuzu", "load"),
+                                               (".local/share/suyu", "load"),
+                                               (".local/share/sudachi", "load"),
+                                               (".local/share/eden", "load")]:
+                        fallback_paths.append(Path.home() / emu_dir / emu_base / game_id)
                 else:  # macOS
-                    ryujinx_paths = [
-                        Path.home() / "Library" / "Application Support" / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / "01002da013484000",
-                    ]
+                    app_support = Path.home() / "Library" / "Application Support"
+                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
+                        fallback_paths.append(app_support / emu / "sdcard" / "atmosphere" / "contents" / game_id)
+                        fallback_paths.append(app_support / emu / "load" / game_id)
+
+                for path in fallback_paths:
+                    if path.parent.exists():
+                        emulator_mod_dirs.append(path)
             
-            ryujinx_mod_dir = None
-            for path in ryujinx_paths:
-                if path.parent.parent.parent.exists():  # Check if sdcard/atmosphere folder exists
-                    ryujinx_mod_dir = path
-                    ryujinx_mod_dir.mkdir(parents=True, exist_ok=True)
-                    break
-            
-            if ryujinx_mod_dir:
-                print(f"\nFound Ryujinx atmosphere directory: {ryujinx_mod_dir}")
+            if emulator_mod_dirs:
+                print(f"\nFound {len(emulator_mod_dirs)} emulator mod director{'y' if len(emulator_mod_dirs) == 1 else 'ies'}:")
                 
-                # Install to Archipelago folder (LayeredFS will merge with game files)
-                mod_install_dir = ryujinx_mod_dir / "Archipelago"
+                for emulator_mod_dir in emulator_mod_dirs:
+                    emulator_mod_dir.mkdir(parents=True, exist_ok=True)
+                    mod_install_dir = emulator_mod_dir / "Archipelago"
+                    
+                    print(f"  Installing to: {mod_install_dir}")
+                    
+                    # Remove existing mod if present
+                    if mod_install_dir.exists():
+                        shutil.rmtree(mod_install_dir)
+                    
+                    # Extract romfs and exefs
+                    mod_install_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    for file_name in file_list:
+                        if file_name.startswith('romfs/') or file_name.startswith('exefs/'):
+                            target_path = mod_install_dir / file_name
+                            target_path.parent.mkdir(parents=True, exist_ok=True)
+                            
+                            with zip_file.open(file_name) as source:
+                                with open(target_path, 'wb') as target:
+                                    target.write(source.read())
                 
-                print(f"Installing to: {mod_install_dir}")
-                
-                # Remove existing mod if present
-                if mod_install_dir.exists():
-                    print(f"  Removing existing mod...")
-                    shutil.rmtree(mod_install_dir)
-                
-                # Extract romfs and exefs
-                mod_install_dir.mkdir(parents=True, exist_ok=True)
-                
-                for file_name in file_list:
-                    if file_name.startswith('romfs/') or file_name.startswith('exefs/'):
-                        # Extract to mod directory
-                        target_path = mod_install_dir / file_name
-                        target_path.parent.mkdir(parents=True, exist_ok=True)
-                        
-                        with zip_file.open(file_name) as source:
-                            with open(target_path, 'wb') as target:
-                                target.write(source.read())
-                
-                print(f"\n✓ Patch installed successfully!")
+                print(f"\n✓ Patch installed to {len(emulator_mod_dirs)} emulator(s)!")
                 print(f"\nNext steps:")
-                print(f"  1. Launch Skyward Sword HD in Ryujinx")
+                print(f"  1. Launch Skyward Sword HD in your emulator")
                 print(f"  2. The LayeredFS mod will be automatically applied")
                 print(f"  3. Connect to the Archipelago server")
                 return True, location_to_item
             else:
-                # No Ryujinx found - extract to temp for manual install
-                print(f"\nWARNING: Ryujinx installation not found automatically.")
+                # No emulator found - extract to temp for manual install
+                print(f"\nWARNING: No supported emulator installation found automatically.")
                 print(f"Extracting patch files for manual installation...")
                 
                 # Extract to a folder next to the patch file
@@ -4476,14 +4499,10 @@ def install_patch(patch_file_path: str) -> tuple[bool, dict]:
                 
                 print(f"\nExtracted to: {extract_dir}")
                 print(f"\nManual installation:")
-                print(f"  1. Copy the romfs/ and exefs/ folders to:")
-                try:
-                    from platform_utils import get_ryujinx_dir
-                    ryujinx_manual_path = get_ryujinx_dir() / "sdcard" / "atmosphere" / "contents" / "01002da013484000" / "Archipelago"
-                    print(f"     {ryujinx_manual_path}")
-                except ImportError:
-                    print(f"     %APPDATA%\\Ryujinx\\sdcard\\atmosphere\\contents\\01002da013484000\\Archipelago\\")
-                print(f"  2. Launch Skyward Sword HD in Ryujinx")
+                print(f"  1. Copy the romfs/ and exefs/ folders to your emulator's mod directory")
+                print(f"     (e.g. Ryujinx: sdcard/atmosphere/contents/01002da013484000/Archipelago/)")
+                print(f"     (e.g. yuzu: load/01002da013484000/Archipelago/)")
+                print(f"  2. Launch Skyward Sword HD in your emulator")
                 print(f"  3. The LayeredFS mod will be automatically applied")
                 return False, location_to_item
                 
@@ -4507,7 +4526,7 @@ async def main(args=None):
     print(f"Starting client...")
     print(f"Arguments: {args}")
     
-    parser = get_base_parser(description="Skyward Sword HD Client for Archipelago with Ryujinx support.")
+    parser = get_base_parser(description="Skyward Sword HD Client for Archipelago.")
     parser.add_argument('diff_file', default="", type=str, nargs="?",
                         help='Path to an Archipelago Binary Patch file (.apsshd)')
     parsed_args = parser.parse_args(args)
@@ -4542,8 +4561,8 @@ async def main(args=None):
     
     ctx.server_task = asyncio.create_task(server_loop(ctx), name="ServerLoop")
     
-    # Add Ryujinx connection task
-    ctx.ryujinx_task = asyncio.create_task(ctx.ryujinx_connection_task(), name="Ryujinx Connection")
+    # Add emulator connection task
+    ctx.emulator_task = asyncio.create_task(ctx.emulator_connection_task(), name="Emulator Connection")
 
     # Add dedicated high-frequency cheat loop (~60 Hz)
     ctx.cheat_task = asyncio.create_task(ctx.cheat_loop_task(), name="Cheat Loop")
