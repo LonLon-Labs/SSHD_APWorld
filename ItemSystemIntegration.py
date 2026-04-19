@@ -364,10 +364,17 @@ class GameItemSystem:
         return None
     
     def _test_buffer_access(self, offset: int) -> bool:
-        """Test if we can write to the buffer address (skip magic signature slot)."""
+        """Test if we can write to the buffer address (skip magic signature slot).
+
+        IMPORTANT: We test on slot 1's *reserved* bytes (offset+6), NOT on
+        the item_id byte (offset+4).  The Rust game loop checks item_id != 0
+        every frame to detect pending items.  Writing a non-zero test value
+        to the item_id byte races with the game loop and can cause a
+        spurious item spawn (0x42 = game item 66 = Guardian Potion+).
+        """
         try:
-            # Test on slot 1 (offset+4), not slot 0 which has magic signature
-            test_offset = offset + 4
+            # Test on slot 1's reserved byte (offset+6), not the item_id byte
+            test_offset = offset + 6
             # Write test byte
             self.memory.write_byte(test_offset, 0x42)
             # Read it back
