@@ -283,6 +283,15 @@ def create_entrance_pools(world: World) -> EntrancePools:
             "Overworld", only_primary=exclude_overworld_reverse
         )
 
+    if world.setting("randomize_gate_of_time") == "on":
+        entrance_pools["Gate of Time"] = world.get_shuffleable_entrances(
+            "Gate of Time", only_primary=True
+        )
+        if world.setting("decouple_entrances") == "on":
+            entrance_pools["Gate of Time Reverse"] = [
+                entrance.reverse for entrance in entrance_pools["Gate of Time"]
+            ]
+
     # Match pool types
     for type, pool in entrance_pools.items():
         for entrance in pool:
@@ -297,6 +306,7 @@ def create_entrance_pools(world: World) -> EntrancePools:
         "Interior",
         "Overworld",
         "Trial Gate",
+        "Gate of Time",
     }
     if world.setting("decouple_entrances") == "on":
         for type_name in potentially_decoupled_types:

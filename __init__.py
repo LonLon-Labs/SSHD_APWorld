@@ -451,6 +451,7 @@ class SSHDWorld(World):
         "randomize_trial_gate_entrances": ("randomize_trials", "toggle", None),
         "randomize_door_entrances": ("randomize_door_entrances", "toggle", None),
         "randomize_skykeep_layout": ("decouple_skykeep_layout", "toggle", None),
+        "randomize_gate_of_time": ("randomize_gate_of_time", "toggle", None),
         "randomize_interior_entrances": ("randomize_interior_entrances", "toggle", None),
         "randomize_overworld_entrances": ("randomize_overworld_entrances", "toggle", None),
         "decouple_entrances": ("decouple_entrances", "toggle", None),
@@ -3373,6 +3374,7 @@ class SSHDWorld(World):
         settings_dict["randomize_trials"] = "on" if self.options.randomize_trials.value else "off"
         settings_dict["randomize_door_entrances"] = "on" if self.options.randomize_door_entrances.value else "off"
         settings_dict["decouple_double_doors"] = "on" if self.options.decouple_double_doors.value else "off"
+        settings_dict["randomize_gate_of_time"] = "on" if self.options.randomize_gate_of_time.value else "off"
         settings_dict["randomize_interior_entrances"] = "on" if self.options.randomize_interior_entrances.value else "off"
         settings_dict["randomize_overworld_entrances"] = "on" if self.options.randomize_overworld_entrances.value else "off"
         settings_dict["decouple_entrances"] = "on" if self.options.decouple_entrances.value else "off"

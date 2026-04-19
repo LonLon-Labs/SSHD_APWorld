@@ -584,6 +584,17 @@
     - "off": "Entering a doorway, pushup door, or loadzone that leads to an overworld location in the vanilla game will lead to its vanilla location."
     - "on": "Entering a doorway, pushup door, or loadzone that leads to an overworld location in the vanilla game will lead to a random overworld location."
 
+- name: randomize_gate_of_time
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Randomize Gate of Time
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "The Gate of Time will lead to its vanilla destination (Temple of Hylia)."
+    - "on": "The Gate of Time entrance will be randomized and may lead to a different location."
+
 - name: decouple_entrances
   tracker_important: true
   default_option: "off"
