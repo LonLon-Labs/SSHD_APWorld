@@ -1126,6 +1126,25 @@
     - "off": "The background music will be interrupted by enemy drums when you get near to an enemy. Additionally, the intense music when Scaldera and Tentalus are vulnerable will play as normal."
     - "on": "The background music will continue to play when you get near to enemies. Additionally, the intense music when Scaldera and Tentalus are vulnerable will not play and the background music will continue uninterrupted."
 
+- name: text_shuffle
+  type: Cosmetic
+  default_option: "off"
+  pretty_name: Text Shuffle
+  pretty_options:
+    - "Off"
+    - "Baby"
+    - "Crazy"
+    - "Extreme"
+    - "European Extreme"
+    - "Psychopath"
+  options:
+    - "off": "All in-game text will be unchanged."
+    - "baby": "English text will be shuffled, but shop text and other important functional text will be left intact."
+    - "crazy": "All English text will be shuffled. Text will be shuffled in sentences and paragraphs to maintain some readability."
+    - "extreme": "All English text will be fully shuffled."
+    - "european_extreme": "Text from all Latin-script languages (English, French, Spanish, German, Italian, Dutch) will be shuffled. Text will be shuffled in sentences and paragraphs to maintain some readability."
+    - "psychopath": "Text from all Latin-script languages (English, French, Spanish, German, Italian, Dutch) will be fully shuffled."
+
 - name: low_health_beeping_speed
   type: Cosmetic
   default_option: normal

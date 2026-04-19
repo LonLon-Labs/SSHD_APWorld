@@ -23,6 +23,7 @@ from patches.stagepatchhandler import (
 from patches.eventpatchhandler import EventPatchHandler
 from patches.dynamictextpatches import add_dynamic_text_patches
 from patches.othermods import verify_other_mods, copy_extra_mod_files
+from patches.textshufflepatch import apply_text_shuffle
 from shutil import rmtree
 
 from patches.arcpatchhandler import (
@@ -123,12 +124,23 @@ class AllPatchHandler:
 
         update_progress_value(84)
         print_progress_text("Patching Events")
+
         start_event_patching_time = time.process_time()
+
         self.event_patch_handler.handle_event_patches(
             self.conditional_patch_handler, self.world.setting("language")
         )
+
         print(
             f"Patching events took {(time.process_time() - start_event_patching_time)} seconds"
+        )
+
+        update_progress_value(89)
+        apply_text_shuffle(
+            self.world,
+            output_dir,
+            self.world.setting_map.other_mods,
+            self.world.setting("language"),
         )
 
         update_progress_value(90)

@@ -226,12 +226,22 @@ def generate_patches(
         if hasattr(config, "settings") and config.settings:
             sm = config.settings[0]
             if hasattr(sm, "settings"):
-                from logic.settings import get_all_settings_info
+                from logic.settings import get_all_settings_info, SettingType
                 for ok, ov in _AP_OVERRIDES.items():
                     if ok in sm.settings:
                         s = sm.settings[ok]
                         if s.info and ov in s.info.options:
                             s.update_current_value(s.info.options.index(ov))
+
+                # Cosmetic settings are not encoded in the setting string,
+                # so apply them from ap_settings.
+                for setting_name, setting in sm.settings.items():
+                    if setting.info and setting.info.type == SettingType.COSMETIC:
+                        if setting_name in ap_settings:
+                            val = str(ap_settings[setting_name])
+                            if val in setting.info.options:
+                                setting.update_current_value(setting.info.options.index(val))
+                                print(f"[Patcher] Applied cosmetic setting {setting_name} = {val}")
     else:
         print(f"[Patcher] Using individual AP settings for config...")
         config = create_sshd_rando_config(ap_settings, output_dir, seed)

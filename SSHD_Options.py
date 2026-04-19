@@ -1306,6 +1306,26 @@ class RemoveEnemyMusic(Toggle):
     display_name = "Remove Enemy Music"
 
 
+class TextShuffle(Choice):
+    """
+    Shuffles in-game text for a chaotic experience. All non-Latin languages are excluded.
+    - Off: All text is normal.
+    - Baby: English text is shuffled, but shop text and important functional text is left intact.
+    - Crazy: All English text is shuffled in sentences/paragraphs to maintain some readability.
+    - Extreme: All English text is fully shuffled.
+    - European Extreme: Text from all Latin-script languages is shuffled in sentences/paragraphs.
+    - Psychopath: Text from all Latin-script languages is fully shuffled.
+    """
+    display_name = "Text Shuffle"
+    option_off = 0
+    option_baby = 1
+    option_crazy = 2
+    option_extreme = 3
+    option_european_extreme = 4
+    option_psychopath = 5
+    default = 0
+
+
 class UseAlternativeLogo(Toggle):
     """
     If enabled, the alternative Archipelago logo is used on the title screen
@@ -1695,6 +1715,7 @@ class SSHDOptions(PerGameCommonOptions):
     lightning_skyward_strike: LightnningSkywardStrike
     starry_skies: StarrySky
     remove_enemy_music: RemoveEnemyMusic
+    text_shuffle: TextShuffle
     use_alternative_logo: UseAlternativeLogo
     archipelago_item_model: ArchipelagoItemModel
     

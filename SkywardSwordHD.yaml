@@ -1050,6 +1050,16 @@ Skyward Sword HD:
   # true: The background music will continue to play when you get near to enemies
   remove_enemy_music: false
 
+  # Text Shuffle
+  # Shuffles in-game text for a chaotic experience. All non-Latin languages are excluded.
+  # off: All text is normal (default)
+  # baby: English text is shuffled, but shop text and important functional text is left intact
+  # crazy: All English text is shuffled in sentences/paragraphs to maintain some readability
+  # extreme: All English text is fully shuffled
+  # european_extreme: Text from all Latin-script languages is shuffled in sentences/paragraphs
+  # psychopath: Text from all Latin-script languages is fully shuffled
+  text_shuffle: off
+
   # ========================================
   # EXTRA STARTING INVENTORY
   # ========================================
