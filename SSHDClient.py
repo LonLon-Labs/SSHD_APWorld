@@ -1454,6 +1454,21 @@ class SSHDContext(CommonContext):
             "Progressive Wallet":    [108, 109, 110, 111],
             "Progressive Pouch":     [112, 113, 113, 113, 113],
         }
+
+        # Story flags that the rando event system sets for each progressive
+        # tier.  The AP client bypasses that event system, so we must write
+        # these directly.  Swords are handled separately by
+        # _update_sword_storyflags_for_count.
+        # Source: sshd-rando/constants/itemconstants.py ITEM_STORYFLAGS
+        self._PROGRESSIVE_STORY_FLAGS = {
+            "Progressive Mitts":     [904, 905],
+            "Progressive Beetle":    [912, 913, 942, 943],
+            "Progressive Wallet":    [915, 916, 917, 918],
+            "Progressive Bow":       [944, 945, 946],
+            "Progressive Slingshot": [947, 948],
+            "Progressive Bug Net":   [949, 950],
+            "Progressive Pouch":     [30, 932, 932, 932, 932],
+        }
         
         # Game state tracking
         self.current_stage: Optional[str] = None
@@ -2251,6 +2266,14 @@ class SSHDContext(CommonContext):
                             # Python is the sole counter manager. next_count is the new tier.
                             self._update_sword_storyflags_for_count(next_count)
 
+                        # Write story flags for non-sword progressives (Mitts, Beetle, etc.)
+                        # The rando event system sets these, but AP's buffer delivery bypasses it.
+                        if item_name != "Progressive Sword":
+                            changed = self._update_progressive_storyflags(item_name, next_count)
+                            if changed:
+                                sf_list = self._PROGRESSIVE_STORY_FLAGS.get(item_name, [])
+                                logger.debug(f"[StoryFlags] Set story flags for {item_name} #{next_count}: {sf_list[:next_count]}")
+
                     logger.debug(f"Gave {actual_item_name} via item buffer (game will handle animation)")
                 else:
                     logger.debug(f"Failed to give {actual_item_name} via item system (player may be busy)")
@@ -2568,6 +2591,9 @@ class SSHDContext(CommonContext):
                 self._write_ap_item_info_table()
                 self._refresh_ap_item_info_count()
                 self._update_ap_check_stats()
+                # Continuously enforce progressive story flags so they survive
+                # game reloads / flag resets.
+                self._enforce_all_progressive_storyflags()
             
             # Process deferred progressive-item flag writes
             self._process_deferred_flag_writes()
@@ -3549,6 +3575,76 @@ class SSHDContext(CommonContext):
     def _location_has_own_sword(self, location_code: int) -> bool:
         """Return True if this location contains our own Progressive Sword."""
         return location_code in self.sword_location_codes
+
+    def _update_progressive_storyflags(self, item_name: str, new_count: int):
+        """Write story flags for a progressive item up to *new_count* tiers.
+
+        The rando event system normally sets these via make_progressive_item_events,
+        but the AP client's memory-buffer delivery bypasses that path entirely.
+        Story flags are stored as a u16[128] bitfield array.  Flag N occupies
+        bit (N % 16) of the u16 at byte offset (N // 16 * 2).
+        Writes to both FA and STATIC copies (same as the sword handler).
+
+        Returns True if any flag value was actually changed in memory.
+        """
+        sf_list = self._PROGRESSIVE_STORY_FLAGS.get(item_name)
+        if not sf_list:
+            return False
+        changed = False
+        try:
+            bases = [
+                OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS,
+                OFFSET_STORY_FLAGS_STATIC,
+            ]
+            # Group flags by their u16 word offset to minimise memory reads.
+            word_bits: dict[int, list[tuple[int, bool]]] = {}
+            for i, sf in enumerate(sf_list):
+                word_offset = (sf // 16) * 2
+                bit = sf % 16
+                should_set = i < new_count
+                word_bits.setdefault(word_offset, []).append((bit, should_set))
+
+            for base in bases:
+                for word_offset, bits in word_bits.items():
+                    addr = base + word_offset
+                    current_val = self.memory.read_short(addr)
+                    if current_val is None:
+                        continue
+                    new_val = current_val
+                    for bit, should_set in bits:
+                        if should_set:
+                            new_val |= (1 << bit)
+                        else:
+                            new_val &= ~(1 << bit) & 0xFFFF
+                    if new_val != current_val:
+                        self.memory.write_short(addr, new_val)
+                        changed = True
+        except Exception as e:
+            logger.warning(f"[StoryFlags] Failed to write story flags for {item_name}: {e}")
+        return changed
+
+    def _enforce_all_progressive_storyflags(self):
+        """Re-apply story flags for every progressive item each tick.
+
+        This ensures the flags survive game reloads, flag-manager resets,
+        and any other mechanism that might clear them.  Only writes when
+        the in-memory value differs from the expected value, so the cost
+        is negligible when flags are already correct.
+        """
+        try:
+            # Sword story flags
+            sword_count = self.progressive_counts.get("Progressive Sword", 0)
+            if sword_count > 0:
+                self._update_sword_storyflags_for_count(sword_count)
+            # All other progressives
+            for item_name, sf_list in self._PROGRESSIVE_STORY_FLAGS.items():
+                count = self.progressive_counts.get(item_name, 0)
+                if count > 0:
+                    changed = self._update_progressive_storyflags(item_name, count)
+                    if changed:
+                        logger.debug(f"[StoryFlags] Re-wrote story flags for {item_name} #{count}: {sf_list[:count]}")
+        except Exception as e:
+            logger.debug(f"[StoryFlags] Enforce all failed: {e}")
 
     def _update_sword_storyflags_for_count(self, new_count: int):
         """Write sf906-911 and unset sf28 for a given sword tier count (1-6).

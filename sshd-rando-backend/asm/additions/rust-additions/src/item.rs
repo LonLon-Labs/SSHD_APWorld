@@ -836,6 +836,10 @@ pub extern "C" fn tgreact_spawn_custom_item(
                     0xFF00000F | (param2 & 0x3FF00) | (trapid << 4),
                 ) as *mut dAcItem;
 
+                if item_actor.is_null() {
+                    return param2_s0x18.into();
+                }
+
                 let mut forward_speed = 0.0;
                 let mut velocity_y = 0.0;
 
@@ -1531,10 +1535,6 @@ fn get_fallback_model_for_item(_item_id: u16) -> *const c_char {
 // can detect items originating from the Archipelago buffer.
 static mut AP_FORCE_FALLBACK_MODEL: bool = false;
 
-// Set by hook #46 when it falls back to GetRupee brres data.
-// Checked by hook #47 to also return "GetRupee" model name.
-static mut AP_HOOK46_USED_FALLBACK: bool = false;
-
 #[no_mangle]
 pub extern "C" fn get_arc_model_from_item(
     arc_table: *mut c_void,
@@ -1542,14 +1542,13 @@ pub extern "C" fn get_arc_model_from_item(
     item_id: u16,
 ) -> *mut c_void {
     unsafe {
-        AP_HOOK46_USED_FALLBACK = false;
-
         // Resolve the arc name through progressive item logic.
         let resolved_model_name = resolve_progressive_item_models(arc_name, item_id, 1);
 
-        // If resolution returned null, use GetRupee fallback.
+        // If the item has no defined model, use the globally available GetRupee
+        // archive. For normal items, a missing OARC indicates a real archive
+        // loading bug and should not be papered over with a mismatched fallback.
         if resolved_model_name.is_null() {
-            AP_HOOK46_USED_FALLBACK = true;
             let fallback_model = get_fallback_model_for_item(item_id);
             return dRawArcTable_c__getDataFromOarc(
                 arc_table,
@@ -1558,45 +1557,21 @@ pub extern "C" fn get_arc_model_from_item(
             );
         }
 
-        // All item OARCs are injected into every room's ARCN layer 0
-        // at build time, so they load synchronously during stage transitions.
-        // This lookup should always succeed.
-        let result = dRawArcTable_c__getDataFromOarc(
-            arc_table,
-            resolved_model_name,
-            c"g3d/model.brres".as_ptr(),
-        );
-        if !result.is_null() {
-            return result;
-        }
-
-        // Fallback to GetRupee if the OARC wasn't found (shouldn't happen
-        // with ARCN injection, but provides a safety net).
-        AP_HOOK46_USED_FALLBACK = true;
-        let fallback_model = get_fallback_model_for_item(item_id);
-        dRawArcTable_c__getDataFromOarc(arc_table, fallback_model, c"g3d/model.brres".as_ptr())
+        dRawArcTable_c__getDataFromOarc(arc_table, resolved_model_name, c"g3d/model.brres".as_ptr())
     }
 }
 
 #[no_mangle]
-pub extern "C" fn get_item_model_name_ptr(
-    model_name: *const c_char,
-    item_id: u16,
-) -> *const c_char {
+pub extern "C" fn get_item_model_name_ptr(arc_data: *const c_void, item_id: u16) -> *const c_char {
     unsafe {
-        // If hook #46 fell back to GetRupee brres data, the model name MUST
-        // also be "GetRupee" — otherwise the game tries to find e.g.
-        // "GetSwordA" inside GetRupee's brres, which fails silently and
-        // the item actor becomes invisible.
-        if AP_HOOK46_USED_FALLBACK {
-            AP_HOOK46_USED_FALLBACK = false;
-
-            // Replaced code still needs to execute
-            asm!("mov x1, {0:x}", in(reg) item_id);
-            asm!("cmp x1, #0x1C");
-
-            return c"GetRupee".as_ptr();
-        }
+        // Hook 46 returns the ArcTable entry in x0. The original vanilla code
+        // dereferences entry+0x8 to get the model name, but our hook call path
+        // cannot safely rely on x8 still mirroring that pointer.
+        let model_name = if arc_data.is_null() {
+            core::ptr::null()
+        } else {
+            *((arc_data as *const *const c_char).add(1))
+        };
 
         // Resolve progressive model names.  We pass model_name even if null —
         // for individual progressive tiers (e.g., id=13 Master Sword) the game's
@@ -1613,7 +1588,7 @@ pub extern "C" fn get_item_model_name_ptr(
             return get_fallback_model_for_item(item_id);
         }
 
-        return resolved_model_name;
+        resolved_model_name
     }
 }
 

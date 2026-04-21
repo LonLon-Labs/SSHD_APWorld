@@ -434,11 +434,11 @@ pub extern "C" fn handle_ac_boko_and_heartco_and_digspot_traps() {
         ACTORBASE_PARAM2 &= 0xFFFFFF0F;
         ACTORBASE_PARAM2 |= trapid << 4;
 
-        // Propagate Archipelago custom_flag from HeartCo params2 bits 18-27 (10 bits)
+        // Propagate Archipelago custom_flag from params2 bits 12-21 (10 bits)
         // to NEXT_CUSTOM_FLAG so spawned_actor_traps() encodes it into the
-        // spawned item actor's param2.  For EBc/Soil actors these bits are
-        // 0x3FF (unpatched default 0xFFFFFFFF), so the guard prevents false writes.
-        let custom_flag = ((*ac_boko).members.base.param2 >> 18) & 0x3FF;
+        // spawned item actor's param2.  Unpatched actors have 0x3FF sentinel
+        // written by the Python BZS patcher, preventing false flag writes.
+        let custom_flag = ((*ac_boko).members.base.param2 >> 12) & 0x3FF;
         if custom_flag != 0x3FF {
             NEXT_CUSTOM_FLAG = custom_flag as u16;
             NEXT_CUSTOM_FLAG_PENDING = 1;
