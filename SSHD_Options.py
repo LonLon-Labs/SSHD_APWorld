@@ -10,6 +10,7 @@ from Options import (
     DefaultOnToggle,
     FreeText,
     ItemDict,
+    OptionGroup,
     PerGameCommonOptions,
     Range,
     Toggle,
@@ -114,9 +115,24 @@ class Imp2Skip(DefaultOnToggle):
     display_name = "Imp 2 Skip"
 
 
+class Goal(Choice):
+    """
+    Determines what the victory condition is for completing the game.
+    Defeat Demise: Beat the Horde, Ghirahim 3, and Demise (full endgame).
+    Defeat Ghirahim 3: Beat the Horde and Ghirahim 3 (Demise fight is skipped).
+    Defeat Horde: Beat the Horde (Ghirahim 3 and Demise are skipped).
+    """
+    display_name = "Goal"
+    option_defeat_demise = 0
+    option_defeat_ghirahim3 = 1
+    option_defeat_horde = 2
+    default = 0
+
+
 class SkipHorde(Toggle):
     """
     If enabled, the requirement to defeat The Horde at the end is skipped.
+    Note: This is ignored when Goal is set to Defeat Horde (the horde fight is always required).
     """
     display_name = "Skip Horde"
 
@@ -124,6 +140,7 @@ class SkipHorde(Toggle):
 class SkipGhirahim3(Toggle):
     """
     If enabled, the requirement to defeat Ghirahim 3 at the end is skipped.
+    Note: This is ignored when Goal is set to Defeat Ghirahim 3 or Defeat Horde.
     """
     display_name = "Skip Ghirahim 3"
 
@@ -264,6 +281,15 @@ class RandomizeInteriorEntrances(Toggle):
     display_name = "Randomize Interior Entrances"
 
 
+class RandomizeGateOfTime(Toggle):
+    """
+    Randomize the Gate of Time entrance.
+    The Gate of Time connection (Sealed Grounds to Temple of Hylia) will be shuffled
+    into the entrance pool. Requires Randomize Entrances to be enabled.
+    """
+    display_name = "Randomize Gate of Time"
+
+
 class RandomizeOverworldEntrances(Toggle):
     """
     Randomize overworld region entrances.
@@ -302,7 +328,7 @@ class StartingSword(Choice):
     Which sword to start with.
     """
     display_name = "Starting Sword"
-    option_none = 0
+    option_no_sword = 0
     option_practice_sword = 1
     option_goddess_sword = 2
     option_goddess_longsword = 3
@@ -600,10 +626,11 @@ class MinigameDifficulty(Choice):
     Determines the difficulty of minigames.
     """
     display_name = "Minigame Difficulty"
-    option_easy = 0
-    option_medium = 1
-    option_hard = 2
-    default = 0
+    option_guaranteed_win = 0
+    option_easy = 1
+    option_vanilla = 2
+    option_hard = 3
+    default = 1
 
 
 class TrapMode(Choice):
@@ -687,11 +714,16 @@ class ChestTypeMatchesContents(Choice):
     default = 2
 
 
-class RandomTrialObjectPositions(Toggle):
+class RandomTrialObjectPositions(Choice):
     """
-    If enabled, object positions in Silent Realm trials will be randomized.
+    Controls whether and how object positions in Silent Realm trials are randomized.
     """
     display_name = "Random Trial Object Positions"
+    option_none = 0
+    option_simple = 1
+    option_advanced = 2
+    option_full = 3
+    default = 0
 
 
 class UpgradedSkywardStrike(DefaultOnToggle):
@@ -1293,6 +1325,26 @@ class RemoveEnemyMusic(Toggle):
     display_name = "Remove Enemy Music"
 
 
+class TextShuffle(Choice):
+    """
+    Shuffles in-game text for a chaotic experience. All non-Latin languages are excluded.
+    - Off: All text is normal.
+    - Baby: English text is shuffled, but shop text and important functional text is left intact.
+    - Crazy: All English text is shuffled in sentences/paragraphs to maintain some readability.
+    - Extreme: All English text is fully shuffled.
+    - European Extreme: Text from all Latin-script languages is shuffled in sentences/paragraphs.
+    - Psychopath: Text from all Latin-script languages is fully shuffled.
+    """
+    display_name = "Text Shuffle"
+    option_off = 0
+    option_baby = 1
+    option_crazy = 2
+    option_extreme = 3
+    option_european_extreme = 4
+    option_psychopath = 5
+    default = 0
+
+
 class UseAlternativeLogo(Toggle):
     """
     If enabled, the alternative Archipelago logo is used on the title screen
@@ -1530,6 +1582,7 @@ class SSHDOptions(PerGameCommonOptions):
     gate_of_time_sword_requirement: GateOfTimeSwordRequirement
     gate_of_time_dungeon_requirements: GateOfTimeDungeonRequirements
     imp2_skip: Imp2Skip
+    goal: Goal
     skip_horde: SkipHorde
     skip_ghirahim3: SkipGhirahim3
     demise_count: DemiseCount
@@ -1552,6 +1605,7 @@ class SSHDOptions(PerGameCommonOptions):
     randomize_trials: RandomizeTrials
     randomize_door_entrances: RandomizeDoorEntrances
     decouple_skykeep_layout: DecoupleSkykeepLayout
+    randomize_gate_of_time: RandomizeGateOfTime
     randomize_interior_entrances: RandomizeInteriorEntrances
     randomize_overworld_entrances: RandomizeOverworldEntrances
     decouple_entrances: DecoupleEntrances
@@ -1682,6 +1736,7 @@ class SSHDOptions(PerGameCommonOptions):
     lightning_skyward_strike: LightnningSkywardStrike
     starry_skies: StarrySky
     remove_enemy_music: RemoveEnemyMusic
+    text_shuffle: TextShuffle
     use_alternative_logo: UseAlternativeLogo
     archipelago_item_model: ArchipelagoItemModel
     
@@ -1734,3 +1789,218 @@ class SSHDOptions(PerGameCommonOptions):
     # Archipelago
     death_link: SSHDDeathLink
     breath_link: SSHDBreathLink
+
+
+sshd_option_groups = [
+    OptionGroup("Completion Requirements", [
+        Goal,
+        RequiredDungeonCount,
+        TriforceRequired,
+        TriforceShuffle,
+        GateOfTimeSwordRequirement,
+        GateOfTimeDungeonRequirements,
+        Imp2Skip,
+        SkipHorde,
+        SkipGhirahim3,
+    ]),
+    OptionGroup("Item Randomization", [
+        GratitudeCrystalShuffle,
+        StaminaFruitShuffle,
+        NpcClosetShuffle,
+        HiddenItemShuffle,
+        RupeeShuffle,
+        GoddessChestShuffle,
+        TrialTreasureShuffle,
+        TadtoneShuffle,
+        GossipStoneTreasureShuffle,
+        SmallKeyShuffle,
+        BossKeyShuffle,
+        MapShuffle,
+    ]),
+    OptionGroup("Entrance Randomization", [
+        RandomizeEntrances,
+        RandomizeDungeons,
+        RandomizeTrials,
+        RandomizeDoorEntrances,
+        DecoupleSkykeepLayout,
+        RandomizeGateOfTime,
+        RandomizeInteriorEntrances,
+        RandomizeOverworldEntrances,
+        DecoupleEntrances,
+        DecopleDoubleDoors,
+    ]),
+    OptionGroup("Starting Inventory", [
+        StartingSword,
+        StartingTablets,
+        StartingHearts,
+        CustomStartingItems,
+        StartWithAllBugs,
+        StartWithAllTreasures,
+        RandomStartingStatues,
+        RandomStartingSpawn,
+        LimitStartingSpawn,
+        RandomStartingItemCount,
+    ]),
+    OptionGroup("Item Pool & Traps", [
+        ItemPool,
+        ProgressiveItems,
+        AddJunkItems,
+        JunkItemRate,
+        TrapMode,
+        TrappableItems,
+        BurnTraps,
+        CurseTraps,
+        NoiseTraps,
+        GrooseTraps,
+        HealthTraps,
+    ]),
+    OptionGroup("Quality of Life", [
+        OpenThunderhead,
+        OpenLakeFloriaGate,
+        OpenEarthTemple,
+        OpenLmf,
+        OpenBatraeuxShed,
+        SkipSkykeepDoorCutscene,
+        SkipHarpPlaying,
+        SkipMiscCutscenes,
+        PeatriceConversations,
+    ]),
+    OptionGroup("Quality of Life Shortcuts", [
+        ShortcutIosBridgeComplete,
+        ShortcutSpiralLogToBtt,
+        ShortcutLogNearMachi,
+        ShortcutFaronLogToFloria,
+        ShortcutDeepWoodsLogBeforeTightrope,
+        ShortcutDeepWoodsLogBeforeTemple,
+        ShortcutEldinEntranceBoulder,
+        ShortcutEldinAscentBoulder,
+        ShortcutVsFlames,
+        ShortcutLanayruBars,
+        ShortcutWestWallMinecart,
+        ShortcutSandOasisMinecart,
+        ShortcutMinecartBeforeCaves,
+        ShortcutSkyviewBoards,
+        ShortcutSkyviewBars,
+        ShortcutEarthTempleBridge,
+        ShortcutLmfWindGates,
+        ShortcutLmfBoxes,
+        ShortcutLmfBarsToWestSide,
+        ShortcutAcBridge,
+        ShortcutAcWaterVents,
+        ShortcutSandshipWindows,
+        ShortcutSandshipBrigBars,
+        ShortcutFsOutsideBars,
+        ShortcutFsLavaFlow,
+        ShortcutSkyKeepSvtRoomBars,
+        ShortcutSkyKeepFsRoomLowerBars,
+        ShortcutSkyKeepFsRoomUpperBars,
+    ], start_collapsed=True),
+    OptionGroup("Difficulty & Game Settings", [
+        LogicRules,
+        DamageMultiplier,
+        MinigameDifficulty,
+        NoSpoilerLog,
+        EmptyUnreachableLocations,
+        AmmoAvailability,
+        DungeonsIncludeSkyKeep,
+        EmptyUnrequiredDungeons,
+        LanaryuCavesKeys,
+        NaturalNightConnections,
+    ]),
+    OptionGroup("Advanced Game Options", [
+        BossKeyPuzzles,
+        ChestTypeMatchesContents,
+        SmallKeysInFancyChests,
+        FullWalletUpgrades,
+        UpgradedSkywardStrike,
+        FasterAirMeterDepletion,
+        UnlockAllGroosenatorDestinations,
+        AllowFlyingAtNight,
+        RandomTrialObjectPositions,
+        EnableBackInTime,
+        UndergroundRupeeShufle,
+        BeedleShopShuffle,
+        RandomBottleContents,
+        RandomizeShopPrices,
+    ]),
+    OptionGroup("Logic Tricks", [
+        LogicEarlyLakeFloria,
+        LogicBeedlesIslandCageChestDive,
+        LogicVolcanicIslandDive,
+        LogicEastIslandDive,
+        LogicAdvancedLizalfosCombat,
+        LogicLongRangedSkywardStrikes,
+        LogicGravestoneJump,
+        LogicWaterfallCaveJump,
+        LogicBirdNestItemFromBeedlesShop,
+        LogicBeedlesShopWithBombs,
+        LogicStutterSprint,
+        LogicPreciseBeetle,
+        LogicPreciseBombThrows,
+        LogicFaronWoodsWithGroosenator,
+        LogicItemlessFirstTimeshift,
+        LogicStaminaPotionThroughSinkSand,
+        LogicBrakeslide,
+        LogicLanayruMineQuickBomb,
+        LogicTotSkipBrakeslide,
+        LogicTotSlingshot,
+        LogicFireNodeWithoutHookBeetle,
+        LogicCactusBombWhip,
+        LogicSkippersRetreatFastClawshots,
+        LogicSkyviewSpiderRoll,
+        LogicSkyviewCoiledRupeeJump,
+        LogicSkyviewPreciseSlingshot,
+        LogicEarthTempleKeeseSkywardStrike,
+        LogicEarthTempleSlopeStuttersprint,
+        LogicEarthTempleBomblessScaldera,
+        LogicLmfWhipSwitch,
+        LogicLmfCeilingPreciseSlingshot,
+        LogicLmfWhipTimeshiftStone,
+        LogicLmfMinecartJump,
+        LogicLmfBellowslessMoldarach,
+        LogicAcLeverJumpTrick,
+        LogicAcChestAfterWhipHooksJump,
+        LogicSandshipJumpToStern,
+        LogicSandshipItemlessSpume,
+        LogicSandshipNoCombinationHint,
+        LogicFsPillarJump,
+        LogicFsPracticeSwordGhirahim2,
+        LogicPresentBowSwitches,
+        LogicSkyKeepVineClip,
+    ], start_collapsed=True),
+    OptionGroup("Music & Cosmetics", [
+        MusicRandomization,
+        CutoffGameOverMusic,
+        TunicSwap,
+        LightnningSkywardStrike,
+        StarrySky,
+        RemoveEnemyMusic,
+        UseAlternativeLogo,
+        ArchipelagoItemModel,
+    ]),
+    OptionGroup("Cheats", [
+        CheatInfiniteHealth,
+        CheatInfiniteStamina,
+        CheatInfiniteAmmo,
+        CheatInfiniteBugs,
+        CheatInfiniteMaterials,
+        CheatInfiniteShield,
+        CheatInfiniteSkywardStrike,
+        CheatInfiniteRupees,
+        CheatMoonJump,
+        CheatInfiniteBeetle,
+        CheatInfiniteLoftwing,
+        CheatNoElectricStun,
+        CheatSpeedMultiplier,
+    ], start_collapsed=True),
+    OptionGroup("Archipelago", [
+        SSHDDeathLink,
+        SSHDBreathLink,
+    ]),
+    OptionGroup("Configuration", [
+        ExtractPath,
+        ConfigYamlPath,
+        SshdrSeed,
+        SettingString,
+    ]),
+]

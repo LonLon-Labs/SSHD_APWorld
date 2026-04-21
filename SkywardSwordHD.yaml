@@ -54,7 +54,18 @@ Skyward Sword HD:
   # ========================================
   # ARCHIPELAGO OPTIONS
   # ========================================
-  
+
+  # Goal
+  # Determines the victory condition for this world in the multiworld.
+  # 0 (defeat_demise): Defeat Demise at the end of the boss gauntlet (default).
+  #     The full Horde → Ghirahim 3 → Demise sequence must be completed.
+  # 1 (defeat_ghirahim3): Defeat Ghirahim 3 in Hylia's Realm.
+  #     Demise is skipped; victory triggers when Ghirahim 3 is defeated.
+  # 2 (defeat_horde): Defeat The Horde in Hylia's Realm.
+  #     Both Ghirahim 3 and Demise are skipped; victory triggers when
+  #     The Horde is defeated.
+  goal: 0
+
   # Death Link: When you die, everyone dies (and vice versa)
   death_link: false
   
@@ -572,9 +583,10 @@ Skyward Sword HD:
   boss_key_puzzles: vanilla_orientation
   
   # Minigame Difficulty
-  # easy: Easy minigames (default)
-  # medium: Medium difficulty
-  # hard: Challenging minigames
+  # guaranteed_win: Completing the minigame will guarantee the best reward
+  # easy: The threshold needed to earn a reward from each minigame will be reduced (default)
+  # vanilla: The threshold needed to earn a reward from each minigame will be unchanged
+  # hard: The threshold needed to earn a reward from each minigame will be increased
   minigame_difficulty: easy
   
   # ========================================
@@ -598,9 +610,11 @@ Skyward Sword HD:
   full_wallet_upgrades: false
   
   # Random Trial Object Positions
-  # false: Trial objects appear in their vanilla locations (default)
-  # true: The positions of tears, light fruits, dusk relics, and stamina fruits will be shuffled amongst each other
-  random_trial_object_positions: false
+  # none: Trial objects appear in their vanilla locations (default)
+  # simple: Tears and light fruits are shuffled amongst each other
+  # advanced: Tears, light fruits, and dusk relics are shuffled amongst each other
+  # full: Tears, light fruits, dusk relics, and stamina fruits are shuffled amongst each other
+  random_trial_object_positions: none
   
   # Upgraded Skyward Strike
   # false: Only the True Master Sword will have the fully upgraded Skyward Strike.
@@ -1036,6 +1050,16 @@ Skyward Sword HD:
   # false: The background music will be interrupted by enemy drums when you get near to an enemy (default)
   # true: The background music will continue to play when you get near to enemies
   remove_enemy_music: false
+
+  # Text Shuffle
+  # Shuffles in-game text for a chaotic experience. All non-Latin languages are excluded.
+  # off: All text is normal (default)
+  # baby: English text is shuffled, but shop text and important functional text is left intact
+  # crazy: All English text is shuffled in sentences/paragraphs to maintain some readability
+  # extreme: All English text is fully shuffled
+  # european_extreme: Text from all Latin-script languages is shuffled in sentences/paragraphs
+  # psychopath: Text from all Latin-script languages is fully shuffled
+  text_shuffle: off
 
   # ========================================
   # EXTRA STARTING INVENTORY

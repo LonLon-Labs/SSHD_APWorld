@@ -125,6 +125,8 @@ extern "C" {
     static mut NEXT_CUSTOM_FLAG: u16;
     static mut NEXT_CUSTOM_FLAG_PENDING: u8;
 
+    static mut CREST_CUSTOM_FLAGS: [u16; 3];
+
     static mut SQUIRRELS_CAUGHT_THIS_PLAY_SESSION: bool;
     static TADTONE_SCENEFLAGS: [u8; 17];
 
@@ -240,8 +242,14 @@ pub extern "C" fn give_item_with_archipelago_flag(itemid: u8, custom_flag: u16) 
         let param2: u32 =
             (flag << 8) | (scene_selector << 15) | (flag_space << 17) | (original_itemid << 18);
 
-        // Spawn item with param1 for display, param2 for custom flag
-        let param1: u32 = (new_itemid as u32) | 0x180000; // Standard item spawn flags
+        // Spawn item with param1 for display, param2 for custom flag.
+        // sceneflag=0xFF in bits 10-17 is REQUIRED: check_and_modify_item_actor's
+        // replaced code checks `(param1 >> 10) & 0xFF == 0xFF` to set the z-flag
+        // that vanilla dAcItem::init needs.  Without 0xFF here the item silently
+        // fails to initialise.  Bit 19 (0x080000) enables the rando textbox path
+        // and bit 20 (0x100000) is another spawn flag — together with bit 22
+        // (0x400000) they form 0x580000, matching give_item_with_sceneflag.
+        let param1: u32 = (new_itemid as u32) | (0xFFu32 << 10) | 0x580000;
 
         // Pass param2 directly to spawn_actor so it gets set atomically
         // via ACTORBASE_PARAM2 within spawn_actor itself.
@@ -349,6 +357,41 @@ pub extern "C" fn hide_appearing_chest(tbox: *mut dAcTbox) {
     }
 }
 
+/// Decode a 10-bit AP custom flag and set the corresponding global
+/// sceneflag or dungeonflag.  Also pre-sets LAST_AP_ITEM_FLAG_ID so the
+/// item-216 textbox can look up the correct item/player name.
+/// Does nothing when `custom_flag == 0x3FF` (no custom flag assigned).
+unsafe fn set_ap_custom_flag(custom_flag: u16) {
+    if custom_flag == 0x3FF {
+        return;
+    }
+
+    let flag_val = (custom_flag & 0x7F) as u32;
+    let scene_selector = ((custom_flag >> 7) & 0x3) as u32;
+    let flag_space = ((custom_flag >> 9) & 0x1) as u32;
+
+    let sceneindex: u16 = match scene_selector {
+        0 => 6,
+        1 => 13,
+        2 => 16,
+        3 => 19,
+        _ => 6,
+    };
+
+    match flag_space {
+        0 => flag::set_global_sceneflag(sceneindex, flag_val as u16),
+        1 => flag::set_global_dungeonflag(sceneindex, flag_val as u16),
+        _ => {},
+    }
+
+    // Pre-set LAST_AP_ITEM_FLAG_ID so that when the item-get event fires
+    // for item 216, the textbox handler (cmd 81) can look up the correct
+    // item name and player name.  setup_traps() normally reads this from
+    // param2, but since we spawn via give_item() (param2=0xFFFFFFFF),
+    // setup_traps won't find a valid flag there.
+    core::ptr::write_volatile(core::ptr::addr_of_mut!(LAST_AP_ITEM_FLAG_ID), custom_flag);
+}
+
 #[no_mangle]
 pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwordBeam) {
     unsafe {
@@ -360,26 +403,19 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
         };
         (*PLAYER_PTR).obj_base_members.base.pos = position;
 
-        // Read custom flags encoded by patch_goddess_crest():
-        //   index 0 flag: params1 bits 0-9
-        //   index 1 flag: params2 bits 0-9
-        //   index 2 flag: params2 bits 10-19
-        let param1 = (*crest_actor).base.basebase.members.param1;
-        let param2 = (*crest_actor).base.members.base.param2;
-        let custom_flag_0: u16 = (param1 & 0x3FF) as u16;
-        let custom_flag_1: u16 = (param2 & 0x3FF) as u16;
-        let custom_flag_2: u16 = ((param2 >> 10) & 0x3FF) as u16;
-
         // Goddess Sword Reward
         if flag::check_local_sceneflag(50) == 0 {
             let goddess_sword_reward: u8 =
                 ((*crest_actor).base.basebase.members.param1 >> 0x18) as u8;
-            if custom_flag_0 != 0x3FF {
-                give_item_with_archipelago_flag(goddess_sword_reward, custom_flag_0);
-            } else {
-                give_item(goddess_sword_reward);
-            }
+            // Directly set the AP custom flag in game memory so the AP client
+            // detects this location as checked.  This is more reliable than
+            // the NEXT_CUSTOM_FLAG→param2 chain for crest items because all
+            // three rewards may spawn in rapid succession.
+            let cf = core::ptr::read_volatile(core::ptr::addr_of!(CREST_CUSTOM_FLAGS[0]));
+            set_ap_custom_flag(cf);
+            give_item(goddess_sword_reward);
             flag::set_local_sceneflag(50);
+            return;
         }
         if (EQUIPPED_SWORD < 2) {
             return;
@@ -388,12 +424,11 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
         // Longsword Reward
         if flag::check_local_sceneflag(51) == 0 {
             let longsword_reward: u8 = ((*crest_actor).base.basebase.members.param1 >> 0x10) as u8;
-            if custom_flag_1 != 0x3FF {
-                give_item_with_archipelago_flag(longsword_reward, custom_flag_1);
-            } else {
-                give_item(longsword_reward);
-            }
+            let cf = core::ptr::read_volatile(core::ptr::addr_of!(CREST_CUSTOM_FLAGS[1]));
+            set_ap_custom_flag(cf);
+            give_item(longsword_reward);
             flag::set_local_sceneflag(51);
+            return;
         }
         if (EQUIPPED_SWORD < 3) {
             return;
@@ -402,11 +437,9 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
         // White Sword Reward
         if flag::check_local_sceneflag(52) == 0 {
             let whitesword_reward: u8 = ((*crest_actor).base.members.base.param2 >> 0x18) as u8;
-            if custom_flag_2 != 0x3FF {
-                give_item_with_archipelago_flag(whitesword_reward, custom_flag_2);
-            } else {
-                give_item(whitesword_reward);
-            }
+            let cf = core::ptr::read_volatile(core::ptr::addr_of!(CREST_CUSTOM_FLAGS[2]));
+            set_ap_custom_flag(cf);
+            give_item(whitesword_reward);
             flag::set_local_sceneflag(52);
         }
     }
@@ -525,25 +558,14 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
             }
         }
 
-        // Track the custom flag for item 216 (Archipelago Item) pickups
-        // so the event flow can look up item name + player name
-        let itemid = (*item_actor).itemid;
-        if itemid == 216 && flag != 0x7F {
-            let scene_raw: u32 = match sceneindex {
-                6 => 0,
-                13 => 1,
-                16 => 2,
-                19 => 3,
-                _ => 0,
-            };
-            let computed_flag_id = (flag & 0x7F) | (scene_raw << 7) | (flag_space_trigger << 9);
-            // Volatile write ensures the store is committed immediately
-            // before the game triggers the 003_216 event flow.
-            core::ptr::write_volatile(
-                core::ptr::addr_of_mut!(LAST_AP_ITEM_FLAG_ID),
-                computed_flag_id as u16,
-            );
-        }
+        // NOTE: LAST_AP_ITEM_FLAG_ID is NOT set here.
+        // handle_custom_item_get runs in stateGet which fires AFTER the
+        // event flow.  Writing the flag_id here would RE-SET it after
+        // cmd 81 already consumed and cleared it, leaving a stale value
+        // that the NEXT item-216 pickup could read.  setup_traps()
+        // (stateWait*GetDemoUpdate) and cmd 80 (NPC event flows) both
+        // set LAST_AP_ITEM_FLAG_ID BEFORE the event fires, which is the
+        // correct timing.
 
         return (*item_actor).final_determined_itemid;
     }
@@ -2333,7 +2355,11 @@ pub static mut AP_ITEM_INFO_TABLE: ApItemInfoTable = ApItemInfoTable {
 };
 
 // Tracks which item-216 location was most recently picked up.
-// Set in handle_custom_item_get(); read in the custom event command.
+// Set in setup_traps() (stateWait*GetDemoUpdate, BEFORE the event fires) and
+// cmd 80 (NPC event flows).  Read and reset by cmd 81
+// (set_ap_item_string_args). NOT set in handle_custom_item_get() — stateGet
+// runs AFTER the event, so writing here would re-create a stale value after
+// cmd 81 already cleared it.
 #[no_mangle]
 pub static mut LAST_AP_ITEM_FLAG_ID: u16 = 0xFFFF;
 

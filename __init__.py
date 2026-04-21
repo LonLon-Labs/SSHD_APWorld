@@ -2,7 +2,7 @@
 Skyward Sword HD (SSHD) Archipelago World
 
 This is an Archipelago integration for The Legend of Zelda: Skyward Sword HD
-running on the Ryujinx emulator.
+running on a supported Switch emulator (Ryujinx, yuzu, suyu, sudachi, eden).
 
 Based on the original Skyward Sword (Wii/Dolphin) integration.
 """
@@ -41,7 +41,7 @@ from worlds.LauncherComponents import (
 
 from .Items import ITEM_TABLE
 from .Locations import LOCATION_TABLE
-from .SSHD_Options import SSHDOptions
+from .SSHD_Options import SSHDOptions, sshd_option_groups
 from .Rules import set_rules, set_completion_condition
 from .rando.ArcPatcher import patch_archipelago_logo, patch_archipelago_item_oarc
 from .SSHDRWrapper import generate_sshd_rando_mod, extract_location_item_mapping, extract_custom_flag_mapping
@@ -211,7 +211,7 @@ def run_client(*args: str) -> None:
             # Lightweight .apsshd — run the standalone patcher
             print(f"\nThis .apsshd does not contain ROM patches.")
             print(f"Running standalone patcher to generate patches from your ROM...\n")
-            from .SSHDPatcher import read_apsshd, generate_patches, install_to_ryujinx
+            from .SSHDPatcher import read_apsshd, generate_patches, install_to_emulator
             import tempfile
             
             _manifest, _patch_data, _patcher_data = read_apsshd(patch_path)
@@ -220,7 +220,7 @@ def run_client(*args: str) -> None:
             try:
                 romfs_path, exefs_path = generate_patches(_patcher_data, extract_path, temp_out)
                 if romfs_path and exefs_path:
-                    install_to_ryujinx(romfs_path, exefs_path)
+                    install_to_emulator(romfs_path, exefs_path)
                     print("\n" + "=" * 60)
                     print("Patches generated and installed successfully!")
                     print("=" * 60)
@@ -262,7 +262,7 @@ class SSHDWeb(WebWorld):
     """
     tutorials = [Tutorial(
         "Skyward Sword HD Setup Guide",
-        "A guide to setting up SSHD for Archipelago with Ryujinx.",
+        "A guide to setting up SSHD for Archipelago.",
         "English",
         "setup_en.md",
         "setup/en",
@@ -270,6 +270,7 @@ class SSHDWeb(WebWorld):
     )]
     theme = "ice"
     rich_text_options_doc = True
+    option_groups = sshd_option_groups
 
 
 class SSHDContainer(APPlayerContainer):
@@ -320,7 +321,7 @@ PROGRESSIVE_STAGE_ITEMS: set[str] = {
 
 class SSHDWorld(World):
     """
-    The Legend of Zelda: Skyward Sword HD for Ryujinx
+    The Legend of Zelda: Skyward Sword HD
     
     An epic adventure where Link must rescue Zelda and stop the Demon King Ghirahim.
     Travel between the Surface and Sky, explore dungeons, and collect items across
@@ -451,6 +452,7 @@ class SSHDWorld(World):
         "randomize_trial_gate_entrances": ("randomize_trials", "toggle", None),
         "randomize_door_entrances": ("randomize_door_entrances", "toggle", None),
         "randomize_skykeep_layout": ("decouple_skykeep_layout", "toggle", None),
+        "randomize_gate_of_time": ("randomize_gate_of_time", "toggle", None),
         "randomize_interior_entrances": ("randomize_interior_entrances", "toggle", None),
         "randomize_overworld_entrances": ("randomize_overworld_entrances", "toggle", None),
         "decouple_entrances": ("decouple_entrances", "toggle", None),
@@ -467,7 +469,7 @@ class SSHDWorld(World):
         "randomize_shop_prices": ("randomize_shop_prices", "toggle", None),
         "ammo_availability": ("ammo_availability", "choice", {"scarce": 0, "vanilla": 1, "useful": 2, "plentiful": 3}),
         "boss_key_puzzles": ("boss_key_puzzles", "choice", {"correct_orientation": 0, "vanilla_orientation": 1, "random_orientation": 2}),
-        "minigame_difficulty": ("minigame_difficulty", "choice", {"easy": 0, "medium": 1, "hard": 2}),
+        "minigame_difficulty": ("minigame_difficulty", "choice", {"guaranteed_win": 0, "easy": 1, "vanilla": 2, "hard": 3}),
         "trap_mode": ("trap_mode", "choice", {"no_traps": 0, "trapish": 1, "trapsome": 2, "traps_o_plenty": 3, "traptacular": 4}),
         "trappable_items": ("trappable_items", "choice", {"major_items": 0, "non_major_items": 1, "any_items": 2}),
         # Trap Types
@@ -480,7 +482,7 @@ class SSHDWorld(World):
         "full_wallet_upgrades": ("full_wallet_upgrades", "toggle", None),
         "chest_type_matches_contents": ("chest_type_matches_contents", "choice", {"off": 0, "only_dungeon_items": 1, "all_contents": 2}),
         "small_keys_in_fancy_chests": ("small_keys_in_fancy_chests", "toggle", None),
-        "random_trial_object_positions": ("random_trial_object_positions", "toggle", None),
+        "random_trial_object_positions": ("random_trial_object_positions", "choice", {"none": 0, "simple": 1, "advanced": 2, "full": 3}),
         "upgraded_skyward_strike": ("upgraded_skyward_strike", "toggle", None),
         "faster_air_meter_depletion": ("faster_air_meter_depletion", "toggle", None),
         "unlock_all_groosenator_destinations": ("unlock_all_groosenator_destinations", "toggle", None),
@@ -590,6 +592,7 @@ class SSHDWorld(World):
         "lightning_skyward_strike": ("lightning_skyward_strike", "toggle", None),
         "starry_skies": ("starry_skies", "toggle", None),
         "remove_enemy_music": ("remove_enemy_music", "toggle", None),
+        "text_shuffle": ("text_shuffle", "choice", {"off": 0, "baby": 1, "crazy": 2, "extreme": 3, "european_extreme": 4, "psychopath": 5}),
         # Difficulty
         "damage_multiplier": ("damage_multiplier", "choice", {"half": 0, "1": 1, "normal": 1, "2": 2, "double": 2, "4": 3, "quadruple": 3, "ohko": 4}),
         "no_spoiler_log": ("no_spoiler_log", "toggle", None),
@@ -908,13 +911,13 @@ class SSHDWorld(World):
         # They have no in-game model and must never be in the AP pool.
         excluded.add("Goddess Cube")
 
-        # "Game Beatable" is the Demise victory pseudo-location.  It must NOT
+        # "Game Beatable" is the victory pseudo-location.  It must NOT
         # exist as a real AP location (with an int address) because:
         #   1. The sshd-rando patcher has no actor to patch for this event.
-        #   2. Placing a fill item there crashes the game during the Demise
-        #      defeat cutscene.
+        #   2. Placing a fill item there crashes the game during the
+        #      end-game cutscene.
         # Victory is handled via the "Victory - Game Beatable" event (address=None)
-        # and the client detects the defeat via story flag 959.
+        # and the client detects the goal via stage transitions / story flags.
         excluded.add("Game Beatable")
 
         return excluded
@@ -993,8 +996,15 @@ class SSHDWorld(World):
         try:
             from BaseClasses import Item as APItem, ItemClassification
             
-            # Find the Temple of Hylia region (where Defeat Demise is)
-            target_region = regions_dict.get("Temple of Hylia") or regions_dict.get("Hylia's Realm")
+            # Place the victory event in the region that matches the goal.
+            goal_value = self.options.goal.value
+            if goal_value == 0:  # defeat_demise
+                target_region = regions_dict.get("Temple of Hylia") or regions_dict.get("Hylia's Realm")
+            elif goal_value == 1:  # defeat_ghirahim3
+                target_region = regions_dict.get("Hylia's Realm") or regions_dict.get("Temple of Hylia")
+            else:  # defeat_horde (2)
+                target_region = regions_dict.get("Hylia's Realm") or regions_dict.get("Temple of Hylia")
+            
             if target_region:
                 event_location = Location(
                     self.player,
@@ -1367,7 +1377,66 @@ class SSHDWorld(World):
             self._sshd_full_item_pool = {}
             self._sshd_starting_pool = {}
             self._sshd_excluded_locations = set()
+
+        # Always ensure critical settings are populated from AP options as fallback.
+        # If sshd-rando extraction succeeded, these are already set and won't be overwritten.
+        # If it failed, this prevents the logic converter from treating all
+        # setting comparisons as False (which makes regions like Temple of Hylia unreachable).
+        self._ensure_critical_resolved_settings()
     
+    def _ensure_critical_resolved_settings(self):
+        """
+        Populate _sshd_resolved_settings with fallback values derived from
+        Archipelago options for any critical settings that are missing.
+
+        The logic converter's _resolve_setting_comparison returns ALWAYS_FALSE
+        for unknown settings, which can make the Gate of Time Sword Requirement
+        macro (and similar) evaluate to False on every branch, blocking access
+        to Temple of Hylia and making the game unbeatable.
+        """
+        if not hasattr(self, '_sshd_resolved_settings'):
+            self._sshd_resolved_settings = {}
+
+        s = self._sshd_resolved_settings
+
+        # got_sword_requirement — used by Gate of Time Sword Requirement macro
+        if 'got_sword_requirement' not in s:
+            got_sword_map = {
+                0: "goddess_sword", 1: "goddess_longsword",
+                2: "goddess_white_sword", 3: "master_sword",
+                4: "true_master_sword",
+            }
+            s['got_sword_requirement'] = got_sword_map.get(
+                self.options.gate_of_time_sword_requirement.value, 'true_master_sword')
+            print(f"[__init__.py] Fallback: got_sword_requirement = {s['got_sword_requirement']}")
+
+        # required_dungeons — used by victory access rule for boss key count
+        if 'required_dungeons' not in s:
+            s['required_dungeons'] = str(self.options.required_dungeon_count.value)
+            print(f"[__init__.py] Fallback: required_dungeons = {s['required_dungeons']}")
+
+        # boss_keys — used by victory access rule to decide if boss keys are needed
+        if 'boss_keys' not in s:
+            key_mode_map = {
+                0: "vanilla", 1: "own_dungeon", 2: "any_dungeon",
+                3: "own_region", 4: "overworld", 5: "anywhere", 6: "removed",
+            }
+            s['boss_keys'] = key_mode_map.get(
+                self.options.boss_key_shuffle.value, 'own_dungeon')
+            print(f"[__init__.py] Fallback: boss_keys = {s['boss_keys']}")
+
+        # Open world settings used by logic macros
+        if 'open_thunderhead' not in s:
+            s['open_thunderhead'] = "on" if self.options.open_thunderhead.value else "off"
+        if 'open_lake_floria' not in s:
+            floria_map = {0: "vanilla", 1: "yerbal", 2: "open"}
+            s['open_lake_floria'] = floria_map.get(
+                self.options.open_lake_floria_gate.value, 'vanilla')
+        if 'open_et' not in s:
+            s['open_et'] = "on" if self.options.open_earth_temple.value else "off"
+        if 'open_lmf' not in s:
+            s['open_lmf'] = "on" if self.options.open_lmf.value else "off"
+
     def create_item(self, name: str) -> Item:
         """Create an item by name."""
         data = ITEM_TABLE[name]
@@ -3177,8 +3246,21 @@ class SSHDWorld(World):
             # These must be set regardless of what's in config.yaml
             print("[__init__.py] Applying Archipelago-required setting overrides...")
             
-            # Demise must be enabled for Archipelago (it's the goal)
-            settings_dict["skip_demise"] = "off"
+            # Set skip_demise / skip_g3 / skip_horde based on the goal option.
+            # The goal determines which endgame bosses must be fought; the rest
+            # are skipped so the game transitions directly to the ending.
+            goal_value = self.options.goal.value
+            if goal_value == 0:  # defeat_demise — full endgame
+                settings_dict["skip_demise"] = "off"
+                # skip_horde and skip_g3 stay as-is from config (user can still skip them)
+            elif goal_value == 1:  # defeat_ghirahim3 — skip Demise, force Horde + G3 on
+                settings_dict["skip_demise"] = "on"
+                settings_dict["skip_g3"] = "off"
+                # skip_horde stays as-is (user can still skip it — goal only requires G3)
+            else:  # defeat_horde (2) — skip Demise + G3, force Horde on
+                settings_dict["skip_demise"] = "on"
+                settings_dict["skip_g3"] = "on"
+                settings_dict["skip_horde"] = "off"
             
             # Hints are disabled - Archipelago uses its own hint system
             settings_dict["path_hints"] = "0"
@@ -3219,7 +3301,7 @@ class SSHDWorld(World):
             _hearts_val = settings_dict.get("starting_hearts", "NOT SET")
             print(f"[__init__.py] Config.yaml starting settings: tablets={_tablet_val!r}, sword={_sword_val!r}, hearts={_hearts_val!r}")
             
-            print("[__init__.py] Applied overrides: skip_demise=off, all hints disabled, spawn_hearts=on, progressive_items=on")
+            print("[__init__.py] Applied overrides: goal-based skip settings, all hints disabled, spawn_hearts=on, progressive_items=on")
             
             # AP-only settings that don't exist in config.yaml — always read from AP options
             item_model_map = {0: "letter", 1: "archipelago_logo", 2: "unofficial_archipelago_logo"}
@@ -3240,10 +3322,23 @@ class SSHDWorld(World):
         
         # Completion Requirements
         settings_dict["required_dungeons"] = str(self.options.required_dungeon_count.value)
-        settings_dict["skip_horde"] = "on" if self.options.skip_horde.value else "off"
-        settings_dict["skip_g3"] = "on" if self.options.skip_ghirahim3.value else "off"
+        
         settings_dict["demise_count"] = str(self.options.demise_count.value)
-        settings_dict["skip_demise"] = "off"  # Keep for Archipelago
+        
+        # Set skip settings based on goal (same logic as the config.yaml path above)
+        goal_value = self.options.goal.value
+        if goal_value == 0:  # defeat_demise
+            settings_dict["skip_demise"] = "off"
+            settings_dict["skip_horde"] = "on" if self.options.skip_horde.value else "off"
+            settings_dict["skip_g3"] = "on" if self.options.skip_ghirahim3.value else "off"
+        elif goal_value == 1:  # defeat_ghirahim3
+            settings_dict["skip_demise"] = "on"
+            settings_dict["skip_g3"] = "off"
+            settings_dict["skip_horde"] = "on" if self.options.skip_horde.value else "off"
+        else:  # defeat_horde (2)
+            settings_dict["skip_demise"] = "on"
+            settings_dict["skip_g3"] = "on"
+            settings_dict["skip_horde"] = "off"
         
         # Gate of Time
         got_sword_map = {
@@ -3282,6 +3377,7 @@ class SSHDWorld(World):
         settings_dict["randomize_trials"] = "on" if self.options.randomize_trials.value else "off"
         settings_dict["randomize_door_entrances"] = "on" if self.options.randomize_door_entrances.value else "off"
         settings_dict["decouple_double_doors"] = "on" if self.options.decouple_double_doors.value else "off"
+        settings_dict["randomize_gate_of_time"] = "on" if self.options.randomize_gate_of_time.value else "off"
         settings_dict["randomize_interior_entrances"] = "on" if self.options.randomize_interior_entrances.value else "off"
         settings_dict["randomize_overworld_entrances"] = "on" if self.options.randomize_overworld_entrances.value else "off"
         settings_dict["decouple_entrances"] = "on" if self.options.decouple_entrances.value else "off"
@@ -3308,7 +3404,7 @@ class SSHDWorld(World):
         boss_key_map = {0: "correct_orientation", 1: "vanilla_orientation", 2: "random_orientation"}
         settings_dict["boss_key_puzzles"] = boss_key_map[self.options.boss_key_puzzles.value]
         
-        minigame_map = {0: "easy", 1: "medium", 2: "hard"}
+        minigame_map = {0: "guaranteed_win", 1: "easy", 2: "vanilla", 3: "hard"}
         settings_dict["minigame_difficulty"] = minigame_map[self.options.minigame_difficulty.value]
         
         trap_mode_map = {0: "no_traps", 1: "trapish", 2: "trapsome", 3: "traps_o_plenty", 4: "traptacular"}
@@ -3331,13 +3427,32 @@ class SSHDWorld(World):
         settings_dict["chest_type_matches_contents"] = chest_type_map[self.options.chest_type_matches_contents.value]
         
         settings_dict["small_keys_in_fancy_chests"] = "on" if self.options.small_keys_in_fancy_chests.value else "off"
-        settings_dict["random_trial_object_positions"] = "on" if self.options.random_trial_object_positions.value else "off"
+        trial_obj_map = {0: "none", 1: "simple", 2: "advanced", 3: "full"}
+        settings_dict["random_trial_object_positions"] = trial_obj_map[self.options.random_trial_object_positions.value]
         settings_dict["upgraded_skyward_strike"] = "on" if self.options.upgraded_skyward_strike.value else "off"
         settings_dict["faster_air_meter_depletion"] = "on" if self.options.faster_air_meter_depletion.value else "off"
         settings_dict["unlock_all_groosenator_destinations"] = "on" if self.options.unlock_all_groosenator_destinations.value else "off"
         settings_dict["allow_flying_at_night"] = "on" if self.options.allow_flying_at_night.value else "off"
         settings_dict["natural_night_connections"] = "on" if self.options.natural_night_connections.value else "off"
         settings_dict["peatrice_conversations"] = str(self.options.peatrice_conversations.value)
+        
+        # Quality of Life - Open Locations
+        settings_dict["open_thunderhead"] = "on" if self.options.open_thunderhead.value else "off"
+        
+        floria_map = {0: "vanilla", 1: "yerbal", 2: "open"}
+        settings_dict["open_lake_floria"] = floria_map[self.options.open_lake_floria.value]
+        
+        et_map = {0: "open", 1: "shuffle_eldin", 2: "shuffle_anywhere"}
+        settings_dict["open_earth_temple"] = et_map[self.options.open_earth_temple.value]
+        
+        lmf_map = {0: "nodes", 1: "main_node", 2: "open"}
+        settings_dict["open_lmf"] = lmf_map[self.options.open_lmf.value]
+        
+        settings_dict["open_batreaux_shed"] = "on" if self.options.open_batreaux_shed.value else "off"
+        
+        # Quality of Life - Skips
+        settings_dict["skip_harp_playing"] = "on" if self.options.skip_harp_playing.value else "off"
+        settings_dict["skip_misc_small_cutscenes"] = "on" if self.options.skip_misc_cutscenes.value else "off"
         
         # Quality of Life - Shortcuts
         settings_dict["shortcut_ios_bridge_complete"] = "on" if self.options.shortcut_ios_bridge_complete.value else "off"
@@ -3419,6 +3534,8 @@ class SSHDWorld(World):
         settings_dict["lightning_skyward_strike"] = "on" if self.options.lightning_skyward_strike.value else "off"
         settings_dict["starry_skies"] = "on" if self.options.starry_skies.value else "off"
         settings_dict["remove_enemy_music"] = "on" if self.options.remove_enemy_music.value else "off"
+        text_shuffle_map = {0: "off", 1: "baby", 2: "crazy", 3: "extreme", 4: "european_extreme", 5: "psychopath"}
+        settings_dict["text_shuffle"] = text_shuffle_map.get(self.options.text_shuffle.value, "off")
         
         # Extra Starting Inventory
         settings_dict["starting_hearts"] = str(self.options.starting_hearts.value)

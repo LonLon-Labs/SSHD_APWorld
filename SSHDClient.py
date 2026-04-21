@@ -1,8 +1,9 @@
 """
-Skyward Sword HD Client for Archipelago with Ryujinx support.
+Skyward Sword HD Client for Archipelago with emulator memory access support.
 
-This client connects to Ryujinx via direct memory access and communicates
-with the Archipelago server to enable multiworld randomizer support.
+This client connects to a supported Switch emulator (Ryujinx, yuzu, suyu,
+sudachi, eden) via direct memory access and communicates with the Archipelago
+server to enable multiworld randomizer support.
 """
 
 import asyncio
@@ -75,25 +76,6 @@ except ImportError as e:
     print(f"2. Or run this script from within the Archipelago folder")
     input("Press Enter to exit...")
     sys.exit(1)
-
-try:
-    from .LocationFlags import LOCATION_FLAG_MAP, FLAG_STORY, FLAG_SCENE, FLAG_SPECIAL
-    print(f"[Import] Successfully imported LocationFlags from package (.LocationFlags)")
-    print(f"[Import] LOCATION_FLAG_MAP has {len(LOCATION_FLAG_MAP)} entries")
-except ImportError as e:
-    print(f"[Import] Failed to import .LocationFlags: {e}")
-    # Fallback if running as standalone
-    try:
-        from LocationFlags import LOCATION_FLAG_MAP, FLAG_STORY, FLAG_SCENE, FLAG_SPECIAL
-        print(f"[Import] Successfully imported LocationFlags from standalone (LocationFlags)")
-        print(f"[Import] LOCATION_FLAG_MAP has {len(LOCATION_FLAG_MAP)} entries")
-    except ImportError as e2:
-        print(f"[Import] Failed to import LocationFlags: {e2}")
-        print(f"[Import] LOCATION_FLAG_MAP will be empty - location checking DISABLED")
-        LOCATION_FLAG_MAP = {}
-        FLAG_STORY = "STORY"
-        FLAG_SCENE = "SCENE"
-        FLAG_SPECIAL = "SPECIAL"
 
 # Import tracker bridge
 try:
@@ -360,6 +342,12 @@ BIRD_STATUE_FLAGS = {
     "Volcano East Statue":       ("story",  0, 805),
     "Volcano Ascent Statue":     ("story",  0, 806),
     "Temple Entrance Statue":    ("story",  0, 807),
+    # Eldin region — dungeon statues (scene-flag based)
+    # Flag numbers extracted from BZS actor data (saveObj params1[7:0]):
+    #   F201_3/room0 params1=0x02020165 → flag 101, scene 5 (Eldin Volcano Summit)
+    #   D201/room10  params1=0x02030172 → flag 114, scene 15 (Fire Sanctuary)
+    "Inside the Volcano Statue":        ("scene",  5, 101),
+    "Inside the Fire Sanctuary Statue": ("scene", 15, 114),
     # Lanayru region — scene-flag statues
     "Lanayru Mine Entry Statue": ("scene",  7, 68),
     "Desert Entrance Statue":    ("scene",  7, 66),
@@ -388,8 +376,9 @@ _STAGE_TO_BIRD_STATUE_SCENES: dict[str, set[int]] = {
     "F103":   {1},        # Flooded Faron Woods (Great Tree statue activatable here)
     "F200":   set(),      # Eldin Volcano (statues use story flags, handled separately)
     "F201":   set(),      # Volcano Summit
-    "F201_3": set(),      # Inside the Volcano
-    "D201":   set(),      # Inside the Fire Sanctuary
+    "F201_3": {5},        # Inside the Volcano (Eldin Volcano Summit scene)
+    "D201":   {15},       # Fire Sanctuary (Inside the Fire Sanctuary Statue)
+    "D201_1": {15},       # Fire Sanctuary (sub-area)
     "F300":   {7},        # Lanayru Desert
     "F300_1": {7},        # Lanayru Mine
     "F300_4": {7},        # Temple of Time / Desert Gorge area
@@ -401,7 +390,7 @@ _STAGE_TO_BIRD_STATUE_SCENES: dict[str, set[int]] = {
 }
 
 # Stages where Eldin story-flag statues (804-807) may legitimately activate.
-_ELDIN_STAGES = {"F200", "F201", "F201_3", "F210", "F211", "D201"}
+_ELDIN_STAGES = {"F200", "F201", "F201_3", "F210", "F211", "D201", "D201_1"}
 # Stages where Faron story-flag statues (800-803) may legitimately activate.
 _FARON_STAGES = {"F100", "F101", "F102", "F102_1", "F103", "F401", "F400"}
 
@@ -427,31 +416,6 @@ def _stage_to_region(stage: str) -> Optional[str]:
     return None
 
 # Scene name to scene flag base address mapping (base-relative offsets for SSHD)
-# These are the offsets from base_address where scene flags are stored
-# Scene flags are organized by scene in the static scene flag array
-SCENE_FLAG_ADDRESSES = {
-    "Skyloft": 0x182DF00,              # Skyloft scene flags (base-relative)
-    "Sky": 0x182DF10,                  # Sky scene flags
-    "Sealed Grounds": 0x182DF20,       # Sealed Grounds
-    "Faron Woods": 0x182DF30,          # Faron Woods
-    "Lake Floria": 0x182DF40,          # Lake Floria
-    "Skyview": 0x182DF50,              # Skyview Temple
-    "Eldin Volcano": 0x182DF60,        # Eldin Volcano
-    "Earth Temple": 0x182DF70,         # Earth Temple
-    "Lanayru Desert": 0x182DF80,       # Lanayru Desert
-    "Lanayru Mining Facility": 0x182DF90,  # Lanayru Mining Facility
-    "Ancient Cistern": 0x182DFA0,      # Ancient Cistern
-    "Sandship": 0x182DFB0,             # Sandship
-    "Fire Sanctuary": 0x182DFC0,       # Fire Sanctuary
-    "Sky Keep": 0x182DFD0,             # Sky Keep
-}
-
-# Story flags base address (base-relative)
-STORY_FLAGS_BASE = OFFSET_STORY_FLAGS_STATIC
-
-# Scene flags base address (base-relative)
-SCENE_FLAGS_BASE = OFFSET_SCENE_FLAGS_STATIC
-
 # Stage name mapping (internal codes to friendly names)
 STAGE_NAMES = {
     "F000": "Skyloft",
@@ -490,12 +454,12 @@ STAGE_NAMES = {
     "D000": "Skyview Temple",
     "D100": "Earth Temple",
     "D200": "Lanayru Mining Facility",
-    "D201": "Temple of Time",
+    "D201": "Fire Sanctuary",
     "D300": "Ancient Cistern",
     "D301": "Sandship",
     "D302": "Pirate Stronghold",
-    "D003": "Fire Sanctuary",
-    "D003_1": "Fire Sanctuary (Underwater)",
+    "D003": "Sky Keep",
+    "D003_1": "Sky Keep",
     "S000": "Sealed Grounds",
     "S100": "Hylia's Temple",
     "S200": "Sealed Temple",
@@ -507,16 +471,27 @@ STAGE_NAMES = {
 }
 
 
+# Keep old name for backward compatibility
 class RyujinxMemoryError(Exception):
-    """Exception raised for Ryujinx memory access errors."""
+    """Exception raised for emulator memory access errors."""
     pass
 
+EmulatorMemoryError = RyujinxMemoryError
 
-class RyujinxMemoryReader:
+# Supported emulator process names by platform
+_EMULATOR_PROCESS_NAMES = {
+    "win32":  ["Ryujinx.exe", "yuzu.exe", "suyu.exe", "sudachi.exe", "eden.exe"],
+    "linux":  ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"],
+    "darwin": ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"],
+}
+
+
+class EmulatorMemoryReader:
     """
-    Class to handle memory reading/writing for Ryujinx emulator.
-    
-    This provides direct access to SSHD's memory through Ryujinx's process.
+    Class to handle memory reading/writing for a Switch emulator.
+
+    Supports Ryujinx, yuzu, suyu, sudachi, and eden.
+    This provides direct access to SSHD's memory through the emulator's process.
     """
     
     # Magic signatures for Rust static buffers that we scan for during the
@@ -541,6 +516,7 @@ class RyujinxMemoryReader:
         self.pm = None  # ProcessMemory instance (cross-platform)
         self.base_address: Optional[int] = None
         self.connected = False
+        self.emulator_name: Optional[str] = None  # Name of the connected emulator process
         # Absolute addresses found during the base-address scan for each magic
         # pattern.  Keyed by pattern name -> list of absolute addresses.
         self.prescan_results: Dict[str, list] = {}
@@ -616,33 +592,33 @@ class RyujinxMemoryReader:
 
     def connect(self) -> bool:
         """
-        Connect to the Ryujinx process.
+        Connect to a supported Switch emulator process.
+
+        Searches for Ryujinx, yuzu, suyu, sudachi, and eden.
         
         Returns:
             True if successfully connected, False otherwise
         """
         try:
-            # Find Ryujinx process (cross-platform)
-            ryujinx_process = None
-            
+            # Find emulator process (cross-platform)
+            emulator_process = None
+
             # Process names by OS
-            if sys.platform == "win32":
-                process_names = ["Ryujinx.exe"]
-            elif sys.platform == "linux":
-                process_names = ["Ryujinx"]
-            elif sys.platform == "darwin":  # macOS
-                process_names = ["Ryujinx"]
+            platform_key = sys.platform if sys.platform in _EMULATOR_PROCESS_NAMES else None
+            if platform_key:
+                process_names = _EMULATOR_PROCESS_NAMES[platform_key]
             else:
-                process_names = ["Ryujinx.exe", "Ryujinx"]  # Try both as fallback
+                # Fallback: try all known names
+                process_names = list({n for names in _EMULATOR_PROCESS_NAMES.values() for n in names})
             
             for proc in psutil.process_iter(['name']):
                 if proc.info['name'] in process_names:
-                    ryujinx_process = proc
+                    emulator_process = proc
                     break
             
-            if not ryujinx_process:
-                expected_names = " or ".join(f"'{name}'" for name in process_names)
-                logger.info(f"Ryujinx process ({expected_names}) not found. Please start Ryujinx.")
+            if not emulator_process:
+                expected_names = ", ".join(f"'{name}'" for name in process_names)
+                logger.info(f"No supported emulator found ({expected_names}). Please start your emulator.")
                 return False
             
             # Open process (cross-platform)
@@ -651,17 +627,18 @@ class RyujinxMemoryReader:
             except ProcessMemoryError as e:
                 logger.error(f"Platform not supported for memory access: {e}")
                 return False
-            self.pm.open_process_from_id(ryujinx_process.pid)
-            
-            logger.info(f"Connected to Ryujinx (PID: {ryujinx_process.pid})")
+            self.pm.open_process_from_id(emulator_process.pid)
+
+            self.emulator_name = emulator_process.info['name']
+            logger.info(f"Connected to {self.emulator_name} (PID: {emulator_process.pid})")
             self.connected = True
             return True
             
         except ProcessMemoryError as e:
-            logger.error(f"Failed to connect to Ryujinx: {e}")
+            logger.error(f"Failed to connect to emulator: {e}")
             return False
         except Exception as e:
-            logger.error(f"Failed to connect to Ryujinx: {e}")
+            logger.error(f"Failed to connect to emulator: {e}")
             return False
     
     async def find_base_address(self) -> bool:
@@ -675,7 +652,7 @@ class RyujinxMemoryReader:
             True if base address found, False otherwise
         """
         if not self.connected or not self.pm:
-            logger.error("Not connected to Ryujinx")
+            logger.error("Not connected to emulator")
             return False
         
         logger.info("Scanning memory for SSHD signature... (this may take 8-10 seconds)")
@@ -1276,7 +1253,7 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
     def _cmd_sshd(self):
         """Show SSHD client status."""
         if isinstance(self.ctx, SSHDContext):
-            logger.debug(f"Connected to Ryujinx: {self.ctx.memory.connected}")
+            logger.debug(f"Connected to emulator: {self.ctx.memory.connected}")
             if self.ctx.memory.base_address:
                 logger.debug(f"Base address: 0x{self.ctx.memory.base_address:X}")
             logger.debug(f"Locations checked: {len(self.ctx.checked_locations)}")
@@ -1337,7 +1314,7 @@ class SSHDContext(CommonContext):
     """
     Main context for SSHD client.
     
-    Handles connection to both Archipelago server and Ryujinx emulator.
+    Handles connection to both Archipelago server and the Switch emulator.
     """
     
     command_processor = SSHDClientCommandProcessor
@@ -1348,7 +1325,7 @@ class SSHDContext(CommonContext):
     def __init__(self, server_address: Optional[str], password: Optional[str]):
         super().__init__(server_address, password)
         
-        self.memory = RyujinxMemoryReader()
+        self.memory = EmulatorMemoryReader()
         self.checked_locations: Set[int] = set()
         self.sent_locations: Set[int] = set()  # Locations already sent to server
         self.item_queue: list = []  # Items waiting to be given
@@ -1453,12 +1430,20 @@ class SSHDContext(CommonContext):
         self.custom_flag_to_location: Dict[int, int] = {}  # custom_flag_id -> location_code
         self.location_to_custom_flag: Dict[int, int] = {}  # location_code -> custom_flag_id (for vanilla pickups)
         
+        # Goddess chest scene flag checking
+        # Goddess chests can't use custom flags (would corrupt their storyflag spawn gate).
+        # Instead, the AP client polls the vanilla set_sceneflag that the game sets on open.
+        # Format: {location_code: [scene_index, set_sceneflag]}
+        self.goddess_chest_scene_flags: Dict[int, list] = {}
+        self.previous_goddess_chest_flags: Dict[int, int] = {}  # location_code -> last_state (0 or 1)
+        
         # AP item info table (for item 216 textbox display) and check stats (for help menu)
         self.ap_item_info: Dict[int, dict] = {}  # custom_flag_id -> {"item": name, "player": name}
         self.ap_location_codes: Set[int] = set()  # Location codes that have cross-world items
         self._ap_item_info_offset: Optional[int] = None  # Memory offset of AP_ITEM_INFO_TABLE
         self._ap_check_stats_offset: Optional[int] = None  # Memory offset of AP_CHECK_STATS
         self._ap_item_info_written: bool = False  # Whether we've written the info table
+        self._ap_item_info_last_refresh: float = 0.0  # Last time we refreshed the count field
         
         # Bird statue HD-progression enforcement
         # Snapshot of legitimate bird statue flags, captured on first game-state poll.
@@ -1467,6 +1452,16 @@ class SSHDContext(CommonContext):
         self._bird_statue_enforcement_log: Set[str] = set()  # avoid log spam
         self._visited_regions: Set[str] = set()  # regions where entry statue was auto-enabled
         
+        # Goal completion flag — once the goal is met and CLIENT_GOAL
+        # is sent, ALL memory writes are suppressed.  The post-boss
+        # cutscene and credits tear down gameplay structures (player,
+        # room manager, flag manager, etc.); any write to those offsets
+        # during that window can corrupt game state and trigger a PANIC.
+        self.goal_completed: bool = False
+        
+        # Goal type from slot_data (0=defeat_demise, 1=defeat_ghirahim3, 2=defeat_horde)
+        self.goal_type: int = 0
+
         # Tracker bridge for autotracking
         self.tracker_bridge = TrackerBridge() if TrackerBridge else None
         if self.tracker_bridge:
@@ -1822,6 +1817,15 @@ class SSHDContext(CommonContext):
             else:
                 logger.debug("No location→flag mapping found - vanilla pickups disabled")
 
+            # Load goddess chest scene flag mapping for location detection
+            # Goddess chests can't use custom flags, so we poll their vanilla scene flags
+            goddess_chest_raw = slot_data.get("goddess_chest_scene_flags", {})
+            if goddess_chest_raw:
+                self.goddess_chest_scene_flags = {int(k): v for k, v in goddess_chest_raw.items()}
+                logger.info(f"Loaded {len(self.goddess_chest_scene_flags)} goddess chest scene flag mappings")
+            else:
+                logger.debug("No goddess chest scene flag mappings in slot data")
+
             # Load AP item info for cross-world item textbox display
             ap_item_info_raw = slot_data.get("ap_item_info", {})
             if ap_item_info_raw:
@@ -1842,6 +1846,11 @@ class SSHDContext(CommonContext):
                 self._write_ap_item_info_table()
             else:
                 logger.debug("No AP item info in slot data")
+
+            # Load goal type (0=defeat_demise, 1=defeat_ghirahim3, 2=defeat_horde)
+            self.goal_type = int(slot_data.get("option_goal", 0))
+            goal_names = {0: "Defeat Demise", 1: "Defeat Ghirahim 3", 2: "Defeat Horde"}
+            logger.info(f"Goal: {goal_names.get(self.goal_type, 'Unknown')} (type {self.goal_type})")
 
             # Enable DeathLink if the player configured it
             death_link_enabled = slot_data.get("option_death_link", 0)  # Options use "option_" prefix
@@ -2176,8 +2185,8 @@ class SSHDContext(CommonContext):
         """
         pass
 
-    async def ryujinx_connection_task(self):
-        """Background task to maintain connection to Ryujinx."""
+    async def emulator_connection_task(self):
+        """Background task to maintain connection to the Switch emulator."""
         while not self.exit_event.is_set():
             try:
                 # Try to connect if not connected
@@ -2236,6 +2245,11 @@ class SSHDContext(CommonContext):
                     self._visited_regions.clear()
                     self._deferred_flag_writes.clear()
                     self._last_next_stage = None
+                    # Reset death/breath link state so stale zeros from
+                    # the old (cleared) memory don't carry into the next
+                    # session after rescan.
+                    self.last_hearts = None
+                    self.last_stamina = None
 
                     # Immediately attempt a new base-address scan instead of
                     # waiting for the next cycle (which would spin doing
@@ -2255,9 +2269,12 @@ class SSHDContext(CommonContext):
                 await asyncio.sleep(0.1)  # Update 10 times per second
                 
             except Exception as e:
-                logger.error(f"Error in Ryujinx connection task: {e}")
+                logger.error(f"Error in emulator connection task: {e}")
                 self.memory.connected = False
                 await asyncio.sleep(5)
+
+    # Keep old name as alias for backward compatibility
+    ryujinx_connection_task = emulator_connection_task
 
     async def cheat_loop_task(self):
         """
@@ -2284,11 +2301,33 @@ class SSHDContext(CommonContext):
         if not self.memory.connected or not self.memory.base_address:
             return
         
+        # After goal completion (Demise defeated), stop ALL game memory
+        # interaction.  The post-Demise cutscene and credits tear down
+        # gameplay structures; any read/write to player, flag, or room
+        # offsets risks hitting freed memory and crashing the game.
+        if self.goal_completed:
+            return
+        
         try:
             # Verify game is loaded by reading stage name
             stage_name = self.memory.read_string(OFFSET_CURRENT_STAGE + OFFSET_STAGE_NAME, 16)
             if not stage_name or len(stage_name) == 0:
                 # Game not loaded yet (title screen, loading, etc.)
+                return
+
+            # Save-file-alive guard: when the player saves & quits at a
+            # bird statue the game zeroes the entire save area while the
+            # stage name may still read as valid.  Health capacity lives
+            # inside the save data; if it reads 0 (or is unreadable) the
+            # save has been unloaded and ANY read/write to save or player
+            # structures would operate on freed memory, causing false
+            # BreathLink/DeathLink sends and emulator crashes.
+            health_cap = self.memory.read_short(OFFSET_CURRENT_HEALTH - 4)
+            if health_cap is None or health_cap <= 0:
+                # Reset tracking state so stale zeros don't trigger
+                # false events once the game reloads.
+                self.last_hearts = None
+                self.last_stamina = None
                 return
             
             # The game sets NEXT_STAGE before tearing down ROOM_MGR and
@@ -2319,6 +2358,7 @@ class SSHDContext(CommonContext):
             
             # Update current stage
             if stage_name != self.current_stage:
+                old_stage = self.current_stage
                 logger.debug(f"Entered stage: {stage_name}")
 
                 # Game autosave happens on scene transition — unsafe items are now safe
@@ -2331,14 +2371,46 @@ class SSHDContext(CommonContext):
 
                 self.current_stage = stage_name
 
+                # ── Goal detection via stage transition ──────────────────
+                # Goal 0 (Defeat Demise):      B400 → F404
+                # Goal 1 (Defeat Ghirahim 3):  F403 → F404  (skip_demise=on)
+                # Goal 2 (Defeat Horde):       F403 → F404  (skip_demise+skip_g3=on)
+                _GOAL_LOC_CODE = 2773238
+                _goal_detected = False
+
+                if _GOAL_LOC_CODE not in self.checked_locations:
+                    if (self.goal_type == 0
+                            and old_stage == "B400" and stage_name == "F404"):
+                        _goal_detected = True
+                        _goal_label = "Demise"
+
+                    elif (self.goal_type in (1, 2)
+                            and old_stage == "F403" and stage_name == "F404"):
+                        _goal_label = ("Ghirahim 3" if self.goal_type == 1 else "Horde")
+                        _goal_detected = True
+
+                    # Fallback
+                    elif (self.goal_type in (1, 2)
+                            and old_stage == "B400" and stage_name == "F404"):
+                        _goal_label = (
+                            "Ghirahim 3 (fallback: Demise transition)"
+                            if self.goal_type == 1
+                            else "Horde (fallback: Demise transition)"
+                        )
+                        _goal_detected = True
+
+                if _goal_detected:
+                    self.checked_locations.add(_GOAL_LOC_CODE)
+                    logger.info(f"=== {_goal_label} defeated! ===")
+                    self.update_tracker_state()
+
                 # Scene-transition cooldown: block ALL memory writes for
                 # a few seconds so the engine finishes tearing down / rebuilding
-                # scene structures, actors, and heaps.  This prevents cheat
-                # writes, bird-statue enforcement, and AP stats writes from
-                # corrupting game memory mid-transition.
+                # scene structures, actors, and heaps.
                 self._scene_transition_cooldown_until = (
                     time.time() + self._SCENE_TRANSITION_COOLDOWN_SECS
                 )
+
                 logger.debug(
                     f"Scene transition cooldown active until "
                     f"{self._scene_transition_cooldown_until:.1f}"
@@ -2362,21 +2434,58 @@ class SSHDContext(CommonContext):
                                 f"[BirdStatue] Auto-enabled entry statue: {entry_name} "
                                 f"(first visit to {region})"
                             )
-            
+
+            # ── Goal detection fallback via storyflags (G3 / Horde) ──
+            # The game typically only writes flags 134/486 to the
+            # committed-heap copy, not to FA/STATIC, so stage transitions
+            # above are the primary method.  This polls both FA and STATIC
+            # as a safety net (e.g. after an auto-save or manual save).
+            _GOAL_LOC_CODE = 2773238
+            if (self.goal_type in (1, 2)
+                    and _GOAL_LOC_CODE not in self.checked_locations):
+                # goal 1 = Defeat Ghirahim 3 → storyflag 486
+                # goal 2 = Defeat Horde      → storyflag 134
+                _goal_flag = 486 if self.goal_type == 1 else 134
+                _word_idx = _goal_flag // 16
+                _bit_idx  = _goal_flag % 16
+                _fa_offset = (OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
+                              + _word_idx * 2)
+                _static_offset = OFFSET_STORY_FLAGS_STATIC + _word_idx * 2
+                _fa_val = self.memory.read_short(_fa_offset)
+                _st_val = self.memory.read_short(_static_offset)
+                _fa_set = _fa_val is not None and bool(_fa_val & (1 << _bit_idx))
+                _st_set = _st_val is not None and bool(_st_val & (1 << _bit_idx))
+                if _fa_set or _st_set:
+                    self.checked_locations.add(_GOAL_LOC_CODE)
+                    _src = "FA" if _fa_set else "STATIC"
+                    _goal_label = ("Ghirahim 3" if self.goal_type == 1
+                                   else "Horde")
+                    logger.info(
+                        f"=== {_goal_label} defeated! "
+                        f"(storyflag {_goal_flag} detected in {_src}) ==="
+                    )
+                    self.update_tracker_state()
+
             # Skip all memory writes during scene-transition cooldown.
             # Reads (locations, death/breath link, custom flags) are safe.
             _in_transition = time.time() < self._scene_transition_cooldown_until
             
-            if not _in_transition:
+            # Also suppress ALL memory writes after goal completion.
+            # The post-Demise cutscene and credits tear down gameplay
+            # structures; writing to player/flag/room offsets crashes.
+            _block_writes = _in_transition or self.goal_completed
+            
+            if not _block_writes:
                 # Write AP buffers to game memory (item info table + check stats)
                 self._write_ap_item_info_table()
+                self._refresh_ap_item_info_count()
                 self._update_ap_check_stats()
             
             # Process deferred progressive-item flag writes
             self._process_deferred_flag_writes()
             
             # Give queued items to player
-            if self.item_queue and not _in_transition:
+            if self.item_queue and not _block_writes:
                 item_data = self.item_queue[0]
                 
                 # Start-inventory items (precollected) are already baked into the
@@ -2510,8 +2619,20 @@ class SSHDContext(CommonContext):
                 if time_since_connect > 10.0:
                     # Player just died if health went to 0 (from any positive value OR if we had None before)
                     if current_health == 0 and (self.last_hearts is None or self.last_hearts > 0):
-                        # Player just died - but skip sending if we killed them via death link
-                        if self.killed_by_deathlink:
+                        # Guard: verify the save file is still loaded.
+                        # When the player saves & quits at a bird statue the
+                        # game zeroes the entire save area, making health AND
+                        # health-capacity read as 0.  In a real death only
+                        # current health drops to 0 while capacity stays
+                        # positive.  If capacity is also 0 (or unreadable)
+                        # the save was unloaded — skip the send.
+                        health_capacity = self.memory.read_short(OFFSET_CURRENT_HEALTH - 4)
+                        if health_capacity is None or health_capacity <= 0:
+                            logger.debug(
+                                "[DeathLink] Ignoring health=0: health capacity "
+                                "also 0/unreadable (save/quit or memory cleared)"
+                            )
+                        elif self.killed_by_deathlink:
                             logger.debug("Death detected, but caused by receiving death link - not sending")
                             self.killed_by_deathlink = False  # Clear flag
                         elif "DeathLink" in self.tags:
@@ -2526,7 +2647,17 @@ class SSHDContext(CommonContext):
                 if time_since_connect > 10.0:
                     # Stamina just ran out if it went from >0 to 0
                     if current_stamina == 0 and (self.last_stamina is not None and self.last_stamina > 0):
-                        if self.exhausted_by_breathlink:
+                        # Guard: verify the save file is still loaded (same
+                        # rationale as the DeathLink guard above).  When the
+                        # save area is zeroed on quit, stamina AND health
+                        # capacity both read as 0.
+                        health_capacity = self.memory.read_short(OFFSET_CURRENT_HEALTH - 4)
+                        if health_capacity is None or health_capacity <= 0:
+                            logger.debug(
+                                "[BreathLink] Ignoring stamina=0: health capacity "
+                                "also 0/unreadable (save/quit or memory cleared)"
+                            )
+                        elif self.exhausted_by_breathlink:
                             logger.debug("Stamina exhaustion detected, but caused by receiving breath link - not sending")
                             self.exhausted_by_breathlink = False  # Clear flag
                         elif "BreathLink" in self.tags:
@@ -2539,23 +2670,32 @@ class SSHDContext(CommonContext):
             # (cheat_loop_task) for minimal input lag.
             # ============================================================
             
-            # Check for completed locations using custom flags
-            if self.custom_flag_to_location:
-                # Use custom flag system (preferred for SSHD)
-                await self.check_custom_flags()
-                # Supplement: shop purchases don't set custom scene/dungeon flags,
-                # so also check Beedle's sold-out storyflags from the save file.
-                await self.check_beedle_shop_storyflags()
-            
-            # Boss fight rewards (HeartCo actors) and Demise defeat don't
-            # set custom sceneflags, so monitor their vanilla flags directly.
-            await self.check_boss_defeat_flags()
-            
-            # Enforce bird-statue flags: clear any that the game's
-            # HD-progression system auto-unlocked without the player
-            # physically visiting the statue.
-            if not _in_transition:
-                self._enforce_bird_statue_flags()
+            # After goal completion, skip location polling entirely.
+            # The end-game cutscene / credits destroy the scene/flag
+            # structures these functions read, and there is nothing left
+            # to check once Demise is defeated.
+            if not self.goal_completed:
+                # Check for completed locations using custom flags
+                if self.custom_flag_to_location:
+                    # Use custom flag system (preferred for SSHD)
+                    await self.check_custom_flags()
+                    # Supplement: shop purchases don't set custom scene/dungeon flags,
+                    # so also check Beedle's sold-out storyflags from the save file.
+                    await self.check_beedle_shop_storyflags()
+                
+                # Goddess chests use vanilla scene flags instead of custom flags
+                if self.goddess_chest_scene_flags:
+                    await self.check_goddess_chest_flags()
+                
+                # Boss fight rewards (HeartCo actors) and Demise defeat don't
+                # set custom sceneflags, so monitor their vanilla flags directly.
+                await self.check_boss_defeat_flags()
+                
+                # Enforce bird-statue flags: clear any that the game's
+                # HD-progression system auto-unlocked without the player
+                # physically visiting the statue.
+                if not _block_writes:
+                    self._enforce_bird_statue_flags()
             
             # Send any newly checked locations to server (locations not yet sent)
             new_locations = self.checked_locations.difference(self.sent_locations)
@@ -2568,17 +2708,24 @@ class SSHDContext(CommonContext):
                 # Mark these locations as sent to avoid re-sending
                 self.sent_locations.update(new_locations)
                 
-                # Check if "Defeat Demise" location (2773238) was just checked - this means victory!
-                # Detected either via custom flags (if location exists in AP world)
-                # or via story flag 959 monitoring in check_boss_defeat_flags().
-                DEFEAT_DEMISE_LOCATION = 2773238
-                if DEFEAT_DEMISE_LOCATION in new_locations:
-                    logger.info("=== VICTORY! Demise defeated - sending goal completion to server ===")
+                # Check if the goal location (2773238) was just checked — victory!
+                # Primary: stage transitions (B400→F404 or F403→F404)
+                # Fallback: storyflag polling (134 / 486 in FA or STATIC)
+                _GOAL_LOCATION = 2773238
+                if _GOAL_LOCATION in new_locations:
+                    _goal_names = {0: "Demise", 1: "Ghirahim 3", 2: "Horde"}
+                    _gname = _goal_names.get(self.goal_type, "Unknown")
+                    logger.info(f"=== VICTORY! {_gname} defeated — releasing all remaining items ===")
                     await self.send_msgs([{
                         "cmd": "StatusUpdate",
                         "status": ClientStatus.CLIENT_GOAL
                     }])
-                    # Server will automatically release all remaining items if auto-release is enabled
+                    # Suppress ALL further memory writes.  The post-boss
+                    # cutscene and credits sequence tear down gameplay
+                    # structures; writing to player/flag/room offsets during
+                    # that window causes the game to PANIC.
+                    self.goal_completed = True
+                    logger.debug("Goal completed — memory writes suspended to protect end-game sequence")
                     
         except Exception as e:
             logger.error(f"Error updating game state: {e}")
@@ -2591,6 +2738,10 @@ class SSHDContext(CommonContext):
         cannot prevent the others from running.
         """
         if not self.memory.connected or not self.memory.base_address:
+            return
+
+        # Suppress all memory writes after goal completion (Demise defeated).
+        if self.goal_completed:
             return
 
         # Guard: skip all cheat writes during scene transitions / loading
@@ -2619,6 +2770,17 @@ class SSHDContext(CommonContext):
                     return
             except Exception:
                 pass
+
+            # Save-file-alive guard: when the player saves & quits at a
+            # bird statue, the game zeroes the entire save area while the
+            # stage name can still read as valid for a few frames.
+            # Health-capacity lives inside the save data; if it reads as 0
+            # (or is unreadable) the save file has been unloaded and we
+            # must not write to player/save structures — doing so corrupts
+            # the teardown state and crashes the emulator.
+            health_cap = self.memory.read_short(OFFSET_CURRENT_HEALTH - 4)
+            if health_cap is None or health_cap <= 0:
+                return
         except Exception:
             return
 
@@ -3108,10 +3270,41 @@ class SSHDContext(CommonContext):
             self.memory.pm.write_bytes(table_addr + 4, count_data, len(count_data))
             
             self._ap_item_info_written = True
+            self._ap_item_info_last_refresh = time.time()
             logger.debug(f"Wrote {count} AP item info entries to game memory")
             
         except Exception as e:
             logger.warning(f"Failed to write AP item info table: {e}")
+
+    def _refresh_ap_item_info_count(self):
+        """
+        Periodically re-write just the count field of AP_ITEM_INFO_TABLE.
+        
+        This is a lightweight 4-byte write (every ~5 s) that keeps the
+        table's count visible to the emulator, guarding against any edge
+        case where the initial write was lost or the JIT cached a stale
+        zero count.  Without a valid count the Rust lookup returns
+        immediately and the textbox falls back to generic text.
+        """
+        if not self._ap_item_info_written or not self.ap_item_info:
+            return
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return
+        if self._ap_item_info_offset is None:
+            return
+        
+        now = time.time()
+        if now - self._ap_item_info_last_refresh < 5.0:
+            return
+        
+        try:
+            table_addr = self.memory.base_address + self._ap_item_info_offset
+            count = min(len(self.ap_item_info), 512)
+            count_data = struct.pack('<HH', count, 0)
+            self.memory.pm.write_bytes(table_addr + 4, count_data, len(count_data))
+            self._ap_item_info_last_refresh = now
+        except Exception:
+            pass  # Non-critical; next refresh will retry
 
     def _update_ap_check_stats(self):
         """
@@ -3489,6 +3682,96 @@ class SSHDContext(CommonContext):
             else:
                 logger.debug(f"[FlagInit] Partial init: {initialized_count}/{expected_count} flags read - staying in init mode")
     
+    async def check_goddess_chest_flags(self):
+        """Check goddess chest scene flags for location completion.
+        
+        Goddess chests can't use AP custom flags (writing to params2 would corrupt
+        their storyflag spawn gate). Instead, we poll the vanilla set_sceneflag
+        that the game engine sets when the chest is opened.
+        
+        The mapping location_code -> [scene_index, set_sceneflag] is provided
+        in slot_data as goddess_chest_scene_flags.
+        """
+        if not self.memory.connected or not self.memory.base_address:
+            return
+        
+        if not hasattr(self, '_goddess_flags_initializing'):
+            self._goddess_flags_initializing = True
+            logger.debug(f"[GoddessChest] Initializing {len(self.goddess_chest_scene_flags)} goddess chest flags")
+        
+        # Cache for scene data to avoid re-reading the same scene multiple times
+        scene_cache: Dict[int, list] = {}
+        
+        for location_code, (scene_index, set_sceneflag) in self.goddess_chest_scene_flags.items():
+            # Skip if already checked
+            if location_code in self.checked_locations:
+                continue
+            
+            # Calculate u16 position and bit position within that u16
+            upper_flag = set_sceneflag // 16  # Which u16 in the scene's 8 u16s (0-7)
+            lower_flag = set_sceneflag % 16   # Which bit in that u16 (0-15)
+            
+            if upper_flag > 7:
+                logger.error(f"[GoddessChest] Invalid sceneflag {set_sceneflag} for location {location_code}: upper_flag={upper_flag}")
+                continue
+            
+            try:
+                if scene_index not in scene_cache:
+                    # Read 16 bytes (8 u16 values) for this scene from SaveFile A sceneflags
+                    scene_offset = OFFSET_SAVEFILE_A + OFFSET_FA_SCENEFLAGS + (scene_index * 16)
+                    scene_data = self.memory.read_bytes(scene_offset, 16)
+                    
+                    if scene_data and len(scene_data) == 16:
+                        scene_u16s = [
+                            int.from_bytes(scene_data[i:i+2], byteorder='little')
+                            for i in range(0, 16, 2)
+                        ]
+                        scene_cache[scene_index] = scene_u16s
+                    else:
+                        scene_cache[scene_index] = None
+                
+                scene_u16s = scene_cache.get(scene_index)
+                if scene_u16s is not None and upper_flag < len(scene_u16s):
+                    current_u16 = scene_u16s[upper_flag]
+                    flag_state = (current_u16 >> lower_flag) & 0x1
+                    previous_state = self.previous_goddess_chest_flags.get(location_code, 0)
+                    
+                    if self._goddess_flags_initializing:
+                        # First poll: record current state and recover unsent checks
+                        self.previous_goddess_chest_flags[location_code] = flag_state
+                        if flag_state == 1 and location_code not in self.sent_locations:
+                            self.checked_locations.add(location_code)
+                            location_name = self.location_names.lookup_in_slot(location_code, self.slot)
+                            logger.info(f"[GoddessChest] Recovered unsent check: {location_name}")
+                            self.update_tracker_state()
+                    elif flag_state == 1 and previous_state == 0:
+                        # Flag was just set - goddess chest opened!
+                        self.checked_locations.add(location_code)
+                        location_name = self.location_names.lookup_in_slot(location_code, self.slot)
+                        logger.info(f"[GoddessChest] Location checked: {location_name} (scene={scene_index}, flag={set_sceneflag})")
+                        self.update_tracker_state()
+                        self.previous_goddess_chest_flags[location_code] = flag_state
+                    else:
+                        self.previous_goddess_chest_flags[location_code] = flag_state
+                
+            except Exception as e:
+                if not hasattr(self, '_goddess_error_logged'):
+                    self._goddess_error_logged = set()
+                if scene_index not in self._goddess_error_logged:
+                    logger.error(f"[GoddessChest] Error reading scene {scene_index}: {e}")
+                    self._goddess_error_logged.add(scene_index)
+        
+        # Clear initialization flag after first complete poll
+        if self._goddess_flags_initializing:
+            expected = len(self.goddess_chest_scene_flags) - len([
+                lc for lc in self.goddess_chest_scene_flags if lc in self.checked_locations
+            ])
+            initialized = len(self.previous_goddess_chest_flags)
+            if initialized >= expected:
+                self._goddess_flags_initializing = False
+                already_set = sum(1 for v in self.previous_goddess_chest_flags.values() if v == 1)
+                logger.debug(f"[GoddessChest] Initialized {initialized} flags ({already_set} already set)")
+
     async def check_beedle_shop_storyflags(self):
         """
         Detect Beedle's Airshop purchases by monitoring multiple signal sources:
@@ -3681,18 +3964,18 @@ class SSHDContext(CommonContext):
     
     async def check_boss_defeat_flags(self):
         """
-        Detect boss fight reward collection and Demise defeat via vanilla
-        sceneflags / storyflags in the save file.
+        Detect boss fight reward collection via vanilla sceneflags in the
+        save file.
 
-        These locations use actors (HeartCo / story-event) whose vanilla
-        flags are checked directly.  No transition tracking is needed:
-        once the flag is set and the location hasn't been sent to the
-        server yet, it will be picked up by the new_locations diff in
-        the update loop.  ``sent_locations`` (populated from the server
-        on connect) prevents duplicate sends.
+        These locations use actors (HeartCo) whose vanilla flags are
+        checked directly.  No transition tracking is needed: once the
+        flag is set and the location hasn't been sent to the server yet,
+        it will be picked up by the new_locations diff in the update
+        loop.  ``sent_locations`` (populated from the server on connect)
+        prevents duplicate sends.
 
-        Also detects the Demise defeat (story flag 959) and sends
-        CLIENT_GOAL so the server can release remaining items.
+        NOTE: Demise defeat is handled separately via the B400 → F404
+        stage transition in update_game_state().
         """
         if not self.memory.connected or not self.memory.base_address:
             return
@@ -3725,76 +4008,22 @@ class SSHDContext(CommonContext):
             except Exception as e:
                 logger.debug(f"Error reading boss defeat flag for loc {loc_code}: {e}")
 
-        # ── Demise defeat – story flag 959 ───────────────────────────────
-        DEFEAT_DEMISE_CODE = 2773238
-        if DEFEAT_DEMISE_CODE not in self.checked_locations:
-            try:
-                # Story flag 959: byte 119, bit 7 (mask 0x80)
-                sf_addr = file_a_offset + OFFSET_FA_STORYFLAGS + 119
-                byte_val = self.memory.read_byte(sf_addr)
-                if byte_val is not None and (byte_val & 0x80):
-                    self.checked_locations.add(DEFEAT_DEMISE_CODE)
-                    logger.info("=== Demise defeated (story flag 959) ===")
-                    self.update_tracker_state()
-            except Exception as e:
-                logger.debug(f"Error reading Demise story flag: {e}")
-
-    async def check_all_locations(self):
-        """Check all locations using LocationFlags.py data (Wii addresses - may not work on Switch)."""
-        if not self.memory.connected or not self.memory.base_address:
-            return
-        
-        for location_name, (flag_type, flag_bit, flag_value, scene_or_addr) in LOCATION_FLAG_MAP.items():
-            # Get proper location ID from LOCATION_TABLE
-            if location_name in LOCATION_TABLE:
-                location_id = LOCATION_TABLE[location_name].code
-            else:
-                # Skip locations not in table
-                continue
-            
-            # Skip if already checked
-            if location_id in self.checked_locations:
-                continue
-            
-            try:
-                is_checked = False
-                
-                if flag_type == FLAG_STORY:
-                    # Story flags use static addresses (base-relative)
-                    story_addr = scene_or_addr
-                    if isinstance(story_addr, int):
-                        byte_val = self.memory.read_byte(story_addr)
-                        if byte_val is not None:
-                            is_checked = bool(byte_val & (1 << flag_bit))
-                
-                elif flag_type == FLAG_SCENE:
-                    # Scene flags use scene name and are stored in static scene flag array
-                    scene_name = scene_or_addr
-                    if scene_name in SCENE_FLAG_ADDRESSES:
-                        # SCENE_FLAG_ADDRESSES contains base-relative offsets, not absolute addresses
-                        scene_base = SCENE_FLAG_ADDRESSES[scene_name]
-                        flag_addr = scene_base + flag_bit
-                        byte_val = self.memory.read_byte(flag_addr)
-                        if byte_val is not None:
-                            is_checked = bool(byte_val & flag_value)
-                
-                if is_checked:
-                    self.checked_locations.add(location_id)
-                    location_name_display = location_name[:50]  # Truncate long names
-                    logger.info(f"Location checked: {location_name_display}")
-                    
-                    # Update tracker with new location
-                    self.update_tracker_state()
-                    
-            except Exception as e:
-                logger.debug(f"Error checking location {location_name}: {e}")
-    
     # ------------------------------------------------------------------
     # Bird-statue HD-progression enforcement
     # ------------------------------------------------------------------
     def _read_bird_statue_flag(self, flag_type: str, scene_index: int, flag_number: int) -> Optional[bool]:
-        """Read a single bird statue activation flag from the save file.
-        Returns True if set, False if unset, None on read failure."""
+        """Read a single bird statue activation flag from BOTH save file
+        and static (runtime) memory.  Returns True if set in *either*
+        copy, False if unset in both, None on read failure.
+
+        For story flags the game keeps a runtime copy at
+        OFFSET_STORY_FLAGS_STATIC that is authoritative — the save-file
+        copy is only synced periodically.  Reading both copies gives the
+        earliest possible detection of an HD-progression auto-unlock.
+
+        For scene flags the static copy only covers the *current* scene
+        (16 bytes), so we read from the save file which has all scenes.
+        """
         if flag_type == "scene":
             upper = (flag_number & 0xF0) >> 4
             lower = flag_number & 0x0F
@@ -3806,33 +4035,77 @@ class SSHDContext(CommonContext):
         else:  # story
             word_idx = flag_number // 16
             bit_idx = flag_number % 16
-            offset = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS + word_idx * 2
-            val = self.memory.read_short(offset)
-            if val is None:
+            mask = 1 << bit_idx
+            # Save-file copy
+            fa_offset = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS + word_idx * 2
+            fa_val = self.memory.read_short(fa_offset)
+            if fa_val is None:
                 return None
-            return bool(val & (1 << bit_idx))
+            fa_set = bool(fa_val & mask)
+            # Static / runtime copy
+            static_offset = OFFSET_STORY_FLAGS_STATIC + word_idx * 2
+            static_val = self.memory.read_short(static_offset)
+            static_set = bool(static_val & mask) if static_val is not None else False
+            return fa_set or static_set
 
     def _clear_bird_statue_flag(self, flag_type: str, scene_index: int, flag_number: int) -> bool:
-        """Clear a single bird statue activation flag in the save file.
-        Returns True on success."""
+        """Clear a single bird statue activation flag from BOTH save file
+        and static (runtime) memory.  Returns True on success.
+
+        For story flags the game syncs static → save file periodically,
+        so clearing only the save copy would be undone on the next sync.
+        We must clear both copies to break the ping-pong cycle.
+
+        For scene flags the static copy only holds the *current* scene's
+        data (16 bytes at OFFSET_SCENE_FLAGS_STATIC).  We always clear
+        the save-file copy; when the flag belongs to the currently loaded
+        scene we also clear the static copy.
+        """
         if flag_type == "scene":
             upper = (flag_number & 0xF0) >> 4
             lower = flag_number & 0x0F
+            clear_mask = ~(1 << lower) & 0xFFFF
+            # Save-file copy (all scenes)
             offset = OFFSET_SAVEFILE_A + OFFSET_FA_SCENEFLAGS + scene_index * 16 + upper * 2
             val = self.memory.read_short(offset)
             if val is None:
                 return False
-            self.memory.write_short(offset, val & ~(1 << lower))
+            self.memory.write_short(offset, val & clear_mask)
+            # Static copy — only valid if the current stage is in this scene
+            current_scene = self._get_current_scene_index()
+            if current_scene is not None and current_scene == scene_index:
+                static_offset = OFFSET_SCENE_FLAGS_STATIC + upper * 2
+                static_val = self.memory.read_short(static_offset)
+                if static_val is not None:
+                    self.memory.write_short(static_offset, static_val & clear_mask)
             return True
         else:  # story
             word_idx = flag_number // 16
             bit_idx = flag_number % 16
-            offset = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS + word_idx * 2
-            val = self.memory.read_short(offset)
-            if val is None:
+            clear_mask = ~(1 << bit_idx) & 0xFFFF
+            # Save-file copy
+            fa_offset = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS + word_idx * 2
+            fa_val = self.memory.read_short(fa_offset)
+            if fa_val is None:
                 return False
-            self.memory.write_short(offset, val & ~(1 << bit_idx))
+            self.memory.write_short(fa_offset, fa_val & clear_mask)
+            # Static / runtime copy
+            static_offset = OFFSET_STORY_FLAGS_STATIC + word_idx * 2
+            static_val = self.memory.read_short(static_offset)
+            if static_val is not None:
+                self.memory.write_short(static_offset, static_val & clear_mask)
             return True
+
+    def _get_current_scene_index(self) -> Optional[int]:
+        """Return the scene flag index for the currently loaded stage,
+        or None if the stage is unknown / not mapped to a bird-statue scene."""
+        stage = (self.current_stage or "")[:6]
+        scene_set = _STAGE_TO_BIRD_STATUE_SCENES.get(stage)
+        if scene_set is None:
+            scene_set = _STAGE_TO_BIRD_STATUE_SCENES.get(stage[:4])
+        if scene_set and len(scene_set) == 1:
+            return next(iter(scene_set))
+        return None
 
     def _enforce_bird_statue_flags(self) -> None:
         """Prevent the game's HD-progression system from auto-unlocking
@@ -3958,21 +4231,6 @@ class SSHDContext(CommonContext):
         logger.debug("No item placement data found - item_to_location map is empty")
         return item_to_loc
 
-    def check_locations(self):
-        """
-        Check for completed locations.
-        
-        NOTE: Location checking is now item-based instead of memory-based.
-        When an item is given to the player via give_item_to_player(),
-        the corresponding location is automatically marked as checked.
-        
-        This function is kept for compatibility but no longer reads memory flags
-        (LocationFlags.py addresses are from Wii game and incompatible with SSHD).
-        """
-        # Item-based location checking is handled in give_item_to_player()
-        # No additional memory-based checking needed
-        pass
-    
     def on_deathlink(self, data: dict):
         """
         Handle death link - kill the player when someone else dies.
@@ -3981,6 +4239,10 @@ class SSHDContext(CommonContext):
 
         if not self.memory.connected or not self.memory.base_address:
             logger.warning("DeathLink: Cannot kill player - not connected to game")
+            return
+
+        if self.goal_completed:
+            logger.debug("DeathLink: Ignoring - goal already completed")
             return
 
         source = data.get('source', 'Unknown')
@@ -4027,6 +4289,10 @@ class SSHDContext(CommonContext):
 
         if not self.memory.connected or not self.memory.base_address:
             logger.warning("BreathLink: Cannot drain stamina - not connected to game")
+            return
+
+        if self.goal_completed:
+            logger.debug("BreathLink: Ignoring - goal already completed")
             return
 
         source = data.get('source', 'Unknown')
@@ -4093,7 +4359,7 @@ class SSHDContext(CommonContext):
 
 def install_patch(patch_file_path: str) -> tuple[bool, dict]:
     """
-    Extract and install .apsshd patch to Ryujinx mod directory.
+    Extract and install .apsshd patch to emulator mod directory.
     
     Returns (success: bool, location_to_item: dict).
     """
@@ -4153,68 +4419,74 @@ def install_patch(patch_file_path: str) -> tuple[bool, dict]:
                     print(f"You may need to apply the base randomizer mod manually.")
                 return False, {}
             
-            # Find Ryujinx atmosphere directory for LayeredFS mods
+            # Find ALL emulator mod directories and install to each
+            emulator_mod_dirs = []
             try:
-                from platform_utils import get_ryujinx_mod_dirs
-                ryujinx_paths = get_ryujinx_mod_dirs()
+                from platform_utils import find_all_emulator_mod_dirs
+                emulator_mod_dirs = find_all_emulator_mod_dirs()
             except ImportError:
-                # Fallback if platform_utils not available - use OS-specific paths
+                pass
+
+            if not emulator_mod_dirs:
+                # Fallback: try common paths for all supported emulators
+                game_id = "01002da013484000"
+                fallback_paths = []
                 if sys.platform == "win32":
-                    ryujinx_paths = [
-                        Path.home() / "AppData" / "Roaming" / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / "01002da013484000",
-                        Path(os.environ.get('APPDATA', '')) / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / "01002da013484000",
-                    ]
+                    appdata = Path(os.environ.get('APPDATA', ''))
+                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
+                        fallback_paths.append(appdata / emu / "sdcard" / "atmosphere" / "contents" / game_id)
+                        fallback_paths.append(appdata / emu / "load" / game_id)
                 elif sys.platform == "linux":
-                    ryujinx_paths = [
-                        Path.home() / ".config" / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / "01002da013484000",
-                    ]
+                    for emu_dir, emu_base in [(".config/Ryujinx", "sdcard/atmosphere/contents"),
+                                               (".local/share/yuzu", "load"),
+                                               (".local/share/suyu", "load"),
+                                               (".local/share/sudachi", "load"),
+                                               (".local/share/eden", "load")]:
+                        fallback_paths.append(Path.home() / emu_dir / emu_base / game_id)
                 else:  # macOS
-                    ryujinx_paths = [
-                        Path.home() / "Library" / "Application Support" / "Ryujinx" / "sdcard" / "atmosphere" / "contents" / "01002da013484000",
-                    ]
+                    app_support = Path.home() / "Library" / "Application Support"
+                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
+                        fallback_paths.append(app_support / emu / "sdcard" / "atmosphere" / "contents" / game_id)
+                        fallback_paths.append(app_support / emu / "load" / game_id)
+
+                for path in fallback_paths:
+                    if path.parent.exists():
+                        emulator_mod_dirs.append(path)
             
-            ryujinx_mod_dir = None
-            for path in ryujinx_paths:
-                if path.parent.parent.parent.exists():  # Check if sdcard/atmosphere folder exists
-                    ryujinx_mod_dir = path
-                    ryujinx_mod_dir.mkdir(parents=True, exist_ok=True)
-                    break
-            
-            if ryujinx_mod_dir:
-                print(f"\nFound Ryujinx atmosphere directory: {ryujinx_mod_dir}")
+            if emulator_mod_dirs:
+                print(f"\nFound {len(emulator_mod_dirs)} emulator mod director{'y' if len(emulator_mod_dirs) == 1 else 'ies'}:")
                 
-                # Install to Archipelago folder (LayeredFS will merge with game files)
-                mod_install_dir = ryujinx_mod_dir / "Archipelago"
+                for emulator_mod_dir in emulator_mod_dirs:
+                    emulator_mod_dir.mkdir(parents=True, exist_ok=True)
+                    mod_install_dir = emulator_mod_dir / "Archipelago"
+                    
+                    print(f"  Installing to: {mod_install_dir}")
+                    
+                    # Remove existing mod if present
+                    if mod_install_dir.exists():
+                        shutil.rmtree(mod_install_dir)
+                    
+                    # Extract romfs and exefs
+                    mod_install_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    for file_name in file_list:
+                        if file_name.startswith('romfs/') or file_name.startswith('exefs/'):
+                            target_path = mod_install_dir / file_name
+                            target_path.parent.mkdir(parents=True, exist_ok=True)
+                            
+                            with zip_file.open(file_name) as source:
+                                with open(target_path, 'wb') as target:
+                                    target.write(source.read())
                 
-                print(f"Installing to: {mod_install_dir}")
-                
-                # Remove existing mod if present
-                if mod_install_dir.exists():
-                    print(f"  Removing existing mod...")
-                    shutil.rmtree(mod_install_dir)
-                
-                # Extract romfs and exefs
-                mod_install_dir.mkdir(parents=True, exist_ok=True)
-                
-                for file_name in file_list:
-                    if file_name.startswith('romfs/') or file_name.startswith('exefs/'):
-                        # Extract to mod directory
-                        target_path = mod_install_dir / file_name
-                        target_path.parent.mkdir(parents=True, exist_ok=True)
-                        
-                        with zip_file.open(file_name) as source:
-                            with open(target_path, 'wb') as target:
-                                target.write(source.read())
-                
-                print(f"\n✓ Patch installed successfully!")
+                print(f"\n✓ Patch installed to {len(emulator_mod_dirs)} emulator(s)!")
                 print(f"\nNext steps:")
-                print(f"  1. Launch Skyward Sword HD in Ryujinx")
+                print(f"  1. Launch Skyward Sword HD in your emulator")
                 print(f"  2. The LayeredFS mod will be automatically applied")
                 print(f"  3. Connect to the Archipelago server")
                 return True, location_to_item
             else:
-                # No Ryujinx found - extract to temp for manual install
-                print(f"\nWARNING: Ryujinx installation not found automatically.")
+                # No emulator found - extract to temp for manual install
+                print(f"\nWARNING: No supported emulator installation found automatically.")
                 print(f"Extracting patch files for manual installation...")
                 
                 # Extract to a folder next to the patch file
@@ -4227,14 +4499,10 @@ def install_patch(patch_file_path: str) -> tuple[bool, dict]:
                 
                 print(f"\nExtracted to: {extract_dir}")
                 print(f"\nManual installation:")
-                print(f"  1. Copy the romfs/ and exefs/ folders to:")
-                try:
-                    from platform_utils import get_ryujinx_dir
-                    ryujinx_manual_path = get_ryujinx_dir() / "sdcard" / "atmosphere" / "contents" / "01002da013484000" / "Archipelago"
-                    print(f"     {ryujinx_manual_path}")
-                except ImportError:
-                    print(f"     %APPDATA%\\Ryujinx\\sdcard\\atmosphere\\contents\\01002da013484000\\Archipelago\\")
-                print(f"  2. Launch Skyward Sword HD in Ryujinx")
+                print(f"  1. Copy the romfs/ and exefs/ folders to your emulator's mod directory")
+                print(f"     (e.g. Ryujinx: sdcard/atmosphere/contents/01002da013484000/Archipelago/)")
+                print(f"     (e.g. yuzu: load/01002da013484000/Archipelago/)")
+                print(f"  2. Launch Skyward Sword HD in your emulator")
                 print(f"  3. The LayeredFS mod will be automatically applied")
                 return False, location_to_item
                 
@@ -4258,7 +4526,7 @@ async def main(args=None):
     print(f"Starting client...")
     print(f"Arguments: {args}")
     
-    parser = get_base_parser(description="Skyward Sword HD Client for Archipelago with Ryujinx support.")
+    parser = get_base_parser(description="Skyward Sword HD Client for Archipelago.")
     parser.add_argument('diff_file', default="", type=str, nargs="?",
                         help='Path to an Archipelago Binary Patch file (.apsshd)')
     parsed_args = parser.parse_args(args)
@@ -4293,8 +4561,8 @@ async def main(args=None):
     
     ctx.server_task = asyncio.create_task(server_loop(ctx), name="ServerLoop")
     
-    # Add Ryujinx connection task
-    ctx.ryujinx_task = asyncio.create_task(ctx.ryujinx_connection_task(), name="Ryujinx Connection")
+    # Add emulator connection task
+    ctx.emulator_task = asyncio.create_task(ctx.emulator_connection_task(), name="Emulator Connection")
 
     # Add dedicated high-frequency cheat loop (~60 Hz)
     ctx.cheat_task = asyncio.create_task(ctx.cheat_loop_task(), name="Cheat Loop")

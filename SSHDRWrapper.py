@@ -246,6 +246,8 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
                         skipped_count += 1
         else:
             # Setting doesn't exist in sshd-rando
+            if setting_key not in skip_keys:
+                print(f"[SSHDRWrapper] DEBUG: Setting '{setting_key}' not found in sshd-rando settings (skipped)")
             skipped_count += 1
     
     print(f"[SSHDRWrapper] Applied {applied_count} settings, skipped {skipped_count} (not applicable or invalid)")
@@ -497,6 +499,19 @@ def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, see
                             print(f"[SSHDRWrapper] Applied AP override to Setting String config: {override_key}={override_val}")
                         else:
                             print(f"[SSHDRWrapper] WARNING: Could not apply override {override_key}={override_val} (option not found)")
+
+                # Cosmetic settings are not encoded in the setting string,
+                # so apply them from the AP settings dict.
+                from logic.settings import SettingType
+                for setting_name, setting in setting_map_for_overrides.settings.items():
+                    if setting.info and setting.info.type == SettingType.COSMETIC:
+                        if setting_name in settings_dict:
+                            val = str(settings_dict[setting_name])
+                            if val in setting.info.options:
+                                setting.update_current_value(setting.info.options.index(val))
+                                print(f"[SSHDRWrapper] Applied cosmetic setting: {setting_name}={val}")
+                            else:
+                                print(f"[SSHDRWrapper] WARNING: Value '{val}' not in options {setting.info.options} for {setting_name}")
         
         # EXTRACT SETTING STRING DECODED STARTING ITEMS (before other settings are applied)
         # These are the items that come directly from the Setting String, not from starting_sword/starting_hearts

@@ -142,7 +142,6 @@ def build_apworld():
         "__init__.py",
         "Items.py",
         "Locations.py",
-        "LocationFlags.py",
         "Regions.py",
         "SSHD_Options.py",
         "Rules.py",

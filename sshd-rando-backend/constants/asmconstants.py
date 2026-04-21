@@ -30,6 +30,11 @@ SUBSDK_WARP_TO_START_OFFSET = SUBSDK_STARTFLAG_OFFSET + MAX_STARTFLAGS
 SUBSDK_START_COUNTS_OFFSET = SUBSDK_WARP_TO_START_OFFSET + 12  # Size of spawn info
 SUBSDK_RNG_SEED_OFFSET = SUBSDK_START_COUNTS_OFFSET + 0xC8  # Size of start counts
 
+# Address of CREST_CUSTOM_FLAGS in the subsdk8 RODATA segment (defined in symbols.yaml).
+# [u16; 3] (6 bytes) storing AP custom flag IDs for the 3 Isle of Songs crest rewards.
+# Placed in rodata (read-only at runtime) to prevent data segment corruption.
+SUBSDK_CREST_CUSTOM_FLAGS_OFFSET = 0x712E5FECB0
+
 
 # Offsets defined as the equivalent subsdk1 offset plus its size.
 SUBSDK_NSO_OFFSETS = NsoOffsets(

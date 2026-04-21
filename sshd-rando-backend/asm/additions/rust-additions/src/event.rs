@@ -213,8 +213,10 @@ fn write_ascii(buf: &mut [u16], s: &[u8]) -> usize {
 /// Handles two retry paths:
 ///   1. If `lookup_ap_item_index` failed in cmd 81, retry here (the table may
 ///      have become visible to the JIT since the last attempt).
-///   2. If the lookup succeeded but `LYT_MSG_WINDOW.text_mgr` was null, write
-///      the saved pointers once text_mgr appears.
+///   2. Re-apply saved text pointers to TextMgrs.  This covers both the
+///      "text_mgr was null" case AND the normal success case — cmd 81 always
+///      schedules this so the correct text is continuously written throughout
+///      the delay window, right up until the textbox opens.
 pub fn apply_pending_ap_string_args() {
     unsafe {
         // ── Retry path A: table lookup ──────────────────────────────────
@@ -222,7 +224,7 @@ pub fn apply_pending_ap_string_args() {
             let mut flag_id = PENDING_AP_FLAG_ID;
 
             // If cmd 81 couldn't find the flag_id (was 0xFFFF), re-read
-            // the static each frame — handle_custom_item_get (in stateGet)
+            // the static each frame — setup_traps (in stateWait*GetDemoUpdate)
             // will have written it by the time this retry fires.
             if flag_id == 0xFFFF {
                 flag_id = core::ptr::read_volatile(core::ptr::addr_of!(item::LAST_AP_ITEM_FLAG_ID));
@@ -244,13 +246,21 @@ pub fn apply_pending_ap_string_args() {
                         set_string_arg(GLOBAL_TEXT_MGR, ip, 0);
                         set_string_arg(GLOBAL_TEXT_MGR, pp, 1);
                     }
-                    let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
-                    if !text_mgr.is_null() {
-                        set_string_arg(text_mgr, ip, 0);
-                        set_string_arg(text_mgr, pp, 1);
-                        PENDING_AP_STRING_ARGS = false; // also clears mode-B
+                    if !LYT_MSG_WINDOW.is_null() {
+                        let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+                        if !text_mgr.is_null() {
+                            set_string_arg(text_mgr, ip, 0);
+                            set_string_arg(text_mgr, pp, 1);
+                            PENDING_AP_STRING_ARGS = false; // also clears
+                                                            // mode-B
+                        } else {
+                            // Lookup worked but text_mgr still null → mode B
+                            PENDING_AP_ITEM_PTR = ip;
+                            PENDING_AP_PLAYER_PTR = pp;
+                            PENDING_AP_STRING_ARGS = true;
+                        }
                     } else {
-                        // Lookup worked but text_mgr still null → mode B
+                        // Layout torn down — defer to mode B
                         PENDING_AP_ITEM_PTR = ip;
                         PENDING_AP_PLAYER_PTR = pp;
                         PENDING_AP_STRING_ARGS = true;
@@ -269,11 +279,13 @@ pub fn apply_pending_ap_string_args() {
 
         // ── Retry path B: deferred TextMgr write ───────────────────────
         if PENDING_AP_STRING_ARGS {
-            let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
-            if !text_mgr.is_null() {
-                set_string_arg(text_mgr, PENDING_AP_ITEM_PTR, 0);
-                set_string_arg(text_mgr, PENDING_AP_PLAYER_PTR, 1);
-                PENDING_AP_STRING_ARGS = false;
+            if !LYT_MSG_WINDOW.is_null() {
+                let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+                if !text_mgr.is_null() {
+                    set_string_arg(text_mgr, PENDING_AP_ITEM_PTR, 0);
+                    set_string_arg(text_mgr, PENDING_AP_PLAYER_PTR, 1);
+                    PENDING_AP_STRING_ARGS = false;
+                }
             }
         }
     }
@@ -330,30 +342,17 @@ pub extern "C" fn custom_event_commands(
         // Set global flag for Archipelago custom flag detection
         // param1 = flag index (0-127), param2 = actual scene index (6, 13, 16, or 19)
         // param4 = flag_space_trigger (0 = sceneflag, 1 = dungeonflag)
-        //
-        // IMPORTANT: The body is in a separate #[inline(never)] function to keep
-        // register pressure low in this function. The asm epilogue below sets w21
-        // (a callee-saved register). If the compiler needs x21 for local variables,
-        // it will save/restore x21 in the prologue/epilogue, UNDOING the
-        // "mov w21, #1" replaced instruction and breaking ALL type3 event flows.
         80 => set_global_sceneflag_for_ap(event_flow_element),
         // Set string args for Archipelago Item (216) textbox.
-        // (Same #[inline(never)] reasoning as above.)
         81 => set_ap_item_string_args(actor_event_flow_mgr),
         _ => (),
     }
 
-    unsafe {
-        asm!(
-            "mov x0, {0:x}",
-            "mov x1, {1:x}",
-            // Replaced instructions
-            "ldrh w8, [x1, #0xa]",
-            "mov w21, #1",
-            in(reg) actor_event_flow_mgr,
-            in(reg) p_event_flow_element,
-        );
-    }
+    // The replaced instructions (ldrh w8, [x1, #0xa]; mov w21, #1) are now
+    // executed by the ASM wrapper `_ce_wrapper` in the landing pad, AFTER
+    // this function's epilogue.  This prevents the compiler from clobbering
+    // w21 (a callee-saved register) in the epilogue — which would break all
+    // type-3 event flows.
 }
 
 /// Set global flag for Archipelago custom flag detection.
@@ -402,19 +401,22 @@ fn set_global_sceneflag_for_ap(event_flow_element: &EventFlowElement) {
 
 /// Set string args for Archipelago Item (216) textbox.
 ///
-/// Reads LAST_AP_ITEM_FLAG_ID (set in handle_custom_item_get) and looks up
+/// Reads LAST_AP_ITEM_FLAG_ID (set in setup_traps / cmd 80) and looks up
 /// item name + player name in the AP_ITEM_INFO_TABLE (written by the Python
 /// client on connect).
 ///
-/// If the lookup fails (flag not yet set by setup_traps, or table not yet
-/// visible to the JIT), a user-friendly fallback ("AP Item" / "another
-/// player") is written to the textbox AND:
-///   - `PENDING_AP_LOOKUP` is set so `apply_pending_ap_string_args` retries
-///     every frame until the lookup succeeds.
-///   - A small delay is added to the event flow so the textbox doesn't open
-///     until setup_traps has had a chance to write the flag_id on a subsequent
-///     frame, giving the retry mechanism time to replace the fallback text
-///     with the real item/player names.
+/// **Defence-in-depth:** The function FIRST writes fallback text
+/// ("Archipelago Item" / "another player") to both TextMgrs, clearing any
+/// stale string_args left over from a previous textbox.  Then it attempts
+/// the table lookup and overwrites with the real text on success.  This
+/// guarantees the worst case is the generic fallback, never a previous
+/// item's text.
+///
+/// A short delay is ALWAYS added before the textbox opens (5 frames on
+/// success, 20 on failure).  During this window the per-frame retry loop
+/// (`apply_pending_ap_string_args`) keeps re-applying the resolved text
+/// pointers to TextMgrs, so by the time the textbox renders, the correct
+/// strings are guaranteed to be in place.
 ///
 /// # Why this is a separate function
 /// `custom_event_commands` ends with an inline asm block that sets `w21`
@@ -429,6 +431,43 @@ fn set_global_sceneflag_for_ap(event_flow_element: &EventFlowElement) {
 #[inline(never)]
 fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
     unsafe {
+        // ── STEP 1: Write fallback text FIRST ────────────────────────
+        // Always clobber both TextMgrs with safe defaults before doing
+        // anything else.  This guarantees that even if the lookup below
+        // fails (or succeeds with a stale flag_id for any unforeseen
+        // reason), the textbox will never display a PREVIOUS item's
+        // name / player name.  It will show "Archipelago Item" /
+        // "another player" at worst.
+        {
+            let mut p = 0usize;
+            p += write_ascii(&mut DBG_ITEM_TEXT[p..], b"Archipelago Item");
+            if p < 32 {
+                DBG_ITEM_TEXT[p] = 0;
+            }
+
+            let mut q = 0usize;
+            q += write_ascii(&mut DBG_PLAYER_TEXT[q..], b"another player");
+            if q < 16 {
+                DBG_PLAYER_TEXT[q] = 0;
+            }
+
+            let fallback_item = DBG_ITEM_TEXT.as_ptr() as *const c_void;
+            let fallback_player = DBG_PLAYER_TEXT.as_ptr() as *const c_void;
+
+            if !GLOBAL_TEXT_MGR.is_null() {
+                set_string_arg(GLOBAL_TEXT_MGR, fallback_item, 0);
+                set_string_arg(GLOBAL_TEXT_MGR, fallback_player, 1);
+            }
+            if !LYT_MSG_WINDOW.is_null() {
+                let tm = (*LYT_MSG_WINDOW).text_mgr;
+                if !tm.is_null() {
+                    set_string_arg(tm, fallback_item, 0);
+                    set_string_arg(tm, fallback_player, 1);
+                }
+            }
+        }
+
+        // ── STEP 2: Attempt table lookup and overwrite with real text ──
         // Read LAST_AP_ITEM_FLAG_ID.  For freestanding/chest items this is
         // set by setup_traps() at the beginning of stateWait*GetDemoUpdate
         // (BEFORE the event system fires).  For NPC-given items, cmd 80
@@ -447,46 +486,40 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
                 core::ptr::addr_of!((*entry_ptr).player_name) as *const c_void,
             )
         } else {
-            // ── Failure: show user-friendly fallback text ────────────────
-            let mut p = 0usize;
-            p += write_ascii(&mut DBG_ITEM_TEXT[p..], b"Archipelago Item");
-            if p < 32 {
-                DBG_ITEM_TEXT[p] = 0;
-            }
-
-            let mut q = 0usize;
-            q += write_ascii(&mut DBG_PLAYER_TEXT[q..], b"another player");
-            if q < 16 {
-                DBG_PLAYER_TEXT[q] = 0;
-            }
-
-            // ── Delay the event flow ────────────────────────────────────
-            // On the very first item-216 pickup, setup_traps may not have
-            // written LAST_AP_ITEM_FLAG_ID yet (the game can take a
-            // different code path on the first frame of the get-demo
-            // state).  By delaying the next flow node (the textbox), we
-            // give setup_traps a chance to run on subsequent frames.
-            // The main-loop retry (apply_pending_ap_string_args) will
-            // patch the TextMgr with the correct names before the delay
-            // expires and the textbox opens.
-            if !actor_event_flow_mgr.is_null() {
-                (*actor_event_flow_mgr).next_flow_delay_timer = 10;
-            }
-
             (
                 DBG_ITEM_TEXT.as_ptr() as *const c_void,
                 DBG_PLAYER_TEXT.as_ptr() as *const c_void,
             )
         };
 
-        // Write to GLOBAL_TEXT_MGR (always initialised at this point).
+        // ── STEP 3: Always delay the textbox ────────────────────────────
+        // Adding a short delay before the textbox opens gives the
+        // per-frame retry loop (`apply_pending_ap_string_args`) a window
+        // to re-apply the resolved text to TextMgrs.  This acts as the
+        // "short sleep" that makes the display near-100 % reliable:
+        //   - On success (10 frames / ~167 ms @60fps): barely noticeable, but the
+        //     retry loop re-writes the correct pointers every frame until the textbox
+        //     fires, guarding against any intermediate processing that might clear
+        //     string_args.
+        //   - On failure (40 frames / ~667 ms @60fps): gives the retry loop enough
+        //     time to find the real data in the table and patch it in before the
+        //     textbox opens.
+        if !actor_event_flow_mgr.is_null() {
+            (*actor_event_flow_mgr).next_flow_delay_timer = if idx != usize::MAX { 10 } else { 40 };
+        }
+
+        // Overwrite both TextMgrs with the resolved (or fallback) text.
         if !GLOBAL_TEXT_MGR.is_null() {
             set_string_arg(GLOBAL_TEXT_MGR, item_ptr, 0);
             set_string_arg(GLOBAL_TEXT_MGR, player_ptr, 1);
         }
 
         // Write to the message-window layout's TextMgr if available.
-        let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+        let text_mgr = if !LYT_MSG_WINDOW.is_null() {
+            (*LYT_MSG_WINDOW).text_mgr
+        } else {
+            core::ptr::null_mut()
+        };
         if !text_mgr.is_null() {
             set_string_arg(text_mgr, item_ptr, 0);
             set_string_arg(text_mgr, player_ptr, 1);
@@ -494,8 +527,8 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
 
         // ── Reset LAST_AP_ITEM_FLAG_ID after use ────────────────────────
         // This prevents the STALE value problem: without the reset, the
-        // next item-216 pickup would see the PREVIOUS item's flag_id if
-        // setup_traps / handle_custom_item_get hasn't written yet.
+        // next item-216 pickup could see the PREVIOUS item's flag_id if
+        // setup_traps hasn't written yet.
         if idx != usize::MAX {
             core::ptr::write_volatile(
                 core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
@@ -512,14 +545,16 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
             PENDING_AP_LOOKUP = false;
         }
 
-        // If text_mgr was null, schedule deferred write.
-        if text_mgr.is_null() {
-            PENDING_AP_ITEM_PTR = item_ptr;
-            PENDING_AP_PLAYER_PTR = player_ptr;
-            PENDING_AP_STRING_ARGS = true;
-        } else {
-            PENDING_AP_STRING_ARGS = false;
-        }
+        // Always schedule the deferred re-apply so the per-frame retry
+        // loop keeps writing the resolved (or fallback) pointers to
+        // TextMgrs throughout the delay window.  This ensures the
+        // textbox opens with the correct text even if:
+        //   - text_mgr was null initially but appears during the delay,
+        //   - some intermediate engine processing cleared string_args,
+        //   - retry path A resolves the real data mid-delay.
+        PENDING_AP_ITEM_PTR = item_ptr;
+        PENDING_AP_PLAYER_PTR = player_ptr;
+        PENDING_AP_STRING_ARGS = true;
     }
 }
 
