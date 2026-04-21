@@ -11,7 +11,11 @@ userdata_path = "."
 try:
     from sys import _MEIPASS  # @IgnoreException
 
-    RANDO_ROOT_PATH = Path(_MEIPASS)
+    _meipass_root = Path(_MEIPASS)
+    # When bundled inside the patcher exe, data files are placed under the
+    # sshd-rando-backend/ subdirectory of the PyInstaller temp dir.
+    _backend_subdir = _meipass_root / "sshd-rando-backend"
+    RANDO_ROOT_PATH = _backend_subdir if _backend_subdir.is_dir() else _meipass_root
 
 except ImportError:
     RANDO_ROOT_PATH = Path(os.path.dirname(os.path.realpath(__file__)))
