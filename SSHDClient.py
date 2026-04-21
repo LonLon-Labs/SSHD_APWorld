@@ -1432,6 +1432,7 @@ class SSHDContext(CommonContext):
         self.default_forward_speed: Optional[float] = None  # Cached normal speed
         self.beetle_patch_applied: bool = False  # Track if beetle code patch was written
         self._moon_jump_logged: bool = False    # One-time diagnostic log
+        self._moon_jump_prev_held: bool = False  # Previous frame Y-button state for first-press detection
         
         # Location checking via custom flags
         self.previous_custom_flags: Dict[int, int] = {}  # custom_flag_id -> last_state (0 or 1)
@@ -2959,14 +2960,17 @@ class SSHDContext(CommonContext):
                     logger.debug(f"[MoonJump] held_buttons offset=0x{player_base + OFFSET_HELD_BUTTONS:X}")
                     self._moon_jump_logged = True
 
-                if btn_held is not None and (btn_held & BUTTON_Y):
-                    # 1. Directly lift Link's position (bypasses ground collision)
+                y_held = btn_held is not None and bool(btn_held & BUTTON_Y)
+                if y_held:
+                    first_press = not self._moon_jump_prev_held
                     cur_y = self.memory.read_float(player_base + OFFSET_POS_Y)
                     if cur_y is not None:
-                        new_y = cur_y + 1.5  # ~90 units/sec at 60 Hz
-                        self.memory.write_float(player_base + OFFSET_POS_Y, new_y)
-                    # 2. Also set upward velocity for smooth motion once airborne
+                        # On the very first press frame use a large kick to break
+                        # ground-contact; subsequent frames use the normal increment.
+                        lift = 100.0 if first_press else 1.5
+                        self.memory.write_float(player_base + OFFSET_POS_Y, cur_y + lift)
                     self.memory.write_float(player_base + OFFSET_VELOCITY_Y, 52.5)
+                self._moon_jump_prev_held = y_held
             except Exception as e:
                 logger.warning(f"Cheat error (moon_jump): {e}")
 
