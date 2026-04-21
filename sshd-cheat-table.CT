@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<CheatTable CheatEngineTableVersion="45">
+<CheatTable CheatEngineTableVersion="46">
   <CheatEntries>
     <CheatEntry>
       <ID>0</ID>
@@ -7,7 +7,7 @@
       <Options moManualExpandCollapse="1"/>
       <ShowAsSigned>0</ShowAsSigned>
       <GroupHeader>1</GroupHeader>
-      <Address>19585854000</Address>
+      <Address>2B1712F4000</Address>
       <CheatEntries>
         <CheatEntry>
           <ID>1</ID>
@@ -147,6 +147,34 @@
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>+64d8</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>568</ID>
+              <Description>"Stamina (Flooded Faron Woods)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>-7FA8</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>572</ID>
+              <Description>"Stamina (Tentalus Fight)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>+5CD8</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>583</ID>
+              <Description>"Loftwing Charges"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>-B57E6</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>593</ID>
+              <Description>"Loftwing Charges (Thunderhead)"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>-37A2E</Address>
             </CheatEntry>
             <CheatEntry>
               <ID>2</ID>
@@ -4060,7 +4088,7 @@
               <Address>+D</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>514</ID>
+              <ID>540</ID>
               <Description>"Slot 4 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4068,7 +4096,7 @@
               <Address>+10</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>515</ID>
+              <ID>541</ID>
               <Description>"Slot 4 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4076,7 +4104,7 @@
               <Address>+11</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>516</ID>
+              <ID>542</ID>
               <Description>"Slot 5 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4084,7 +4112,7 @@
               <Address>+14</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>517</ID>
+              <ID>543</ID>
               <Description>"Slot 5 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4092,7 +4120,7 @@
               <Address>+15</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>518</ID>
+              <ID>544</ID>
               <Description>"Slot 6 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4100,7 +4128,7 @@
               <Address>+18</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>519</ID>
+              <ID>545</ID>
               <Description>"Slot 6 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4108,7 +4136,7 @@
               <Address>+19</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>520</ID>
+              <ID>546</ID>
               <Description>"Slot 7 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4116,7 +4144,7 @@
               <Address>+1C</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>521</ID>
+              <ID>547</ID>
               <Description>"Slot 7 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4124,7 +4152,7 @@
               <Address>+1D</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>522</ID>
+              <ID>548</ID>
               <Description>"Slot 8 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4132,7 +4160,7 @@
               <Address>+20</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>523</ID>
+              <ID>549</ID>
               <Description>"Slot 8 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4140,7 +4168,7 @@
               <Address>+21</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>524</ID>
+              <ID>550</ID>
               <Description>"Slot 9 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4148,7 +4176,7 @@
               <Address>+24</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>525</ID>
+              <ID>551</ID>
               <Description>"Slot 9 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4156,7 +4184,7 @@
               <Address>+25</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>526</ID>
+              <ID>552</ID>
               <Description>"Slot 10 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4164,7 +4192,7 @@
               <Address>+28</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>527</ID>
+              <ID>553</ID>
               <Description>"Slot 10 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4172,7 +4200,7 @@
               <Address>+29</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>528</ID>
+              <ID>554</ID>
               <Description>"Slot 11 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4180,7 +4208,7 @@
               <Address>+2C</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>529</ID>
+              <ID>555</ID>
               <Description>"Slot 11 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4188,7 +4216,7 @@
               <Address>+2D</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>530</ID>
+              <ID>556</ID>
               <Description>"Slot 12 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4196,7 +4224,7 @@
               <Address>+30</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>531</ID>
+              <ID>557</ID>
               <Description>"Slot 12 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4204,7 +4232,7 @@
               <Address>+31</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>532</ID>
+              <ID>558</ID>
               <Description>"Slot 13 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4212,7 +4240,7 @@
               <Address>+34</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>533</ID>
+              <ID>559</ID>
               <Description>"Slot 13 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4220,7 +4248,7 @@
               <Address>+35</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>534</ID>
+              <ID>560</ID>
               <Description>"Slot 14 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4228,7 +4256,7 @@
               <Address>+38</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>535</ID>
+              <ID>561</ID>
               <Description>"Slot 14 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4236,7 +4264,7 @@
               <Address>+39</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>536</ID>
+              <ID>562</ID>
               <Description>"Slot 15 - Item ID"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -4244,7 +4272,7 @@
               <Address>+3C</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>537</ID>
+              <ID>563</ID>
               <Description>"Slot 15 - Flags"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>

@@ -225,6 +225,12 @@ OFFSET_B_WHEEL_EQUIPPED = 0x6408   # dPlayer.equipped_b_item  (u16)
 OFFSET_STAMINA = 0x64D8            # dPlayer.stamina_amount  (u32)
 OFFSET_STAMINA_RECOVERY_TIMER = 0x6414  # dPlayer.stamina_recovery_timer  (u16)
 OFFSET_STAMINA_EXHAUSTION_FLAG = 0x6416 # dPlayer.something_we_use_for_stamina  (u8)
+# Some stages use a different player struct offset for stamina_amount.
+# Map stage code -> override offset (relative to player_base).
+STAMINA_OFFSET_BY_STAGE: dict = {
+    "F103":  -0x7FA8,  # Flooded Faron Woods — stamina shifts to player_base - 0x7FA8
+    "B301":   0x5CD8,  # Tentalus boss fight — stamina shifts to player_base + 0x5CD8
+}
 OFFSET_SKYWARD_STRIKE_TIMER = 0x641E    # dPlayer.skyward_strike_timer  (u16)  — was 0x641C!
 OFFSET_GAME_STATE = 0x2BF98A0      # Game state flags (dialogue, cutscene, etc.)
 OFFSET_CURRENT_HEALTH = 0x5AF005A  # Current hearts (2 bytes) - from File Mgr->FA structure
@@ -298,13 +304,14 @@ TREASURE_ITEMFLAG_IDS = list(range(0xA1, 0xB1))  # 16 treasures
 OFFSET_BEETLE_TIMER_INSTRUCTION = 0x279CE4
 BEETLE_TIMER_PATCHED_VALUE = 0x52806C08  # ARM64: mov w8, #0x360
 
-# Loftwing spiral charge cheats (data writes, not code patches)
-# From Atmosphere cheats: write byte 0x03 to keep spiral charges at max (3)
-OFFSET_LOFTWING_CHARGE_A = 0x619936A  # Loftwing charge counter A
-OFFSET_LOFTWING_CHARGE_B = 0x6186B32  # Loftwing charge counter B (spiral charges)
+# Loftwing spiral charge cheat
+OFFSET_LOFTWING_CHARGE = -0xB57E6  # dPlayer.loftwing_charges (4 bytes, relative to player_base)
+LOFTWING_CHARGE_OFFSET_BY_STAGE: dict = {
+    "F023":  -0x37A2E,  # Inside the Thunderhead — loftwing charges shifts to player_base - 0x37A2E
+}
 LOFTWING_MAX_CHARGES = 3
 
-# Stamina full value (from observing normal gameplay)
+# Stamina full value
 STAMINA_FULL = 1000000  # Full stamina gauge value
 
 # Skyward strike timer value to keep it charged
@@ -437,7 +444,7 @@ STAGE_NAMES = {
     "F018r": "Gear Shop",
     "F019r": "Item Check",
     "F020": "The Sky",
-    "F021": "Thunderhead",
+    "F021": "Cutscene Sky",
     "F023": "Inside the Thunderhead",
     "F100": "Faron Woods",
     "F101": "Deep Woods",
@@ -1399,13 +1406,14 @@ class SSHDContext(CommonContext):
         # writes during the transition can corrupt game objects and cause
         # null-pointer crashes (e.g. Groosenator → Flooded Faron).
         self._scene_transition_cooldown_until: float = 0.0
-        self._SCENE_TRANSITION_COOLDOWN_SECS: float = 4.0
+        self._SCENE_TRANSITION_COOLDOWN_SECS: float = 10.0
         self._last_next_stage: Optional[str] = None  # For early transition detection via NEXT_STAGE
         
         # BreathLink state tracking
         self.last_breath_link: float = 0.0      # For BreathLink echo prevention
         self.last_stamina: Optional[int] = None  # Previous stamina reading (for detecting depletion)
         self.exhausted_by_breathlink: bool = False  # Flag to prevent sending when exhausted by breath link
+        self._last_stamina_offset: int = OFFSET_STAMINA  # Track offset changes to reset last_stamina
         
         # Cheat state (loaded from YAML at startup, may be overridden by slot_data on connect)
         self.cheat_infinite_health: bool = False
@@ -2641,7 +2649,18 @@ class SSHDContext(CommonContext):
                 self.last_hearts = current_health
             
             # Check for stamina exhaustion (for breath link)
-            current_stamina = self.memory.read_int(OFFSET_PLAYER + OFFSET_STAMINA)
+            # Use stage-aware stamina offset. Pre-switch when _last_next_stage indicates
+            # we are heading TO a stage with a different offset, so the offset flips
+            # before current_stage updates and avoids a false 0 read triggering a BreathLink.
+            _eff_stamina_stage = (
+                self.current_stage if self.current_stage in STAMINA_OFFSET_BY_STAGE
+                else self._last_next_stage
+            )
+            _eff_stamina_offset = STAMINA_OFFSET_BY_STAGE.get(_eff_stamina_stage, OFFSET_STAMINA)
+            if _eff_stamina_offset != self._last_stamina_offset:
+                self.last_stamina = None  # Reset to avoid false transition across offset change
+                self._last_stamina_offset = _eff_stamina_offset
+            current_stamina = self.memory.read_int(OFFSET_PLAYER + _eff_stamina_offset)
             if current_stamina is not None:
                 time_since_connect = time.time() - self.connection_time
                 if time_since_connect > 10.0:
@@ -2812,7 +2831,8 @@ class SSHDContext(CommonContext):
         # --- Infinite Stamina ---
         if self.cheat_infinite_stamina:
             try:
-                self.memory.write_int(player_base + OFFSET_STAMINA, STAMINA_FULL)
+                stamina_offset = STAMINA_OFFSET_BY_STAGE.get(stage, OFFSET_STAMINA)
+                self.memory.write_int(player_base + stamina_offset, STAMINA_FULL)
                 self.memory.write_byte(player_base + OFFSET_STAMINA_EXHAUSTION_FLAG, 0)
                 self.memory.write_short(player_base + OFFSET_STAMINA_RECOVERY_TIMER, 0)
             except Exception as e:
@@ -2965,10 +2985,17 @@ class SSHDContext(CommonContext):
                 logger.debug(f"Cheat error (beetle): {e}")
 
         # --- Infinite Loftwing Charges ---
-        if self.cheat_infinite_loftwing:
+        # --- Infinite Loftwing Charges ---
+        # The loftwing data structure only exists when in sky stages.
+        # Writing to this offset in any surface/dungeon stage corrupts
+        # unrelated game data and crashes the emulator.
+        _LOFTWING_STAGES = {"F020", "F021", "F023"}
+        if self.cheat_infinite_loftwing and stage in _LOFTWING_STAGES:
             try:
-                self.memory.write_byte(OFFSET_LOFTWING_CHARGE_A, LOFTWING_MAX_CHARGES)
-                self.memory.write_byte(OFFSET_LOFTWING_CHARGE_B, LOFTWING_MAX_CHARGES)
+                loftwing_charge_offset = LOFTWING_CHARGE_OFFSET_BY_STAGE.get(
+                    stage, OFFSET_LOFTWING_CHARGE
+                )
+                self.memory.write_int(player_base + loftwing_charge_offset, LOFTWING_MAX_CHARGES)
             except Exception as e:
                 logger.debug(f"Cheat error (loftwing): {e}")
 
