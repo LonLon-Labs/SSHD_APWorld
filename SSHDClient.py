@@ -267,12 +267,30 @@ BUTTON_MINUS       = 0x1000
 BUTTON_ZL          = 0x2000
 BUTTON_L           = 0x4000
 
+# D-pad bitmasks for dPlayer.held_buttons (u16 at player+0x63FC).
+# Verified live via CE: watch player+0x63F8 as 8-byte hex and press DPAD.
+#   DPAD_UP   held → 0x0000001000000010
+#   DPAD_DOWN held → 0x0000002000000020
+#   DPAD_LEFT held → 0x0000004000000040
+#   DPAD_RIGHT held → 0x0000008000000080
+# (triggered_buttons mirrors held_buttons in the same word)
+BUTTON_DPAD_UP    = 0x0010
+BUTTON_DPAD_DOWN  = 0x0020
+BUTTON_DPAD_LEFT  = 0x0040
+BUTTON_DPAD_RIGHT = 0x0080
+
+# R-stick analog offsets — confirmed live via CE.
+# 20-byte block at player+0x65F4: [1.0, x, y, 0.0, 1.0]
+# right = +1.0, left = -1.0.  Forward/up = sign TBD (flip to -sy in code if backward is wrong).
+
+
 # Speed override field — past the end of the mapped dPlayer struct (0x64DC),
 # but confirmed by Atmosphere cheats on v1.0.1:
 #   [*Speed R]       → 04000000 06244B68 42880000  (68.0)
 #   [Run Speed (L)]  → 04000000 06244B68 42900000  (72.0)
 #   06244B68 - 0623E680 = 0x64E8
 OFFSET_SPEED_OVERRIDE = 0x64E8  # f32, controls movement speed (player-relative)
+OFFSET_VISUAL_ANGLE   = 0x1D7   # Secondary facing angle (u8 high-byte mirror, also updated by hovercraft turns)
 
 # Shield-related offsets
 OFFSET_SHIELD_POUCH_SLOT = 0x53B1  # u8, index into pouch_items for equipped shield (relative to SaveFile A)
@@ -280,6 +298,8 @@ OFFSET_POUCH_ITEMS = 0x7C0         # [i32; 8], pouch item slots (relative to Sav
 OFFSET_SHIELD_BURN_TIMER = 0x642C  # dPlayer.shield_burn_timer (u16)  — was 0x6484!
 OFFSET_SHOCK_EFFECT_TIMER = 0x6430  # dPlayer.shock_effect_timer (u16)
 OFFSET_CURRENT_ACTION = 0x468       # dPlayer.current_action (u32, PLAYER_ACTIONS enum)
+ACTION_IDLE            = 0x0        # PLAYER_ACTIONS::IDLE
+ACTION_WALKING_RUNNING = 0x3        # PLAYER_ACTIONS::WALKING_RUNNING
 ACTION_DAMAGE_ELECTRIC = 0x3B       # PLAYER_ACTIONS::DAMAGE_ELECTRIC
 ACTION_ELECTRICUTED    = 0x3C       # PLAYER_ACTIONS::ELECTRICUTED_MAYBE
 ACTION_HIT_BY_ENEMY    = 0x34       # PLAYER_ACTIONS::HIT_BY_ENEMY
@@ -508,6 +528,7 @@ class EmulatorMemoryReader:
         "AP_ITEM_INFO_TABLE": bytes([0x49, 0x54, 0x00, 0x01]),  # "IT\x00\x01"
         "AP_CHECK_STATS":     bytes([0x43, 0x53, 0x00, 0x01]),  # "CS\x00\x01"
         "AP_ITEM_BUFFER":     bytes([0x41, 0x50, 0x00, 0x01]),  # "AP\x00\x01"
+        "AP_CHEAT_FLAGS":     bytes([0x43, 0x46, 0x00, 0x01]),  # "CF\x00\x01"
     }
 
     # --- Connection health thresholds ---
@@ -1249,6 +1270,7 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         "skyward_strike":  "cheat_infinite_skyward_strike",
         "rupees":          "cheat_infinite_rupees",
         "moon_jump":       "cheat_moon_jump",
+        "hovercraft":      "cheat_hovercraft",
         "beetle":          "cheat_infinite_beetle",
         "loftwing":        "cheat_infinite_loftwing",
         "no_electric_stun": "cheat_no_electric_stun",
@@ -1280,21 +1302,35 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         logger.info(f"  {'speed':20s} {spd:.1f}x" + (" (normal)" if spd == 1.0 else ""))
         logger.info("Use /cheat <name> to toggle. Names: " + ", ".join(self.CHEAT_MAP.keys()))
 
-    def _cmd_cheat(self, cheat_name: str = ""):
-        """Toggle a cheat on/off.  Usage: /cheat <name>
+    def _cmd_cheat(self, cheat_name: str = "", value_str: str = ""):
+        """Toggle a cheat on/off, or set hovercraft sustain velocity.
+        Usage: /cheat <name>  OR  /cheat hovercraft <velocity>
         Names: health, stamina, ammo, bugs, materials, shield,
-               skyward_strike, rupees, moon_jump, hover, beetle, loftwing"""
+               skyward_strike, rupees, moon_jump, hovercraft, beetle, loftwing
+        Example: /cheat hovercraft 2.5  (slow rise; 1.85 = stable hover)"""
         if not isinstance(self.ctx, SSHDContext):
             logger.warning("Not connected to SSHD context")
             return
         cheat_name = cheat_name.strip().lower()
+        value_str = value_str.strip() if value_str else None
         if not cheat_name:
             logger.info("Usage: /cheat <name>  — toggle a cheat on/off")
+            logger.info("       /cheat hovercraft <velocity>  — set sustain velocity")
             logger.info("Available: " + ", ".join(self.CHEAT_MAP.keys()))
             return
         if cheat_name not in self.CHEAT_MAP:
             logger.warning(f"Unknown cheat '{cheat_name}'. Available: {', '.join(self.CHEAT_MAP.keys())}")
             return
+        # /cheat hovercraft <value> — set sustain velocity without toggling
+        if cheat_name == "hovercraft" and value_str is not None:
+            try:
+                new_vel = float(value_str)
+                self.ctx.cheat_hovercraft_vel_y = new_vel
+                logger.info(f"Hovercraft sustain velocity set to {new_vel:.4g} (0.0 = no drift)")
+                return
+            except ValueError:
+                logger.warning(f"Invalid velocity '{value_str}'. Usage: /cheat hovercraft <float>")
+                return
         attr = self.CHEAT_MAP[cheat_name]
         current = getattr(self.ctx, attr, False)
         new_val = not current
@@ -1425,14 +1461,14 @@ class SSHDContext(CommonContext):
         self.cheat_infinite_skyward_strike: bool = False
         self.cheat_infinite_rupees: bool = False
         self.cheat_moon_jump: bool = False
+        self.cheat_hovercraft: bool = False
+        self.cheat_hovercraft_vel_y: float = 1.85  # lower-clamp for hover vel_y (1.85 cancels gravity at 60 Hz)
         self.cheat_infinite_beetle: bool = False
         self.cheat_infinite_loftwing: bool = False
         self.cheat_no_electric_stun: bool = False
         self.cheat_speed_multiplier: float = 1.0  # 1.0 = normal
         self.default_forward_speed: Optional[float] = None  # Cached normal speed
         self.beetle_patch_applied: bool = False  # Track if beetle code patch was written
-        self._moon_jump_logged: bool = False    # One-time diagnostic log
-        self._moon_jump_prev_held: bool = False  # Previous frame Y-button state for first-press detection
         
         # Location checking via custom flags
         self.previous_custom_flags: Dict[int, int] = {}  # custom_flag_id -> last_state (0 or 1)
@@ -1451,6 +1487,7 @@ class SSHDContext(CommonContext):
         self.ap_location_codes: Set[int] = set()  # Location codes that have cross-world items
         self._ap_item_info_offset: Optional[int] = None  # Memory offset of AP_ITEM_INFO_TABLE
         self._ap_check_stats_offset: Optional[int] = None  # Memory offset of AP_CHECK_STATS
+        self._ap_cheat_flags_offset: Optional[int] = None  # Memory offset of AP_CHEAT_FLAGS
         self._ap_item_info_written: bool = False  # Whether we've written the info table
         self._ap_item_info_last_refresh: float = 0.0  # Last time we refreshed the count field
         
@@ -1561,6 +1598,7 @@ class SSHDContext(CommonContext):
         self.cheat_infinite_skyward_strike  = bool(game_section.get('cheat_infinite_skyward_strike', False))
         self.cheat_infinite_rupees          = bool(game_section.get('cheat_infinite_rupees', False))
         self.cheat_moon_jump                = bool(game_section.get('cheat_moon_jump', False))
+        self.cheat_hovercraft               = bool(game_section.get('cheat_hovercraft', False))
         self.cheat_infinite_beetle          = bool(game_section.get('cheat_infinite_beetle', False))
         self.cheat_infinite_loftwing        = bool(game_section.get('cheat_infinite_loftwing', False))
         self.cheat_no_electric_stun         = bool(game_section.get('cheat_no_electric_stun', False))
@@ -1580,6 +1618,7 @@ class SSHDContext(CommonContext):
         if self.cheat_infinite_skyward_strike:  active.append("Infinite Skyward Strike")
         if self.cheat_infinite_rupees:          active.append("Infinite Rupees")
         if self.cheat_moon_jump:                active.append("Moon Jump")
+        if self.cheat_hovercraft:               active.append("Hovercraft")
         if self.cheat_infinite_beetle:          active.append("Infinite Beetle")
         if self.cheat_infinite_loftwing:        active.append("Infinite Loftwing")
         if self.cheat_no_electric_stun:         active.append("No Electric Stun")
@@ -1849,6 +1888,7 @@ class SSHDContext(CommonContext):
                 self._ap_item_info_written = False
                 self._ap_item_info_offset = None
                 self._ap_check_stats_offset = None
+                self._ap_cheat_flags_offset = None
                 # Eagerly attempt to write the table right now if memory is
                 # already connected.  This reduces the window during which a
                 # player can check a location before the table is populated.
@@ -1889,6 +1929,7 @@ class SSHDContext(CommonContext):
             self.cheat_infinite_skyward_strike = bool(slot_data.get("option_cheat_infinite_skyward_strike", 0))
             self.cheat_infinite_rupees = bool(slot_data.get("option_cheat_infinite_rupees", 0))
             self.cheat_moon_jump = bool(slot_data.get("option_cheat_moon_jump", 0))
+            self.cheat_hovercraft = bool(slot_data.get("option_cheat_hovercraft", 0))
             self.cheat_infinite_beetle = bool(slot_data.get("option_cheat_infinite_beetle", 0))
             self.cheat_infinite_loftwing = bool(slot_data.get("option_cheat_infinite_loftwing", 0))
             self.cheat_no_electric_stun = bool(slot_data.get("option_cheat_no_electric_stun", 0))
@@ -1907,6 +1948,7 @@ class SSHDContext(CommonContext):
             if self.cheat_infinite_skyward_strike: active_cheats.append("Infinite Skyward Strike")
             if self.cheat_infinite_rupees: active_cheats.append("Infinite Rupees")
             if self.cheat_moon_jump: active_cheats.append("Moon Jump")
+            if self.cheat_hovercraft: active_cheats.append("Hovercraft")
             if self.cheat_infinite_beetle: active_cheats.append("Infinite Beetle")
             if self.cheat_infinite_loftwing: active_cheats.append("Infinite Loftwing")
             if self.cheat_no_electric_stun: active_cheats.append("No Electric Stun")
@@ -2238,6 +2280,7 @@ class SSHDContext(CommonContext):
                     # the next successful base-address scan.
                     self._ap_item_info_offset = None
                     self._ap_check_stats_offset = None
+                    self._ap_cheat_flags_offset = None
                     self._ap_item_info_written = False
                     self.beetle_patch_applied = False
                     self.memory.invalidate_base()
@@ -2805,12 +2848,19 @@ class SSHDContext(CommonContext):
             return
 
         player_base = OFFSET_PLAYER
+
+        # Sync moon_jump / hovercraft enable flags to the NSO every tick.
+        # This is a 2-byte write gated on AP_CHEAT_FLAGS being found, so it's
+        # cheap and ensures /cheat toggles take effect without delay.
+        self._write_cheat_flags()
+
         any_cheat = (
             self.cheat_infinite_health or self.cheat_infinite_stamina or
             self.cheat_infinite_ammo or self.cheat_infinite_bugs or
             self.cheat_infinite_materials or self.cheat_infinite_shield or
             self.cheat_infinite_skyward_strike or self.cheat_infinite_rupees or
             self.cheat_moon_jump or
+            self.cheat_hovercraft or
             self.cheat_infinite_beetle or
             self.cheat_infinite_loftwing or self.cheat_no_electric_stun or
             self.cheat_speed_multiplier != 1.0
@@ -2942,37 +2992,10 @@ class SSHDContext(CommonContext):
             except Exception as e:
                 logger.debug(f"Cheat error (rupees): {e}")
 
-        # --- Moon Jump ---
-        # Hold Y → lift Link upward.  Works from ground or mid-air.
-        # Writing velocity_y alone doesn't work on the ground because the
-        # game's ground-collision snaps Link back.  We fix this by ALSO
-        # directly incrementing pos_y each tick, which physically lifts
-        # Link off the surface and lets the velocity take over once airborne.
-        if self.cheat_moon_jump:
-            try:
-                btn_held = self.memory.read_short(player_base + OFFSET_HELD_BUTTONS)
-
-                # One-time diagnostic log
-                if not self._moon_jump_logged:
-                    btn_trig = self.memory.read_short(player_base + OFFSET_TRIGGERED_BUTTONS)
-                    logger.debug(f"[MoonJump] held_buttons=0x{btn_held:04X}, triggered=0x{btn_trig:04X}" if btn_held is not None and btn_trig is not None else f"[MoonJump] button read returned None!")
-                    logger.debug(f"[MoonJump] BUTTON_Y=0x{BUTTON_Y:04X} (CE-verified, NOT the InputMgr enum)")
-                    logger.debug(f"[MoonJump] held_buttons offset=0x{player_base + OFFSET_HELD_BUTTONS:X}")
-                    self._moon_jump_logged = True
-
-                y_held = btn_held is not None and bool(btn_held & BUTTON_Y)
-                if y_held:
-                    first_press = not self._moon_jump_prev_held
-                    cur_y = self.memory.read_float(player_base + OFFSET_POS_Y)
-                    if cur_y is not None:
-                        # On the very first press frame use a large kick to break
-                        # ground-contact; subsequent frames use the normal increment.
-                        lift = 100.0 if first_press else 1.5
-                        self.memory.write_float(player_base + OFFSET_POS_Y, cur_y + lift)
-                    self.memory.write_float(player_base + OFFSET_VELOCITY_Y, 52.5)
-                self._moon_jump_prev_held = y_held
-            except Exception as e:
-                logger.warning(f"Cheat error (moon_jump): {e}")
+        # --- Moon Jump & Hovercraft ---
+        # Both are handled by cheats.rs (NSO patch) running in main_loop_inject.
+        # _write_cheat_flags() syncs the AP_CHEAT_FLAGS.moon_jump / .hovercraft
+        # booleans from self.cheat_moon_jump / self.cheat_hovercraft each tick.
 
         # --- Infinite Beetle Flying Time ---
         if self.cheat_infinite_beetle and not self.beetle_patch_applied:
@@ -2988,7 +3011,6 @@ class SSHDContext(CommonContext):
             except Exception as e:
                 logger.debug(f"Cheat error (beetle): {e}")
 
-        # --- Infinite Loftwing Charges ---
         # --- Infinite Loftwing Charges ---
         # The loftwing data structure only exists when in sky stages.
         # Writing to this offset in any surface/dungeon stage corrupts
@@ -3336,6 +3358,42 @@ class SSHDContext(CommonContext):
             self._ap_item_info_last_refresh = now
         except Exception:
             pass  # Non-critical; next refresh will retry
+
+    def _write_cheat_flags(self):
+        """
+        Sync cheat enable flags to the AP_CHEAT_FLAGS Rust static in the NSO.
+
+        Called every cheat loop tick so /cheat toggles take effect immediately.
+        Layout (packed, little-endian):
+          offset 0: magic [u8; 4] = "CF\\x00\\x01"
+          offset 4: moon_jump  (u8 bool)
+          offset 5: hovercraft (u8 bool)
+          offset 6: _pad [u8; 2]
+          offset 8: hover_vel_y_bits (u32, f32 bits) — lower-clamp for vel_y
+        """
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return
+
+        if self._ap_cheat_flags_offset is None:
+            self._ap_cheat_flags_offset = self._scan_for_buffer(
+                bytes([0x43, 0x46, 0x00, 0x01]), "AP_CHEAT_FLAGS"
+            )
+
+        if self._ap_cheat_flags_offset is None:
+            return
+
+        try:
+            flags_addr = self.memory.base_address + self._ap_cheat_flags_offset
+            flags_data = bytes([
+                1 if self.cheat_moon_jump  else 0,  # +4
+                1 if self.cheat_hovercraft else 0,  # +5
+            ])
+            self.memory.pm.write_bytes(flags_addr + 4, flags_data, 2)
+            # +8: hover_vel_y as f32 bits (4 bytes)
+            vel_bits = struct.pack('<f', self.cheat_hovercraft_vel_y)
+            self.memory.pm.write_bytes(flags_addr + 8, vel_bits, 4)
+        except Exception as e:
+            logger.debug(f"Could not write cheat flags: {e}")
 
     def _update_ap_check_stats(self):
         """

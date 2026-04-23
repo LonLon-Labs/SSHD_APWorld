@@ -15,6 +15,7 @@ use static_assertions::assert_eq_size;
 
 mod actor;
 mod ammo;
+mod cheats;
 mod color;
 mod debug;
 mod entrance;
