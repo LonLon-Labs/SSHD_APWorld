@@ -1,6 +1,6 @@
 # Skyward Sword HD - Archipelago APWorld
 
-An [Archipelago](https://archipelago.gg) multiworld randomizer integration for **The Legend of Zelda: Skyward Sword HD**.
+An [Archipelago](https://archipelago.gg)/[MultiworldGG](https://multiworld.gg/) multiworld randomizer integration for **The Legend of Zelda: Skyward Sword HD**.
 
 ## What is this?
 
@@ -13,7 +13,8 @@ This APWorld allows you to play Skyward Sword HD in a multiworld randomizer with
 - **Full Logic Support**: Ensures you always have items needed to progress
 - **40+ Options**: Customize starting items, logic difficulty, item placement
 - **Custom Logos**: Replace title screen with Archipelago branding
-- **Standalone Patcher**: Host can generate without the ROM — players patch locally with their own copy
+- **Custom Item Models**: Replace Archipelago Item with Archipelago/Unofficial Archipelago logo
+- **Patcher**: Host can generate without the ROM — players patch locally with their own copy
 - **Cross-Platform**: Works on Windows, Linux, and macOS (maybe, I don't have a device that runs macOS)
 
 ## Download
@@ -22,21 +23,26 @@ This APWorld allows you to play Skyward Sword HD in a multiworld randomizer with
 Download the latest release zip from the [Releases](https://github.com/LonLon-Labs/SSHD_APWorld/releases) page. It includes:
 - `sshd.apworld` — the Archipelago world file
 - `ArchipelagoSSHDClient.exe` — standalone client (no Python needed)
-- `ArchipelagoSSHDPatcher.exe` — standalone patcher GUI for generating ROM patches from a lightweight `.apsshd`
+- `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_linux.tar` — dedicated randomizer/yaml generator for Linux
+- `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_macos_apple_silicon.tar` — dedicated randomizer/yaml generator for macOS on Apple Silicon
+- `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_macos_intel.tar` — dedicated randomizer/yaml generator for macOS on Intel
+- `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_windows.zip` — dedicated randomizer/yaml generator for Windows
+- `ArchipelagoSSHDPatcher.exe` — standalone patcher GUI for generating ROM patches from a lightweight `.apsshd` (not required if using the patcher in dedicated randomizer/yaml generator)
 - `Skyward Sword HD.yaml` — template YAML for seed generation
+- `launch_sshd_wrapper.py` — wrapper for starting the client built into the apworld
 - `launch_sshd.bat` — optional convenience launcher (Windows)
 
 ### Build from Source
 See [Quick Start → Option B](#1-install-the-apworld-and-client) below.
 
 ## System Requirements
-- **Archipelago**: Version 0.5.0 or higher (Tested with 0.6.6)
+- **Archipelago**: Version 0.5.0 or higher (Tested with 0.6.6+)
 - **Emulator**: Ryujinx (Tested on [1.1.1376](https://drive.randomstuff.cc/s/dAX3VyrrTcKoatU))
-- **Game**: The Legend of Zelda: Skyward Sword HD and Update Data (Switch)
+- **Game**: The Legend of Zelda: Skyward Sword HD and Update Data (dumped from your Switch)
 
 > **Note**: The mod seems to be at least partially broken for most people on newer versions like 1.3.3, so an older version like 1.1.1376 is recommended
 
-> **Note**: Python is **not** required for players using the pre-built release. Python is only needed if you are building from source.
+> **Note**: Python is **not** required for players using the pre-built release. Python is only needed if you are building from source.  
 > If you are building from source, Python 3.10 or higher is required (Python 3.13.9 is recommended as that is what it was built with)
 
 ## Quick Start
@@ -52,7 +58,7 @@ Download the latest release from the [Releases](https://github.com/LonLon-Labs/S
    - **Windows**: `C:\ProgramData\Archipelago\custom_worlds\`
    - **Linux**: `~/.local/share/Archipelago/custom_worlds/`
    - **macOS**: `~/Library/Application Support/Archipelago/custom_worlds/`
-2. Place `ArchipelagoSSHDClient.exe` anywhere convenient (e.g. your Desktop or the Archipelago folder)
+2. Place `ArchipelagoSSHDClient.exe` anywhere convenient (e.g. the Archipelago folder or your Desktop)
 3. Optionally place `launch_sshd.bat` anywhere (if you placed `ArchipelagoSSHDClient.exe` in the Arhcipelago folder)
 
 That's it — no Python, no pip, no dependencies to install.
@@ -87,11 +93,13 @@ You'll need a legally obtained copy of Skyward Sword HD for Nintendo Switch alon
 
 #### If You Are the Host (you have the ROM files)
 
-1. Download the [Skyward Sword HD Randomizer](https://github.com/mint-choc-chip-skyblade/sshd-rando/releases/latest)
-2. Configure all of your options (don't generate, that is handled by Archipelago)
-3. Open SkywardSwordHD.yaml for use as a template
-4. Use Method 1 and input the path to your `config.yaml` file (found in the SSHD Rando folder)
-5. Change other optional settings
+1. Download the Skyward Sword HD Randomizer from the [Releases](https://github.com/LonLon-Labs/SSHD_APWorld/releases)
+   - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_linux.tar`
+   - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_macos_apple_silicon.tar`
+   - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_macos_intel.tar`
+   - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_windows.zip`
+2. Configure all of your options
+3. Click `Generate YAML` at the bottom right of the window
 6. Put it in `C:\ProgramData\Archipelago\Players`
 7. Make sure your ROM is extracted (see [Step 2](#2-extract-your-game))
 8. Generate locally using all player yamls
@@ -110,7 +118,7 @@ The host does **not** need the ROM to generate — the `.apsshd` files will be l
 
 **Player steps (after receiving your `.apsshd`):**
 1. Make sure your ROM is extracted (see [Step 2](#2-extract-your-game))
-2. Run `ArchipelagoSSHDPatcher.exe`, select your `.apsshd` file, and click **Patch & Install**
+2. Run either the dedicated randomizer (has a patcher included) or the standalone `ArchipelagoSSHDPatcher.exe`, select your `.apsshd` file, and click **Patch & Install**
    - Or simply double-click the `.apsshd` file and open it with the Archipelago Launcher — it will auto-detect that patching is needed and run the patcher for you.
 3. The patcher will generate the ROM patches using your local ROM extract and install them to Ryujinx automatically
 
@@ -138,8 +146,8 @@ Double-click `ArchipelagoSSHDClient.exe` (or `launch_sshd.bat`)
 If you don't have the exe, launch_sshd.bat will fall back to launching with `python launch_sshd_wrapper.py` (requires python dependencies)
 
 ### 7. Play!
-> **Note**: WAIT UNTIL YOU SEE `Found SSHD base address` IN THE CLIENT BEFORE PICKING ANYTHING UP
-> NOT DOING SO COULD POSSIBLY BREAK IT AND NOT SEND THE ITEM OVER
+> **Note**: Nothing will work until you get the message: `Found SSHD base address` in the client.  
+> I would personally recommend waiting until you get that message before connecting to the server
 
 Items you find are automatically sent to other players and vice-versa!
 
@@ -165,25 +173,25 @@ This project is licensed under the AGPL License - see the [LICENSE](LICENSE) for
 - **SSHD Randomizer Team**: For the original SSHD randomizer logic and the very helpful cheat table
 - **Contributors**: Everyone who has helped improve this project
 
-## Dev Testers
+## Dev Tester(s)
 
 - [PokeTrainer](https://github.com/Poke14)
 
 ## Beta Testers
 
-- Aurox (aurox44) on Discord
+- [Aurox](https://github.com/2manydoritos) (aurox44) on Discord
 - [Terra](https://youtube.com/@TerraGuild)
 
 ## Support
 
-- **Discord**: Join the [Lon Lon Labs Discord Server](https://discord.gg/VeccXh4ydN)
-- **Issues**: Report bugs on [GitHub Issues](https://github.com/LonLon-Labs/SSHD_APWorld/issues)
-- **Official Website**: [archipelago.gg](https://archipelago.gg)
+- **Discord**: Join the [Unofficial Archipelago Discord Server](https://discord.gg/abWV7TVEas) or the [Lon Lon Labs Discord Server](https://discord.gg/VeccXh4ydN)
+- **Issues**: Report bugs in the [Unofficial Archipelago Discord Server](https://discord.gg/abWV7TVEas) or on [GitHub Issues](https://github.com/LonLon-Labs/SSHD_APWorld/issues)
+- **Official Websites**: [archipelago.gg](https://archipelago.gg) [multiworld.gg](https://multiworld.gg)
 
 ## New, Features, Updates, and other Stuff
 
 - **[Check the Trello board](https://trello.com/b/royinojX/skyward-sword-hd-archipelago)**
-- **[Lon Lon Labs Discord Server](https://discord.gg/VeccXh4ydN)**
+- **[Unofficial Archipelago Discord Server](https://discord.gg/abWV7TVEas)**
 
 ## Disclaimer
 

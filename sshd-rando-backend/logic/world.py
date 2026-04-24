@@ -607,6 +607,15 @@ class World:
                 required_dungeon_locations.add(location)
             logging.getLogger("").debug(f"Chose {dungeon} as required dungeon")
 
+        # With barren unrequired dungeons enabled, force all locations in
+        # unrequired dungeons to be non-progression so they only receive filler.
+        if self.setting("empty_unrequired_dungeons") == "on":
+            for dungeon in self.dungeons.values():
+                if dungeon.required:
+                    continue
+                for location in dungeon.locations:
+                    location.progression = False
+
         # Now run a search and set any non-accessible locations as non-progress.
         # This sets the barren dungeon locations as non-progress, but also sets
         # locations only accessible through barren dungeons as non-progress so
@@ -946,7 +955,8 @@ class World:
         hint_types = ["path", "barren", "location", "item"]
         return any(
             [
-                self.setting(f"{type}_hints_on_gossip_stones") == "on"
+                f"{type}_hints_on_gossip_stones" in self.setting_map.settings
+                and self.setting(f"{type}_hints_on_gossip_stones") == "on"
                 for type in hint_types
             ]
         )
