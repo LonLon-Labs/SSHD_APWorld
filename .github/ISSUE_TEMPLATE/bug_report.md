@@ -22,7 +22,7 @@ What actually happened.
 
 ## Environment
 - **Archipelago Version**: [e.g., 0.5.0]
-- **APWorld Version**: [e.g., 0.7.2]
+- **APWorld Version**: [e.g., 0.7.3]
 - **Python Version**: [e.g., 3.12]
 - **Operating System**: [e.g., Windows 11]
 - **Ryujinx Version**: [e.g., 1.1.1234]
