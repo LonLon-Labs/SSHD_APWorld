@@ -186,9 +186,9 @@ This project is licensed under the AGPL License - see the [LICENSE](LICENSE) for
 
 - **Discord**: Join the [Unofficial Archipelago Discord Server](https://discord.gg/abWV7TVEas) or the [Lon Lon Labs Discord Server](https://discord.gg/VeccXh4ydN)
 - **Issues**: Report bugs in the [Unofficial Archipelago Discord Server](https://discord.gg/abWV7TVEas) or on [GitHub Issues](https://github.com/LonLon-Labs/SSHD_APWorld/issues)
-- **Official Websites**: [archipelago.gg](https://archipelago.gg) [multiworld.gg](https://multiworld.gg)
+- **Official Websites**: [archipelago.gg](https://archipelago.gg) and [multiworld.gg](https://multiworld.gg)
 
-## New, Features, Updates, and other Stuff
+## New, Features, Updates, and Other Stuff
 
 - **[Check the Trello board](https://trello.com/b/royinojX/skyward-sword-hd-archipelago)**
 - **[Unofficial Archipelago Discord Server](https://discord.gg/abWV7TVEas)**
