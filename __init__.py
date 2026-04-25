@@ -2164,15 +2164,28 @@ class SSHDWorld(World):
         }
         
         include_sky_keep = self.options.dungeons_include_sky_keep.value
-        
+        all_main_dungeons = [
+            "Skyview Temple", "Earth Temple", "Lanayru Mining Facility",
+            "Ancient Cistern", "Sandship", "Fire Sanctuary",
+        ]
+        if include_sky_keep:
+            all_main_dungeons.append("Sky Keep")
+
+        # If required_count == 0 and empty_unrequired_dungeons is on, all dungeons are barren.
+        if required_count == 0 and self.options.empty_unrequired_dungeons.value:
+            excluded_count = 0
+            for loc in self.multiworld.get_locations(self.player):
+                if loc.address is None or loc.item is not None:
+                    continue
+                loc_data = LOCATION_TABLE.get(loc.name)
+                if loc_data and loc_data.region in all_main_dungeons:
+                    loc.progress_type = LocationProgressType.EXCLUDED
+                    excluded_count += 1
+            print(f"[__init__.py] pre_fill: Marked {excluded_count} locations in all dungeons "
+                  f"as EXCLUDED (required_count=0, empty_unrequired_dungeons)")
+
         if required_count > 0:
-            main_dungeons = [
-                "Skyview Temple", "Earth Temple", "Lanayru Mining Facility",
-                "Ancient Cistern", "Sandship", "Fire Sanctuary",
-            ]
-            eligible_dungeons = list(main_dungeons)
-            if include_sky_keep:
-                eligible_dungeons.append("Sky Keep")
+            eligible_dungeons = list(all_main_dungeons)
             
             # Randomly select which dungeons are required
             selected_count = min(required_count, len(eligible_dungeons))
@@ -2181,7 +2194,22 @@ class SSHDWorld(World):
             
             # Store the selection so _generate_sshd_patches can sync Fi's text
             self._ap_required_dungeons = list(selected_dungeons)
-            
+
+            # With empty_unrequired_dungeons on, mark all unrequired dungeon locations
+            # as EXCLUDED so AP's fill algorithm never places progression items there.
+            if self.options.empty_unrequired_dungeons.value:
+                unrequired_dungeons = [d for d in eligible_dungeons if d not in selected_dungeons]
+                excluded_count = 0
+                for loc in self.multiworld.get_locations(self.player):
+                    if loc.address is None or loc.item is not None:
+                        continue
+                    loc_data = LOCATION_TABLE.get(loc.name)
+                    if loc_data and loc_data.region in unrequired_dungeons:
+                        loc.progress_type = LocationProgressType.EXCLUDED
+                        excluded_count += 1
+                print(f"[__init__.py] pre_fill: Marked {excluded_count} locations in "
+                      f"{unrequired_dungeons} as EXCLUDED (empty_unrequired_dungeons)")
+
             # Collect unfilled end-of-dungeon locations for the selected dungeons
             end_loc_names: set[str] = set()
             for dungeon in selected_dungeons:
