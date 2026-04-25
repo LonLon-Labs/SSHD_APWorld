@@ -177,6 +177,23 @@ jobs:
         path: sshd.apworld
         retention-days: 90
 
+  # ── Fuzz test the logic on your private server ───────────────────
+  fuzz-test:
+    runs-on: ubuntu-latest
+    needs: build-apworld  # Only fuzz if the build actually finishes
+    steps:
+      - name: Trigger Remote Fuzzer
+        run: |
+          curl -X POST https://fuzzing.yourdomain.com/api/fuzz \
+          -H "Content-Type: application/json" \
+          -H "X-API-KEY: ${{ secrets.FUZZER_KEY }}" \
+          -d '{
+            "repo_url": "https://github.com/${{ github.repository }}",
+            "branch": "${{ github.ref_name }}",
+            "apworld_name": "sshd",
+            "runs": 500
+          }'
+
   # ── Create release package ───────────────────────────────────────
   release:
     runs-on: ubuntu-latest
