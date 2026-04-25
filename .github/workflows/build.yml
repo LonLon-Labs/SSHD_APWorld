@@ -184,7 +184,7 @@ jobs:
     steps:
       - name: Trigger Remote Fuzzer
         run: |
-          curl -X POST https://fuzzing.lonlonlabs.dev/api/fuzz \
+          curl -X POST https://fuzzer.lonlonlabs.dev/api/fuzz \
           -H "Content-Type: application/json" \
           -H "X-API-KEY: ${{ secrets.FUZZER_KEY }}" \
           -d '{
