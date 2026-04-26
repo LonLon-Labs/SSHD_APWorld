@@ -1719,7 +1719,39 @@ class SSHDWorld(World):
         while len(item_pool) < total_locations:
             junk_name = self.random.choices(junk_names, weights=junk_weights, k=1)[0]
             item_pool.append(self.create_item(junk_name))
-        
+
+        # ── Cap chest-unsafe filler items ────────────────────────────────────
+        # Bugs and materials can't go in chest locations (game crash).
+        # Count non-chest locations so we never put more chest-unsafe items in
+        # the pool than there are non-chest slots to absorb them.
+        # Safe replacements are rupees/ammo (always placeable anywhere).
+        SAFE_JUNK_NAMES = [n for n, _ in JUNK_FILL_WEIGHTS
+                           if n not in self.CHEST_UNSAFE_ITEMS and n in ITEM_TABLE]
+        SAFE_JUNK_W = [w for n, w in JUNK_FILL_WEIGHTS
+                       if n not in self.CHEST_UNSAFE_ITEMS and n in ITEM_TABLE]
+        non_chest_loc_count = sum(
+            1 for region in self.multiworld.regions
+            if region.player == self.player
+            for loc in region.locations
+            if not loc.item and not loc.event
+            and LOCATION_TABLE.get(loc.name) is not None
+            and "Chests" not in LOCATION_TABLE[loc.name].types
+            and "Goddess Chests" not in LOCATION_TABLE[loc.name].types
+        )
+        unsafe_in_pool = [i for i in item_pool if i.name in self.CHEST_UNSAFE_ITEMS]
+        excess_unsafe = len(unsafe_in_pool) - non_chest_loc_count
+        if excess_unsafe > 0:
+            print(f"[__init__.py] Capping chest-unsafe filler: {len(unsafe_in_pool)} unsafe items "
+                  f"but only {non_chest_loc_count} non-chest locations; replacing {excess_unsafe}")
+            replaced = 0
+            for i in range(len(item_pool) - 1, -1, -1):
+                if replaced >= excess_unsafe:
+                    break
+                if item_pool[i].name in self.CHEST_UNSAFE_ITEMS:
+                    safe_name = self.random.choices(SAFE_JUNK_NAMES, weights=SAFE_JUNK_W, k=1)[0]
+                    item_pool[i] = self.create_item(safe_name)
+                    replaced += 1
+
         # If we have more items than locations (can happen when items from
         # excluded locations are recovered into the pool), trim non-progression first
         if len(item_pool) > total_locations:
@@ -1742,6 +1774,22 @@ class SSHDWorld(World):
         # Add items to the multiworld pool
         self.multiworld.itempool += item_pool
     
+    # ── Chest-unsafe item set ────────────────────────────────────────────
+    # Bugs and materials cause a crash when given from a chest.
+    # Used in both create_items() (capping filler) and set_rules() (item_rule).
+    CHEST_UNSAFE_ITEMS: frozenset = frozenset({
+        # Bugs
+        "Faron Grasshopper", "Woodland Rhino Beetle", "Deku Hornet",
+        "Skyloft Mantis", "Volcanic Ladybug", "Blessed Butterfly",
+        "Lanayru Ant", "Sand Cicada", "Gerudo Dragonfly",
+        "Eldin Roller", "Sky Stag Beetle", "Starry Firefly",
+        # Materials
+        "Hornet Larvae", "Bird Feather", "Tumbleweed", "Lizard Tail",
+        "Eldin Ore", "Ancient Flower", "Amber Relic", "Dusk Relic",
+        "Jelly Blob", "Monster Claw", "Monster Horn", "Ornamental Skull",
+        "Evil Crystal", "Blue Bird Feather", "Golden Skull", "Goddess Plume",
+    })
+
     # ── Dungeon item pre-fill constants ──────────────────────────────────
     
     # Maps each dungeon to its small key name(s), boss key name, and map name.
@@ -2534,18 +2582,6 @@ class SSHDWorld(World):
         # Bugs and materials crash the game when placed in chests.
         # Restrict them to non-chest locations only (freestanding, closets,
         # other players' games, etc.).
-        CHEST_UNSAFE_ITEMS: set[str] = {
-            # Bugs
-            "Faron Grasshopper", "Woodland Rhino Beetle", "Deku Hornet",
-            "Skyloft Mantis", "Volcanic Ladybug", "Blessed Butterfly",
-            "Lanayru Ant", "Sand Cicada", "Gerudo Dragonfly",
-            "Eldin Roller", "Sky Stag Beetle", "Starry Firefly",
-            # Materials
-            "Hornet Larvae", "Bird Feather", "Tumbleweed", "Lizard Tail",
-            "Eldin Ore", "Ancient Flower", "Amber Relic", "Dusk Relic",
-            "Jelly Blob", "Monster Claw", "Monster Horn", "Ornamental Skull",
-            "Evil Crystal", "Blue Bird Feather", "Golden Skull", "Goddess Plume",
-        }
         chest_restricted_count = 0
         for region in self.multiworld.regions:
             if region.player != self.player:
@@ -2557,7 +2593,7 @@ class SSHDWorld(World):
                 if "Chests" in loc_data.types or "Goddess Chests" in loc_data.types:
                     # Combine with any existing item_rule
                     existing_rule = location.item_rule
-                    location.item_rule = lambda item, _er=existing_rule, _unsafe=CHEST_UNSAFE_ITEMS: (
+                    location.item_rule = lambda item, _er=existing_rule, _unsafe=self.CHEST_UNSAFE_ITEMS: (
                         _er(item) and item.name not in _unsafe
                     )
                     chest_restricted_count += 1
