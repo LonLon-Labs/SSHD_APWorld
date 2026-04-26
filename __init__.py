@@ -1733,7 +1733,7 @@ class SSHDWorld(World):
             1 for region in self.multiworld.regions
             if region.player == self.player
             for loc in region.locations
-            if not loc.item and not loc.event
+            if loc.address is not None
             and LOCATION_TABLE.get(loc.name) is not None
             and "Chests" not in LOCATION_TABLE[loc.name].types
             and "Goddess Chests" not in LOCATION_TABLE[loc.name].types
