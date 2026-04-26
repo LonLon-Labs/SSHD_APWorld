@@ -1665,9 +1665,9 @@ class SSHDWorld(World):
                         item_pool.append(self.create_item(name))
         
         # Fill remaining slots with weighted junk filler items.
-        # Rupees are the most common filler, with bugs and materials mixed in.
-        # NOTE: Bugs and materials must NOT be placed in chests (causes crash).
-        # Placement restrictions are enforced in set_rules() via item_rule.
+        # NOTE: In the hardcoded fallback path, chest-unsafe items are excluded
+        # entirely from generated filler because pre-fill/excluded-location flow can
+        # leave only chest locations available near the end of fill.
         JUNK_FILL_WEIGHTS = [
             # Rupees — high weight for variety
             # Green Rupee excluded: capped at 1 in the main pool above
@@ -1681,36 +1681,6 @@ class SSHDWorld(World):
             ("10 Bombs", 2),
             ("5 Deku Seeds", 2),
             ("10 Deku Seeds", 2),
-            # Bugs
-            ("Faron Grasshopper", 1),
-            ("Woodland Rhino Beetle", 1),
-            ("Deku Hornet", 1),
-            ("Skyloft Mantis", 1),
-            ("Volcanic Ladybug", 1),
-            ("Blessed Butterfly", 1),
-            ("Lanayru Ant", 1),
-            ("Sand Cicada", 1),
-            ("Gerudo Dragonfly", 1),
-            ("Eldin Roller", 1),
-            ("Sky Stag Beetle", 1),
-            ("Starry Firefly", 1),
-            # Materials
-            ("Hornet Larvae", 1),
-            ("Bird Feather", 1),
-            ("Tumbleweed", 1),
-            ("Lizard Tail", 1),
-            ("Eldin Ore", 1),
-            ("Ancient Flower", 1),
-            ("Amber Relic", 1),
-            ("Dusk Relic", 1),
-            ("Jelly Blob", 1),
-            ("Monster Claw", 1),
-            ("Monster Horn", 1),
-            ("Ornamental Skull", 1),
-            ("Evil Crystal", 1),
-            ("Blue Bird Feather", 1),
-            ("Golden Skull", 1),
-            ("Goddess Plume", 1),
         ]
         junk_items = [(name, w) for name, w in JUNK_FILL_WEIGHTS if name in ITEM_TABLE]
         junk_names = [name for name, _ in junk_items]
@@ -1720,37 +1690,17 @@ class SSHDWorld(World):
             junk_name = self.random.choices(junk_names, weights=junk_weights, k=1)[0]
             item_pool.append(self.create_item(junk_name))
 
-        # ── Cap chest-unsafe filler items ────────────────────────────────────
-        # Bugs and materials can't go in chest locations (game crash).
-        # Count non-chest locations so we never put more chest-unsafe items in
-        # the pool than there are non-chest slots to absorb them.
-        # Safe replacements are rupees/ammo (always placeable anywhere).
-        SAFE_JUNK_NAMES = [n for n, _ in JUNK_FILL_WEIGHTS
-                           if n not in self.CHEST_UNSAFE_ITEMS and n in ITEM_TABLE]
-        SAFE_JUNK_W = [w for n, w in JUNK_FILL_WEIGHTS
-                       if n not in self.CHEST_UNSAFE_ITEMS and n in ITEM_TABLE]
-        non_chest_loc_count = sum(
-            1 for region in self.multiworld.regions
-            if region.player == self.player
-            for loc in region.locations
-            if loc.address is not None
-            and LOCATION_TABLE.get(loc.name) is not None
-            and "Chests" not in LOCATION_TABLE[loc.name].types
-            and "Goddess Chests" not in LOCATION_TABLE[loc.name].types
-        )
-        unsafe_in_pool = [i for i in item_pool if i.name in self.CHEST_UNSAFE_ITEMS]
-        excess_unsafe = len(unsafe_in_pool) - non_chest_loc_count
-        if excess_unsafe > 0:
-            print(f"[__init__.py] Capping chest-unsafe filler: {len(unsafe_in_pool)} unsafe items "
-                  f"but only {non_chest_loc_count} non-chest locations; replacing {excess_unsafe}")
-            replaced = 0
-            for i in range(len(item_pool) - 1, -1, -1):
-                if replaced >= excess_unsafe:
-                    break
-                if item_pool[i].name in self.CHEST_UNSAFE_ITEMS:
-                    safe_name = self.random.choices(SAFE_JUNK_NAMES, weights=SAFE_JUNK_W, k=1)[0]
-                    item_pool[i] = self.create_item(safe_name)
-                    replaced += 1
+        if not sshd_pool:
+            safe_junk_names = [name for name, _ in junk_items]
+            safe_junk_weights = [weight for _, weight in junk_items]
+            replaced_unsafe = 0
+            for index, item in enumerate(item_pool):
+                if item.name in self.CHEST_UNSAFE_ITEMS:
+                    safe_name = self.random.choices(safe_junk_names, weights=safe_junk_weights, k=1)[0]
+                    item_pool[index] = self.create_item(safe_name)
+                    replaced_unsafe += 1
+            if replaced_unsafe:
+                print(f"[__init__.py] Replaced {replaced_unsafe} chest-unsafe fallback items with safe junk")
 
         # If we have more items than locations (can happen when items from
         # excluded locations are recovered into the pool), trim non-progression first
