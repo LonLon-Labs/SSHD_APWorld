@@ -1430,7 +1430,7 @@ class SSHDWorld(World):
         if 'open_lake_floria' not in s:
             floria_map = {0: "vanilla", 1: "yerbal", 2: "open"}
             s['open_lake_floria'] = floria_map.get(
-                self.options.open_lake_floria_gate.value, 'vanilla')
+                self.options.open_lake_floria.value, 'vanilla')
         if 'open_et' not in s:
             s['open_et'] = "on" if self.options.open_earth_temple.value else "off"
         if 'open_lmf' not in s:
