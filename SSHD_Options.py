@@ -385,7 +385,7 @@ class PeatriceConversations(Range):
 
 # === Quality of Life ===
 
-class OpenLakeFloriaGate(Choice):
+class OpenLakeFloria(Choice):
     """
     Controls the Lake Floria gate.
     Vanilla: You must climb the Great Tree, talk to Yerbal, and open the gates with the Goddess Sword.
