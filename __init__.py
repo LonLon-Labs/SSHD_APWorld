@@ -2169,18 +2169,34 @@ class SSHDWorld(World):
         if include_sky_keep:
             all_main_dungeons.append("Sky Keep")
 
+        def _apply_barren_exclusions(candidate_locations: list, label: str) -> None:
+            filler_capacity = sum(
+                1 for item in self.multiworld.itempool
+                if item.player == self.player and item.classification in (IC.filler, IC.trap)
+            )
+            selected_locations = list(candidate_locations)
+            if len(selected_locations) > filler_capacity:
+                self.random.shuffle(selected_locations)
+                selected_locations = selected_locations[:filler_capacity]
+                print(f"[__init__.py] pre_fill: Limiting EXCLUDED locations for {label} to "
+                      f"{filler_capacity}/{len(candidate_locations)} due to filler capacity")
+
+            for loc in selected_locations:
+                loc.progress_type = LocationProgressType.EXCLUDED
+
+            print(f"[__init__.py] pre_fill: Marked {len(selected_locations)} locations in {label} "
+                  f"as EXCLUDED (empty_unrequired_dungeons)")
+
         # If required_count == 0 and empty_unrequired_dungeons is on, all dungeons are barren.
         if required_count == 0 and self.options.empty_unrequired_dungeons.value:
-            excluded_count = 0
+            dungeon_locations = []
             for loc in self.multiworld.get_locations(self.player):
                 if loc.address is None or loc.item is not None:
                     continue
                 loc_data = LOCATION_TABLE.get(loc.name)
                 if loc_data and loc_data.region in all_main_dungeons:
-                    loc.progress_type = LocationProgressType.EXCLUDED
-                    excluded_count += 1
-            print(f"[__init__.py] pre_fill: Marked {excluded_count} locations in all dungeons "
-                  f"as EXCLUDED (required_count=0, empty_unrequired_dungeons)")
+                    dungeon_locations.append(loc)
+            _apply_barren_exclusions(dungeon_locations, "all dungeons")
 
         if required_count > 0:
             eligible_dungeons = list(all_main_dungeons)
@@ -2197,16 +2213,14 @@ class SSHDWorld(World):
             # as EXCLUDED so AP's fill algorithm never places progression items there.
             if self.options.empty_unrequired_dungeons.value:
                 unrequired_dungeons = [d for d in eligible_dungeons if d not in selected_dungeons]
-                excluded_count = 0
+                dungeon_locations = []
                 for loc in self.multiworld.get_locations(self.player):
                     if loc.address is None or loc.item is not None:
                         continue
                     loc_data = LOCATION_TABLE.get(loc.name)
                     if loc_data and loc_data.region in unrequired_dungeons:
-                        loc.progress_type = LocationProgressType.EXCLUDED
-                        excluded_count += 1
-                print(f"[__init__.py] pre_fill: Marked {excluded_count} locations in "
-                      f"{unrequired_dungeons} as EXCLUDED (empty_unrequired_dungeons)")
+                        dungeon_locations.append(loc)
+                _apply_barren_exclusions(dungeon_locations, str(unrequired_dungeons))
 
             # Collect unfilled end-of-dungeon locations for the selected dungeons
             end_loc_names: set[str] = set()
