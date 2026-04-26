@@ -1666,7 +1666,7 @@ class SSHDOptions(PerGameCommonOptions):
     shortcut_sky_keep_fs_room_upper_bars: ShortcutSkyKeepFsRoomUpperBars
     
     # Quality of Life - Open Locations
-    open_lake_floria: OpenLakeFloriaGate
+    open_lake_floria: OpenLakeFloria
     open_thunderhead: OpenThunderhead
     open_earth_temple: OpenEarthTemple
     open_lmf: OpenLmf
@@ -1845,7 +1845,7 @@ sshd_option_groups = [
     ]),
     OptionGroup("Quality of Life", [
         OpenThunderhead,
-        OpenLakeFloriaGate,
+        OpenLakeFloria,
         OpenEarthTemple,
         OpenLmf,
         OpenBatraeuxShed,
