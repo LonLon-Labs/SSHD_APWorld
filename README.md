@@ -181,6 +181,7 @@ This project is licensed under the AGPL License - see the [LICENSE](LICENSE) for
 
 - [Aurox](https://github.com/2manydoritos) (aurox44) on Discord
 - [Terra](https://youtube.com/@TerraGuild)
+- [Utz](https://twitch.tv/utzstauder)
 
 ## Support
 
