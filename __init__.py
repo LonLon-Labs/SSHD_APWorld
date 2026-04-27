@@ -2170,6 +2170,11 @@ class SSHDWorld(World):
         ]
         if include_sky_keep:
             all_main_dungeons.append("Sky Keep")
+        all_dungeon_end_locations = {
+            loc_name
+            for dungeon in all_main_dungeons
+            for loc_name in DUNGEON_END_LOCATIONS.get(dungeon, [])
+        }
 
         def _apply_barren_exclusions(candidate_locations: list, label: str) -> None:
             filler_capacity = sum(
@@ -2196,7 +2201,7 @@ class SSHDWorld(World):
                 if loc.address is None or loc.item is not None:
                     continue
                 loc_data = LOCATION_TABLE.get(loc.name)
-                if loc_data and loc_data.region in all_main_dungeons:
+                if (loc_data and loc_data.region in all_main_dungeons) or loc.name in all_dungeon_end_locations:
                     dungeon_locations.append(loc)
             _apply_barren_exclusions(dungeon_locations, "all dungeons")
 
@@ -2215,12 +2220,17 @@ class SSHDWorld(World):
             # as EXCLUDED so AP's fill algorithm never places progression items there.
             if self.options.empty_unrequired_dungeons.value:
                 unrequired_dungeons = [d for d in eligible_dungeons if d not in selected_dungeons]
+                unrequired_end_locations = {
+                    loc_name
+                    for dungeon in unrequired_dungeons
+                    for loc_name in DUNGEON_END_LOCATIONS.get(dungeon, [])
+                }
                 dungeon_locations = []
                 for loc in self.multiworld.get_locations(self.player):
                     if loc.address is None or loc.item is not None:
                         continue
                     loc_data = LOCATION_TABLE.get(loc.name)
-                    if loc_data and loc_data.region in unrequired_dungeons:
+                    if (loc_data and loc_data.region in unrequired_dungeons) or loc.name in unrequired_end_locations:
                         dungeon_locations.append(loc)
                 _apply_barren_exclusions(dungeon_locations, str(unrequired_dungeons))
 
