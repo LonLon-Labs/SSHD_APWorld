@@ -2176,6 +2176,27 @@ class SSHDWorld(World):
             for loc_name in DUNGEON_END_LOCATIONS.get(dungeon, [])
         }
 
+        def _demote_dungeon_progression_items(target_dungeons: list[str], label: str) -> None:
+            if not target_dungeons:
+                return
+            dungeon_item_names = set()
+            for dungeon in target_dungeons:
+                dungeon_info = self.DUNGEON_ITEM_NAMES.get(dungeon, {})
+                dungeon_item_names.update(dungeon_info.get("small_keys", []))
+                dungeon_item_names.update(dungeon_info.get("boss_keys", []))
+
+            demoted_count = 0
+            for item in self.multiworld.itempool:
+                if item.player != self.player or item.name not in dungeon_item_names:
+                    continue
+                if IC.progression in item.classification:
+                    item.classification = IC.filler
+                    demoted_count += 1
+
+            if demoted_count:
+                print(f"[__init__.py] pre_fill: Demoted {demoted_count} key item(s) in {label} "
+                      f"from progression to filler")
+
         def _apply_barren_exclusions(candidate_locations: list, label: str) -> None:
             filler_capacity = sum(
                 1 for item in self.multiworld.itempool
@@ -2196,6 +2217,7 @@ class SSHDWorld(World):
 
         # If required_count == 0 and empty_unrequired_dungeons is on, all dungeons are barren.
         if required_count == 0 and self.options.empty_unrequired_dungeons.value:
+            _demote_dungeon_progression_items(all_main_dungeons, "all dungeons")
             dungeon_locations = []
             for loc in self.multiworld.get_locations(self.player):
                 if loc.address is None or loc.item is not None:
@@ -2220,6 +2242,7 @@ class SSHDWorld(World):
             # as EXCLUDED so AP's fill algorithm never places progression items there.
             if self.options.empty_unrequired_dungeons.value:
                 unrequired_dungeons = [d for d in eligible_dungeons if d not in selected_dungeons]
+                _demote_dungeon_progression_items(unrequired_dungeons, str(unrequired_dungeons))
                 unrequired_end_locations = {
                     loc_name
                     for dungeon in unrequired_dungeons
