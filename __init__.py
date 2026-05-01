@@ -2168,6 +2168,50 @@ class SSHDWorld(World):
         ]
         if include_sky_keep:
             all_main_dungeons.append("Sky Keep")
+        all_dungeon_end_locations = {
+            loc_name
+            for dungeon in all_main_dungeons
+            for loc_name in DUNGEON_END_LOCATIONS.get(dungeon, [])
+        }
+
+        def _demote_dungeon_progression_items(target_dungeons: list[str], label: str) -> None:
+            if not target_dungeons:
+                return
+            dungeon_item_names = set()
+            for dungeon in target_dungeons:
+                dungeon_info = self.DUNGEON_ITEM_NAMES.get(dungeon, {})
+                dungeon_item_names.update(dungeon_info.get("small_keys", []))
+                dungeon_item_names.update(dungeon_info.get("boss_keys", []))
+
+            demoted_count = 0
+            for item in self.multiworld.itempool:
+                if item.player != self.player or item.name not in dungeon_item_names:
+                    continue
+                if IC.progression in item.classification:
+                    item.classification = IC.filler
+                    demoted_count += 1
+
+            if demoted_count:
+                print(f"[__init__.py] pre_fill: Demoted {demoted_count} key item(s) in {label} "
+                      f"from progression to filler")
+
+        def _apply_barren_exclusions(candidate_locations: list, label: str) -> None:
+            filler_capacity = sum(
+                1 for item in self.multiworld.itempool
+                if item.player == self.player and item.classification in (IC.filler, IC.trap)
+            )
+            selected_locations = list(candidate_locations)
+            if len(selected_locations) > filler_capacity:
+                self.random.shuffle(selected_locations)
+                selected_locations = selected_locations[:filler_capacity]
+                print(f"[__init__.py] pre_fill: Limiting EXCLUDED locations for {label} to "
+                      f"{filler_capacity}/{len(candidate_locations)} due to filler capacity")
+
+            for loc in selected_locations:
+                loc.progress_type = LocationProgressType.EXCLUDED
+
+            print(f"[__init__.py] pre_fill: Marked {len(selected_locations)} locations in {label} "
+                  f"as EXCLUDED (empty_unrequired_dungeons)")
 
         def _apply_barren_exclusions(candidate_locations: list, label: str) -> None:
             filler_capacity = sum(
@@ -2189,12 +2233,13 @@ class SSHDWorld(World):
 
         # If required_count == 0 and empty_unrequired_dungeons is on, all dungeons are barren.
         if required_count == 0 and self.options.empty_unrequired_dungeons.value:
+            _demote_dungeon_progression_items(all_main_dungeons, "all dungeons")
             dungeon_locations = []
             for loc in self.multiworld.get_locations(self.player):
                 if loc.address is None or loc.item is not None:
                     continue
                 loc_data = LOCATION_TABLE.get(loc.name)
-                if loc_data and loc_data.region in all_main_dungeons:
+                if (loc_data and loc_data.region in all_main_dungeons) or loc.name in all_dungeon_end_locations:
                     dungeon_locations.append(loc)
             _apply_barren_exclusions(dungeon_locations, "all dungeons")
 
@@ -2213,12 +2258,18 @@ class SSHDWorld(World):
             # as EXCLUDED so AP's fill algorithm never places progression items there.
             if self.options.empty_unrequired_dungeons.value:
                 unrequired_dungeons = [d for d in eligible_dungeons if d not in selected_dungeons]
+                _demote_dungeon_progression_items(unrequired_dungeons, str(unrequired_dungeons))
+                unrequired_end_locations = {
+                    loc_name
+                    for dungeon in unrequired_dungeons
+                    for loc_name in DUNGEON_END_LOCATIONS.get(dungeon, [])
+                }
                 dungeon_locations = []
                 for loc in self.multiworld.get_locations(self.player):
                     if loc.address is None or loc.item is not None:
                         continue
                     loc_data = LOCATION_TABLE.get(loc.name)
-                    if loc_data and loc_data.region in unrequired_dungeons:
+                    if (loc_data and loc_data.region in unrequired_dungeons) or loc.name in unrequired_end_locations:
                         dungeon_locations.append(loc)
                 _apply_barren_exclusions(dungeon_locations, str(unrequired_dungeons))
 
