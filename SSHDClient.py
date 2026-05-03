@@ -325,10 +325,15 @@ OFFSET_BEETLE_TIMER_INSTRUCTION = 0x279CE4
 BEETLE_TIMER_PATCHED_VALUE = 0x52806C08  # ARM64: mov w8, #0x360
 
 # Loftwing spiral charge cheat
-OFFSET_LOFTWING_CHARGE = -0xB57E6  # dPlayer.loftwing_charges (4 bytes, relative to player_base)
-LOFTWING_CHARGE_OFFSET_BY_STAGE: dict = {
-    "F023":  -0x37A2E,  # Inside the Thunderhead — loftwing charges shifts to player_base - 0x37A2E
+# Different PC/emulator builds place the loftwing struct at different offsets
+# relative to player_base.  All known candidates are listed per stage; the
+# write logic will try each one and only write to whichever has a value in
+# the valid range [0, LOFTWING_MAX_CHARGES].
+LOFTWING_CHARGE_OFFSETS_BY_STAGE: dict = {
+    "F020": [-0xB57E6, -0x8B24E],  # The Sky — two known offsets across different builds
+    "F023": [-0x37A2E],            # Inside the Thunderhead
 }
+OFFSET_LOFTWING_CHARGE = -0xB57E6  # kept for reference; not used directly
 LOFTWING_MAX_CHARGES = 3
 
 # Stamina full value
@@ -3022,20 +3027,19 @@ class SSHDContext(CommonContext):
         _LOFTWING_STAGES = {"F020", "F023"}
         if self.cheat_infinite_loftwing and stage in _LOFTWING_STAGES:
             try:
-                loftwing_charge_offset = LOFTWING_CHARGE_OFFSET_BY_STAGE.get(
-                    stage, OFFSET_LOFTWING_CHARGE
+                candidates = LOFTWING_CHARGE_OFFSETS_BY_STAGE.get(
+                    stage, [OFFSET_LOFTWING_CHARGE]
                 )
-                addr = player_base + loftwing_charge_offset
-                # Read-before-write guard: on fast PCs the stage name can
-                # update to F023 before the game's memory layout settles for
-                # that stage.  Writing to an offset that isn't ready yet
-                # corrupts a nearby field and causes an invalid-access crash.
-                # Only write if the current value is a plausible charge count
-                # (0–3); anything outside that range means we're pointing at
-                # the wrong struct and should skip this tick.
-                current = self.memory.read_int(addr)
-                if current is not None and 0 <= current <= LOFTWING_MAX_CHARGES:
-                    self.memory.write_int(addr, LOFTWING_MAX_CHARGES)
+                # Try every known offset for this stage; write only to the one
+                # whose current value is a plausible charge count (0–3).  This
+                # handles different emulator builds placing the loftwing struct
+                # at different offsets, and also guards against fast-PC races
+                # where the stage name updates before the memory layout settles.
+                for loftwing_charge_offset in candidates:
+                    addr = player_base + loftwing_charge_offset
+                    current = self.memory.read_int(addr)
+                    if current is not None and 0 <= current <= LOFTWING_MAX_CHARGES:
+                        self.memory.write_int(addr, LOFTWING_MAX_CHARGES)
             except Exception as e:
                 logger.debug(f"Cheat error (loftwing): {e}")
 
