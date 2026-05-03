@@ -72,10 +72,9 @@ pub extern "C" fn fix_item_get() {
 
         // Handle bounds check that was replaced
         if item_animation_index > 3 {
-            asm!(
-                "mov x20, xzr",
-                "mov w8, #0x4", // used later to set event name to null
-            );
+            // Don't null the event name (x20). Instead clamp to small animation
+            // to avoid strlen(NULL) crashes with Goddess Chests.
+            asm!("mov w8, #0"); // clamp to small animation
             return;
         }
 

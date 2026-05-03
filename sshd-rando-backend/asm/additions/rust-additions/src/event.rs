@@ -173,6 +173,7 @@ static mut PENDING_AP_STRING_ARGS: bool = false;
 /// count so the user can see exactly what went wrong.
 static mut DBG_ITEM_TEXT: [u16; 32] = [0u16; 32];
 static mut DBG_PLAYER_TEXT: [u16; 16] = [0u16; 16];
+static NULL_UTF16: [u16; 1] = [0u16; 1];
 
 /// Format a `u16` value as decimal digits into a UTF-16 buffer.
 /// Returns the number of u16 characters written.
@@ -206,6 +207,20 @@ fn write_ascii(buf: &mut [u16], s: &[u8]) -> usize {
         buf[i] = s[i] as u16;
     }
     w
+}
+
+#[inline(always)]
+fn normalize_text_arg_ptr(arg: *const c_void) -> *const c_void {
+    if arg.is_null() {
+        NULL_UTF16.as_ptr() as *const c_void
+    } else {
+        arg
+    }
+}
+
+#[inline(always)]
+unsafe fn set_string_arg_safe(text_mgr: *mut lyt::TextMgr, arg: *const c_void, arg_num: u32) {
+    set_string_arg(text_mgr, normalize_text_arg_ptr(arg), arg_num);
 }
 
 /// Called every frame from `main_loop_inject`.
@@ -243,14 +258,14 @@ pub fn apply_pending_ap_string_args() {
                     let pp = core::ptr::addr_of!((*entry_ptr).player_name) as *const c_void;
 
                     if !GLOBAL_TEXT_MGR.is_null() {
-                        set_string_arg(GLOBAL_TEXT_MGR, ip, 0);
-                        set_string_arg(GLOBAL_TEXT_MGR, pp, 1);
+                        set_string_arg_safe(GLOBAL_TEXT_MGR, ip, 0);
+                        set_string_arg_safe(GLOBAL_TEXT_MGR, pp, 1);
                     }
                     if !LYT_MSG_WINDOW.is_null() {
                         let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
                         if !text_mgr.is_null() {
-                            set_string_arg(text_mgr, ip, 0);
-                            set_string_arg(text_mgr, pp, 1);
+                            set_string_arg_safe(text_mgr, ip, 0);
+                            set_string_arg_safe(text_mgr, pp, 1);
                             PENDING_AP_STRING_ARGS = false; // also clears
                                                             // mode-B
                         } else {
@@ -282,8 +297,8 @@ pub fn apply_pending_ap_string_args() {
             if !LYT_MSG_WINDOW.is_null() {
                 let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
                 if !text_mgr.is_null() {
-                    set_string_arg(text_mgr, PENDING_AP_ITEM_PTR, 0);
-                    set_string_arg(text_mgr, PENDING_AP_PLAYER_PTR, 1);
+                    set_string_arg_safe(text_mgr, PENDING_AP_ITEM_PTR, 0);
+                    set_string_arg_safe(text_mgr, PENDING_AP_PLAYER_PTR, 1);
                     PENDING_AP_STRING_ARGS = false;
                 }
             }
@@ -318,7 +333,12 @@ pub extern "C" fn custom_event_commands(
 
             // Set numeric arg 0 to number of tadtones left. This will display the number
             // of remaining tadtones in the textbox for the item give.
-            (*(*LYT_MSG_WINDOW).text_mgr).numeric_args[0] = tadtone_groups_left;
+            if !LYT_MSG_WINDOW.is_null() {
+                let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+                if !text_mgr.is_null() {
+                    (*text_mgr).numeric_args[0] = tadtone_groups_left;
+                }
+            }
 
             // Set result from previous check to number of tadtones left. If this is 0, it
             // will show the item give textbox for collecting all the tadtones.
@@ -329,8 +349,13 @@ pub extern "C" fn custom_event_commands(
         78 => unsafe {
             let sceneindex = event_flow_element.param1;
 
-            (*(*LYT_MSG_WINDOW).text_mgr).numeric_args[1] =
-                1 + (((*FILE_MGR).FA.dungeonflags[sceneindex as usize][1] >> 4) & 0xF) as u32;
+            if !LYT_MSG_WINDOW.is_null() {
+                let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+                if !text_mgr.is_null() {
+                    (*text_mgr).numeric_args[1] = 1
+                        + (((*FILE_MGR).FA.dungeonflags[sceneindex as usize][1] >> 4) & 0xF) as u32;
+                }
+            }
         },
         // Give item with custom sceneflag (for Archipelago)
         79 => unsafe {
@@ -455,14 +480,14 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
             let fallback_player = DBG_PLAYER_TEXT.as_ptr() as *const c_void;
 
             if !GLOBAL_TEXT_MGR.is_null() {
-                set_string_arg(GLOBAL_TEXT_MGR, fallback_item, 0);
-                set_string_arg(GLOBAL_TEXT_MGR, fallback_player, 1);
+                set_string_arg_safe(GLOBAL_TEXT_MGR, fallback_item, 0);
+                set_string_arg_safe(GLOBAL_TEXT_MGR, fallback_player, 1);
             }
             if !LYT_MSG_WINDOW.is_null() {
                 let tm = (*LYT_MSG_WINDOW).text_mgr;
                 if !tm.is_null() {
-                    set_string_arg(tm, fallback_item, 0);
-                    set_string_arg(tm, fallback_player, 1);
+                    set_string_arg_safe(tm, fallback_item, 0);
+                    set_string_arg_safe(tm, fallback_player, 1);
                 }
             }
         }
@@ -510,8 +535,8 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
 
         // Overwrite both TextMgrs with the resolved (or fallback) text.
         if !GLOBAL_TEXT_MGR.is_null() {
-            set_string_arg(GLOBAL_TEXT_MGR, item_ptr, 0);
-            set_string_arg(GLOBAL_TEXT_MGR, player_ptr, 1);
+            set_string_arg_safe(GLOBAL_TEXT_MGR, item_ptr, 0);
+            set_string_arg_safe(GLOBAL_TEXT_MGR, player_ptr, 1);
         }
 
         // Write to the message-window layout's TextMgr if available.
@@ -521,8 +546,8 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
             core::ptr::null_mut()
         };
         if !text_mgr.is_null() {
-            set_string_arg(text_mgr, item_ptr, 0);
-            set_string_arg(text_mgr, player_ptr, 1);
+            set_string_arg_safe(text_mgr, item_ptr, 0);
+            set_string_arg_safe(text_mgr, player_ptr, 1);
         }
 
         // ── Reset LAST_AP_ITEM_FLAG_ID after use ────────────────────────
