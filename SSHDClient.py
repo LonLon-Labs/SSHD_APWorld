@@ -2795,7 +2795,7 @@ class SSHDContext(CommonContext):
     
     def _apply_cheats(self):
         """
-        Apply active cheats e memory each tick.
+        Apply active cheats to memory each tick.
         Called from cheat_loop_task() ~60 times per second.
         Each cheat is wrapped in its own try/except so one failure
         cannot prevent the others from running.
@@ -3015,13 +3015,27 @@ class SSHDContext(CommonContext):
         # The loftwing data structure only exists when in sky stages.
         # Writing to this offset in any surface/dungeon stage corrupts
         # unrelated game data and crashes the emulator.
-        _LOFTWING_STAGES = {"F020", "F021", "F023"}
+        # F021 is the cutscene sky stage (spir transitions to Thunderhead /
+        # Isle of Songs / Skyloft).  The loftwing struct is not at the normal
+        # offset during cutscenes; writing there corrupts game memory and
+        # causes a crash.  Charges are maintained in F020 and F023 instead.
+        _LOFTWING_STAGES = {"F020", "F023"}
         if self.cheat_infinite_loftwing and stage in _LOFTWING_STAGES:
             try:
                 loftwing_charge_offset = LOFTWING_CHARGE_OFFSET_BY_STAGE.get(
                     stage, OFFSET_LOFTWING_CHARGE
                 )
-                self.memory.write_int(player_base + loftwing_charge_offset, LOFTWING_MAX_CHARGES)
+                addr = player_base + loftwing_charge_offset
+                # Read-before-write guard: on fast PCs the stage name can
+                # update to F023 before the game's memory layout settles for
+                # that stage.  Writing to an offset that isn't ready yet
+                # corrupts a nearby field and causes an invalid-access crash.
+                # Only write if the current value is a plausible charge count
+                # (0–3); anything outside that range means we're pointing at
+                # the wrong struct and should skip this tick.
+                current = self.memory.read_int(addr)
+                if current is not None and 0 <= current <= LOFTWING_MAX_CHARGES:
+                    self.memory.write_int(addr, LOFTWING_MAX_CHARGES)
             except Exception as e:
                 logger.debug(f"Cheat error (loftwing): {e}")
 
