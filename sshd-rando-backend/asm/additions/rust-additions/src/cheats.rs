@@ -212,9 +212,25 @@ pub fn handle_hovercraft() {
             *speed_ptr = -22.9995f32; // 0xC1B7FEFA
         }
 
-        // ── L-stick up → forward ────────────────────────────────────────────
+        // ── L-stick up → forward (with R-button turbo) ──────────────────────────
         if input::check_button_held_down(input::BUTTON_INPUTS::LEFT_STICK_UP) {
-            *speed_ptr = 50.0f32; // 0x42480000
+            if input::check_button_held_down(input::BUTTON_INPUTS::R_BUTTON) {
+                if input::check_button_held_down(input::BUTTON_INPUTS::L_BUTTON) {
+                    if input::check_button_held_down(input::BUTTON_INPUTS::ZR_BUTTON) {
+                        // L+R+ZR turbo: go too fast
+                        *speed_ptr = 500.0f32;
+                    } else {
+                        // L+R turbo: go really really fast
+                        *speed_ptr = 250.0f32;
+                    }
+                } else {
+                    // R turbo: go really fast
+                    *speed_ptr = 100.0f32;
+                }
+            } else {
+                // Standard hover speed
+                *speed_ptr = 50.0f32;
+            }
         }
 
         // ── L-stick left → turn left ────────────────────────────────────────
