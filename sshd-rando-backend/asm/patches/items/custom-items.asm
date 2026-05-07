@@ -147,7 +147,7 @@ bl additions_jumptable
 
 ; Get name of arc from item id
 .offset 0x7100b93784
-nop ; hook 47 now dereferences the hook-46 return value from x0 safely
+ldr x0, [x8, #0x8]
 mov x1, x23
 mov w8, #47
 bl additions_jumptable
