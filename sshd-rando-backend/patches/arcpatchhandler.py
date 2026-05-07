@@ -143,8 +143,8 @@ def create_shop_rupee_arcs():
 def patch_logo(output_path: Path):
     print_progress_text("Patching Title Screen Logo")
     logo_data = (RANDO_ROOT_PATH / "assets" / "sshdr-logo.tpl").read_bytes()
-    rogo_03_data = (RANDO_ROOT_PATH / "assets" / "archipelago-rogo_03.tpl").read_bytes()
-    rogo_04_data = (RANDO_ROOT_PATH / "assets" / "archipelago-rogo_04.tpl").read_bytes()
+    rogo_03_data = (RANDO_ROOT_PATH / "assets" / "th_rogo_03.tpl").read_bytes()
+    rogo_04_data = (RANDO_ROOT_PATH / "assets" / "th_rogo_04.tpl").read_bytes()
 
     # Write title screen logo
     title_2d_arc = U8File.get_parsed_U8_from_path(TITLE2D_SOURCE_PATH)

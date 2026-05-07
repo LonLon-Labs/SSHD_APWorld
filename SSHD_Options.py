@@ -1383,6 +1383,17 @@ class StartWithAllTreasures(Toggle):
     display_name = "Start with All Treasures"
 
 
+class RandomizeSailcloth(DefaultOnToggle):
+    """
+    If enabled, the Sailcloth is shuffled into the item pool like any other major item.
+    The Sailcloth is required to use sky pillars, bird statues (for loftwing), the
+    Groosenator, and air vents outside of Skyloft.
+
+    If disabled, the Sailcloth is always granted at the start of the game.
+    """
+    display_name = "Randomize Sailcloth"
+
+
 class ExtractPath(FreeText):
     """
     Path to the extracted SSHD romfs folder.
@@ -1741,6 +1752,7 @@ class SSHDOptions(PerGameCommonOptions):
     starting_hearts: StartingHearts
     start_with_all_bugs: StartWithAllBugs
     start_with_all_treasures: StartWithAllTreasures
+    randomize_sailcloth: RandomizeSailcloth
     
     # Original Starting Inventory
     starting_tablets: StartingTablets

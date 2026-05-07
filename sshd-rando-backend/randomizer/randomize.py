@@ -1,10 +1,32 @@
-"""
-Stub implementation of randomize module for Archipelago integration.
-"""
+from constants.verificationconstants import *
+from filepathconstants import CONFIG_PATH
+from logic.generate import generate
+from patches.allpatchhandler import AllPatchHandler
+from randomizer.verify_extract import verify_extract
+from util.arguments import get_program_args
+from gui.dialogs.dialog_header import update_progress_value
 
-def randomize(*args, **kwargs):
-    """
-    Stub function for randomize compatibility.
-    This is not used in Archipelago integration as generation is handled separately.
-    """
-    raise NotImplementedError("randomize() is not used in Archipelago integration")
+
+def randomize():
+    print("Starting new randomization:")
+    args = get_program_args()
+
+    if not args.dryrun:
+        update_progress_value(0)
+        verify_extract()
+
+    update_progress_value(5)
+    worlds = generate(CONFIG_PATH)
+
+    if not args.dryrun:
+        patch_handler = AllPatchHandler(worlds[0])
+        patch_handler.do_all_patches()
+
+    print("Randomization complete!")
+    update_progress_value(100)
+
+    if not args.dryrun:
+        print(f"\nHash: {worlds[0].config.get_hash()}")
+        print(
+            f"The randomizer patch can be found at: {worlds[0].config.output_dir.as_posix()}"
+        )

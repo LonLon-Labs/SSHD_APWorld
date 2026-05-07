@@ -47,7 +47,6 @@ ENTRANCE_TYPES = (
     "Interior",
     "Overworld",
     "Trial Gate",
-    "Gate of Time",
 )
 
 
@@ -67,6 +66,7 @@ DEFAULT_SETTINGS = {
     "first_time_seed_gen_text": False,
     "starting_inventory": Counter(
         [
+            SAILCLOTH,
             HYLIAN_SHIELD,
             PROGRESSIVE_POUCH,
             SCRAPPER,
@@ -78,10 +78,6 @@ DEFAULT_SETTINGS = {
             FS_MAP,
             SK_MAP,
         ]
-        # + [
-        #     "Group of Tadtones",
-        # ]
-        # * 17
     ),
     "excluded_locations": [
         "Knight Academy - Deliver Kikwi to Owlan",

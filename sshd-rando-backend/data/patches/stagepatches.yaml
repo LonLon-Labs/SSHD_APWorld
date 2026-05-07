@@ -3828,13 +3828,13 @@ F301_3: # Skipper's Retreat
       posy: 50
       posz: 8550
       name: Tubo
-  - name: Add bomb flower next to skydive chest # prevents softlocks
+  - name: Add cactus with bomb flower next to skydive chest # prevents softlocks
     type: objadd
     layer: 0
     room: 0
-    objtype: OBJ
+    objtype: SOBJ
     object:
-      params1: 0xFFFFFFF0
+      params1: 0xFFFEFFFF
       params2: 0xFFFFFFFF
       posx: -80
       posy: 800
@@ -3843,7 +3843,7 @@ F301_3: # Skipper's Retreat
       angley: 0
       anglez: 0
       id: 0x4270
-      name: Bombf
+      name: ECactus
 
 F301_4: # Shipyard
   - name: Layer override
@@ -4104,22 +4104,22 @@ F302: # Lanayru Gorge
     objtype: EVNT
     object:
       item: -1 # no lanayru Soth anymore
-  - name: Add extra Bomb Flower
+  - name: Add cactus with bomb flower next to skydive chest # prevents softlocks
     type: objadd
     layer: 0
     room: 0
-    objtype: OBJ
+    objtype: SOBJ
     object:
-      params1: 0xFFFFFFF0
+      params1: 0xFFFEFFFF
       params2: 0xFFFFFFFF
-      posx: 4100
-      posy: 28.9521332
-      posz: -3200
+      posx: 4625
+      posy: 6.606566906
+      posz: -4250
       anglex: 0
       angley: 0
       anglez: 0
       id: 0xFC50
-      name: Bombf
+      name: ECactus
 
 F303: # Lanayru Caves
   # Removed all flags and default to layer 0

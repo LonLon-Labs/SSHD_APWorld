@@ -1,0 +1,93 @@
+# Example Plandomizer file.
+
+# Plandomizer files allow you to control certain aspects when generating a new
+# randomizer seed. You can place items in specific locations, and connect
+# specific entrances if entrance randomizer is enabled.
+
+# All plandomized elements must be under a "World 1" element at the start of the
+# plandomizer file like this
+World 1:
+      # ...everything else...
+
+# LOCATIONS
+# All plandomized locations are defined under a "locations" element and consist
+# of the location name followed by a colon(:) and the item name you want placed
+# at that location. The following example places Clawshots at Knight Academy - Fledge's Gift
+# and Amber Tablet at Earth Temple - Chest before Boulder Chase.
+World 1:
+  locations:
+    Knight Academy - Fledge's Gift: Clawshots
+    Earth Temple - Chest before Boulder Chase: Amber Tablet
+
+# NAMES
+# As a general rule, capitalize the first letter of all item names except for
+# the words "to" and "of". "Bomb Bag" is okay. "bomb bag" will be
+# unrecognized. For a full list of location names, please check out:
+# https://github.com/mint-choc-chip-skyblade/sshd-rando/blob/main/data/locations.yaml
+# or refer to a spoiler log.
+
+# EXCLUDED_LOCATIONS
+# Attempting to place a major item in an excluded location will give you a
+# Plandomizer Error and the seed won't generate.
+
+# ENTRANCES
+# All plandomized entrances are defined under an "entrances" element and consist
+# of the original entrance that you want to change followed by a colon(:) and the
+# replacement entrance you want the original connection to go to. The following example
+# switches the entrances between Skyview Temple and Ancient Cistern. Note that
+# when plandomizing entrances, the entrance randomizer setting for the entrances you're
+# attempting to plandomize must be turned on.
+World 1:
+  entrances:
+    Deep Woods -> Skyview Temple: Ancient Cistern from Floria Waterfall
+    Floria Waterfall -> Ancient Cistern: Skyview Temple from Deep Woods
+# The original entrance must be in the format "<first area> -> <second area>", and
+# the replacement entrance must be in the format "<second area> from <first area>".
+# The spaces around the arrow and the word "from" are important to include. These
+# formats are not interchangable. If you attempt to randomize entrances
+# that don't exist or which aren't supported for shuffling at the current moment,
+# then you'll get a plandomizer error. For a full list of randomizable entrances (and
+# aliases that you can use) please see:
+# https://github.com/mint-choc-chip-skyblade/sshd-rando/blob/main/data/entrance_shuffle_data.yaml
+
+# HINTS
+# You can set which locations should be considered 'always' or 'sometimes' locations for
+# location hints. These new lists will override the default lists used by the randomizer.
+World 1:
+  sometimes_hint_locations:
+    - Knight Academy - Fledge's Gift
+    - Knight Academy - Zelda's Closet
+    - Knight Academy - Crystal in Link's Room
+    - Knight Academy - Deliver Kikwi to Owlan
+  always_hint_locations:
+    - Inside the Statue of the Goddess - Raise Sword Item 1
+    - Inside the Statue of the Goddess - Raise Sword Item 2
+
+# MULTIWORLD PLANDOMIZER (Note: currently multiworld is not an option in the randomizer
+# and is not actively being developed, but the filling algorithm was made to support
+# multiworld incase it ever happens in the future.)
+# If you'd like to plandomize a multiworld seed, then each element
+# must be under a "World #" element, with the '#' being the world number
+# the locations will be for. For example, if we want place the Whip at
+# Bazaar - Luv the Potion Lady's Gift in World 1 and the Skyview Boss Key at
+# Sandship - Chest after Scervo Fight in World 2, then we'd type
+World 1:
+  locations:
+    Bazaar - Luv the Potion Lady's Gift: Whip
+World 2:
+  locations:
+    Sandship - Chest after Scervo Fight: Skyview Boss Key
+# Using this format, the item being plandomized will be for the world that the
+# location is currently under. If we want to specify the item for a different
+# world we can use the "item" and "world" elements to do so. For example, if we want
+# to place the Bomb Bag for World 1 at World 2's Inside the Thunderhead - Goddess Chest on East Island
+# and the Hylian Shield for World 1 at World 2's Eldin Volcano - Chest behind Bombable Wall near Volcano Ascent
+# we would type:
+World 2:
+  locations:
+    Inside the Thunderhead - Goddess Chest on East Island:
+      item: Bomb Bag
+      world: 1
+    Eldin Volcano - Chest behind Bombable Wall near Volcano Ascent:
+      item: Hylian Shield
+      world: 1

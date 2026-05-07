@@ -34,6 +34,12 @@
 - name: True Master Sword Text
   standard: "You got the <y<True Master Sword>>!\nThe goddess has blessed your blade, and\nthe Master Sword has at last achieved its\nultimate form!"
 
+- name: Sailcloth Text
+  standard: 
+    "You got the <y<Sailcloth>>!
+    \n\n\n\nNow you can jump from any height without\nfear of a painful landing!
+    \n\n\n<slowtext>...<pause 20>It smells nice too.<pause 20>"
+
 - name: Harp Text
   standard: "You got the <y<Goddess's Harp>>!\nBut there's no time to admire it!\nYou can play it with <icon 30>."
 
@@ -6308,6 +6314,9 @@
 - name: Groosenator can't fling text
   standard: "Sorry, <heroname>. I can't fling you\nsomewhere you haven't been before."
 
+- name: Groosenator needs sailcloth text
+  standard: "Sorry, <heroname>. I can't fling you\nthere if you can't <b<break your fall>>."
+
 - name: FFW Bucha leave question text
   standard: "<action6 \x03>Kewwww... Is the water not to your liking?\nI know a secret way out of the forest,\nwould you like me to show you?\n[1]Yes please![2-]No thanks."
 
@@ -6344,6 +6353,9 @@
 
 - name: Patch Fi Call Use amiibo Option
   standard: "Warp"
+
+- name: Fi require Sailcloth to Amiibo Warp
+  standard: "Master, I unfortunately cannot allow you to\nuse the amiibo without the <y<Sailcloth>>."
 
 - name: Forced Required Dungeons Text
   standard: "Welcome to your new adventure, Master. I have\n<r<important information>> about your journey."
