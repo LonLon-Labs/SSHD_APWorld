@@ -91,9 +91,14 @@ def build_patcher_exe():
                 rel = f.relative_to(backend_dir)
                 dest = f"sshd-rando-backend/{rel.parent.as_posix()}" if rel.parent != Path(".") else "sshd-rando-backend"
                 datas_lines.append(f"    (r'{f}', '{dest}'),")
+        words_path = backend_dir / "data" / "skyward_sword_words.yaml"
+        if not words_path.exists():
+            print(f"[FAIL] Required backend data file missing: {words_path}")
+            sys.exit(1)
         print(f"[OK] sshd-rando-backend bundled")
     else:
-        print("[WARN] sshd-rando-backend directory not found!")
+        print("[FAIL] sshd-rando-backend directory not found!")
+        sys.exit(1)
 
     datas_block = "\n".join(datas_lines)
 
