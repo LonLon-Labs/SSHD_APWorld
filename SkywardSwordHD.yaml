@@ -151,6 +151,12 @@ Skyward Sword HD:
   # Hold Y to fly upward freely.
   cheat_moon_jump: false
 
+  # Hovercraft
+  # When enabled, airborne vertical speed is clamped for stable hovering.
+  # Move left, right, and forward with the left stick while holding X.
+  # Move forward faster by holding R (2x speed), R + L (5x speed), R + L + ZR (10x speed), or  R + L + ZR + ZL (20x speed) while hovering.
+  cheat_hovercraft: false
+
   # Infinite Beetle Flying Time
   # When enabled, the Beetle's flight timer is set to a very large value.
   # The Beetle will fly indefinitely without returning automatically.

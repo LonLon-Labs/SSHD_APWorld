@@ -1501,6 +1501,14 @@ class CheatMoonJump(Toggle):
     display_name = "Moon Jump"
 
 
+class CheatHovercraft(Toggle):
+    """
+    When enabled, Link's airborne vertical speed is clamped to sustain hover.
+    Useful for controlled floating movement without full moon-jump ascent.
+    """
+    display_name = "Hovercraft"
+
+
 class CheatInfiniteBeetle(Toggle):
     """
     When enabled, the Beetle's flight timer is set to a very large value
@@ -1770,6 +1778,7 @@ class SSHDOptions(PerGameCommonOptions):
     cheat_infinite_skyward_strike: CheatInfiniteSkywardStrike
     cheat_infinite_rupees: CheatInfiniteRupees
     cheat_moon_jump: CheatMoonJump
+    cheat_hovercraft: CheatHovercraft
     cheat_infinite_beetle: CheatInfiniteBeetle
     cheat_infinite_loftwing: CheatInfiniteLoftwing
     cheat_no_electric_stun: CheatNoElectricStun
@@ -1977,6 +1986,7 @@ sshd_option_groups = [
         CheatInfiniteSkywardStrike,
         CheatInfiniteRupees,
         CheatMoonJump,
+        CheatHovercraft,
         CheatInfiniteBeetle,
         CheatInfiniteLoftwing,
         CheatNoElectricStun,
