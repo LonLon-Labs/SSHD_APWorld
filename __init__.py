@@ -2707,7 +2707,14 @@ class SSHDWorld(World):
             print(f"[SSHD-DIAG] Post-fill diagnostic failed: {e}")
             import traceback
             traceback.print_exc()
-    
+
+        # Initialize threading event for synchronizing generate_output() with modify_multidata().
+        # AP runs generate_output() and write_multidata() (which calls fill_slot_data + modify_multidata)
+        # concurrently in the same thread pool. modify_multidata() must wait for generate_output()
+        # to finish before it can read self._goddess_chest_data.
+        import threading
+        self._goddess_chest_event = threading.Event()
+
     def fill_slot_data(self) -> dict[str, Any]:
         """Generate slot data for the client."""
         slot_data = {
@@ -2770,13 +2777,31 @@ class SSHDWorld(World):
         slot_data["ap_item_info"] = ap_item_info
         print(f"[__init__.py] Added {len(ap_item_info)} AP item info entries to slot_data")
         
-        # Keep reference so generate_output() can add goddess chest scene flags
-        # after BZS data has been parsed.  Python dicts are mutable so any keys
-        # we add later will be visible when the AP server sends this to clients.
-        self._slot_data_ref = slot_data
-        
         return slot_data
-    
+
+    def modify_multidata(self, multidata: "MultiData") -> None:
+        """Inject goddess chest scene flags computed in generate_output() into slot_data.
+
+        generate_output() and write_multidata() (which calls fill_slot_data then modify_multidata)
+        run concurrently in AP's thread pool. We use a threading.Event (initialized in pre_fill()
+        before the thread pool starts) to synchronize: modify_multidata() waits until
+        generate_output() signals that self._goddess_chest_data is ready.
+        """
+        from NetUtils import MultiData  # noqa: F401 (import for type only at runtime)
+        # Wait for generate_output() to complete its goddess chest data computation.
+        event = getattr(self, '_goddess_chest_event', None)
+        if event is not None:
+            if not event.wait(timeout=120):
+                print("[__init__.py] [modify_multidata] WARNING: Timed out after 120s waiting for generate_output!")
+        if hasattr(self, '_goddess_chest_data') and self._goddess_chest_data:
+            slot_data = multidata["slot_data"].get(self.player)
+            if slot_data is not None:
+                if not isinstance(slot_data, dict):
+                    slot_data = dict(slot_data)
+                    multidata["slot_data"][self.player] = slot_data
+                slot_data["goddess_chest_scene_flags"] = self._goddess_chest_data
+                print(f"[__init__.py] [modify_multidata] Injected {len(self._goddess_chest_data)} goddess chest scene flag mappings into slot_data")
+
     def generate_output(self, output_directory: str) -> None:
         """
         Generate the .apsshd patch file.
@@ -3011,7 +3036,11 @@ class SSHDWorld(World):
             # Clean up temp directory
             if temp_dir.exists():
                 rmtree(temp_dir)
-    
+            # Always signal the event so modify_multidata() is never left waiting.
+            # self._goddess_chest_data will have been set before this point (or not at all).
+            if hasattr(self, '_goddess_chest_event'):
+                self._goddess_chest_event.set()
+
     def _generate_sshd_patches(self, output_dir: Path, patch_data: dict) -> Tuple[Path, Path]:
         """
         Generate sshd-rando patches using the SSHDRWrapper.
@@ -3140,17 +3169,32 @@ class SSHDWorld(World):
                 # set_sceneflag] was collected by the stage patch handler during
                 # handle_stage_patches.
                 goddess_flags_raw = patch_handler.stage_patch_handler.goddess_chest_scene_flags
-                if goddess_flags_raw and hasattr(self, '_slot_data_ref'):
+                if goddess_flags_raw:
                     goddess_chest_data: dict[str, list[int]] = {}
                     for flag_id, scene_flag_pair in goddess_flags_raw.items():
-                        # Convert custom_flag → AP location code via the mapping
-                        if flag_id in self._custom_flag_mapping:
+                        # Convert custom_flag -> AP location code using the ACTUAL
+                        # mapping extracted from the patched ROM first. Intended
+                        # mapping can drift when sshd-rando reassigns flags.
+                        loc_code = None
+                        if flag_id in self._actual_custom_flag_mapping:
+                            loc_code = self._actual_custom_flag_mapping[flag_id]
+                        elif flag_id in self._custom_flag_mapping:
                             loc_code = self._custom_flag_mapping[flag_id]
+
+                        if loc_code is not None:
                             goddess_chest_data[str(loc_code)] = scene_flag_pair
-                    self._slot_data_ref["goddess_chest_scene_flags"] = goddess_chest_data
+                    # Store for inject via modify_multidata() which runs AFTER generate_output().
+                    # Cannot use _slot_data_ref here: fill_slot_data() runs concurrently
+                    # and the AP framework may serialize slot_data before we mutate it.
+                    self._goddess_chest_data = goddess_chest_data
                     print(f"[__init__.py] Added {len(goddess_chest_data)} goddess chest scene flag mappings to slot_data")
-                elif goddess_flags_raw:
-                    print(f"[__init__.py] WARNING: goddess_chest_scene_flags extracted but no _slot_data_ref")
+                    for loc_code_str, (si, sf) in goddess_chest_data.items():
+                        try:
+                            loc = self.multiworld.get_location_by_id(int(loc_code_str), self.player)
+                            loc_name = loc.name if loc else loc_code_str
+                        except Exception:
+                            loc_name = loc_code_str
+                        print(f"[__init__.py]   GoddessChest loc={loc_code_str} ({loc_name}): scene={si}, chestflag={sf}")
                 
                 # VERIFICATION: Compare intended vs actual custom flag assignments
                 # This detects mismatches that would cause AP item text to fail

@@ -200,7 +200,12 @@ OFFSET_FA_DUNGEONFLAGS = 0xA64         # Dungeon flags [[u16;8];26] (savefile.rs
 # CORRECTED: Diagnostic scan showed actual sceneflags 0x800 bytes before expected!
 # Scan found flag change at base+0x5AEC7B8 vs expected base+0x5AECFB8
 OFFSET_FA_SCENEFLAGS = 0x1A64          # CORRECTED from 0x2264: actual offset is 0x2264 - 0x800 = 0x1A64
-OFFSET_FA_TBOXFLAGS = 0x28C4           # Treasure box flags [[u8; 4]; 26] (104 bytes)
+OFFSET_FA_TBOXFLAGS = 0x2A64           # Treasure box flags [[u8; 4]; 26] (104 bytes); sceneflags@0x1A64 + 0x1A0 + _2(0xE60) = 0x2A64
+OFFSET_STATIC_TBOXFLAGS = 0x182E118   # STATIC_TBOXFLAGS (current-scene tbox flags, 16 bytes)
+                                       # Derived: STATIC_TBOXFLAGS VA 0x7101832118 - game_VA_base 0x7100004000
+                                       # Covers flags 0-127 per scene. Vanilla C++ writes here during gameplay;
+                                       # FA.tboxflags is only committed on scene transition. Use STATIC for
+                                       # real-time goddess chest detection, FA for cross-session recovery.
 OFFSET_FA_TEMPFLAGS = 0x50F4           # Temp flags (CT shows at base+5AF3E48-5AEAD54)
 OFFSET_FA_ZONEFLAGS = 0x50FC           # Zone flags (CT shows at base+5AF3E50-5AEAD54)
 
@@ -1875,9 +1880,12 @@ class SSHDContext(CommonContext):
             goddess_chest_raw = slot_data.get("goddess_chest_scene_flags", {})
             if goddess_chest_raw:
                 self.goddess_chest_scene_flags = {int(k): v for k, v in goddess_chest_raw.items()}
-                logger.info(f"Loaded {len(self.goddess_chest_scene_flags)} goddess chest scene flag mappings")
+                logger.info(f"[GoddessChest] Loaded {len(self.goddess_chest_scene_flags)} goddess chest tboxflag mappings from slot_data")
+                for loc_code, (scene_idx, chestflag) in self.goddess_chest_scene_flags.items():
+                    loc_name = self.location_names.lookup_in_slot(loc_code, self.slot) if hasattr(self, 'location_names') and self.slot else str(loc_code)
+                    logger.info(f"  [GoddessChest] loc={loc_code} ({loc_name}): scene={scene_idx}, chestflag={chestflag}, flat_offset={scene_idx*4 + chestflag//8}, bit={chestflag%8}")
             else:
-                logger.debug("No goddess chest scene flag mappings in slot data")
+                logger.info(f"[GoddessChest] WARNING: goddess_chest_scene_flags key missing or empty in slot_data (slot_data keys: {list(slot_data.keys())})")
 
             # Load AP item info for cross-world item textbox display
             ap_item_info_raw = slot_data.get("ap_item_info", {})
@@ -2568,9 +2576,12 @@ class SSHDContext(CommonContext):
                     # give_item_to_player for normal buffer delivery.
                     item_name = item_data["name"]
 
-                    if item_data.get("_concrete_sword_id"):
+                    concrete_id = (
+                        item_data.get("_concrete_sword_id")
+                        or item_data.get("_concrete_beetle_id")
+                    )
+                    if concrete_id:
                         # Synthetic upgrade entry: deliver correct concrete tier via buffer.
-                        concrete_id = item_data["_concrete_sword_id"]
                         if not self.game_item_system:
                             self.game_item_system = GameItemSystem(self.memory)
                         success = self.game_item_system.give_item(concrete_id)
@@ -3560,7 +3571,7 @@ class SSHDContext(CommonContext):
         current_count = self.progressive_counts.get("Progressive Sword", 0)
         new_count = min(current_count + 1, 6)
         self.progressive_counts["Progressive Sword"] = new_count
-        logger.info(f"[Sword] Local pickup: sword count {current_count} -> {new_count}")
+        logger.debug(f"[Sword] Local pickup: sword count {current_count} -> {new_count}")
 
         # Only queue upgrade animation for tier 2+.
         SWORD_IDS_BY_TIER = {1: 10, 2: 11, 3: 12, 4: 9, 5: 13, 6: 14}
@@ -3573,7 +3584,7 @@ class SSHDContext(CommonContext):
                 "location_player": self.slot,
                 "_concrete_sword_id": concrete_id,
             })
-            logger.info(f"[Sword] Queued buffer delivery of sword id {concrete_id} for upgrade animation")
+            logger.debug(f"[Sword] Queued buffer delivery of sword id {concrete_id} for upgrade animation")
 
     def _update_beetle_storyflags(self):
         """Increment beetle counter from a local pickup and queue a buffer
@@ -3584,7 +3595,7 @@ class SSHDContext(CommonContext):
         current_count = self.progressive_counts.get("Progressive Beetle", 0)
         new_count = min(current_count + 1, 4)
         self.progressive_counts["Progressive Beetle"] = new_count
-        logger.info(f"[Beetle] Local pickup: beetle count {current_count} -> {new_count}")
+        logger.debug(f"[Beetle] Local pickup: beetle count {current_count} -> {new_count}")
 
         # Tier IDs: 1=53 (Beetle), 2=75 (Hook), 3=76 (Quick), 4=77 (Tough)
         # Only queue an upgrade delivery for tier 2+ — tier 1 is already
@@ -3597,9 +3608,9 @@ class SSHDContext(CommonContext):
                 "name": "Progressive Beetle",
                 "location": "Local Pickup",
                 "location_player": self.slot,
-                "_concrete_sword_id": concrete_id,
+                "_concrete_beetle_id": concrete_id,
             })
-            logger.info(f"[Beetle] Queued buffer delivery of beetle id {concrete_id} for upgrade animation")
+            logger.debug(f"[Beetle] Queued buffer delivery of beetle id {concrete_id} for upgrade animation")
 
     async def check_custom_flags(self):
         """Check custom flags for location completion (SSHD-specific)."""
@@ -3790,94 +3801,191 @@ class SSHDContext(CommonContext):
                 logger.debug(f"[FlagInit] Partial init: {initialized_count}/{expected_count} flags read - staying in init mode")
     
     async def check_goddess_chest_flags(self):
-        """Check goddess chest scene flags for location completion.
-        
+        """Check goddess chest tboxflags for location completion.
+
         Goddess chests can't use AP custom flags (writing to params2 would corrupt
-        their storyflag spawn gate). Instead, we poll the vanilla set_sceneflag
-        that the game engine sets when the chest is opened.
-        
-        The mapping location_code -> [scene_index, set_sceneflag] is provided
-        in slot_data as goddess_chest_scene_flags.
+        their storyflag spawn gate).  Instead, we poll the vanilla tboxflag
+        that the game engine sets when the chest is opened.  The mapping
+        location_code -> [scene_index, chestflag] is provided in slot_data
+        as goddess_chest_scene_flags.
+
+        Detection uses TWO sources:
+          1. FA.tboxflags  (OFFSET_SAVEFILE_A + OFFSET_FA_TBOXFLAGS, 104 bytes):
+             the persistent save-file buffer.  The vanilla game commits the current
+             scene's STATIC_TBOXFLAGS into FA when the player leaves that scene.
+             Used for cross-session recovery of already-opened chests.
+          2. STATIC_TBOXFLAGS  (OFFSET_STATIC_TBOXFLAGS, 16 bytes): the in-RAM
+             working copy for the CURRENT scene only.  The game writes here
+             immediately when a chest is opened — before the commit to FA.
+             Used for real-time detection within the active scene.
         """
         if not self.memory.connected or not self.memory.base_address:
             return
-        
-        if not hasattr(self, '_goddess_flags_initializing'):
+
+        is_first_call = not hasattr(self, '_goddess_flags_initializing')
+        if is_first_call:
             self._goddess_flags_initializing = True
-            logger.debug(f"[GoddessChest] Initializing {len(self.goddess_chest_scene_flags)} goddess chest flags")
-        
-        # Cache for scene data to avoid re-reading the same scene multiple times
-        scene_cache: Dict[int, list] = {}
-        
-        for location_code, (scene_index, set_sceneflag) in self.goddess_chest_scene_flags.items():
-            # Skip if already checked
+            try:
+                raw_fa = self.memory.read_bytes(OFFSET_SAVEFILE_A + OFFSET_FA_TBOXFLAGS, 104)
+                raw_static = self.memory.read_bytes(OFFSET_STATIC_TBOXFLAGS, 16)
+                self._prev_fa_tbox_snapshot = bytes(raw_fa) if raw_fa else None
+                self._prev_static_tbox_snapshot = bytes(raw_static) if raw_static else None
+                logger.debug(
+                    f"[GoddessChest] First poll: {len(self.goddess_chest_scene_flags)} mappings, "
+                    f"connected={self.memory.connected}, "
+                    f"base=0x{self.memory.base_address if self.memory.base_address else 0:X}"
+                )
+                if raw_fa:
+                    logger.debug(f"[GoddessChest] FA tboxflags (104 bytes): {raw_fa.hex()}")
+                if raw_static:
+                    logger.debug(f"[GoddessChest] STATIC_TBOXFLAGS (16 bytes): {raw_static.hex()}")
+            except Exception as e:
+                logger.info(f"[GoddessChest] Could not read tboxflags on first poll: {e}")
+
+        # --- Detect any changes in FA.tboxflags (log for diagnostics) ---
+        try:
+            raw_fa_now = self.memory.read_bytes(OFFSET_SAVEFILE_A + OFFSET_FA_TBOXFLAGS, 104)
+            if raw_fa_now:
+                prev_fa = getattr(self, '_prev_fa_tbox_snapshot', None)
+                if prev_fa and raw_fa_now != prev_fa:
+                    for i in range(min(len(prev_fa), len(raw_fa_now))):
+                        if prev_fa[i] != raw_fa_now[i]:
+                            logger.debug(
+                                f"[GoddessChest] FA tboxflags byte {i} changed: "
+                                f"0x{prev_fa[i]:02X}->0x{raw_fa_now[i]:02X} "
+                                f"(scene={i // 4}, byte_in_scene={i % 4})"
+                            )
+                self._prev_fa_tbox_snapshot = bytes(raw_fa_now)
+        except Exception:
+            pass
+
+        # --- Read STATIC_TBOXFLAGS for the current goddess-chest scenes ---
+        # F000 = Skyloft (scene 0), F020/F023 = Sky/Thunderhead (scene 21)
+        _STAGE_TO_SCENE = {"F000": 0, "F020": 21, "F023": 21}
+        current_stage_prefix = (self.current_stage or "")[:4]
+        current_static_scene: Optional[int] = _STAGE_TO_SCENE.get(current_stage_prefix)
+        static_bytes: Optional[bytes] = None
+        if current_static_scene is not None:
+            try:
+                raw_static_now = self.memory.read_bytes(OFFSET_STATIC_TBOXFLAGS, 16)
+                if raw_static_now:
+                    prev_static = getattr(self, '_prev_static_tbox_snapshot', None)
+                    if prev_static and raw_static_now != prev_static:
+                        for i in range(min(len(prev_static), len(raw_static_now))):
+                            if prev_static[i] != raw_static_now[i]:
+                                logger.debug(
+                                    f"[GoddessChest] STATIC_TBOXFLAGS byte {i} changed: "
+                                    f"0x{prev_static[i]:02X}->0x{raw_static_now[i]:02X} "
+                                    f"(scene={current_static_scene}, flags {i*8}-{i*8+7})"
+                                )
+                    self._prev_static_tbox_snapshot = bytes(raw_static_now)
+                    static_bytes = raw_static_now
+            except Exception:
+                pass
+
+        # --- Re-baseline on stage entry to avoid false positives from pre-existing save state ---
+        # When entering a goddess-chest stage, previously opened chests already have their bits
+        # set in STATIC (loaded from save).  Snap those as the baseline so only chests opened
+        # AFTER arriving in this stage are counted.
+        last_goddess_stage = getattr(self, '_goddess_last_stage_prefix', "")
+        if current_stage_prefix != last_goddess_stage:
+            self._goddess_last_stage_prefix = current_stage_prefix
+            if current_static_scene is not None and static_bytes is not None:
+                baselined = 0
+                for loc, (scene_idx, chestflag) in self.goddess_chest_scene_flags.items():
+                    if scene_idx == current_static_scene and loc not in self.checked_locations:
+                        within_block = chestflag % 32
+                        byte_idx = within_block // 8
+                        bit_shift = within_block % 8
+                        if byte_idx < 4:
+                            state = (static_bytes[byte_idx] >> bit_shift) & 1
+                            self.previous_goddess_chest_flags[loc] = state
+                            baselined += 1
+                logger.debug(
+                    f"[GoddessChest] Stage entry: baselined {baselined} scene-{current_static_scene} "
+                    f"chests ({current_stage_prefix})"
+                )
+
+        # --- Per-chest flag reading ---
+        fa_byte_cache: Dict[int, Optional[int]] = {}
+
+        for location_code, (scene_index, chestflag) in self.goddess_chest_scene_flags.items():
             if location_code in self.checked_locations:
                 continue
-            
-            # Calculate u16 position and bit position within that u16
-            upper_flag = set_sceneflag // 16  # Which u16 in the scene's 8 u16s (0-7)
-            lower_flag = set_sceneflag % 16   # Which bit in that u16 (0-15)
-            
-            if upper_flag > 7:
-                logger.error(f"[GoddessChest] Invalid sceneflag {set_sceneflag} for location {location_code}: upper_flag={upper_flag}")
-                continue
-            
+
+            within_block = chestflag % 32
+            flat_byte_offset = scene_index * 4 + within_block // 8
+            bit_shift = within_block % 8
+
+            # FA flag (committed save buffer)
+            fa_flag_state = 0
             try:
-                if scene_index not in scene_cache:
-                    # Read 16 bytes (8 u16 values) for this scene from SaveFile A sceneflags
-                    scene_offset = OFFSET_SAVEFILE_A + OFFSET_FA_SCENEFLAGS + (scene_index * 16)
-                    scene_data = self.memory.read_bytes(scene_offset, 16)
-                    
-                    if scene_data and len(scene_data) == 16:
-                        scene_u16s = [
-                            int.from_bytes(scene_data[i:i+2], byteorder='little')
-                            for i in range(0, 16, 2)
-                        ]
-                        scene_cache[scene_index] = scene_u16s
-                    else:
-                        scene_cache[scene_index] = None
-                
-                scene_u16s = scene_cache.get(scene_index)
-                if scene_u16s is not None and upper_flag < len(scene_u16s):
-                    current_u16 = scene_u16s[upper_flag]
-                    flag_state = (current_u16 >> lower_flag) & 0x1
-                    previous_state = self.previous_goddess_chest_flags.get(location_code, 0)
-                    
-                    if self._goddess_flags_initializing:
-                        # First poll: record current state and recover unsent checks
-                        self.previous_goddess_chest_flags[location_code] = flag_state
-                        if flag_state == 1 and location_code not in self.sent_locations:
-                            self.checked_locations.add(location_code)
-                            location_name = self.location_names.lookup_in_slot(location_code, self.slot)
-                            logger.info(f"[GoddessChest] Recovered unsent check: {location_name}")
-                            self.update_tracker_state()
-                    elif flag_state == 1 and previous_state == 0:
-                        # Flag was just set - goddess chest opened!
-                        self.checked_locations.add(location_code)
-                        location_name = self.location_names.lookup_in_slot(location_code, self.slot)
-                        logger.info(f"[GoddessChest] Location checked: {location_name} (scene={scene_index}, flag={set_sceneflag})")
-                        self.update_tracker_state()
-                        self.previous_goddess_chest_flags[location_code] = flag_state
-                    else:
-                        self.previous_goddess_chest_flags[location_code] = flag_state
-                
+                if flat_byte_offset not in fa_byte_cache:
+                    tbox_data = self.memory.read_bytes(
+                        OFFSET_SAVEFILE_A + OFFSET_FA_TBOXFLAGS + flat_byte_offset, 1
+                    )
+                    fa_byte_cache[flat_byte_offset] = (
+                        tbox_data[0] if (tbox_data and len(tbox_data) == 1) else None
+                    )
+                raw_fa_byte = fa_byte_cache.get(flat_byte_offset)
+                if raw_fa_byte is not None:
+                    fa_flag_state = (raw_fa_byte >> bit_shift) & 0x1
             except Exception as e:
                 if not hasattr(self, '_goddess_error_logged'):
                     self._goddess_error_logged = set()
-                if scene_index not in self._goddess_error_logged:
-                    logger.error(f"[GoddessChest] Error reading scene {scene_index}: {e}")
-                    self._goddess_error_logged.add(scene_index)
-        
-        # Clear initialization flag after first complete poll
-        if self._goddess_flags_initializing:
-            expected = len(self.goddess_chest_scene_flags) - len([
-                lc for lc in self.goddess_chest_scene_flags if lc in self.checked_locations
-            ])
+                if flat_byte_offset not in self._goddess_error_logged:
+                    logger.error(f"[GoddessChest] FA read error at offset {flat_byte_offset}: {e}")
+                    self._goddess_error_logged.add(flat_byte_offset)
+
+            # STATIC flag (current-scene working copy; scene block is 4 bytes = 32 flags,
+            # accessed via chestflag % 32 to map into the block)
+            static_flag_state = 0
+            if static_bytes is not None and scene_index == current_static_scene:
+                byte_idx = within_block // 8
+                if byte_idx < 4:
+                    static_flag_state = (static_bytes[byte_idx] >> bit_shift) & 0x1
+
+            flag_state = fa_flag_state | static_flag_state
+            previous_state = self.previous_goddess_chest_flags.get(location_code, 0)
+
+            if getattr(self, '_goddess_flags_initializing', False):
+                self.previous_goddess_chest_flags[location_code] = flag_state
+                if flag_state == 1 and location_code not in self.sent_locations:
+                    self.checked_locations.add(location_code)
+                    location_name = self.location_names.lookup_in_slot(location_code, self.slot)
+                    logger.debug(
+                        f"[GoddessChest] Recovered unsent check: {location_name} "
+                        f"(loc={location_code}, scene={scene_index}, flag={chestflag}, "
+                        f"fa={fa_flag_state}, static={static_flag_state})"
+                    )
+                    self.update_tracker_state()
+            elif flag_state == 1 and previous_state == 0:
+                self.checked_locations.add(location_code)
+                location_name = self.location_names.lookup_in_slot(location_code, self.slot)
+                logger.debug(
+                    f"[GoddessChest] Location checked: {location_name} "
+                    f"(loc={location_code}, scene={scene_index}, flag={chestflag}, "
+                    f"flat_offset={flat_byte_offset}, bit={bit_shift}, "
+                    f"fa={fa_flag_state}, static={static_flag_state})"
+                )
+                self.update_tracker_state()
+                self.previous_goddess_chest_flags[location_code] = flag_state
+            else:
+                self.previous_goddess_chest_flags[location_code] = flag_state
+
+        # Clear init flag after first complete scan
+        if getattr(self, '_goddess_flags_initializing', False):
+            expected = len(self.goddess_chest_scene_flags) - len(
+                [lc for lc in self.goddess_chest_scene_flags if lc in self.checked_locations]
+            )
             initialized = len(self.previous_goddess_chest_flags)
             if initialized >= expected:
                 self._goddess_flags_initializing = False
                 already_set = sum(1 for v in self.previous_goddess_chest_flags.values() if v == 1)
-                logger.debug(f"[GoddessChest] Initialized {initialized} flags ({already_set} already set)")
+                logger.debug(
+                    f"[GoddessChest] Initialized {initialized} flags "
+                    f"({already_set} already set, stage={self.current_stage})"
+                )
 
     async def check_beedle_shop_storyflags(self):
         """
