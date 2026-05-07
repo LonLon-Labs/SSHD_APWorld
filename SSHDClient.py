@@ -1362,6 +1362,29 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         else:
             logger.warning("Hint system not available")
 
+    def _cmd_deathlink(self):
+        """Toggle DeathLink on/off. When enabled, deaths are shared with all DeathLink players."""
+        if not isinstance(self.ctx, SSHDContext):
+            logger.warning("Not connected to SSHD context")
+            return
+        enabled = "DeathLink" not in self.ctx.tags
+        asyncio.ensure_future(self.ctx.update_death_link(enabled))
+        logger.info(f"DeathLink is now {'ON' if enabled else 'OFF'}")
+
+    def _cmd_breathlink(self):
+        """Toggle BreathLink on/off. When enabled, stamina exhaustion is shared with all BreathLink players."""
+        if not isinstance(self.ctx, SSHDContext):
+            logger.warning("Not connected to SSHD context")
+            return
+        enabled = "BreathLink" not in self.ctx.tags
+        if enabled:
+            self.ctx.tags.add("BreathLink")
+        else:
+            self.ctx.tags.discard("BreathLink")
+        if self.ctx._is_socket_open():
+            asyncio.ensure_future(self.ctx.send_msgs([{"cmd": "ConnectUpdate", "tags": self.ctx.tags}]))
+        logger.info(f"BreathLink is now {'ON' if enabled else 'OFF'}")
+
 
 class SSHDContext(CommonContext):
     """
