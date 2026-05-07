@@ -76,17 +76,39 @@ pub fn handle_moon_jump() {
         if PLAYER_PTR.is_null() {
             return;
         }
+
         if input::check_button_held_down(input::BUTTON_INPUTS::Y_BUTTON) {
-            let vel_y = (*PLAYER_PTR).obj_base_members.velocity.y; // player+0x1EC
-            if vel_y <= 0.0f32 {
-                (*PLAYER_PTR).obj_base_members.velocity.y = 105.0f32; // 0x42D20000
+            let mut target_vel: f32;
+
+            // ── Turbo Logic (Vertical) ──────────────────────────────────────
+            if input::check_button_held_down(input::BUTTON_INPUTS::R_BUTTON) {
+                if input::check_button_held_down(input::BUTTON_INPUTS::L_BUTTON) {
+                    if input::check_button_held_down(input::BUTTON_INPUTS::ZR_BUTTON) {
+                        // L + R + ZR: Super Rocket
+                        target_vel = 500.0;
+                    } else {
+                        // L + R: Rocket
+                        target_vel = 250.0;
+                    }
+                } else {
+                    // R: Fast ascent
+                    target_vel = 100.0;
+                }
             } else {
-                (*PLAYER_PTR).obj_base_members.velocity.y = 35.0f32; // 0x420C0000
+                // Standard Moon Jump sustain (Matches your previous logic)
+                target_vel = 35.0;
+            }
+
+            let current_vel_y = (*PLAYER_PTR).obj_base_members.velocity.y;
+
+            // If we are currently falling or moving slower than our target speed,
+            // snap the velocity up. This mimics the "kick" and "sustain" feel.
+            if current_vel_y < target_vel {
+                (*PLAYER_PTR).obj_base_members.velocity.y = target_vel;
             }
         }
     }
 }
-
 /// Direct translation of:
 ///
 ///   [X hover craft mode, use Lstick to move]
@@ -212,13 +234,18 @@ pub fn handle_hovercraft() {
             *speed_ptr = -22.9995f32; // 0xC1B7FEFA
         }
 
-        // ── L-stick up → forward (with R-button turbo) ──────────────────────────
+        // ── L-stick up → forward (with turbo) ──────────────────────────
         if input::check_button_held_down(input::BUTTON_INPUTS::LEFT_STICK_UP) {
             if input::check_button_held_down(input::BUTTON_INPUTS::R_BUTTON) {
                 if input::check_button_held_down(input::BUTTON_INPUTS::L_BUTTON) {
                     if input::check_button_held_down(input::BUTTON_INPUTS::ZR_BUTTON) {
-                        // L+R+ZR turbo: go too fast
-                        *speed_ptr = 500.0f32;
+                        if input::check_button_held_down(input::BUTTON_INPUTS::ZL_BUTTON) {
+                            // L+R+ZL+ZR turbo: go ludicrously fast
+                            *speed_ptr = 1000.0f32;
+                        } else {
+                            // L+R+ZR turbo: go too fast
+                            *speed_ptr = 500.0f32;
+                        }
                     } else {
                         // L+R turbo: go really really fast
                         *speed_ptr = 250.0f32;
