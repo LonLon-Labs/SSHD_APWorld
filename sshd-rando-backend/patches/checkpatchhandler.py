@@ -47,6 +47,16 @@ def determine_check_patches(
 
     location_table = world.location_table
 
+    # Remove flags already injected by Archipelago to prevent collisions.
+    # AP assigns from the high end; the patcher assigns from the low end.
+    # This depletion is defense-in-depth in case the pools ever overlap.
+    injected_flags = {
+        loc.custom_flag for loc in location_table.values()
+        if hasattr(loc, 'custom_flag') and loc.custom_flag != 0x3FF
+    }
+    if injected_flags:
+        custom_flags = [f for f in custom_flags if f not in injected_flags]
+
     # A set is okay here because it doesn't touch any randomization
     playthrough_items = set()
 
@@ -58,11 +68,19 @@ def determine_check_patches(
         item = location.current_item
 
         # Deal with items with custom flags
-        custom_flag = 0x3FF  # Value for no custom flag
-        original_itemid = 0
-
-        if "Custom Flag" in location.types:
+        # Check if Archipelago already injected a custom flag (for multiworld)
+        if hasattr(location, 'custom_flag') and location.custom_flag != 0x3FF:
+            # Use the pre-injected custom flag from Archipelago
+            custom_flag = location.custom_flag
+        elif "Custom Flag" in location.types:
+            # Assign a new custom flag for vanilla sshd-rando locations
             custom_flag = custom_flags.pop()
+            location.custom_flag = custom_flag
+        else:
+            # No custom flag needed
+            custom_flag = 0x3FF
+        
+        original_itemid = 0
 
         if "Stamina Fruits" in location.types:
             original_itemid = 1
@@ -126,6 +144,14 @@ def determine_check_patches(
                     item_oarcs += item.oarcs
                 else:
                     item_oarcs.append(item.oarcs)
+            else:
+                # Item has no model (bugs, some treasures). The Rust code
+                # will fall back to "GetRupee" which is in the ObjectPack
+                # and always loaded, so no ARCN entry is needed. But we
+                # still need to make sure the item spawns properly, so
+                # add GetRupee as a safety net in case the stage doesn't
+                # have it from ObjectPack for some reason.
+                item_oarcs.append("GetRupee")
 
             if trap_oarcs:
                 if isinstance(trap_oarcs, list):
@@ -215,7 +241,7 @@ def determine_check_patches(
                 event_file = event_patch_match.group("eventFile")
                 eventid = event_patch_match.group("eventID")
                 event_patch_handler.add_check_patch(
-                    event_file, eventid, item.id, trapid
+                    event_file, eventid, item.id, trapid, custom_flag
                 )
 
             if oarc_add_match := OARC_ADD_PATH_REGEX.match(path):
@@ -230,6 +256,7 @@ def determine_check_patches(
                 shop_index = int(shop_match.group("index"))
                 stage = "F002r"  # Beedle's Airshop
                 layer = 0
+                room = 0  # Shops are always room 0
 
                 if shop_index < 20 or shop_index >= 30:
                     stage = "F004r"  # Bazaar
