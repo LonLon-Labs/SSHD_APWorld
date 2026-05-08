@@ -703,7 +703,7 @@ def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0
         )
 
 
-def patch_hrphint(bzs: dict, itemid: int, object_id_str: str, trapid: int):
+def patch_hrphint(bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int = 0x3FF):
     id = int(object_id_str, 16)
 
     hrphint: dict | None = next(
@@ -725,6 +725,10 @@ def patch_hrphint(bzs: dict, itemid: int, object_id_str: str, trapid: int):
         hrphint["params2"] = mask_shift_set(hrphint["params2"], 0xF, 0, 0xF)
 
     hrphint["params2"] = mask_shift_set(hrphint["params2"], 0xFF, 4, itemid)
+
+    # Encode AP custom_flag (10 bits) into bits 12-21.
+    # Sentinel 0x3FF means no AP flag (vanilla sceneflag path in Rust).
+    hrphint["params2"] = mask_shift_set(hrphint["params2"], 0x3FF, 12, custom_flag)
 
 
 def object_add(bzs: dict, object_add: dict, nextid: int) -> int:
@@ -1356,6 +1360,7 @@ class StagePatchHandler:
                             itemid,
                             objectid,
                             trapid,
+                            custom_flag,
                         )
                     else:
                         print(

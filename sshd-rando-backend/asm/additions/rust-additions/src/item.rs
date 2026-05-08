@@ -1828,10 +1828,25 @@ pub extern "C" fn setup_gossip_stone_item_params(
         let sceneflag: u32 = (*hrphint_actor).basebase.members.param1 & 0xFF;
         let trapid: u32 = (*hrphint_actor).members.base.param2 & 0xF;
         let itemid: u32 = ((*hrphint_actor).members.base.param2 >> 4) & 0xFF;
+        // Bits 12-21 hold a 10-bit AP custom flag
+        // (flag[0-6]|scene_sel[7-8]|flag_space[9]) or the sentinel 0x3FF
+        // meaning no AP flag (use vanilla sceneflag).
+        let raw_flag: u32 = ((*hrphint_actor).members.base.param2 >> 12) & 0x3FF;
 
-        param1 = 0x180000u32 | (sceneflag << 10) | itemid;
-        param2 &= 0xFFFFFF0F;
-        param2 |= trapid << 4;
+        if raw_flag != 0x3FF {
+            // AP mode: build param1 with 0xFF in bits 10-17 (required by
+            // check_and_modify_item_actor) and encode the custom flag into param2.
+            let flag_num = (raw_flag & 0x7F) as u32;
+            let scene_sel = ((raw_flag >> 7) & 0x3) as u32;
+            let flag_space = ((raw_flag >> 9) & 0x1) as u32;
+            param1 = (itemid as u32) | (0xFFu32 << 10) | 0x580000;
+            param2 = (flag_num << 8) | (scene_sel << 15) | (flag_space << 17) | (trapid << 4);
+        } else {
+            // Vanilla mode: use the vanilla local sceneflag from param1.
+            param1 = 0x180000u32 | (sceneflag << 10) | itemid;
+            param2 &= 0xFFFFFF0F;
+            param2 |= trapid << 4;
+        }
 
         // Redefine actor_rot
         // Can't use the vanilla rot on the stack as, unfathomably, this causes the
