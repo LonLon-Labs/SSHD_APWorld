@@ -738,15 +738,34 @@ pub extern "C" fn give_squirrel_item(musasabi_tag: *mut actor::dTgMusasabi) {
     unsafe {
         if SQUIRRELS_CAUGHT_THIS_PLAY_SESSION && (*musasabi_tag).unused == 0 {
             let itemid: u8 = ((*musasabi_tag).base.members.param2 & 0xFF) as u8;
-            let sceneflag: u8 = ((*musasabi_tag).base.members.param2 >> 8 & 0xFF) as u8;
+            // Bits 8-17 hold either a 10-bit AP custom flag (3-part tgreact
+            // encoding: flag[0-6] | scene_sel[7-8] | flag_space[9]) or the
+            // sentinel 0x3FF meaning no flag.
+            let raw_flag: u32 = ((*musasabi_tag).base.members.param2 >> 8) & 0x3FF;
 
-            if sceneflag != u8::MAX && flag::check_local_sceneflag(sceneflag as u32) == 0 {
-                give_item_with_sceneflag(itemid, sceneflag);
+            if raw_flag != 0x3FF {
+                // AP mode: decode and check the global custom flag before giving.
+                let flag_num = (raw_flag & 0x7F) as u16;
+                let scene_idx_raw = (raw_flag >> 7) & 0x3;
+                let flag_space = (raw_flag >> 9) & 0x1;
+                let sceneindex: u16 = match scene_idx_raw {
+                    0 => 6,
+                    1 => 13,
+                    2 => 16,
+                    _ => 19,
+                };
+                let already_given = match flag_space {
+                    0 => flag::check_global_sceneflag(sceneindex, flag_num) != 0,
+                    _ => flag::check_global_dungeonflag(sceneindex, flag_num) != 0,
+                };
+                if !already_given {
+                    give_item_with_archipelago_flag(itemid, raw_flag as u16);
+                }
             } else {
                 give_item(flag::ITEMFLAGS::RED_RUPEE as u8);
             }
 
-            // Keep track of if the item has alreeady been given
+            // Keep track of if the item has already been given this session
             (*musasabi_tag).unused = 1;
         }
 
