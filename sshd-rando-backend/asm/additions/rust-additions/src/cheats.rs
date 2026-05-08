@@ -95,15 +95,19 @@ pub fn handle_moon_jump() {
                     target_vel = 100.0;
                 }
             } else {
-                // Standard Moon Jump sustain (Matches your previous logic)
+                // Standard Moon Jump sustain
                 target_vel = 35.0;
             }
 
             let current_vel_y = (*PLAYER_PTR).obj_base_members.velocity.y;
 
-            // If we are currently falling or moving slower than our target speed,
-            // snap the velocity up. This mimics the "kick" and "sustain" feel.
-            if current_vel_y < target_vel {
+            // vel_y <= 0 means on the ground or falling — apply a kick strong
+            // enough to break surface contact (at least 105.0, or the turbo
+            // target if that's already higher).
+            // vel_y > 0 means already airborne — sustain at target_vel.
+            if current_vel_y <= 0.0f32 {
+                (*PLAYER_PTR).obj_base_members.velocity.y = target_vel.max(105.0f32);
+            } else if current_vel_y < target_vel {
                 (*PLAYER_PTR).obj_base_members.velocity.y = target_vel;
             }
         }
