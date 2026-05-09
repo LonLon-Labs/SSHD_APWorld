@@ -145,7 +145,10 @@ def set_rules(world: "SSHDWorld") -> None:
                 entrance.access_rule = lambda state: can_swim_underwater(state)
             elif rule_name == "can_enter_earth_temple":
                 # YAML: Earth Temple First Room requires open_earth_temple == open or count(5, Key_Piece)
-                entrance.access_rule = lambda state: count(state, "Key Piece") >= 5
+                if options.open_earth_temple.value == 0:  # open
+                    entrance.access_rule = lambda state: True
+                else:
+                    entrance.access_rule = lambda state: count(state, "Key Piece") >= 5
             elif rule_name == "has_earth_temple_boss_key":
                 entrance.access_rule = lambda state: has(state, "Earth Temple Boss Key")
             elif rule_name == "can_enter_fire_sanctuary":

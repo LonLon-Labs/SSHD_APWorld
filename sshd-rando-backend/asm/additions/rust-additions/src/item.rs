@@ -855,6 +855,10 @@ pub extern "C" fn tgreact_spawn_custom_item(
                     0xFF00000F | (param2 & 0x3FF00) | (trapid << 4),
                 ) as *mut dAcItem;
 
+                if item_actor.is_null() {
+                    return param2_s0x18.into();
+                }
+
                 let mut forward_speed = 0.0;
                 let mut velocity_y = 0.0;
 

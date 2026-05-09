@@ -1431,8 +1431,10 @@ class SSHDWorld(World):
             floria_map = {0: "vanilla", 1: "yerbal", 2: "open"}
             s['open_lake_floria'] = floria_map.get(
                 self.options.open_lake_floria.value, 'vanilla')
-        if 'open_et' not in s:
-            s['open_et'] = "on" if self.options.open_earth_temple.value else "off"
+        if 'open_earth_temple' not in s:
+            et_map = {0: "open", 1: "shuffle_eldin", 2: "shuffle_anywhere"}
+            s['open_earth_temple'] = et_map.get(
+                self.options.open_earth_temple.value, 'open')
         if 'open_lmf' not in s:
             s['open_lmf'] = "on" if self.options.open_lmf.value else "off"
 
@@ -1639,6 +1641,12 @@ class SSHDWorld(World):
                 "Green Rupee": 1,
                 "5 Bombs": 1,
             }
+            
+            # When Earth Temple is open, Key Pieces are removed from the
+            # sshd-rando item pool. Mirror that in the AP pool so the counts
+            # stay in sync and the fill doesn't place unreachable items.
+            if self.options.open_earth_temple.value == 0:  # open
+                POOL_ITEM_COUNTS.pop("Key Piece", None)
             
             for name, data in ITEM_TABLE.items():
                 if name in SKIP_ITEMS or name in PROGRESSIVE_STAGE_ITEMS:
