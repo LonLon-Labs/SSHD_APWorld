@@ -2734,8 +2734,12 @@ class SSHDWorld(World):
         location_to_item_map = {}
         for location in self.multiworld.get_locations(self.player):
             if location.address is not None and location.item:
-                # Map: location_code -> item_code
-                location_to_item_map[location.address] = location.item.code
+                # Map: location_code -> {item_id, player} so the client can
+                # distinguish items destined for this player vs other players.
+                location_to_item_map[location.address] = {
+                    "item_id": location.item.code,
+                    "player": location.item.player,
+                }
         
         slot_data["location_to_item_map"] = location_to_item_map
         
