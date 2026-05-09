@@ -738,15 +738,34 @@ pub extern "C" fn give_squirrel_item(musasabi_tag: *mut actor::dTgMusasabi) {
     unsafe {
         if SQUIRRELS_CAUGHT_THIS_PLAY_SESSION && (*musasabi_tag).unused == 0 {
             let itemid: u8 = ((*musasabi_tag).base.members.param2 & 0xFF) as u8;
-            let sceneflag: u8 = ((*musasabi_tag).base.members.param2 >> 8 & 0xFF) as u8;
+            // Bits 8-17 hold either a 10-bit AP custom flag (3-part tgreact
+            // encoding: flag[0-6] | scene_sel[7-8] | flag_space[9]) or the
+            // sentinel 0x3FF meaning no flag.
+            let raw_flag: u32 = ((*musasabi_tag).base.members.param2 >> 8) & 0x3FF;
 
-            if sceneflag != u8::MAX && flag::check_local_sceneflag(sceneflag as u32) == 0 {
-                give_item_with_sceneflag(itemid, sceneflag);
+            if raw_flag != 0x3FF {
+                // AP mode: decode and check the global custom flag before giving.
+                let flag_num = (raw_flag & 0x7F) as u16;
+                let scene_idx_raw = (raw_flag >> 7) & 0x3;
+                let flag_space = (raw_flag >> 9) & 0x1;
+                let sceneindex: u16 = match scene_idx_raw {
+                    0 => 6,
+                    1 => 13,
+                    2 => 16,
+                    _ => 19,
+                };
+                let already_given = match flag_space {
+                    0 => flag::check_global_sceneflag(sceneindex, flag_num) != 0,
+                    _ => flag::check_global_dungeonflag(sceneindex, flag_num) != 0,
+                };
+                if !already_given {
+                    give_item_with_archipelago_flag(itemid, raw_flag as u16);
+                }
             } else {
                 give_item(flag::ITEMFLAGS::RED_RUPEE as u8);
             }
 
-            // Keep track of if the item has alreeady been given
+            // Keep track of if the item has already been given this session
             (*musasabi_tag).unused = 1;
         }
 
@@ -1809,10 +1828,25 @@ pub extern "C" fn setup_gossip_stone_item_params(
         let sceneflag: u32 = (*hrphint_actor).basebase.members.param1 & 0xFF;
         let trapid: u32 = (*hrphint_actor).members.base.param2 & 0xF;
         let itemid: u32 = ((*hrphint_actor).members.base.param2 >> 4) & 0xFF;
+        // Bits 12-21 hold a 10-bit AP custom flag
+        // (flag[0-6]|scene_sel[7-8]|flag_space[9]) or the sentinel 0x3FF
+        // meaning no AP flag (use vanilla sceneflag).
+        let raw_flag: u32 = ((*hrphint_actor).members.base.param2 >> 12) & 0x3FF;
 
-        param1 = 0x180000u32 | (sceneflag << 10) | itemid;
-        param2 &= 0xFFFFFF0F;
-        param2 |= trapid << 4;
+        if raw_flag != 0x3FF {
+            // AP mode: build param1 with 0xFF in bits 10-17 (required by
+            // check_and_modify_item_actor) and encode the custom flag into param2.
+            let flag_num = (raw_flag & 0x7F) as u32;
+            let scene_sel = ((raw_flag >> 7) & 0x3) as u32;
+            let flag_space = ((raw_flag >> 9) & 0x1) as u32;
+            param1 = (itemid as u32) | (0xFFu32 << 10) | 0x580000;
+            param2 = (flag_num << 8) | (scene_sel << 15) | (flag_space << 17) | (trapid << 4);
+        } else {
+            // Vanilla mode: use the vanilla local sceneflag from param1.
+            param1 = 0x180000u32 | (sceneflag << 10) | itemid;
+            param2 &= 0xFFFFFF0F;
+            param2 |= trapid << 4;
+        }
 
         // Redefine actor_rot
         // Can't use the vanilla rot on the stack as, unfathomably, this causes the

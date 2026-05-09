@@ -573,7 +573,7 @@ def patch_goddess_crest(bzs: dict, itemid: int, index: str, trapid: int, custom_
         )
 
 
-def patch_squirrels(bzs: dict, itemid: int, object_id_str: str, trapid: int):
+def patch_squirrels(bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int = 0x3FF):
     id = int(object_id_str, 16)
 
     squirrel_tag: dict | None = next(
@@ -589,14 +589,22 @@ def patch_squirrels(bzs: dict, itemid: int, object_id_str: str, trapid: int):
 
     squirrel_tag["params2"] = mask_shift_set(squirrel_tag["params2"], 0xFF, 0, itemid)
 
-    squirrel_id_to_sceneflag = {
-        0xFCC8: 88,  # 0xA 01
-        0xFC9C: 89,  # 0xA 02
-        0xFCA0: 90,  # 0xA 04
-    }
-    squirrel_tag["params2"] = mask_shift_set(
-        squirrel_tag["params2"], 0xFF, 8, squirrel_id_to_sceneflag[id]
-    )
+    if custom_flag != 0x3FF:
+        # AP mode: encode the 10-bit custom flag into bits 8-17 (same 3-part
+        # encoding used by TgReact / tgreact_spawn_custom_item).
+        squirrel_tag["params2"] = mask_shift_set(
+            squirrel_tag["params2"], 0x3FF, 8, custom_flag
+        )
+    else:
+        # Vanilla mode: encode the vanilla sceneflag into bits 8-15.
+        squirrel_id_to_sceneflag = {
+            0xFCC8: 88,  # 0xA 01
+            0xFC9C: 89,  # 0xA 02
+            0xFCA0: 90,  # 0xA 04
+        }
+        squirrel_tag["params2"] = mask_shift_set(
+            squirrel_tag["params2"], 0xFF, 8, squirrel_id_to_sceneflag[id]
+        )
 
 
 def patch_tadtone_group(bzs: dict, itemid: int, groupid_str: str, trapid: int, custom_flag: int = 0x3FF):
@@ -695,7 +703,7 @@ def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0
         )
 
 
-def patch_hrphint(bzs: dict, itemid: int, object_id_str: str, trapid: int):
+def patch_hrphint(bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int = 0x3FF):
     id = int(object_id_str, 16)
 
     hrphint: dict | None = next(
@@ -717,6 +725,10 @@ def patch_hrphint(bzs: dict, itemid: int, object_id_str: str, trapid: int):
         hrphint["params2"] = mask_shift_set(hrphint["params2"], 0xF, 0, 0xF)
 
     hrphint["params2"] = mask_shift_set(hrphint["params2"], 0xFF, 4, itemid)
+
+    # Encode AP custom_flag (10 bits) into bits 12-21.
+    # Sentinel 0x3FF means no AP flag (vanilla sceneflag path in Rust).
+    hrphint["params2"] = mask_shift_set(hrphint["params2"], 0x3FF, 12, custom_flag)
 
 
 def object_add(bzs: dict, object_add: dict, nextid: int) -> int:
@@ -1304,6 +1316,7 @@ class StagePatchHandler:
                             itemid,
                             objectid,
                             trapid,
+                            custom_flag,
                         )
                     elif object_name == "WarpObj":
                         patch_trial_gate(
@@ -1347,6 +1360,7 @@ class StagePatchHandler:
                             itemid,
                             objectid,
                             trapid,
+                            custom_flag,
                         )
                     else:
                         print(
