@@ -1871,23 +1871,25 @@ class SSHDContext(CommonContext):
             if raw_loc_item:
                 self.location_to_item_map = {int(k): v for k, v in raw_loc_item.items()}
                 logger.debug(f"Loaded location_to_item_map with {len(self.location_to_item_map)} entries")
-                # Pre-compute the set of location codes that contain our own Progressive Sword
+                # Pre-compute the set of location codes that contain our own Progressive Sword.
+                # Only include locations where the item is destined for THIS player — not another
+                # SSHD player's sword, which would incorrectly trigger a local sword upgrade.
                 PROGRESSIVE_SWORD_ID = 2773010
                 self.sword_location_codes = {
                     loc_code
                     for loc_code, item_info in self.location_to_item_map.items()
-                    if (isinstance(item_info, dict) and item_info.get("item_id") == PROGRESSIVE_SWORD_ID
-                        and item_info.get("player") == self.slot)
-                    or (isinstance(item_info, int) and item_info == PROGRESSIVE_SWORD_ID)
+                    if isinstance(item_info, dict)
+                    and item_info.get("item_id") == PROGRESSIVE_SWORD_ID
+                    and item_info.get("player") == self.slot
                 }
 
                 PROGRESSIVE_BEETLE_ID = 2773053
                 self.beetle_location_codes = {
                     loc_code
                     for loc_code, item_info in self.location_to_item_map.items()
-                    if (isinstance(item_info, dict) and item_info.get("item_id") == PROGRESSIVE_BEETLE_ID
-                        and item_info.get("player") == self.slot)
-                    or (isinstance(item_info, int) and item_info == PROGRESSIVE_BEETLE_ID)
+                    if isinstance(item_info, dict)
+                    and item_info.get("item_id") == PROGRESSIVE_BEETLE_ID
+                    and item_info.get("player") == self.slot
                 }
             else:
                 self.location_to_item_map = {}
@@ -1918,10 +1920,10 @@ class SSHDContext(CommonContext):
             goddess_chest_raw = slot_data.get("goddess_chest_scene_flags", {})
             if goddess_chest_raw:
                 self.goddess_chest_scene_flags = {int(k): v for k, v in goddess_chest_raw.items()}
-                logger.info(f"[GoddessChest] Loaded {len(self.goddess_chest_scene_flags)} goddess chest tboxflag mappings from slot_data")
+                logger.debug(f"[GoddessChest] Loaded {len(self.goddess_chest_scene_flags)} goddess chest tboxflag mappings from slot_data")
                 for loc_code, (scene_idx, chestflag) in self.goddess_chest_scene_flags.items():
                     loc_name = self.location_names.lookup_in_slot(loc_code, self.slot) if hasattr(self, 'location_names') and self.slot else str(loc_code)
-                    logger.info(f"  [GoddessChest] loc={loc_code} ({loc_name}): scene={scene_idx}, chestflag={chestflag}, flat_offset={scene_idx*4 + chestflag//8}, bit={chestflag%8}")
+                    logger.debug(f"  [GoddessChest] loc={loc_code} ({loc_name}): scene={scene_idx}, chestflag={chestflag}, flat_offset={scene_idx*4 + chestflag//8}, bit={chestflag%8}")
             else:
                 logger.info(f"[GoddessChest] WARNING: goddess_chest_scene_flags key missing or empty in slot_data (slot_data keys: {list(slot_data.keys())})")
 
