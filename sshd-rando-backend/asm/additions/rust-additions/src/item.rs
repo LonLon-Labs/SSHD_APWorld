@@ -1986,6 +1986,31 @@ pub static mut ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER
     },
 ];
 
+#[inline(always)]
+fn should_force_itemflag_for_buffer_item(item_id: u32) -> bool {
+    // Only force itemflags for progressive tiers that are known to suffer
+    // from resolve races when delivered through the AP buffer.
+    matches!(
+        item_id,
+        // Progressive Sword
+        9 | 10 | 11 | 12 | 13 | 14 |
+        // Progressive Bow
+        19 | 90 | 91 |
+        // Progressive Slingshot
+        52 | 105 |
+        // Progressive Beetle
+        53 | 75 | 76 | 77 |
+        // Progressive Mitts
+        56 | 99 |
+        // Progressive Bug Net
+        71 | 140 |
+        // Progressive Wallet
+        108 | 109 | 110 | 111 |
+        // Progressive Pouch / pouch expansion
+        112 | 113
+    )
+}
+
 // Player actions during which we must NOT deliver an Archipelago item.
 // Values match BUSY_PLAYER_ACTIONS in ItemSystemIntegration.py.
 const BUSY_ACTIONS: [player::PLAYER_ACTIONS; 46] = [
@@ -2198,7 +2223,7 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 // We also commit immediately because set_flag only writes
                 // to the uncommitted copy, and get_flag_or_counter reads
                 // the committed copy.
-                if spawn_id <= 215 {
+                if spawn_id <= 215 && should_force_itemflag_for_buffer_item(spawn_id) {
                     flag::set_itemflag_raw(spawn_id as u16);
                     flag::commit_itemflags();
                 }

@@ -3546,10 +3546,15 @@ class SSHDContext(CommonContext):
                 expected_sword_count = self.progressive_counts.get("Progressive Sword", 0)
                 logger.debug(f"[Sync] Sword: memory={actual_sword_count}, progressive_counts={expected_sword_count}, sf_val=0x{sf_val:04X}")
                 if actual_sword_count > expected_sword_count:
-                    diff = actual_sword_count - expected_sword_count
-                    logger.info(f"[Sync] Sword count in memory ({actual_sword_count}) > progressive_counts ({expected_sword_count}), queuing {diff} upgrade(s)")
-                    for _ in range(diff):
-                        self._update_sword_storyflags()
+                    # Transition sync is reconciliation only. If memory is
+                    # already ahead, avoid queuing synthetic upgrades that can
+                    # duplicate local progression.
+                    self.progressive_counts["Progressive Sword"] = actual_sword_count
+                    self._update_sword_storyflags_for_count(actual_sword_count)
+                    logger.debug(
+                        f"[Sync] Sword count in memory ({actual_sword_count}) > "
+                        f"progressive_counts ({expected_sword_count}), aligned counter"
+                    )
 
             # ── Beetle sync ─────────────────────────────────────────────
             fa_item_base = OFFSET_SAVEFILE_A + OFFSET_FA_ITEMFLAGS
@@ -3566,10 +3571,13 @@ class SSHDContext(CommonContext):
             expected_beetle_count = self.progressive_counts.get("Progressive Beetle", 0)
             logger.debug(f"[Sync] Beetle: memory={actual_beetle_count}, progressive_counts={expected_beetle_count}")
             if actual_beetle_count > expected_beetle_count:
-                diff = actual_beetle_count - expected_beetle_count
-                logger.info(f"[Sync] Beetle count in memory ({actual_beetle_count}) > progressive_counts ({expected_beetle_count}), queuing {diff} upgrade(s)")
-                for _ in range(diff):
-                    self._update_beetle_storyflags()
+                # Same policy as swords: reconcile counters without granting
+                # additional synthetic upgrades.
+                self.progressive_counts["Progressive Beetle"] = actual_beetle_count
+                logger.debug(
+                    f"[Sync] Beetle count in memory ({actual_beetle_count}) > "
+                    f"progressive_counts ({expected_beetle_count}), aligned counter"
+                )
 
         except Exception as e:
             logger.debug(f"[Sync] Error during progressive item sync: {e}")
@@ -3649,15 +3657,18 @@ class SSHDContext(CommonContext):
             logger.debug(f"[StoryFlags] Enforce all failed: {e}")
 
     def _update_sword_storyflags_for_count(self, new_count: int):
-        """Write sf906-911 and unset sf28 for a given sword tier count (1-6).
+        """Write sf906-911, set sf4 for sword ownership, and unset sf28.
 
         sf906-911 are in u16[56] (byte offset 112), bits 10-15.
+        sf4 is in u16[0] (byte offset 0), bit 4.
         sf28 is in u16[1] (byte offset 2), bit 12.
         Writes to both FA and STATIC copies.
         """
         try:
             SF_WORD_OFFSET = 112
             SF_BITS = [10, 11, 12, 13, 14, 15]
+            SF4_WORD_OFFSET = 0
+            SF4_BIT = 4
             SF28_WORD_OFFSET = 2
             SF28_BIT = 12
             bases = [
@@ -3676,6 +3687,12 @@ class SSHDContext(CommonContext):
                             new_val &= ~(1 << bit) & 0xFFFF
                     if new_val != current_val:
                         self.memory.write_short(addr, new_val)
+                addr4 = base + SF4_WORD_OFFSET
+                val4 = self.memory.read_short(addr4)
+                if val4 is not None:
+                    new_val4 = (val4 | (1 << SF4_BIT)) if new_count > 0 else (val4 & ~(1 << SF4_BIT) & 0xFFFF)
+                    if new_val4 != val4:
+                        self.memory.write_short(addr4, new_val4)
                 addr28 = base + SF28_WORD_OFFSET
                 val28 = self.memory.read_short(addr28)
                 if val28 is not None and (val28 & (1 << SF28_BIT)):
