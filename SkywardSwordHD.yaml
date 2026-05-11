@@ -284,9 +284,9 @@ Skyward Sword HD:
   
   # Require Dungeons
   # When enabled, you must defeat the configured number of dungeons before the goal boss counts for victory
-  require_dungeons: false
+  dungeon_goal_requirement: false
   
-  # Number of dungeons to require when require_dungeons is enabled (0-7)
+  # Number of dungeons to require when dungeon_goal_requirement is enabled (0-7)
   # Note: Beating dungeon bosses is what counts as a "required dungeon"
   required_dungeon_count: 0
   

@@ -1439,6 +1439,26 @@
   shop_model_name: ArchipelagoItem
   advancement: false
 
+- id: 217
+  name: Greg The Green Rupee
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: null # ObjectPack
+  shop_arc_name: GetRupee
+  shop_model_name: GetRupee
+  advancement: true
+
+- id: 218
+  name: Tim The Tumbleweed
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: null # ObjectPack
+  shop_arc_name: GetSozaiC
+  shop_model_name: GetSozaiC
+  advancement: true
+
 # - id: 240+ == traps
 
 - id: 250

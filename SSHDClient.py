@@ -2015,6 +2015,25 @@ class SSHDContext(CommonContext):
             asyncio.create_task(self.send_msgs([{"cmd": "ConnectUpdate", "tags": list(self.tags)}]))
             logger.debug(f"Sent ConnectUpdate with tags: {list(self.tags)}")
 
+            # When dungeon_goal_requirement is disabled, the old random
+            # selection system is used.  Persist the selected dungeons to
+            # DataStorage so other tools (trackers, overlays, etc.) can read them.
+            if not slot_data.get("option_dungeon_goal_requirement", 1):
+                required_dungeons = slot_data.get("required_dungeons", [])
+                if required_dungeons:
+                    seed = self.seed_name or "default"
+                    ds_req_key = f"sshd_{seed}_{self.auth}_required_dungeons"
+                    asyncio.create_task(self.send_msgs([{
+                        "cmd": "Set",
+                        "key": ds_req_key,
+                        "default": [],
+                        "want_reply": False,
+                        "operations": [{"operation": "replace", "value": required_dungeons}],
+                    }]))
+                    logger.info(
+                        f"[DataStorage] Stored required dungeons: {required_dungeons}"
+                    )
+
             # Request persisted delivery index from AP DataStorage
             self._datastorage_loaded = False
             self._pending_received_items.clear()

@@ -147,12 +147,12 @@ class Goal(Choice):
     default = 0
 
 
-class RequireDungeons(Toggle):
+class DungeonGoalRequirement(Toggle):
     """
     If enabled, a specific number of dungeons must be defeated before the goal boss counts.
     Configure the number using Required Dungeon Count.
     """
-    display_name = "Require Dungeons"
+    display_name = "Dungeon Goal Requirement"
 
 
 class RequireGreg(Toggle):
@@ -1635,7 +1635,7 @@ class SSHDOptions(PerGameCommonOptions):
     triforce_required: TriforceRequired
     require_triforce_pieces: RequireTriforcePieces
     required_triforce_pieces: RequiredTriforcePieces
-    require_dungeons: RequireDungeons
+    dungeon_goal_requirement: DungeonGoalRequirement
     require_greg: RequireGreg
     require_tim: RequireTim
     require_all_progression_items: RequireAllProgressionItems
@@ -1860,7 +1860,7 @@ sshd_option_groups = [
         TriforceRequired,
         RequireTriforcePieces,
         RequiredTriforcePieces,
-        RequireDungeons,
+        DungeonGoalRequirement,
         RequireGreg,
         RequireTim,
         RequireAllProgressionItems,

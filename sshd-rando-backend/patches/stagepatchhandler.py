@@ -1800,7 +1800,7 @@ def create_demise_patches(
     world: World, stage_patch_handler: StagePatchHandler
 ) -> None:
     """Add extra Demise bosses to the final fight arena (B400) based on the demise_count setting."""
-    demise_count = int(world.setting("demise_count"))
+    demise_count = world.setting("demise_count").value_as_number()
     if demise_count <= 1:
         return
 
