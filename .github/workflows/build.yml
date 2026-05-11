@@ -115,12 +115,6 @@ jobs:
                 sys.exit(1)
             else:
                 print('✅ All required files present in APWorld')
-
-            # Check if exe is bundled
-            if 'sshd/ArchipelagoSSHDClient.exe' in archive_files:
-                print('✅ Standalone client exe bundled in APWorld')
-            else:
-                print('⚠️  Standalone client exe NOT in APWorld (will be distributed separately)')
         "
 
     - name: Upload APWorld artifact
@@ -193,8 +187,8 @@ jobs:
 
           ### Quick Install
           1. Place `sshd.apworld` in your Archipelago `custom_worlds` folder
-          2. Open the Archipelago Launcher — click **Skyward Sword HD Client** to connect
-          3. Run `ArchipelagoSSHDPatcher.exe` to apply patches from a lightweight `.apsshd` file
+          2. Run `ArchipelagoSSHDPatcher.exe` to apply patches from a lightweight `.apsshd` file
+          3. Open the Archipelago Launcher — click **Skyward Sword HD Client** to connect
 
           **Commit**: ${{ github.sha }}
           **Branch**: ${{ github.ref_name }}
@@ -216,8 +210,8 @@ jobs:
 
           ### Quick Install
           1. Place `sshd.apworld` in your Archipelago `custom_worlds` folder
-          2. Open the Archipelago Launcher — click **Skyward Sword HD Client** to connect
-          3. Run `ArchipelagoSSHDPatcher.exe` to apply patches from a lightweight `.apsshd` file
+          2. Run `ArchipelagoSSHDPatcher.exe` to apply patches from a lightweight `.apsshd` file
+          3. Open the Archipelago Launcher — click **Skyward Sword HD Client** to connect
 
           See [README](https://github.com/${{ github.repository }}#quick-start) for full setup instructions.
         draft: false
