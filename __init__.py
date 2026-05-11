@@ -468,6 +468,7 @@ class SSHDWorld(World):
         "imp_2_skip": ("imp2_skip", "toggle", None),
         "skip_horde": ("skip_horde", "toggle", None),
         "skip_g3": ("skip_ghirahim3", "toggle", None),
+        "demise_count": ("demise_count", "range", None),
         # Shuffles
         "gratitude_crystal_shuffle": ("gratitude_crystal_shuffle", "toggle", None),
         "stamina_fruit_shuffle": ("stamina_fruit_shuffle", "toggle", None),
@@ -3583,6 +3584,8 @@ class SSHDWorld(World):
         settings_dict["require_greg"] = "on" if self.options.require_greg.value else "off"
         settings_dict["require_tim"] = "on" if self.options.require_tim.value else "off"
         settings_dict["require_all_progression_items"] = "on" if self.options.require_all_progression_items.value else "off"
+        
+        settings_dict["demise_count"] = str(self.options.demise_count.value)
         
         # Set skip settings based on goal (same logic as the config.yaml path above)
         goal_value = self.options.goal.value

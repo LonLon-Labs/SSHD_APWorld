@@ -272,6 +272,7 @@ Skyward Sword HD:
   # Skip boss encounters at the end
   skip_horde: false        # Skip The Horde fight
   skip_ghirahim3: true    # Skip Ghirahim 3 fight
+  demise_count: 1         # Number of Demise bosses in the final arena (1-10)
   
   # Triforce requirement to open the door to Hylia's Realm
   # true: Triforce pieces are required (default)
