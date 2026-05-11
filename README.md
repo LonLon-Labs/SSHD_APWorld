@@ -22,15 +22,12 @@ This APWorld allows you to play Skyward Sword HD in a multiworld randomizer with
 ### Pre-built Release (Recommended)
 Download the latest release zip from the [Releases](https://github.com/LonLon-Labs/SSHD_APWorld/releases) page. It includes:
 - `sshd.apworld` — the Archipelago world file
-- `ArchipelagoSSHDClient.exe` — standalone client (no Python needed)
 - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_linux.tar` — dedicated randomizer/yaml generator for Linux
 - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_macos_apple_silicon.tar` — dedicated randomizer/yaml generator for macOS on Apple Silicon
 - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_macos_intel.tar` — dedicated randomizer/yaml generator for macOS on Intel
 - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_windows.zip` — dedicated randomizer/yaml generator for Windows
 - `ArchipelagoSSHDPatcher.exe` — standalone patcher GUI for generating ROM patches from a lightweight `.apsshd` (not required if using the patcher in dedicated randomizer/yaml generator)
 - `Skyward Sword HD.yaml` — template YAML for seed generation
-- `launch_sshd_wrapper.py` — wrapper for starting the client built into the apworld
-- `launch_sshd.bat` — optional convenience launcher (Windows)
 
 ### Build from Source
 See [Quick Start → Option B](#1-install-the-apworld-and-client) below.
@@ -58,8 +55,6 @@ Download the latest release from the [Releases](https://github.com/LonLon-Labs/S
    - **Windows**: `C:\ProgramData\Archipelago\custom_worlds\`
    - **Linux**: `~/.local/share/Archipelago/custom_worlds/`
    - **macOS**: `~/Library/Application Support/Archipelago/custom_worlds/`
-2. Place `ArchipelagoSSHDClient.exe` anywhere convenient (e.g. the Archipelago folder or your Desktop)
-3. Optionally place `launch_sshd.bat` anywhere (if you placed `ArchipelagoSSHDClient.exe` in the Arhcipelago folder)
 
 That's it — no Python, no pip, no dependencies to install.
 
@@ -112,7 +107,7 @@ You'll need a legally obtained copy of Skyward Sword HD for Nintendo Switch alon
 The host does **not** need the ROM to generate — the `.apsshd` files will be lightweight (just JSON data, no ROM patches). Each player then patches locally using their own ROM.
 
 **Host steps:**
-1. Follow the same steps as above (configure options, create YAML, generate)
+1. Follow the same steps as above (configure options, create YAML, generate), but DO NOT set an extract path
 2. Generation will succeed even without the ROM extract — the `.apsshd` files will just be smaller
 3. Distribute the `.apsshd` files to each player
 
@@ -130,7 +125,7 @@ The host does **not** need the ROM to generate — the `.apsshd` files will be l
 
 ### 4. Hosting
 
-1. Upload the outputed `.zip` file to [archipelago.gg](https://archipelago.gg)
+1. Upload the generated `.zip` file to [archipelago.gg](https://archipelago.gg)
 2. Host locally (ADVANCED - requires port forwarding or everyone being on the same LAN)
 
 ### 5. Open Ryujinx
@@ -141,9 +136,7 @@ You should see the custom Archipelago logo - that means it's working
 Get into the game far enough to where you can move Link
 
 ### 6. Launch the Client
-Double-click `ArchipelagoSSHDClient.exe` (or `launch_sshd.bat`)
-
-If you don't have the exe, launch_sshd.bat will fall back to launching with `python launch_sshd_wrapper.py` (requires python dependencies)
+Open the Archipelago launcher and open the Skyward Sword HD Client
 
 ### 7. Play!
 > **Note**: Nothing will work until you get the message: `Found SSHD base address` in the client.  

@@ -105,39 +105,10 @@ def build_apworld():
         # Default to current working directory for CI/CD compatibility
         output_file = Path.cwd() / "sshd.apworld"
     
-    archipelago_source = source_dir / "AP_FILES"
-    
-    # Archipelago core files to bundle
-    archipelago_files = [
-        "BaseClasses.py",
-        "CommonClient.py",
-        "MultiServer.py",
-        "NetUtils.py",
-        "Utils.py",
-        "Options.py",  # Core Options with base classes (Choice, Toggle, etc.)
-        "kvui.py",
-        "settings.py",
-        "ModuleUpdate.py",
-        "Fill.py",
-        "entrance_rando.py",
-    ]
-    
-    # Archipelago worlds files to bundle
-    archipelago_worlds_files = [
-        "worlds/__init__.py",
-        "worlds/AutoWorld.py",
-        "worlds/AutoSNIClient.py",
-        "worlds/Files.py",
-        "worlds/LauncherComponents.py",
-    ]
-    
-    # Archipelago data folder files needed for GUI
-    archipelago_data_files = [
-        "data/client.kv",
-        "data/icon.png",
-    ]
-    
     # Files/folders to include in the .apworld
+    # NOTE: Archipelago core modules (BaseClasses.py, NetUtils.py, Options.py, etc.) 
+    # are NOT bundled here. They are provided by the installed Archipelago instance.
+    # The apworld relies on being placed in the custom_worlds/ folder.
     include_patterns = [
         "__init__.py",
         "Items.py",
@@ -152,14 +123,11 @@ def build_apworld():
         "setting_string_decoder.py",
         "README.md",
         "archipelago.json",
-        # "ArchipelagoSSHDClient.exe",
-        "worlds_stub.py",
         "ItemSystemIntegration.py",
         "process_memory.py",
         "platform_utils.py",
         "logic_converter.py",
         # Folders
-        "docs/",
         "assets/",
         "rando/",
         "sshd-rando-backend/",  # BUNDLED: Extracted to temp at runtime by __init__.py
@@ -210,63 +178,6 @@ def build_apworld():
     
     with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as apworld:
         file_count = 0
-        
-        # First, add bundled Archipelago core files
-        print("Bundling Archipelago core files...")
-        for ap_file in archipelago_files:
-            # Special handling for kvui.py and CommonClient.py - use our modified versions
-            if ap_file in ["kvui.py", "CommonClient.py"]:
-                source_path = source_dir / ap_file
-                print(f"  Using custom {ap_file} from SSHD_APWorld (with websockets 16.0 fixes)")
-            else:
-                source_path = archipelago_source / ap_file
-            
-            if source_path.exists():
-                arcname = Path("sshd") / ap_file
-                apworld.write(source_path, arcname)
-                print(f"  Added: {arcname}")
-                file_count += 1
-            else:
-                print(f"  WARNING: {ap_file} not found in {source_path.parent}")
-        
-        # Add Archipelago data files needed for GUI
-        print("Bundling Archipelago data files...")
-        for data_file in archipelago_data_files:
-            source_path = archipelago_source / data_file
-            if source_path.exists():
-                arcname = Path("sshd") / data_file
-                apworld.write(source_path, arcname)
-                print(f"  Added: {arcname}")
-                file_count += 1
-            else:
-                print(f"  WARNING: {data_file} not found in {archipelago_source}")
-        
-        # Add Archipelago worlds files (but use stub for __init__.py)
-        print("Bundling Archipelago worlds files...")
-        for worlds_file in archipelago_worlds_files:
-            # Skip worlds/__init__.py - we'll use the stub instead
-            if worlds_file == "worlds/__init__.py":
-                continue
-                
-            source_path = archipelago_source / worlds_file
-            if source_path.exists():
-                arcname = Path("sshd") / worlds_file
-                apworld.write(source_path, arcname)
-                print(f"  Added: {arcname}")
-                file_count += 1
-            else:
-                print(f"  WARNING: {worlds_file} not found in {archipelago_source}")
-        
-        # Use custom worlds stub instead of real __init__.py (avoids filesystem scanning)
-        print("Bundling worlds stub...")
-        worlds_stub = source_dir / "worlds_stub.py"
-        if worlds_stub.exists():
-            arcname = Path("sshd") / "worlds" / "__init__.py"
-            apworld.write(worlds_stub, arcname)
-            print(f"  Added: {arcname} (custom stub)")
-            file_count += 1
-        else:
-            print(f"  WARNING: worlds_stub.py not found")
         
         # Walk through all files in the source directory
         print("Bundling SSHD world files...")
