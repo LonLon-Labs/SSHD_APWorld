@@ -77,15 +77,15 @@ pub extern "C" fn setup_traps(item_actor: *mut item::dAcItem) -> u16 {
         // ── Pre-set LAST_AP_ITEM_FLAG_ID for Archipelago items ──────────
         // This function runs at the BEGINNING of stateWait*GetDemoUpdate
         // (the item-get animation phase), which is BEFORE the event system
-        // triggers event 003_216.  By setting the flag_id here, cmd 81 can
-        // read the correct value when it runs.
+        // triggers event 003_216/003_217/003_218.  By setting the flag_id here, cmd 81
+        // can read the correct value when it runs.
         //
         // For NPC-given items, cmd 80 sets this in the same event flow
         // instead.  handle_custom_item_get (stateGet) deliberately does NOT
         // set this — stateGet runs AFTER the event fires, so writing there
         // would leave stale values for the next item pickup.
         let itemid = (*item_actor).itemid;
-        if itemid == 216 {
+        if itemid == 216 || itemid == 217 || itemid == 218 {
             let params = item::unpack_custom_item_params(item_actor);
             if params.flag != 0x7F {
                 let scene_raw: u32 = match params.sceneindex {

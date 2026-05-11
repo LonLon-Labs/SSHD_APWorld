@@ -6,10 +6,16 @@
     \n\n\n\nBe sure to take care of him.\n...even if he's a little mean."
 
 - name: Archipelago Item Get Text Page 1
-  standard: "You found <y<<string arg0>>> for <b<<string arg1>>>!"
+  standard: "You found a(n) <y<<string arg0>>>\nfor <b<<string arg1>>>!"
 
 - name: Archipelago Item Get Text Page 2
   standard: "It should show up in their game after closing this\ntextbox!"
+
+- name: Greg Item Get Text
+  standard: "You found <y<Greg The Green Rupee>>!"
+
+- name: Tim Item Get Text
+  standard: "You found <y<Tim The Tumbleweed>>!"
 
 - name: Some Tadtones Collected text
   standard: "You got a group of <y<Tadtones>>!\nOnly <r<<numeric arg0>>> left to find!"
@@ -275,6 +281,18 @@
   standard: Green Rupee
   pretty: a <Green Rupee>
   cryptic: a <g<penny>>
+  plurality: Singular
+
+- name: Greg The Green Rupee
+  standard: Greg The Green Rupee
+  pretty: Greg the <Green Rupee>
+  cryptic: Tyler the <g<penny>>
+  plurality: Singular
+
+- name: Tim The Tumbleweed
+  standard: Tim The Tumbleweed
+  pretty: Tim the <Tumbleweed>
+  cryptic: Jimmy the <t<twigs>> and <t<dust>>
   plurality: Singular
 
 - name: Blue Rupee

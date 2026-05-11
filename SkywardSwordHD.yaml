@@ -18,6 +18,13 @@ Skyward Sword HD:
   #    - Progression Balancing
   #    - Breath Link
   # OPTIONAL SETTINGS
+  #  - Completion Requirements
+  #    - Triforce Required
+  #    - Required Triforce Pieces
+  #    - Require Dungeons
+  #    - Require Greg (The Green Rupee)
+  #    - Require Tim (The Tumbleweed)
+  #    - Require All Progression Items
   #  - Cheats
   #    - Infinite Health
   #    - Infinite Stamina
@@ -265,6 +272,35 @@ Skyward Sword HD:
   # Skip boss encounters at the end
   skip_horde: false        # Skip The Horde fight
   skip_ghirahim3: true    # Skip Ghirahim 3 fight
+  
+  # Triforce requirement to open the door to Hylia's Realm
+  # true: Triforce pieces are required (default)
+  # false: You can proceed to the endgame without any Triforce pieces
+  triforce_required: true
+  
+  # Number of Triforce pieces required when triforce_required is enabled (0-3)
+  required_triforce_pieces: 3
+  
+  # Require Dungeons
+  # When enabled, you must defeat the configured number of dungeons before the goal boss counts for victory
+  require_dungeons: false
+  
+  # Number of dungeons to require when require_dungeons is enabled (0-7)
+  # Note: Beating dungeon bosses is what counts as a "required dungeon"
+  required_dungeon_count: 0
+  
+  # Require Greg (The Green Rupee)
+  # When enabled, you must obtain Greg the Green Rupee before the goal boss counts for victory
+  require_greg: false
+  
+  # Require Tim (The Tumbleweed)
+  # When enabled, you must obtain Tim the Tumbleweed before the goal boss counts for victory
+  require_tim: false
+  
+  # Require All Progression Items
+  # When enabled, you must collect every progression item in the randomizer
+  # before the goal boss counts for victory. This may result in a very long playthrough!
+  require_all_progression_items: false
   
   # ========================================
   # ITEM RANDOMIZATION

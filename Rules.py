@@ -5,8 +5,9 @@ Defines logical requirements for accessing locations and regions.
 """
 
 from typing import TYPE_CHECKING
+from collections import Counter
 
-from BaseClasses import CollectionState
+from BaseClasses import CollectionState, ItemClassification
 from .Locations import LOCATION_TABLE
 
 if TYPE_CHECKING:
@@ -437,33 +438,41 @@ def _can_complete_game(state: CollectionState, world: "SSHDWorld") -> bool:
     """
     player = world.player
     resolved = getattr(world, '_sshd_resolved_settings', {})
+
+    def _is_enabled(settings: dict, key: str, default: str = "off") -> bool:
+        val = settings.get(key, default)
+        if isinstance(val, bool):
+            return val
+        return str(val).strip().lower() in {"on", "true", "1", "yes"}
     
-    # --- Dungeon completion check ---
-    # Only check boss keys if they actually exist in the pool (boss_keys != removed)
-    boss_keys_setting = resolved.get('boss_keys', 'own_dungeon')
-    
-    if boss_keys_setting != 'removed':
-        # Get required dungeon count from sshd-rando settings
-        try:
-            required_dungeons = int(resolved.get('required_dungeons', '2'))
-        except (ValueError, TypeError):
-            required_dungeons = 2
-        
-        dungeon_items = [
-            "Skyview Temple Boss Key",
-            "Earth Temple Boss Key",
-            "Lanayru Mining Facility Boss Key",
-            "Ancient Cistern Boss Key",
-            "Sandship Boss Key",
-            "Fire Sanctuary Boss Key"
-        ]
-        
-        # Cap at 6: Sky Keep (7th dungeon) has no boss key.
-        # Its accessibility is handled by region/entrance logic.
-        boss_keys_needed = min(required_dungeons, len(dungeon_items))
-        dungeons_beaten = sum(1 for key in dungeon_items if state.has(key, player))
-        if dungeons_beaten < boss_keys_needed:
-            return False
+    # --- Optional dungeon completion check ---
+    if _is_enabled(resolved, 'require_dungeons'):
+        # Only check boss keys if they actually exist in the pool (boss_keys != removed)
+        boss_keys_setting = resolved.get('boss_keys', 'own_dungeon')
+
+        if boss_keys_setting != 'removed':
+            # Use required_dungeon_count (AP goal count) not required_dungeons
+            # (which is set to 0 when require_dungeons is on).
+            try:
+                required_dungeons = int(resolved.get('required_dungeon_count', '2'))
+            except (ValueError, TypeError):
+                required_dungeons = 2
+
+            dungeon_items = [
+                "Skyview Temple Boss Key",
+                "Earth Temple Boss Key",
+                "Lanayru Mining Facility Boss Key",
+                "Ancient Cistern Boss Key",
+                "Sandship Boss Key",
+                "Fire Sanctuary Boss Key"
+            ]
+
+            # Cap at 6: Sky Keep (7th dungeon) has no boss key.
+            # Its accessibility is handled by region/entrance logic.
+            boss_keys_needed = min(required_dungeons, len(dungeon_items))
+            dungeons_beaten = sum(1 for key in dungeon_items if state.has(key, player))
+            if dungeons_beaten < boss_keys_needed:
+                return False
     
     # --- Gate of Time sword requirement ---
     # Use sshd-rando's got_sword_requirement setting
@@ -482,6 +491,40 @@ def _can_complete_game(state: CollectionState, world: "SSHDWorld") -> bool:
     current_sword_level = state.count("Progressive Sword", player)
     if current_sword_level < required_sword_level:
         return False
+
+    # --- Optional Triforce requirement ---
+    if _is_enabled(resolved, 'require_triforce_pieces'):
+        try:
+            triforce_needed = int(resolved.get('required_triforce_pieces', '3'))
+        except (ValueError, TypeError):
+            triforce_needed = 3
+        triforce_have = (
+            state.count("Triforce of Courage", player)
+            + state.count("Triforce of Power", player)
+            + state.count("Triforce of Wisdom", player)
+        )
+        if triforce_have < triforce_needed:
+            return False
+
+    # --- Optional Greg/Tim requirements ---
+    if _is_enabled(resolved, 'require_greg') and not state.has("Greg The Green Rupee", player):
+        return False
+    if _is_enabled(resolved, 'require_tim') and not state.has("Tim The Tumbleweed", player):
+        return False
+
+    # --- Optional all progression items requirement ---
+    if _is_enabled(resolved, 'require_all_progression_items'):
+        progression_counts: Counter[str] = Counter()
+        for item in world.multiworld.itempool:
+            if item.player == player and item.classification & ItemClassification.progression:
+                progression_counts[item.name] += 1
+        for item in world.multiworld.precollected_items.get(player, []):
+            if item.classification & ItemClassification.progression:
+                progression_counts[item.name] += 1
+
+        for item_name, needed_count in progression_counts.items():
+            if state.count(item_name, player) < needed_count:
+                return False
     
     return True
 

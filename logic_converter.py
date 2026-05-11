@@ -12,6 +12,7 @@ import os
 import yaml
 import re
 import logging
+from collections import Counter
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Any, Optional
 
@@ -958,33 +959,58 @@ class SSHDLogicConverter:
             # so the fill algorithm properly tracks boss key + sword dependencies.
             player = self.player
             world = self.world
+
+            def _is_enabled(settings: dict[str, Any], key: str, default: str = "off") -> bool:
+                val = settings.get(key, default)
+                if isinstance(val, bool):
+                    return val
+                sval = str(val).strip().lower()
+                return sval in {"on", "true", "1", "yes"}
+
+            # Snapshot progression item requirements once so rule evaluation is stable.
+            required_progression_counts: dict[str, int] = {}
+            progression_counts: Counter[str] = Counter()
+            for item in world.multiworld.itempool:
+                if item.player != player:
+                    continue
+                if item.classification & ItemClassification.progression:
+                    progression_counts[item.name] += 1
+            for item in world.multiworld.precollected_items.get(player, []):
+                if item.classification & ItemClassification.progression:
+                    progression_counts[item.name] += 1
+            if progression_counts:
+                required_progression_counts = dict(progression_counts)
             
             def victory_access_rule(state):
                 """Check all game completion requirements."""
                 resolved = getattr(world, '_sshd_resolved_settings', {})
                 
-                # Boss key check
-                boss_keys_setting = resolved.get('boss_keys', 'own_dungeon')
-                if boss_keys_setting != 'removed':
-                    try:
-                        required_dungeons = int(resolved.get('required_dungeons', '2'))
-                    except (ValueError, TypeError):
-                        required_dungeons = 2
-                    
-                    dungeon_keys = [
-                        "Skyview Temple Boss Key",
-                        "Earth Temple Boss Key",
-                        "Lanayru Mining Facility Boss Key",
-                        "Ancient Cistern Boss Key",
-                        "Sandship Boss Key",
-                        "Fire Sanctuary Boss Key"
-                    ]
-                    # Cap at 6: Sky Keep (7th dungeon) has no boss key.
-                    # Its accessibility is handled by region/entrance logic.
-                    boss_keys_needed = min(required_dungeons, len(dungeon_keys))
-                    dungeons_beaten = sum(1 for key in dungeon_keys if state.has(key, player))
-                    if dungeons_beaten < boss_keys_needed:
-                        return False
+                # Optional dungeon requirement check
+                if _is_enabled(resolved, 'require_dungeons'):
+                    boss_keys_setting = resolved.get('boss_keys', 'own_dungeon')
+                    if boss_keys_setting != 'removed':
+                        try:
+                            # Use required_dungeon_count (AP goal count) not required_dungeons
+                            # (which is set to 0 when require_dungeons is on so no progression
+                            # items are locked behind dungeon completion).
+                            required_dungeons = int(resolved.get('required_dungeon_count', '2'))
+                        except (ValueError, TypeError):
+                            required_dungeons = 2
+
+                        dungeon_keys = [
+                            "Skyview Temple Boss Key",
+                            "Earth Temple Boss Key",
+                            "Lanayru Mining Facility Boss Key",
+                            "Ancient Cistern Boss Key",
+                            "Sandship Boss Key",
+                            "Fire Sanctuary Boss Key"
+                        ]
+                        # Cap at 6: Sky Keep (7th dungeon) has no boss key.
+                        # Its accessibility is handled by region/entrance logic.
+                        boss_keys_needed = min(required_dungeons, len(dungeon_keys))
+                        dungeons_beaten = sum(1 for key in dungeon_keys if state.has(key, player))
+                        if dungeons_beaten < boss_keys_needed:
+                            return False
                 
                 # Sword level check
                 got_sword = resolved.get('got_sword_requirement', 'true_master_sword')
@@ -996,6 +1022,32 @@ class SSHDLogicConverter:
                 required_level = sword_levels.get(got_sword, 6)
                 if state.count("Progressive Sword", player) < required_level:
                     return False
+
+                # Optional Triforce requirement
+                if _is_enabled(resolved, 'require_triforce_pieces'):
+                    try:
+                        triforce_needed = int(resolved.get('required_triforce_pieces', '3'))
+                    except (ValueError, TypeError):
+                        triforce_needed = 3
+                    triforce_have = (
+                        state.count("Triforce of Courage", player)
+                        + state.count("Triforce of Power", player)
+                        + state.count("Triforce of Wisdom", player)
+                    )
+                    if triforce_have < triforce_needed:
+                        return False
+
+                # Optional Greg/Tim requirements
+                if _is_enabled(resolved, 'require_greg') and not state.has("Greg The Green Rupee", player):
+                    return False
+                if _is_enabled(resolved, 'require_tim') and not state.has("Tim The Tumbleweed", player):
+                    return False
+
+                # Optional all progression items requirement
+                if _is_enabled(resolved, 'require_all_progression_items'):
+                    for item_name, needed_count in required_progression_counts.items():
+                        if state.count(item_name, player) < needed_count:
+                            return False
                 
                 return True
             

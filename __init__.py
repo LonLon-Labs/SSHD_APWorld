@@ -155,92 +155,129 @@ WORLD_VERSION = [0, 7, 2]  # Starting at [BETA] 0.7.0 for SSHD
 RANDO_VERSION = [0, 1, 0]
 
 
+def _run_embedded_client_process(*client_args: str) -> None:
+    """Process target for launching the SSHD client UI from an apworld."""
+    def _attach_debug_console() -> None:
+        """Create a console window for live client logs when launched from the GUI."""
+        if sys.platform != "win32":
+            return
+
+        try:
+            import ctypes
+
+            kernel32 = ctypes.windll.kernel32
+            if kernel32.GetConsoleWindow():
+                return
+            if not kernel32.AllocConsole():
+                return
+
+            sys.stdout = open("CONOUT$", "w", buffering=1, encoding="utf-8", errors="replace")
+            sys.stderr = open("CONOUT$", "w", buffering=1, encoding="utf-8", errors="replace")
+            try:
+                sys.stdin = open("CONIN$", "r", encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
+            print("[SSHD] Debug console attached.")
+        except Exception:
+            logging.exception("Failed to attach SSHD debug console")
+
+    _attach_debug_console()
+
+    # When launched via launcher import path, SSHDClient.__main__ does not run,
+    # so set up terminal logging here.
+    logging.basicConfig(
+        format="[%(name)s]: %(message)s",
+        level=logging.DEBUG,
+        force=True,
+    )
+
+    class DebugToTerminalOnly(logging.Filter):
+        """Mark debug log records to skip GUI output while keeping terminal logs."""
+        def filter(self, record):
+            if record.levelno == logging.DEBUG:
+                record.skip_gui = True
+            return True
+
+    logging.getLogger().addFilter(DebugToTerminalOnly())
+
+    import asyncio
+    from .SSHDClient import main as sshd_client_main
+
+    asyncio.run(sshd_client_main(list(client_args) if client_args else None))
+
+
 def run_client(*args: str) -> None:
     """
-    Handle .apsshd patch files or show client launch instructions.
-    When a patch file is provided, only installs the patch (romfs/exefs)
-    without launching the full client GUI.
+    Launch the SSHD Client or handle .apsshd patch files.
+    
+    - If called with no args: Launches SSHDClient.py in a subprocess
+    - If called with a .apsshd file: Installs the patch
     """
-    import sys
-    from pathlib import Path
+    
     
     print(f"Running SSHD Client with args: {args}")
     
-    # If launched WITHOUT a patch file (from launcher menu), show instructions
-    if not args or not any(arg.endswith('.apsshd') for arg in args):
-        print("\n" + "=" * 70)
-        print("SSHD Client Launch Instructions")
-        print("=" * 70)
-        print("\nTo launch the SSHD Client GUI, run this command in a terminal:")
-        
-        os_name = get_os_name()
-        if os_name == "windows":
-            print("    C:\\ProgramData\\Archipelago\\launch_sshd.bat")
-            print("Or double-click: C:\\ProgramData\\Archipelago\\launch_sshd.bat")
-        elif os_name == "linux":
-            print("    ~/.local/share/Archipelago/launch_sshd.py")
-            print("Or: python launch_sshd.py")
-        elif os_name == "darwin":
-            print("    ~/Library/Application\\ Support/Archipelago/launch_sshd.py")
-            print("Or: python launch_sshd.py")
-        
-        print("\nThe client will open in a new window with full GUI support.")
-        print("=" * 70 + "\n")
-        input("Press Enter to close this window...")
-        return
-    
-    # If launched WITH a patch file, check if it needs patching first
-    patch_file = next((arg for arg in args if arg.endswith('.apsshd')), None)
-    if patch_file:
-        patch_path = Path(patch_file)
-        needs_patching = False
-        
-        # Check if the .apsshd has ROM patches or needs user-side patching
-        try:
-            with zipfile.ZipFile(patch_path, 'r') as zf:
-                has_romfs = any(n.startswith('romfs/') for n in zf.namelist())
-                has_exefs = any(n.startswith('exefs/') for n in zf.namelist())
-                has_patcher_data = 'patcher_data.json' in zf.namelist()
-                
-                if not has_romfs and not has_exefs and has_patcher_data:
-                    needs_patching = True
-        except Exception:
-            pass
-        
-        if needs_patching:
-            # Lightweight .apsshd — run the standalone patcher
-            print(f"\nThis .apsshd does not contain ROM patches.")
-            print(f"Running standalone patcher to generate patches from your ROM...\n")
-            from .SSHDPatcher import read_apsshd, generate_patches, install_to_emulator
-            import tempfile
+    # If launched WITH a patch file, install it
+    if args and any(arg.endswith('.apsshd') for arg in args):
+        patch_file = next((arg for arg in args if arg.endswith('.apsshd')), None)
+        if patch_file:
+            patch_path = Path(patch_file)
+            needs_patching = False
             
-            _manifest, _patch_data, _patcher_data = read_apsshd(patch_path)
-            extract_path = get_default_sshd_extract_path()
-            temp_out = Path(tempfile.mkdtemp(prefix="sshd_patch_"))
+            # Check if the .apsshd has ROM patches or needs user-side patching
             try:
-                romfs_path, exefs_path = generate_patches(_patcher_data, extract_path, temp_out)
-                if romfs_path and exefs_path:
-                    install_to_emulator(romfs_path, exefs_path)
+                with zipfile.ZipFile(patch_path, 'r') as zf:
+                    has_romfs = any(n.startswith('romfs/') for n in zf.namelist())
+                    has_exefs = any(n.startswith('exefs/') for n in zf.namelist())
+                    has_patcher_data = 'patcher_data.json' in zf.namelist()
+                    
+                    if not has_romfs and not has_exefs and has_patcher_data:
+                        needs_patching = True
+            except Exception:
+                pass
+            
+            if needs_patching:
+                # Lightweight .apsshd — run the standalone patcher
+                print(f"\nThis .apsshd does not contain ROM patches.")
+                print(f"Running standalone patcher to generate patches from your ROM...\n")
+                from .SSHDPatcher import read_apsshd, generate_patches, install_to_emulator
+                import tempfile
+                
+                _manifest, _patch_data, _patcher_data = read_apsshd(patch_path)
+                extract_path = get_default_sshd_extract_path()
+                temp_out = Path(tempfile.mkdtemp(prefix="sshd_patch_"))
+                try:
+                    romfs_path, exefs_path = generate_patches(_patcher_data, extract_path, temp_out)
+                    if romfs_path and exefs_path:
+                        install_to_emulator(romfs_path, exefs_path)
+                        print("\n" + "=" * 60)
+                        print("Patches generated and installed successfully!")
+                        print("=" * 60)
+                    else:
+                        print("\nERROR: Patch generation failed")
+                finally:
+                    shutil.rmtree(temp_out, ignore_errors=True)
+            else:
+                # Full .apsshd with ROM patches — install directly
+                from .SSHDClient import install_patch
+                print(f"\nInstalling patch: {patch_file}")
+                success, _ = install_patch(patch_file)
+                if success:
                     print("\n" + "=" * 60)
-                    print("Patches generated and installed successfully!")
+                    print("Patch installed successfully!")
                     print("=" * 60)
                 else:
-                    print("\nERROR: Patch generation failed")
-            finally:
-                shutil.rmtree(temp_out, ignore_errors=True)
-        else:
-            # Full .apsshd with ROM patches — install directly
-            from .SSHDClient import install_patch
-            print(f"\nInstalling patch: {patch_file}")
-            success, _ = install_patch(patch_file)
-            if success:
-                print("\n" + "=" * 60)
-                print("Patch installed successfully!")
-                print("=" * 60)
-            else:
-                print("\nERROR: Failed to install patch")
-        
-        input("\nPress Enter to close this window...")
+                    print("\nERROR: Failed to install patch")
+        return
+    
+    # If launched WITHOUT a patch file, run the client in a dedicated subprocess.
+    # Kivy widgets must be created on the main Kivy thread of that process.
+    print("Launching SSHD Client GUI...")
+    try:
+        launch_subprocess(_run_embedded_client_process, name="SSHDClient", args=args)
+    except Exception:
+        logging.exception("Failed to launch embedded SSHD client subprocess")
 
 
 # Register the client launcher
@@ -321,9 +358,9 @@ PROGRESSIVE_STAGE_ITEMS: set[str] = {
 
 class SSHDWorld(World):
     """
-    The Legend of Zelda: Skyward Sword HD
+    The Legend of Zelda: Skyward Sword HD Archipelago for Emulators
     
-    An epic adventure where Link must rescue Zelda and stop the Demon King Ghirahim.
+    An epic adventure where Link must rescue Zelda and stop the Demon King Demise and his servant the Demon Lord Ghirahim.
     Travel between the Surface and Sky, explore dungeons, and collect items across
     a vast interconnected world.
     """
@@ -1410,8 +1447,13 @@ class SSHDWorld(World):
             print(f"[__init__.py] Fallback: got_sword_requirement = {s['got_sword_requirement']}")
 
         # required_dungeons — used by victory access rule for boss key count
+        # When require_dungeons AP toggle is on, set to 0 so no progression
+        # is locked behind dungeon completion (goal checks dungeon count separately).
         if 'required_dungeons' not in s:
-            s['required_dungeons'] = str(self.options.required_dungeon_count.value)
+            if self.options.require_dungeons.value:
+                s['required_dungeons'] = '0'
+            else:
+                s['required_dungeons'] = str(self.options.required_dungeon_count.value)
             print(f"[__init__.py] Fallback: required_dungeons = {s['required_dungeons']}")
 
         # boss_keys — used by victory access rule to decide if boss keys are needed
@@ -1560,10 +1602,16 @@ class SSHDWorld(World):
                 ap_name = STAGE_TO_PROGRESSIVE.get(item_name, item_name)
                 ap_pool_counts[ap_name] += count
             
-            # Cap Green Rupee and Tumbleweed to exactly 1 each
-            for cap_item in ["Green Rupee", "Tumbleweed"]:
-                if ap_pool_counts.get(cap_item, 0) > 1:
-                    ap_pool_counts[cap_item] = 1
+            # Greg and Tim are AP-only progression items. Keep the vanilla
+            # Green Rupee/Tumbleweed junk forms out of the AP pool, but inject
+            # one Greg/Tim when the corresponding goal requirement is enabled.
+            if self.options.require_greg.value:
+                ap_pool_counts["Greg The Green Rupee"] += 1
+            ap_pool_counts["Green Rupee"] = 0
+
+            if self.options.require_tim.value:
+                ap_pool_counts["Tim The Tumbleweed"] += 1
+            ap_pool_counts["Tumbleweed"] = 0
             
             # Add all placed items directly to the AP pool.
             # No subtraction needed — sshd-rando already removed starting items
@@ -1637,9 +1685,9 @@ class SSHDWorld(World):
                 "Golden Skull": 1,
                 "Goddess Plume": 1,
                 "Dusk Relic": 1,
-                "Tumbleweed": 1,
-                "Green Rupee": 1,
                 "5 Bombs": 1,
+                "Green Rupee": 0,
+                "Tumbleweed": 0,
             }
             
             # When Earth Temple is open, Key Pieces are removed from the
@@ -1811,9 +1859,18 @@ class SSHDWorld(World):
             "Skyview Boss Room": 2,
             "Skyview Spring": 2,
         },
+        "Earth Temple": {
+            # ET doesn't have small keys, but include for completeness
+        },
         "Lanayru Mining Facility": {
             # 1-key door: LMF First Hub → LMF Key Locked Room
             "LMF Key Locked Room": 1,
+            # Downstream of LMF Key Locked Room (via Timeshift Stone event):
+            # LMF Hop Across Boxes Room is only reachable via the key-locked chain
+            # when shortcut_lmf_boxes is off.  Without this, the small key may be
+            # placed in the Hop Across Boxes chests, creating a deadlock.
+            "LMF Hop Across Boxes Room": 1,
+            "LMF Hop Across Boxes Room Near Exit": 1,
         },
         "Ancient Cistern": {
             # Both key doors require all 2 keys
@@ -1859,6 +1916,8 @@ class SSHDWorld(World):
             "FS Boss Key Room": 3,
             "Fire Sanctuary Boss Room": 3,
             "Fire Sanctuary Flame Room": 3,
+            # Accessible from FS In Front of Boss Door (tier 3)
+            "Inside the Fire Sanctuary Statue": 3,
         },
         "Sandship": {
             # All key doors require all 2 keys
@@ -1968,7 +2027,13 @@ class SSHDWorld(World):
         boss_key_mode = self.options.boss_key_shuffle.current_key     # e.g. "own_dungeon" 
         map_mode = self.options.map_shuffle.current_key               # e.g. "own_dungeon_restricted"
         triforce_mode = self.options.triforce_shuffle.current_key     # e.g. "anywhere"
-        required_count = self.options.required_dungeon_count.value
+        # When require_dungeons AP toggle is on, the goal condition checks dungeon count
+        # at victory time — no progression items should be locked behind dungeon completion.
+        # Set required_count=0 so pre_fill doesn't place any progression at dungeon ends.
+        if self.options.require_dungeons.value:
+            required_count = 0
+        else:
+            required_count = self.options.required_dungeon_count.value
         
         print(f"[__init__.py] pre_fill (v2-direct): small_keys={small_key_mode}, boss_keys={boss_key_mode}, "
               f"map_mode={map_mode}, triforce={triforce_mode}, required_dungeons={required_count}")
@@ -2814,6 +2879,16 @@ class SSHDWorld(World):
                 slot_data["goddess_chest_scene_flags"] = self._goddess_chest_data
                 print(f"[__init__.py] [modify_multidata] Injected {len(self._goddess_chest_data)} goddess chest scene flag mappings into slot_data")
 
+        goal_requirement_data = getattr(self, '_goal_requirement_data', None)
+        if goal_requirement_data:
+            slot_data = multidata["slot_data"].get(self.player)
+            if slot_data is not None:
+                if not isinstance(slot_data, dict):
+                    slot_data = dict(slot_data)
+                    multidata["slot_data"][self.player] = slot_data
+                slot_data.update(goal_requirement_data)
+                print("[__init__.py] [modify_multidata] Injected goal requirement payload into slot_data")
+
     def generate_output(self, output_directory: str) -> None:
         """
         Generate the .apsshd patch file.
@@ -2864,6 +2939,34 @@ class SSHDWorld(World):
                 option_name = field.name
                 option_value = getattr(self.options, field.name)
                 patch_data["options"][option_name] = option_value.value
+
+            # Cache goal-requirement data for the client.
+            from collections import Counter
+
+            progression_item_counts: Counter[str] = Counter()
+            for location in self.multiworld.get_locations(self.player):
+                if location.item and location.item.player == self.player and location.item.classification == IC.progression:
+                    progression_item_counts[location.item.name] += 1
+
+            for item in self.multiworld.precollected_items.get(self.player, []):
+                if item.classification == IC.progression:
+                    progression_item_counts[item.name] += 1
+
+            self._goal_requirement_data = {
+                "option_require_triforce_pieces": self.options.require_triforce_pieces.value,
+                "option_required_triforce_pieces": self.options.required_triforce_pieces.value,
+                "option_require_dungeons": self.options.require_dungeons.value,
+                "option_required_dungeon_count": self.options.required_dungeon_count.value,
+                "option_require_greg": self.options.require_greg.value,
+                "option_require_tim": self.options.require_tim.value,
+                "option_require_all_progression_items": self.options.require_all_progression_items.value,
+                "goal_dungeon_location_codes": [
+                    location.code
+                    for location in LOCATION_TABLE.values()
+                    if "Defeat Boss" in location.types
+                ],
+                "goal_progression_item_counts": dict(progression_item_counts),
+            }
             
             # Try to generate sshd-rando patches if available
             romfs_path = None
@@ -3421,6 +3524,18 @@ class SSHDWorld(World):
             # Archipelago's item system expects progressive items (Progressive Beetle, Progressive Sword, etc.)
             # Non-progressive items would break the item pool and cause mismatches
             settings_dict["progressive_items"] = "on"
+
+            settings_dict["require_triforce_pieces"] = "on" if self.options.require_triforce_pieces.value else "off"
+            settings_dict["required_triforce_pieces"] = str(self.options.required_triforce_pieces.value)
+            settings_dict["require_dungeons"] = "on" if self.options.require_dungeons.value else "off"
+            settings_dict["required_dungeon_count"] = str(self.options.required_dungeon_count.value)
+            # When require_dungeons is on, tell the rando backend required_dungeons=0
+            # so it does not lock any progression items behind dungeon completion.
+            if self.options.require_dungeons.value:
+                settings_dict["required_dungeons"] = "0"
+            settings_dict["require_greg"] = "on" if self.options.require_greg.value else "off"
+            settings_dict["require_tim"] = "on" if self.options.require_tim.value else "off"
+            settings_dict["require_all_progression_items"] = "on" if self.options.require_all_progression_items.value else "off"
             
             # NOTE: Starting inventory settings (starting_sword, random_starting_tablet_count,
             # starting_hearts, random_starting_item_count, random_starting_statues, etc.)
@@ -3455,7 +3570,19 @@ class SSHDWorld(World):
         settings_dict["item_pool"] = item_pool_map[self.options.item_pool.value]
         
         # Completion Requirements
-        settings_dict["required_dungeons"] = str(self.options.required_dungeon_count.value)
+        # When require_dungeons is on, rando backend gets required_dungeons=0 (no progression
+        # locked in dungeons). The AP goal logic checks dungeon count separately at victory time.
+        if self.options.require_dungeons.value:
+            settings_dict["required_dungeons"] = "0"
+        else:
+            settings_dict["required_dungeons"] = str(self.options.required_dungeon_count.value)
+        settings_dict["required_dungeon_count"] = str(self.options.required_dungeon_count.value)
+        settings_dict["required_triforce_pieces"] = str(self.options.required_triforce_pieces.value)
+        settings_dict["require_triforce_pieces"] = "on" if self.options.require_triforce_pieces.value else "off"
+        settings_dict["require_dungeons"] = "on" if self.options.require_dungeons.value else "off"
+        settings_dict["require_greg"] = "on" if self.options.require_greg.value else "off"
+        settings_dict["require_tim"] = "on" if self.options.require_tim.value else "off"
+        settings_dict["require_all_progression_items"] = "on" if self.options.require_all_progression_items.value else "off"
         
         # Set skip settings based on goal (same logic as the config.yaml path above)
         goal_value = self.options.goal.value

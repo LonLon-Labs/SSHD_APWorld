@@ -200,7 +200,12 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
         'use_plandomizer', 'plandomizer_file', 'custom_starting_items',
         '_setting_string_starting_items', '_sshd_hash',
         'starting_inventory', 'excluded_locations', 'excluded_hint_locations',
-        'mixed_entrance_pools', 'other_mods'
+        'mixed_entrance_pools', 'other_mods',
+        # AP-specific goal requirement settings (not part of sshd-rando backend)
+        'required_dungeon_count', 'require_triforce_pieces', 'require_dungeons',
+        'require_greg', 'require_tim', 'require_all_progression_items',
+        # AP YAML settings (mapped to rando settings via _goal_requirement_data in __init__.py)
+        'randomize_dungeons', 'randomize_trials'
     }
     
     print(f"[SSHDRWrapper] Applying settings from settings_dict ({len(settings_dict)} total settings)")

@@ -1036,6 +1036,8 @@ pub extern "C" fn fix_freestanding_item_y_offset(item_actor: *mut dAcItem) {
                 | 195       // Hot Pumpkin Soup
                 | 196       // Cold Pumpkin Soup
                 | 198       // Life Tree Fruit
+                | 217       // Greg The Green Rupee
+                | 218       // Tim The Tumbleweed
                 | 199 => y_offset = 16.0,
                 // 10 Deku Seeds
                 60 => {
@@ -1104,8 +1106,8 @@ pub extern "C" fn fix_freestanding_item_horizontal_offset(item_actor: *mut dAcIt
 
             // Item id
             match actor_param1 & 0x1FF {
-                // Rupees
-                2 | 3 | 4 | 32 | 33 | 34 => h_offset = 20.0,
+                // Rupees + Greg The Green Rupee
+                2 | 3 | 4 | 32 | 33 | 34 | 217 => h_offset = 20.0,
                 // Progressive Sword
                 9..=14 => {
                     h_offset = 7.0;
@@ -1232,6 +1234,7 @@ pub extern "C" fn fix_freestanding_item_horizontal_offset(item_actor: *mut dAcIt
                 | 127       // Revitalizing Potion+
                 | 153       // Empty Bottle
                 | 163       // Tumbleweed
+                | 218       // Tim The Tumbleweed
                 | 194       // Revitalizing Potion++
                 | 195       // Hot Pumpkin Soup
                 | 196       // Cold Pumpkin Soup
@@ -1427,6 +1430,8 @@ pub extern "C" fn resolve_progressive_item_models(
                         _ => c"ArchipelagoItem".as_ptr(),
                     }
                 },
+                217 => c"GetRupee".as_ptr(),
+                218 => c"GetSozaiC".as_ptr(),
                 _ => model_name,
             };
 
@@ -1452,6 +1457,8 @@ pub extern "C" fn resolve_progressive_item_models(
                         _ => c"ArchipelagoItem".as_ptr(),
                     }
                 },
+                217 => c"GetRupee".as_ptr(),
+                218 => c"GetSozaiC".as_ptr(),
                 _ => model_name,
             };
 
@@ -1888,9 +1895,9 @@ const ARCHIPELAGO_BUFFER_SIZE: usize = 16;
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
 pub struct ArchipelagoItemSlot {
-    item_id:   u8,
-    flags:     u8,
-    _reserved: [u8; 2],
+    pub item_id:   u8,
+    pub flags:     u8,
+    pub _reserved: [u8; 2],
 }
 assert_eq_size!([u8; 4], ArchipelagoItemSlot);
 

@@ -69,6 +69,24 @@ class TriforceRequired(DefaultOnToggle):
     display_name = "Triforce Required"
 
 
+class RequireTriforcePieces(Toggle):
+    """
+    If enabled, the configured number of Triforce pieces must be collected
+    before the goal boss counts for victory.
+    """
+    display_name = "Require Triforce Pieces"
+
+
+class RequiredTriforcePieces(Range):
+    """
+    Number of Triforce pieces required when Require Triforce Pieces is enabled.
+    """
+    display_name = "Required Triforce Pieces"
+    range_start = 0
+    range_end = 3
+    default = 3
+
+
 class TriforceShuffle(Choice):
     """
     Choose where Triforces will appear in the game.
@@ -127,6 +145,35 @@ class Goal(Choice):
     option_defeat_ghirahim3 = 1
     option_defeat_horde = 2
     default = 0
+
+
+class RequireDungeons(Toggle):
+    """
+    If enabled, a specific number of dungeons must be defeated before the goal boss counts.
+    Configure the number using Required Dungeon Count.
+    """
+    display_name = "Require Dungeons"
+
+
+class RequireGreg(Toggle):
+    """
+    If enabled, Greg the Green Rupee must be obtained before the goal boss counts.
+    """
+    display_name = "Require Greg"
+
+
+class RequireTim(Toggle):
+    """
+    If enabled, Tim the Tumbleweed must be obtained before the goal boss counts.
+    """
+    display_name = "Require Tim"
+
+
+class RequireAllProgressionItems(Toggle):
+    """
+    If enabled, all progression items in the item pool must be collected before the goal boss counts.
+    """
+    display_name = "Require All Progression Items"
 
 
 class SkipHorde(Toggle):
@@ -1576,6 +1623,12 @@ class SSHDOptions(PerGameCommonOptions):
     # Completion
     required_dungeon_count: RequiredDungeonCount
     triforce_required: TriforceRequired
+    require_triforce_pieces: RequireTriforcePieces
+    required_triforce_pieces: RequiredTriforcePieces
+    require_dungeons: RequireDungeons
+    require_greg: RequireGreg
+    require_tim: RequireTim
+    require_all_progression_items: RequireAllProgressionItems
     triforce_shuffle: TriforceShuffle
     gate_of_time_sword_requirement: GateOfTimeSwordRequirement
     gate_of_time_dungeon_requirements: GateOfTimeDungeonRequirements
@@ -1794,6 +1847,12 @@ sshd_option_groups = [
         Goal,
         RequiredDungeonCount,
         TriforceRequired,
+        RequireTriforcePieces,
+        RequiredTriforcePieces,
+        RequireDungeons,
+        RequireGreg,
+        RequireTim,
+        RequireAllProgressionItems,
         TriforceShuffle,
         GateOfTimeSwordRequirement,
         GateOfTimeDungeonRequirements,
