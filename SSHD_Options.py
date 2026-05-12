@@ -1414,6 +1414,144 @@ class ArchipelagoItemModel(Choice):
     default = 1
 
 
+class SpawnHearts(Toggle):
+    """
+    If enabled, hearts can spawn from defeated enemies, broken pots/barrels,
+    cut grass, and digging spots.
+    If disabled, hearts will not spawn from any of these sources.
+    """
+    display_name = "Spawn Hearts"
+    default = 1
+
+
+class Language(Choice):
+    """
+    Sets the in-game language used for the randomized game.
+    - Dutch: Incomplete.
+    - English (GB): Complete.
+    - English (US): Complete.
+    - French (FR): Incomplete.
+    - French (US): Incomplete.
+    - German: Mostly complete.
+    - Italian: Incomplete.
+    - Spanish (ES): Incomplete.
+    - Spanish (US): Incomplete.
+    """
+    display_name = "In-Game Language"
+    option_dutch = 0
+    option_english_gb = 1
+    option_english_us = 2
+    option_french_fr = 3
+    option_french_us = 4
+    option_german = 5
+    option_italian = 6
+    option_spanish_es = 7
+    option_spanish_us = 8
+    default = 2
+
+
+class DaytimeSkyColor(Choice):
+    """
+    Sets the color of the daytime sky.
+    """
+    display_name = "Daytime Sky Color"
+    option_default = 0
+    option_blue = 1
+    option_green = 2
+    option_yellow = 3
+    option_orange = 4
+    option_red = 5
+    option_purple = 6
+    option_pink = 7
+    option_white = 8
+    option_black = 9
+    option_grey = 10
+    option_rainbow = 11
+    default = 0
+
+
+class NighttimeSkyColor(Choice):
+    """
+    Sets the color of the nighttime sky.
+    """
+    display_name = "Nighttime Sky Color"
+    option_default = 0
+    option_blue = 1
+    option_green = 2
+    option_yellow = 3
+    option_orange = 4
+    option_red = 5
+    option_purple = 6
+    option_pink = 7
+    option_white = 8
+    option_black = 9
+    option_grey = 10
+    option_rainbow = 11
+    default = 0
+
+
+class DaytimeCloudColor(Choice):
+    """
+    Sets the color of the daytime clouds.
+    """
+    display_name = "Daytime Cloud Color"
+    option_default = 0
+    option_blue = 1
+    option_green = 2
+    option_yellow = 3
+    option_orange = 4
+    option_red = 5
+    option_purple = 6
+    option_pink = 7
+    option_white = 8
+    option_black = 9
+    option_grey = 10
+    option_rainbow = 11
+    default = 0
+
+
+class NighttimeCloudColor(Choice):
+    """
+    Sets the color of the nighttime clouds.
+    """
+    display_name = "Nighttime Cloud Color"
+    option_default = 0
+    option_blue = 1
+    option_green = 2
+    option_yellow = 3
+    option_orange = 4
+    option_red = 5
+    option_purple = 6
+    option_pink = 7
+    option_white = 8
+    option_black = 9
+    option_grey = 10
+    option_rainbow = 11
+    default = 0
+
+
+class LowHealthBeepingSpeed(Choice):
+    """
+    Controls the speed of the low health beep sound.
+    - Very Fast: Beeps every time Link flashes red.
+    - Fast: Beeps frequently.
+    - Normal: Default beeping speed.
+    - Slow: Beeps infrequently.
+    - Very Slow: Beeps rarely.
+    - No Beeping: Disables the beep sound but keeps the flashing.
+    - No Beeping or Flashing: Disables both the beep and the low health flash.
+    """
+    display_name = "Low Health Beeping Speed"
+    option_very_fast = 0
+    option_fast = 1
+    option_normal = 2
+    option_slow = 3
+    option_very_slow = 4
+    option_no_beeping = 5
+    option_no_beeping_or_flashing = 6
+    default = 2
+
+
 # === Extra Starting Inventory ===
 
 class StartingHearts(Range):
@@ -1800,6 +1938,13 @@ class SSHDOptions(PerGameCommonOptions):
     text_shuffle: TextShuffle
     use_alternative_logo: UseAlternativeLogo
     archipelago_item_model: ArchipelagoItemModel
+    spawn_hearts: SpawnHearts
+    language: Language
+    daytime_sky_color: DaytimeSkyColor
+    nighttime_sky_color: NighttimeSkyColor
+    daytime_cloud_color: DaytimeCloudColor
+    nighttime_cloud_color: NighttimeCloudColor
+    low_health_beeping_speed: LowHealthBeepingSpeed
     
     # Extra Starting Inventory
     starting_hearts: StartingHearts
@@ -2045,6 +2190,15 @@ sshd_option_groups = [
         RemoveEnemyMusic,
         UseAlternativeLogo,
         ArchipelagoItemModel,
+        Language,
+        DaytimeSkyColor,
+        NighttimeSkyColor,
+        DaytimeCloudColor,
+        NighttimeCloudColor,
+        LowHealthBeepingSpeed,
+    ]),
+    OptionGroup("Gameplay Settings", [
+        SpawnHearts,
     ]),
     OptionGroup("Cheats", [
         CheatInfiniteHealth,
