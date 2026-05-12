@@ -4958,6 +4958,40 @@ async def main(args=None):
     ctx.server_address = None
 
 
+_terminal_log_file = None
+
+
+def _enable_terminal_log_capture(prefix: str) -> Path:
+    """Mirror stdout/stderr to a timestamped log file in the local logs folder."""
+    global _terminal_log_file
+
+    logs_dir = Path(__file__).resolve().parent / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    log_path = logs_dir / f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}.log"
+    _terminal_log_file = open(log_path, "a", encoding="utf-8", buffering=1)
+
+    class TeeStream:
+        def __init__(self, *streams):
+            self.streams = streams
+
+        def write(self, data):
+            for stream in self.streams:
+                stream.write(data)
+            return len(data)
+
+        def flush(self):
+            for stream in self.streams:
+                stream.flush()
+
+        def isatty(self):
+            return any(getattr(stream, "isatty", lambda: False)() for stream in self.streams)
+
+    sys.stdout = TeeStream(sys.stdout, _terminal_log_file)
+    sys.stderr = TeeStream(sys.stderr, _terminal_log_file)
+    print(f"[SSHD Client] Terminal output is being logged to: {log_path}")
+    return log_path
+
+
 if __name__ == "__main__":
     import colorama
     logging.basicConfig(
@@ -4978,5 +5012,11 @@ if __name__ == "__main__":
     logging.getLogger().addFilter(DebugToTerminalOnly())
     
     colorama.just_fix_windows_console()
-    asyncio.run(main())
-    colorama.deinit()
+    _enable_terminal_log_capture("sshd_client")
+    try:
+        asyncio.run(main())
+    finally:
+        if _terminal_log_file is not None:
+            _terminal_log_file.flush()
+            _terminal_log_file.close()
+        colorama.deinit()
