@@ -1052,6 +1052,13 @@ class SSHDWorld(World):
                 ap_settings, temp_dir, seed=seed, apply_patches=False
             )
             
+            # Store the ACTUAL seed that sshd-rando used (may have been randomly generated
+            # when seed=None).  generate_output() must use the same seed so that any
+            # randomly-chosen starting items (e.g. random_starting_tablet_count) are
+            # identical between the two generate_sshd_rando_mod calls — otherwise the
+            # ROM gets one tablet baked in while AP precollects a different one.
+            self._sshdr_resolved_seed = world.config.seed
+            
             # Extract Setting String decoded starting items (these are the ONLY items we want)
             # ap_settings contains _setting_string_starting_items if Setting String was used
             starting_item_dict = ap_settings.get('_setting_string_starting_items', {})
@@ -3178,8 +3185,13 @@ class SSHDWorld(World):
             # Collect Archipelago settings as a dictionary for the wrapper
             ap_settings = self._collect_archipelago_settings()
             
-            # Get seed from options (empty string means use random)
-            seed = self.options.sshdr_seed.value if self.options.sshdr_seed.value else None
+            # Use the same seed that was resolved in generate_early() so that
+            # randomly-chosen starting items (e.g. tablets from random_starting_tablet_count)
+            # are identical in both the precollect step and the ROM patching step.
+            # Fall back to the user-specified sshdr_seed option, then to None (random).
+            seed = getattr(self, '_sshdr_resolved_seed', None)
+            if seed is None:
+                seed = self.options.sshdr_seed.value if self.options.sshdr_seed.value else None
             
             # Use sshd-rando wrapper to generate the mod WITHOUT patches
             # We'll apply patches after overlaying Archipelago items
