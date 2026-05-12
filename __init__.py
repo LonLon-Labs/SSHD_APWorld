@@ -724,23 +724,9 @@ class SSHDWorld(World):
         return resolved
 
     def _build_resolved_settings_fallback(self, ap_settings: dict) -> dict[str, str]:
-        """Build fallback resolved settings from AP settings for known config keys."""
-        known_keys = set(self._CONFIG_TO_AP_OPTION.keys())
-        known_keys.update({
-            "got_sword_requirement",
-            "required_dungeons",
-            "boss_keys",
-            "open_thunderhead",
-            "open_lake_floria",
-            "open_earth_temple",
-            "open_lmf",
-        })
-
+        """Build fallback resolved settings from all scalar AP settings."""
         fallback: dict[str, str] = {}
-        for key in known_keys:
-            if key not in ap_settings:
-                continue
-            value = ap_settings[key]
+        for key, value in ap_settings.items():
             if isinstance(value, (dict, list, tuple, set)):
                 continue
             normalized = self._normalize_resolved_setting_value(value)
