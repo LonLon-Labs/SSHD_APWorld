@@ -1351,7 +1351,7 @@ class TunicSwap(Toggle):
     display_name = "Tunic Swap"
 
 
-class LightnningSkywardStrike(Toggle):
+class LightningSkywardStrike(Toggle):
     """
     If enabled, Skyward strikes have lightning effects at all times.
     """
@@ -1932,7 +1932,7 @@ class SSHDOptions(PerGameCommonOptions):
     
     # Cosmetics
     tunic_swap: TunicSwap
-    lightning_skyward_strike: LightnningSkywardStrike
+    lightning_skyward_strike: LightningSkywardStrike
     starry_skies: StarrySky
     remove_enemy_music: RemoveEnemyMusic
     text_shuffle: TextShuffle
@@ -2185,7 +2185,7 @@ sshd_option_groups = [
         MusicRandomization,
         CutoffGameOverMusic,
         TunicSwap,
-        LightnningSkywardStrike,
+        LightningSkywardStrike,
         StarrySky,
         RemoveEnemyMusic,
         UseAlternativeLogo,

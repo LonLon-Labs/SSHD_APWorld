@@ -155,6 +155,22 @@ WORLD_VERSION = [0, 7, 2]  # Starting at [BETA] 0.7.0 for SSHD
 RANDO_VERSION = [0, 1, 0]
 
 
+def _safe_wait_for_enter(prompt: str) -> None:
+    """Best-effort pause for interactive terminals; no-op when stdin is unavailable."""
+    stdin_obj = getattr(sys, "stdin", None)
+    if stdin_obj is None:
+        return
+    try:
+        if hasattr(stdin_obj, "isatty") and not stdin_obj.isatty():
+            return
+    except Exception:
+        return
+    try:
+        input(prompt)
+    except (EOFError, RuntimeError):
+        return
+
+
 def run_client(*args: str) -> None:
     """
     Handle .apsshd patch files or show client launch instructions.
@@ -186,7 +202,7 @@ def run_client(*args: str) -> None:
         
         print("\nThe client will open in a new window with full GUI support.")
         print("=" * 70 + "\n")
-        input("Press Enter to close this window...")
+        _safe_wait_for_enter("Press Enter to close this window...")
         return
     
     # If launched WITH a patch file, check if it needs patching first
@@ -240,7 +256,7 @@ def run_client(*args: str) -> None:
             else:
                 print("\nERROR: Failed to install patch")
         
-        input("\nPress Enter to close this window...")
+        _safe_wait_for_enter("\nPress Enter to close this window...")
 
 
 # Register the client launcher
@@ -674,6 +690,63 @@ class SSHDWorld(World):
                 print(f"[__init__.py] Warning: Could not sync AP option '{ap_field}' from config '{config_key}={raw}': {e}")
 
         print(f"[__init__.py] Synced {synced} AP options from resolved sshd-rando settings")
+
+    @staticmethod
+    def _normalize_resolved_setting_value(value):
+        """Normalize setting values to stable string tokens used by logic checks."""
+        if value is None:
+            return None
+        if isinstance(value, bool):
+            return "on" if value else "off"
+        if isinstance(value, (int, float)):
+            return str(value)
+        raw = str(value).strip()
+        low = raw.lower()
+        if low in ("true", "yes"):
+            return "on"
+        if low in ("false", "no"):
+            return "off"
+        return low
+
+    def _extract_resolved_settings_from_world(self, world) -> dict[str, str]:
+        """Read resolved sshd-rando settings from the generated world safely."""
+        resolved: dict[str, str] = {}
+        setting_map = getattr(world, "setting_map", None)
+        settings_obj = getattr(setting_map, "settings", None)
+        if not settings_obj:
+            return resolved
+
+        for setting_name, setting_obj in settings_obj.items():
+            raw_value = getattr(setting_obj, "value", setting_obj)
+            normalized = self._normalize_resolved_setting_value(raw_value)
+            if normalized is not None:
+                resolved[setting_name] = normalized
+        return resolved
+
+    def _build_resolved_settings_fallback(self, ap_settings: dict) -> dict[str, str]:
+        """Build fallback resolved settings from AP settings for known config keys."""
+        known_keys = set(self._CONFIG_TO_AP_OPTION.keys())
+        known_keys.update({
+            "got_sword_requirement",
+            "required_dungeons",
+            "boss_keys",
+            "open_thunderhead",
+            "open_lake_floria",
+            "open_earth_temple",
+            "open_lmf",
+        })
+
+        fallback: dict[str, str] = {}
+        for key in known_keys:
+            if key not in ap_settings:
+                continue
+            value = ap_settings[key]
+            if isinstance(value, (dict, list, tuple, set)):
+                continue
+            normalized = self._normalize_resolved_setting_value(value)
+            if normalized is not None:
+                fallback[key] = normalized
+        return fallback
     
     def create_regions(self) -> None:
         """
@@ -1335,12 +1408,17 @@ class SSHDWorld(World):
             # If any settings were "random", sshd-rando has now resolved them to concrete values
             # We need to update our Archipelago options so the Rules know the actual values
             try:
-                resolved_settings = {}
-                if hasattr(world, 'setting_map') and world.setting_map:
-                    for setting_name, setting_obj in world.setting_map.settings.items():
-                        # Get the actual current value (this will be concrete, not "random")
-                        value_str = setting_obj.value  # value is the string like "on" or "off"
-                        resolved_settings[setting_name] = value_str
+                resolved_settings = self._extract_resolved_settings_from_world(world)
+
+                # Fallback: if backend setting-map extraction fails or is partial,
+                # merge known setting keys from the exact settings payload we sent.
+                # This preserves AP-YAML behavior (especially shuffle toggles).
+                fallback_settings = self._build_resolved_settings_fallback(ap_settings)
+                if fallback_settings:
+                    missing_before = len([k for k in fallback_settings if k not in resolved_settings])
+                    resolved_settings.update({k: v for k, v in fallback_settings.items() if k not in resolved_settings})
+                    if missing_before:
+                        print(f"[__init__.py] Filled {missing_before} missing resolved settings from AP settings fallback")
                 
                 if resolved_settings:
                     print(f"[__init__.py] Resolved settings from sshd-rando (random values expanded):")
