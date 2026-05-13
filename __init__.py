@@ -3265,6 +3265,12 @@ class SSHDWorld(World):
         try:
             # Collect Archipelago settings as a dictionary for the wrapper
             ap_settings = self._collect_archipelago_settings()
+
+            # When extract_path is not set in YAML, do not attempt full ROM patching.
+            configured_extract_path = str(ap_settings.get("extract_path", "") or "").strip()
+            if not configured_extract_path:
+                print("[__init__.py] No extract_path configured in YAML; skipping full ROM patch generation.")
+                return None, None
             
             # Use the same seed that was resolved in generate_early() so that
             # randomly-chosen starting items (e.g. tablets from random_starting_tablet_count)
@@ -3575,9 +3581,10 @@ class SSHDWorld(World):
                 else:
                     settings_dict[key] = str(value)
             
-            # Handle extract_path if not in config
+            # Handle extract_path if not in config.
+            # Keep this empty when unset so full ROM patching is skipped.
             if 'extract_path' not in settings_dict:
-                settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())
+                settings_dict["extract_path"] = self.options.extract_path.value or ""
             
             # Handle setting_string if not in config
             if 'setting_string' not in settings_dict:
@@ -3975,7 +3982,7 @@ class SSHDWorld(World):
         settings_dict["impa_sot_hint"] = "off"
         
         # Configuration
-        settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())
+        settings_dict["extract_path"] = self.options.extract_path.value or ""
         settings_dict["setting_string"] = self.options.setting_string.value or ""
         
         return settings_dict

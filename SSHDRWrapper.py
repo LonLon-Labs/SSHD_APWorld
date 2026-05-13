@@ -426,12 +426,12 @@ def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, see
     # Determine extract_path BEFORE any sshd-rando modules are imported
     # so that filepathconstants.py picks up the correct absolute paths.
     # ------------------------------------------------------------------
-    try:
-        from platform_utils import get_default_sshd_extract_path
-        default_path = str(get_default_sshd_extract_path())
-    except ImportError:
-        default_path = "C:\\ProgramData\\Archipelago\\sshd_extract"
-    extract_path = Path(settings_dict.get("extract_path", default_path)).resolve()
+    configured_extract_path = str(settings_dict.get("extract_path", "") or "").strip()
+    if not configured_extract_path:
+        raise Exception(
+            "extract_path is empty in YAML. Full ROM patch generation requires an explicit extract_path."
+        )
+    extract_path = Path(configured_extract_path).resolve()
     
     # Set env vars that our patched filepathconstants.py reads at import time.
     # SSHD_AP_EXTRACT_PATH  → overrides SSHD_EXTRACT_PATH (the romfs/exefs root)
