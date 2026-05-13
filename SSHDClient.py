@@ -53,6 +53,44 @@ class DummyModuleUpdate:
         pass
 sys.modules['ModuleUpdate'] = DummyModuleUpdate()
 
+
+def _patch_kivy_windows_input_providers() -> None:
+    """Avoid Kivy Windows touch-provider crashes when a window handle is unavailable."""
+    if sys.platform != "win32":
+        return
+
+    try:
+        from kivy.input.providers import wm_touch, wm_pen
+    except Exception:
+        return
+
+    def _guarded_update(original_update):
+        def wrapper(self, dispatch_fn):
+            if not getattr(self, "hwnd", None):
+                return
+            return original_update(self, dispatch_fn)
+
+        return wrapper
+
+    def _guarded_stop(original_stop):
+        def wrapper(self):
+            if not getattr(self, "hwnd", None):
+                return
+            return original_stop(self)
+
+        return wrapper
+
+    if hasattr(wm_touch, "WM_MotionEventProvider"):
+        wm_touch.WM_MotionEventProvider.update = _guarded_update(wm_touch.WM_MotionEventProvider.update)
+        wm_touch.WM_MotionEventProvider.stop = _guarded_stop(wm_touch.WM_MotionEventProvider.stop)
+
+    if hasattr(wm_pen, "WM_PenProvider"):
+        wm_pen.WM_PenProvider.update = _guarded_update(wm_pen.WM_PenProvider.update)
+        wm_pen.WM_PenProvider.stop = _guarded_stop(wm_pen.WM_PenProvider.stop)
+
+
+_patch_kivy_windows_input_providers()
+
 import psutil
 from process_memory import ProcessMemory, ProcessMemoryError
 

@@ -16,6 +16,7 @@ import tempfile
 import shutil
 import atexit
 import threading
+import subprocess
 from base64 import b64encode
 from copy import deepcopy
 from dataclasses import fields
@@ -60,7 +61,6 @@ except ImportError:
     def get_default_sshd_extract_path():
         from pathlib import Path
         return Path.home() / ".local" / "share" / "Archipelago" / "sshd_extract"
-
 # Mock args to enable nogui mode before any sshd-rando imports
 class NoGuiArgs:
     nogui = True
@@ -171,92 +171,37 @@ def _safe_wait_for_enter(prompt: str) -> None:
         return
 
 
-def run_client(*args: str) -> None:
-    """
-    Handle .apsshd patch files or show client launch instructions.
-    When a patch file is provided, only installs the patch (romfs/exefs)
-    without launching the full client GUI.
-    """
-    import sys
-    from pathlib import Path
-    
-    print(f"Running SSHD Client with args: {args}")
-    
-    # If launched WITHOUT a patch file (from launcher menu), show instructions
-    if not args or not any(arg.endswith('.apsshd') for arg in args):
-        print("\n" + "=" * 70)
-        print("SSHD Client Launch Instructions")
-        print("=" * 70)
-        print("\nTo launch the SSHD Client GUI, run this command in a terminal:")
-        
-        os_name = get_os_name()
-        if os_name == "windows":
-            print("    C:\\ProgramData\\Archipelago\\launch_sshd.bat")
-            print("Or double-click: C:\\ProgramData\\Archipelago\\launch_sshd.bat")
-        elif os_name == "linux":
-            print("    ~/.local/share/Archipelago/launch_sshd.py")
-            print("Or: python launch_sshd.py")
-        elif os_name == "darwin":
-            print("    ~/Library/Application\\ Support/Archipelago/launch_sshd.py")
-            print("Or: python launch_sshd.py")
-        
-        print("\nThe client will open in a new window with full GUI support.")
-        print("=" * 70 + "\n")
-        _safe_wait_for_enter("Press Enter to close this window...")
-        return
-    
-    # If launched WITH a patch file, check if it needs patching first
-    patch_file = next((arg for arg in args if arg.endswith('.apsshd')), None)
-    if patch_file:
-        patch_path = Path(patch_file)
-        needs_patching = False
-        
-        # Check if the .apsshd has ROM patches or needs user-side patching
+def _launch_full_client(*args: str) -> None:
+    """Delegate launcher invocations to the real SSHD client entrypoint."""
+    if sys.platform == "win32":
         try:
-            with zipfile.ZipFile(patch_path, 'r') as zf:
-                has_romfs = any(n.startswith('romfs/') for n in zf.namelist())
-                has_exefs = any(n.startswith('exefs/') for n in zf.namelist())
-                has_patcher_data = 'patcher_data.json' in zf.namelist()
-                
-                if not has_romfs and not has_exefs and has_patcher_data:
-                    needs_patching = True
+            import ctypes
+
+            kernel32 = ctypes.windll.kernel32
+            if not kernel32.GetConsoleWindow():
+                if kernel32.AllocConsole():
+                    try:
+                        sys.stdout = open("CONOUT$", "w", encoding="utf-8", buffering=1)
+                        sys.stderr = open("CONOUT$", "w", encoding="utf-8", buffering=1)
+                        sys.stdin = open("CONIN$", "r", encoding="utf-8")
+                    except OSError:
+                        pass
         except Exception:
             pass
-        
-        if needs_patching:
-            # Lightweight .apsshd — run the standalone patcher
-            print(f"\nThis .apsshd does not contain ROM patches.")
-            print(f"Running standalone patcher to generate patches from your ROM...\n")
-            from .SSHDPatcher import read_apsshd, generate_patches, install_to_emulator
-            import tempfile
-            
-            _manifest, _patch_data, _patcher_data = read_apsshd(patch_path)
-            extract_path = get_default_sshd_extract_path()
-            temp_out = Path(tempfile.mkdtemp(prefix="sshd_patch_"))
-            try:
-                romfs_path, exefs_path = generate_patches(_patcher_data, extract_path, temp_out)
-                if romfs_path and exefs_path:
-                    install_to_emulator(romfs_path, exefs_path)
-                    print("\n" + "=" * 60)
-                    print("Patches generated and installed successfully!")
-                    print("=" * 60)
-                else:
-                    print("\nERROR: Patch generation failed")
-            finally:
-                shutil.rmtree(temp_out, ignore_errors=True)
-        else:
-            # Full .apsshd with ROM patches — install directly
-            from .SSHDClient import install_patch
-            print(f"\nInstalling patch: {patch_file}")
-            success, _ = install_patch(patch_file)
-            if success:
-                print("\n" + "=" * 60)
-                print("Patch installed successfully!")
-                print("=" * 60)
-            else:
-                print("\nERROR: Failed to install patch")
-        
-        _safe_wait_for_enter("\nPress Enter to close this window...")
+
+    import asyncio
+    from .SSHDClient import main as client_main
+
+    client_args = list(args) if args else None
+    asyncio.run(client_main(client_args))
+
+
+def run_client(*args: str) -> None:
+    """
+    Launch the SSHD client, optionally with an .apsshd patch file.
+    """
+    print(f"Running SSHD Client with args: {args}")
+    _launch_full_client(*args)
 
 
 # Register the client launcher
@@ -3265,12 +3210,6 @@ class SSHDWorld(World):
         try:
             # Collect Archipelago settings as a dictionary for the wrapper
             ap_settings = self._collect_archipelago_settings()
-
-            # When extract_path is not set in YAML, do not attempt full ROM patching.
-            configured_extract_path = str(ap_settings.get("extract_path", "") or "").strip()
-            if not configured_extract_path:
-                print("[__init__.py] No extract_path configured in YAML; skipping full ROM patch generation.")
-                return None, None
             
             # Use the same seed that was resolved in generate_early() so that
             # randomly-chosen starting items (e.g. tablets from random_starting_tablet_count)
@@ -3581,10 +3520,9 @@ class SSHDWorld(World):
                 else:
                     settings_dict[key] = str(value)
             
-            # Handle extract_path if not in config.
-            # Keep this empty when unset so full ROM patching is skipped.
+            # Handle extract_path if not in config
             if 'extract_path' not in settings_dict:
-                settings_dict["extract_path"] = self.options.extract_path.value or ""
+                settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())
             
             # Handle setting_string if not in config
             if 'setting_string' not in settings_dict:
@@ -3982,7 +3920,7 @@ class SSHDWorld(World):
         settings_dict["impa_sot_hint"] = "off"
         
         # Configuration
-        settings_dict["extract_path"] = self.options.extract_path.value or ""
+        settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())
         settings_dict["setting_string"] = self.options.setting_string.value or ""
         
         return settings_dict
