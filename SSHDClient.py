@@ -54,42 +54,29 @@ class DummyModuleUpdate:
 sys.modules['ModuleUpdate'] = DummyModuleUpdate()
 
 
-def _patch_kivy_windows_input_providers() -> None:
-    """Avoid Kivy Windows touch-provider crashes when a window handle is unavailable."""
+def _configure_kivy_windows_input() -> None:
+    """Use stable Windows input providers for Kivy in launcher context."""
     if sys.platform != "win32":
         return
 
     try:
-        from kivy.input.providers import wm_touch, wm_pen
+        from kivy.config import Config
     except Exception:
         return
 
-    def _guarded_update(original_update):
-        def wrapper(self, dispatch_fn):
-            if not getattr(self, "hwnd", None):
-                return
-            return original_update(self, dispatch_fn)
-
-        return wrapper
-
-    def _guarded_stop(original_stop):
-        def wrapper(self):
-            if not getattr(self, "hwnd", None):
-                return
-            return original_stop(self)
-
-        return wrapper
-
-    if hasattr(wm_touch, "WM_MotionEventProvider"):
-        wm_touch.WM_MotionEventProvider.update = _guarded_update(wm_touch.WM_MotionEventProvider.update)
-        wm_touch.WM_MotionEventProvider.stop = _guarded_stop(wm_touch.WM_MotionEventProvider.stop)
-
-    if hasattr(wm_pen, "WM_PenProvider"):
-        wm_pen.WM_PenProvider.update = _guarded_update(wm_pen.WM_PenProvider.update)
-        wm_pen.WM_PenProvider.stop = _guarded_stop(wm_pen.WM_PenProvider.stop)
+    # Disable WM touch/pen providers and keep mouse input path only.
+    # This avoids wm_touch hwnd edge-cases without altering keyboard focus behavior.
+    try:
+        if Config.has_option("input", "wm_touch"):
+            Config.remove_option("input", "wm_touch")
+        if Config.has_option("input", "wm_pen"):
+            Config.remove_option("input", "wm_pen")
+        Config.set("input", "mouse", "mouse,disable_multitouch")
+    except Exception:
+        return
 
 
-_patch_kivy_windows_input_providers()
+_configure_kivy_windows_input()
 
 import psutil
 from process_memory import ProcessMemory, ProcessMemoryError

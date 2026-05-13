@@ -171,24 +171,8 @@ def _safe_wait_for_enter(prompt: str) -> None:
         return
 
 
-def _launch_full_client(*args: str) -> None:
-    """Delegate launcher invocations to the real SSHD client entrypoint."""
-    if sys.platform == "win32":
-        try:
-            import ctypes
-
-            kernel32 = ctypes.windll.kernel32
-            if not kernel32.GetConsoleWindow():
-                if kernel32.AllocConsole():
-                    try:
-                        sys.stdout = open("CONOUT$", "w", encoding="utf-8", buffering=1)
-                        sys.stderr = open("CONOUT$", "w", encoding="utf-8", buffering=1)
-                        sys.stdin = open("CONIN$", "r", encoding="utf-8")
-                    except OSError:
-                        pass
-        except Exception:
-            pass
-
+def _run_client_process(*args: str) -> None:
+    """Run the SSHD client entrypoint in an isolated process."""
     import asyncio
     from .SSHDClient import main as client_main
 
@@ -201,7 +185,12 @@ def run_client(*args: str) -> None:
     Launch the SSHD client, optionally with an .apsshd patch file.
     """
     print(f"Running SSHD Client with args: {args}")
-    _launch_full_client(*args)
+    try:
+        # Force a dedicated process boundary so the launcher's Kivy app
+        # and the SSHD client's Kivy app never share lifecycle/state.
+        launch_subprocess(_run_client_process, name="SSHDClient", args=tuple(args))
+    except Exception:
+        _run_client_process(*args)
 
 
 # Register the client launcher
