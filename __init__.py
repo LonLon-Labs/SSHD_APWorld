@@ -1104,6 +1104,9 @@ class SSHDWorld(World):
             # Use a temp directory since this is just for analysis
             temp_dir = Path(tempfile.mkdtemp(prefix="sshd_early_"))
             ap_settings = self._collect_archipelago_settings()
+            # Cache immediately so both except paths (outer and inner) can use
+            # it to populate resolved settings even when generation fails.
+            self._ap_settings_cache = ap_settings
             seed = self.options.sshdr_seed.value if self.options.sshdr_seed.value else None
             
             print("[__init__.py] Generating sshd-rando world to determine starting items...")
@@ -1513,6 +1516,20 @@ class SSHDWorld(World):
                 self.options.open_earth_temple.value, 'open')
         if 'open_lmf' not in s:
             s['open_lmf'] = "on" if self.options.open_lmf.value else "off"
+
+        # Fill ALL remaining shuffle/toggle settings from the cached AP settings.
+        # This ensures that when sshd-rando world generation fails entirely (outer
+        # except) or when resolved-settings extraction fails (inner except), the
+        # logic_converter still sees the correct on/off values for every shuffle
+        # toggle — preventing mass location exclusion due to missing keys.
+        ap_cache = getattr(self, '_ap_settings_cache', None)
+        if ap_cache:
+            ap_fallback = self._build_resolved_settings_fallback(ap_cache)
+            missing = [k for k in ap_fallback if k not in s]
+            for k in missing:
+                s[k] = ap_fallback[k]
+            if missing:
+                print(f"[__init__.py] Filled {len(missing)} shuffle settings from AP options fallback")
 
     def create_item(self, name: str) -> Item:
         """Create an item by name."""
