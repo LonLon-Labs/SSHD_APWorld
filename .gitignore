@@ -62,6 +62,7 @@ ArchipelagoItem.arc.arc.LZ.bak
 # Might add these patcher scripts in the future, but for now they don't do much
 assets/patch_custom_model.py
 assets/patch_model_tools.py
+apworld_check/
 
 
 # Rando stuff

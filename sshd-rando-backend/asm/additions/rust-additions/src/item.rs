@@ -136,10 +136,19 @@ extern "C" {
 
     static mut ACTOR_PARAM_POS: *mut math::Vec3f;
 
+    static mut GAME_RELOADER_PTR: *mut actor::GameReloader;
+
     // Functions
     fn debugPrint_128(string: *const c_char, fstr: *const c_char, ...);
     fn sinf(x: f32) -> f32;
     fn cosf(x: f32) -> f32;
+    fn GameReloader__triggerExit(
+        game_reloader: *mut actor::GameReloader,
+        current_room: u32,
+        exit_index: u32,
+        force_night: u32,
+        force_trial: u32,
+    );
     fn getRotFromDegrees(deg: f32) -> u16;
     fn dAcItem__determineFinalItemid(itemid: u64) -> u64;
     fn dAcOmusasabi__stateWaitEnter();
@@ -155,6 +164,147 @@ extern "C" {
         model_name: *const c_char,
         model_path: *const c_char,
     ) -> *mut c_void;
+}
+
+fn is_trial_tear_actor(item_actor: *mut dAcItem) -> bool {
+    unsafe {
+        let actor_itemid = (*item_actor).itemid as u32;
+        let final_itemid = (*item_actor).final_determined_itemid as u32;
+        let param1_itemid = ((*item_actor).base.basebase.members.param1 & 0x1FF) as u32;
+
+        (43..=46).contains(&actor_itemid)
+            || (43..=46).contains(&final_itemid)
+            || (43..=46).contains(&param1_itemid)
+    }
+}
+
+static mut VESSEL_STAGE_CACHE: [u8; 4] = [0; 4];
+static mut TRIAL_COMPLETE_TIMER: u32 = 0;
+// Set to true only when all 15 tears are collected for the first time during
+// the current visit to the realm. Reset to false on realm re-entry so that a
+// previously-completed realm does not auto-warp the player.
+static mut TRIAL_WARP_PENDING: bool = false;
+// Deferred AP reward: stored when the trial completes inside the realm, then
+// spawned as an item pickup once the player reloads into the overworld.
+static mut PENDING_TRIAL_CUSTOM_FLAG: u16 = 0xFFFF;
+static mut PENDING_TRIAL_ITEMID: u8 = 0;
+
+#[no_mangle]
+pub extern "C" fn archipelago_silent_realm_tear_fix() {
+    unsafe {
+        let current_stage = &CURRENT_STAGE_NAME[..4];
+
+        let is_silent_realm = current_stage == b"S000"
+            || current_stage == b"S100"
+            || current_stage == b"S200"
+            || current_stage == b"S300";
+
+        if !is_silent_realm {
+            TRIAL_COMPLETE_TIMER = 0;
+            // Clear the warp-pending flag whenever we're outside a silent realm.
+            // This ensures re-entering the same realm (S100→F100→S100) doesn't
+            // re-arm the warp — VESSEL_STAGE_CACHE never changes in that case.
+            TRIAL_WARP_PENDING = false;
+            // Spawn the deferred AP reward once the player has reloaded into
+            // the overworld after trial completion.
+            if PENDING_TRIAL_CUSTOM_FLAG != 0xFFFF {
+                let item_ptr = give_item_with_archipelago_flag(
+                    PENDING_TRIAL_ITEMID,
+                    PENDING_TRIAL_CUSTOM_FLAG,
+                );
+                if !item_ptr.is_null() {
+                    PENDING_TRIAL_CUSTOM_FLAG = 0xFFFF;
+                }
+            }
+            return;
+        }
+
+        // When entering a new silent realm, reset the Spirit Vessel counter so a
+        // completed trial from a previous realm doesn't pollute the new one.
+        if VESSEL_STAGE_CACHE != current_stage {
+            VESSEL_STAGE_CACHE = current_stage.try_into().unwrap();
+            TRIAL_COMPLETE_TIMER = 0;
+        }
+
+        // Use the dungeon flags as the authoritative tear count — they are set by
+        // the vanilla dungeonflag path (0x71004e3454).
+        // All 4 silent realms store their 15 tear bits in STATIC_DUNGEONFLAGS[3].
+        // Spirit Vessel target = 1 (the vessel itself) + tears collected.
+        let tears_collected = STATIC_DUNGEONFLAGS[3].count_ones() as u16;
+        let target = 1u16 + tears_collected;
+
+        // When all 15 tears are collected, bypass dSilentRealmFldMgr (which does
+        // not fire with AP items) and trigger trial completion directly.
+        if tears_collected >= 15 {
+            // Per-realm: (game storyflag, AP custom_flag, S{x}00 current_room, exit_index)
+            // AP custom_flag bits: [0-6]=flag, [7-8]=scene_selector (0→6,1→13,2→16,3→19),
+            //   [9]=flag_space.
+            //   S000: 267 → scene 16, bit 11
+            //   S100: 253 → scene 13, bit 125
+            //   S200: 223 → scene 13, bit 95  (trial in room 2)
+            //   S300: 237 → scene 13, bit 109
+            // Exit data from entrance_shuffle_data.yaml: all realms use exit_index 1.
+            //   S000 r00 exit 1 → F000 r00 entrance 83
+            //   S100 r00 exit 1 → F100 r00 entrance 48
+            //   S200 r02 exit 1 → F200 r02 entrance 5 (Eldin return, room 2!)
+            //   S300 r00 exit 1 → F300 r00 entrance 4
+            let (completion_storyflag, ap_custom_flag, current_room, exit_index): (
+                u16,
+                u16,
+                u32,
+                u32,
+            ) = if current_stage == b"S000" {
+                (919, 267, 0, 1) // Goddess -> F000 r00 entrance 83
+            } else if current_stage == b"S100" {
+                (921, 253, 0, 1) // Farore  -> F100 r00 entrance 48
+            } else if current_stage == b"S200" {
+                (920, 223, 2, 1) // Din     -> F200 r02 entrance 5
+            } else if current_stage == b"S300" {
+                (922, 237, 0, 1) // Nayru   -> F300 r00 entrance 4
+            } else {
+                return;
+            };
+
+            // On the first completion frame, store the AP reward info and storyflag
+            // for deferred spawn after the overworld reloads.
+            if flag::check_storyflag(completion_storyflag) == 0 {
+                // First completion this visit: capture the reward info and arm
+                // the warp. The storyflag gates this so re-entry never re-arms.
+                let warp_actor =
+                    actor::find_actor_by_type(actor::ACTORID::OBJ_WARP, core::ptr::null_mut())
+                        as *mut actor::dAcOWarp;
+                PENDING_TRIAL_ITEMID = if !warp_actor.is_null() {
+                    ((*warp_actor).base.basebase.members.param1 >> 24) as u8
+                } else {
+                    0 // fallback (should not happen — warp actor is always
+                      // present)
+                };
+                PENDING_TRIAL_CUSTOM_FLAG = ap_custom_flag;
+                flag::set_storyflag(completion_storyflag);
+                TRIAL_COMPLETE_TIMER = 0;
+                TRIAL_WARP_PENDING = true;
+            }
+
+            // Count 45 frames then warp to the overworld. Only fires when
+            // TRIAL_WARP_PENDING is true (i.e. the realm was completed during
+            // this visit), so re-entering a completed realm does not auto-warp.
+            // force_trial=0 exits trial mode so the destination stage loads normally.
+            if TRIAL_WARP_PENDING {
+                TRIAL_COMPLETE_TIMER += 1;
+                if TRIAL_COMPLETE_TIMER == 45 {
+                    if !GAME_RELOADER_PTR.is_null() {
+                        GameReloader__triggerExit(
+                            GAME_RELOADER_PTR,
+                            current_room,
+                            exit_index,
+                            2,
+                            0,
+                        );
+                    }
+                }
+            }
+        }
+    }
 }
 
 // IMPORTANT: when adding functions here that need to get called from the game,
@@ -548,7 +698,16 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
         let flag_space_trigger = unpacked_params.flag_space_trigger;
         let original_itemid = unpacked_params.original_itemid;
 
-        if flag != 0x7F {
+        let is_trial_tear = is_trial_tear_actor(item_actor);
+
+        // Guard flag==0: dynamically-spawned items
+        // have param2==0 which decodes as flag==0, not 0x7F; without this guard
+        // they would accidentally call set_global_sceneflag(scene6, 0).
+        //
+        // Spirit Vessel is managed entirely by archipelago_silent_realm_tear_fix()
+        // (main loop, every frame) using the Dungeonflags.
+        // No per-tear FlagMgr writes are needed here.
+        if !is_trial_tear && flag != 0x7F && flag != 0 {
             // Use different flag spaces depending on the value of the
             // flag_space_trigger
             match flag_space_trigger {
@@ -647,13 +806,12 @@ pub extern "C" fn check_and_modify_item_actor(item_actor: *mut dAcItem) {
         }
 
         // Don't give a textbox for the specified items, otherwise, force a textbox
-        // NOTE: tears (43-46) are intentionally excluded — setting bit 9 would
-        // cause the game to treat them as rando-patched freestanding items,
-        // bypassing the vanilla tear-collection logic that fills the spirit vessel.
+        // NOTE: tears (43..=46) must be in the no-textbox (bit 9 SET) path so the
+        // game uses the vanilla vessel-fill path instead of the AP-patched-item path.
         match current_item {
-            // Green | Blue | Red Rupee | Heart, Arrows | Bombs, Stamina, Light Fruit | Seeds
+            // Green | Blue | Red Rupee | Heart, Arrows | Bombs, Stamina, Tears, Light Fruit | Seeds
             // | Uncommon | Rare Treasure | Bugs | Treasures
-            2 | 3 | 4 | 6..=8 | 40..=42 | 47 | 57 | 60 | 63 | 64 | 141..=152 | 161..=176 => {
+            2 | 3 | 4 | 6..=8 | 40..=47 | 57 | 60 | 63 | 64 | 141..=152 | 161..=176 => {
                 (*item_actor).base.basebase.members.param1 |= 0x200;
             },
             _ => {
@@ -683,24 +841,28 @@ pub extern "C" fn check_and_modify_item_actor(item_actor: *mut dAcItem) {
             (*item_actor).base.basebase.members.param1 &= !0x1FF;
         }
 
+        let is_trial_tear = is_trial_tear_actor(item_actor);
+
         // Check if the flag is on
         let mut flag_is_on = 0;
-        match flag_space_trigger {
-            0 => flag_is_on = flag::check_global_sceneflag(sceneindex as u16, flag as u16),
-            1 => flag_is_on = flag::check_global_dungeonflag(sceneindex as u16, flag as u16),
-            _ => {},
+        if !is_trial_tear {
+            match flag_space_trigger {
+                0 => flag_is_on = flag::check_global_sceneflag(sceneindex as u16, flag as u16),
+                1 => flag_is_on = flag::check_global_dungeonflag(sceneindex as u16, flag as u16),
+                _ => {},
+            }
         }
 
         // If we have a custom flag and it's been set, revert this item back to what
         // it originally was
-        if flag != 0x7F && flag_is_on != 0 {
+        if !is_trial_tear && flag != 0x7F && flag_is_on != 0 {
             (*item_actor).base.basebase.members.param1 &= !0x1FF;
             (*item_actor).base.basebase.members.param1 |= original_itemid;
             // Set bit 9 for no textbox
             (*item_actor).base.basebase.members.param1 |= 0x200;
         // Otherwise, if we have a custom flag, potentially fix
         // the horizontal offset if necessary
-        } else if (flag != 0x7F) {
+        } else if !is_trial_tear && (flag != 0x7F) {
             fix_freestanding_item_horizontal_offset(item_actor);
         }
 
@@ -1687,9 +1849,14 @@ pub extern "C" fn change_model_scale(item_actor: *mut dAcItem, world_matrix: *mu
 #[no_mangle]
 pub extern "C" fn force_traps_to_have_textboxes(item_actor: *mut dAcItem) {
     unsafe {
-        // If the item isn't a trap and it's a minor item, don't force a textbox
+        let current_item = (*item_actor).base.basebase.members.param1 & 0x1FF;
+
+        // If the item isn't a trap and it's a minor item, don't force a textbox.
+        // Also exclude stamina fruit and tears (42-47) — bit 9 must stay SET for these
+        // so the game uses the vanilla vessel-fill path (tears) or no-textbox path
+        // (stamina/light fruit) instead of the AP-patched-item event path.
         if ((*item_actor).base.members.base.param2 >> 4) & 0xF != 0xF
-            && (*item_actor).final_determined_itemid != 42
+            && !matches!(current_item, 42..=47)
         {
             (*item_actor).base.basebase.members.param1 &= !0x200u32;
         }

@@ -81,26 +81,33 @@ _configure_kivy_windows_input()
 import psutil
 from process_memory import ProcessMemory, ProcessMemoryError
 
-# Try to import from bundled modules first, then fall back to system Archipelago
+# Import Archipelago core modules via absolute imports only.
+# CommonClient and NetUtils are never inside the sshd package, so relative
+# imports (from .CommonClient) always fail with ModuleNotFoundError and
+# pollute Python's exception __context__ chain, causing unrelated worlds
+# (e.g. dk64) to show the sshd error in their own failure tracebacks.
 try:
-    # First try relative imports (when running from .apworld)
-    try:
-        from .CommonClient import CommonContext, server_loop, gui_enabled, \
-            ClientCommandProcessor, logger, get_base_parser
-        from .NetUtils import ClientStatus
-    except ImportError:
-        # Fall back to absolute imports (when running from Archipelago install)
-        from CommonClient import CommonContext, server_loop, gui_enabled, \
-            ClientCommandProcessor, logger, get_base_parser
-        from NetUtils import ClientStatus
+    from CommonClient import CommonContext, server_loop, gui_enabled, \
+        ClientCommandProcessor, logger, get_base_parser
+    from NetUtils import ClientStatus
 except ImportError as e:
-    print(f"ERROR: Cannot import Archipelago modules. Make sure Archipelago is installed.")
-    print(f"Import error: {e}")
-    print(f"\nTo fix this:")
-    print(f"1. Install Archipelago from https://github.com/ArchipelagoMW/Archipelago/releases")
-    print(f"2. Or run this script from within the Archipelago folder")
-    input("Press Enter to exit...")
-    sys.exit(1)
+    if getattr(sys, 'frozen', False):
+        # Standalone exe: show a user-facing message then exit.
+        print(f"ERROR: Cannot import Archipelago modules. Make sure Archipelago is installed.")
+        print(f"Import error: {e}")
+        print(f"\nTo fix this:")
+        print(f"1. Install Archipelago from https://github.com/ArchipelagoMW/Archipelago/releases")
+        print(f"2. Or run this script from within the Archipelago folder")
+        try:
+            if getattr(sys.stdin, 'isatty', lambda: False)():
+                input("Press Enter to exit...")
+        except (EOFError, RuntimeError, OSError):
+            pass
+        sys.exit(1)
+    else:
+        # apworld / script context: re-raise so the host handles it cleanly
+        # instead of calling sys.exit() which would kill the entire process.
+        raise
 
 # Import tracker bridge
 try:
@@ -480,56 +487,118 @@ def _stage_to_region(stage: str) -> Optional[str]:
 # Scene name to scene flag base address mapping (base-relative offsets for SSHD)
 # Stage name mapping (internal codes to friendly names)
 STAGE_NAMES = {
+    # Skyloft and interiors
     "F000": "Skyloft",
     "F001r": "Knight Academy",
-    "F002r": "Bazaar",
-    "F004r": "Sparring Hall",
-    "F005r": "Isle of Songs",
-    "F006r": "Lumpy Pumpkin",
-    "F007r": "Batreaux's House",
-    "F008r": "Bamboo Island",
-    "F009r": "Beedle's Airshop",
-    "F010r": "Peatrice's House",
-    "F012r": "Orielle & Parrow's House",
-    "F013r": "Pippit's House",
-    "F014r": "Kukiel's House",
-    "F015r": "Potion Shop",
-    "F016r": "Scrap Shop",
-    "F017r": "Fortune Teller",
-    "F018r": "Gear Shop",
-    "F019r": "Item Check",
+    "F002r": "Beedle's Airshop",
+    "F004r": "Bazaar",
+    "F005r": "Orielle and Parrow's House",
+    "F006r": "Kukiel's House",
+    "F007r": "Piper's House",
+    "F008r": "Inside the Statue of the Goddess",
+    "F009r": "Sparring Hall",
+    "F010r": "Isle of Songs",
+    "F011r": "Lumpy Pumpkin",
+    "F012r": "Batreaux's House",
+    "F013r": "Sparrot's House",
+    "F014r": "Potion Shop",
+    "F015r": "Scrap Shop",
+    "F016r": "Pipit's House",
+    "F017r": "Rupin's House",
+    "F018r": "Peatrice's House",
+    "F019r": "Bamboo Island",
     "F020": "The Sky",
     "F021": "Cutscene Sky",
-    "F023": "Inside the Thunderhead",
+    "F023": "Thunderhead",
+
+    # Faron region
     "F100": "Faron Woods",
+    "F100_1": "Great Tree",
     "F101": "Deep Woods",
     "F102": "Lake Floria",
+    "F102_1": "Outside Ancient Cistern",
+    "F102_2": "Faron's Lair",
     "F103": "Flooded Faron Woods",
+    "F103_1": "Flooded Great Tree",
+
+    # Eldin region
     "F200": "Eldin Volcano",
     "F201": "Volcano Summit",
+    "F201_1": "Inside the Volcano",
+    "F201_2": "Inside the Volcano (Bokoblin Base)",
+    "F201_3": "Outside Fire Sanctuary",
+    "F201_4": "Volcano Waterfall",
+    "F202": "Bokoblin Base",
     "F210": "Mogma Turf",
     "F211": "Thrill Digger",
+    "F221": "Fire Dragon Room",
+
+    # Lanayru region
     "F300": "Lanayru Desert",
-    "F301": "Lanayru Sand Sea",
+    "F300_1": "Lanayru Mine",
+    "F300_2": "Lightning Node",
+    "F300_3": "Fire Node",
+    "F300_4": "Temple of Time",
+    "F300_5": "Lanayru Mining Facility to Temple of Time",
+    "F301": "Ancient Harbour",
+    "F301_1": "Lanayru Sand Sea",
+    "F301_2": "Inside Pirate Stronghold",
+    "F301_3": "Skipper's Retreat",
+    "F301_4": "Shipyard",
+    "F301_5": "Skipper's Retreat Shack",
+    "F301_6": "Outside Pirate Stronghold",
+    "F301_7": "Construction Bay",
     "F302": "Lanayru Gorge",
     "F303": "Lanayru Caves",
-    "D000": "Skyview Temple",
-    "D100": "Earth Temple",
-    "D200": "Lanayru Mining Facility",
+
+    # Sealed grounds and late-game stages
+    "F400": "Behind the Temple",
+    "F401": "Sealed Grounds Spiral",
+    "F402": "Sealed Temple",
+    "F403": "Ghirahim Boss Arena",
+    "F404": "Credits",
+    "F405": "Sealed Grounds Spiral Cutscene (first cutscene)",
+    "F407": "Sky Keep beaten CS",
+
+    # Dungeons
+    "D000": "Waterfall Cave",
+    "D003_0": "Sky Keep Courage Room",
+    "D003_1": "Sky Keep Earth Temple Room",
+    "D003_2": "Sky Keep Power Room",
+    "D003_3": "Sky Keep Wisdom Room",
+    "D003_4": "Sky Keep LMF Room",
+    "D003_5": "Sky Keep Skyview Temple Room",
+    "D003_6": "Sky Keep",
+    "D003_7": "Sky Keep Entrance Room",
+    "D003_8": "Triforce Room",
+    "D100": "Skyview Temple",
+    "D101": "Ancient Cistern",
+    "D200": "Earth Temple",
     "D201": "Fire Sanctuary",
-    "D300": "Ancient Cistern",
+    "D201_1": "Fire Sanctuary (Inner)",
+    "D300": "Lanayru Mining Facility",
+    "D300_1": "Lanayru Mining Facility (Back)",
     "D301": "Sandship",
-    "D302": "Pirate Stronghold",
-    "D003": "Sky Keep",
-    "D003_1": "Sky Keep",
-    "S000": "Sealed Grounds",
-    "S100": "Hylia's Temple",
-    "S200": "Sealed Temple",
-    "B000": "Sky Keep",
-    "B100": "Lanayru Gorge Silent Realm",
-    "B101": "Faron Silent Realm",
-    "B102": "Eldin Silent Realm",
-    "B103": "Skyloft Silent Realm",
+    "D301_1": "Sandship (Escape)",
+
+    # Silent realms
+    "S000": "The Goddess's Silent Realm",
+    "S100": "Farore's Silent Realm",
+    "S200": "Din's Silent Realm",
+    "S300": "Nayru's Silent Realm",
+
+    # Boss stages
+    "B100": "Ghirahim 1 Boss Room",
+    "B100_1": "Skyview Spring",
+    "B101": "Koloktos Boss Room",
+    "B101_1": "Ancient Cistern Crest Room",
+    "B200": "Scaldera Boss Room",
+    "B201": "Ghirahim 2 Boss Room",
+    "B201_1": "Fire Sanctuary Crest Room",
+    "B210": "Earth Spring",
+    "B300": "Moldarach Boss Room",
+    "B301": "Tentalus Boss Room",
+    "B400": "Demise's Realm",
 }
 
 
@@ -3202,6 +3271,16 @@ class SSHDContext(CommonContext):
         except Exception:
             return False
 
+        # 2.5. Writability probe: the Rust statics must be writable.
+        #      Write the same bytes back — this is a no-op for the game but
+        #      will raise an exception (e.g. GetLastError 998) if the region
+        #      is read-only (e.g. false positive in .text/.rodata).
+        try:
+            self.memory.pm.write_bytes(addr, readback, len(readback))
+        except Exception:
+            logger.debug(f"_validate_buffer_address: {name} at 0x{addr:X} is not writable — rejecting")
+            return False
+
         # 3. Structural validation specific to each buffer.
         if name == "AP_ITEM_INFO_TABLE":
             return self._validate_ap_item_table(addr)
@@ -3518,6 +3597,13 @@ class SSHDContext(CommonContext):
             self.memory.pm.write_bytes(flags_addr + 8, vel_bits, 4)
         except Exception as e:
             logger.debug(f"Could not write cheat flags: {e}")
+            # If the write failed with an access violation (ERROR_NOACCESS / 998)
+            # the cached offset likely points at a read-only false positive.
+            # Invalidate it so the next tick triggers a fresh scan.
+            err_str = str(e)
+            if "998" in err_str or "noaccess" in err_str.lower() or "access" in err_str.lower():
+                logger.warning("Cheat flags write hit non-writable memory — invalidating cached offset for rescan")
+                self._ap_cheat_flags_offset = None
 
     def _update_ap_check_stats(self):
         """
@@ -3808,10 +3894,6 @@ class SSHDContext(CommonContext):
         
         # OPTIMIZATION: Batch-read entire scenes instead of individual flags
         # This reduces 911 individual memory reads to just 8 batch reads (4 scenes × 2 flag types)
-        
-        if not hasattr(self, '_flag_check_count'):
-            self._flag_check_count = 0
-        self._flag_check_count += 1
         
         # Cache for scene data to avoid re-reading the same scene multiple times
         scene_cache = {}
@@ -4170,17 +4252,9 @@ class SSHDContext(CommonContext):
                 )
 
     async def check_beedle_shop_storyflags(self):
-        """
-        Detect Beedle's Airshop purchases by monitoring multiple signal sources:
-        
-        1. MSBF-injected storyflags (1950-1962) - set_storyflag commands injected
-           into 105-Terry.msbf purchase flows at build time, after the start node.
-        2. Vanilla sold_out storyflags from SHOP_ITEMS[N]+0x52 (813-944) - set by
-           the Rust ASM hooks if they fire.
-        3. SHOP_ITEMS entry byte-level diffs - detects any field change in entries.
-        
-        Storyflags: stored as [u16; 128]. Storyflag N -> word[N//16] bit (N%16).
-        """
+        """Beedle's Airshop detection — disabled (was misfiring on silent realm completion storyflags)."""
+        return
+
         if not self.memory.connected or not self.memory.base_address:
             return
         
@@ -4990,8 +5064,49 @@ def _enable_terminal_log_capture(prefix: str) -> Path:
     """Mirror stdout/stderr to a timestamped log file in the local logs folder."""
     global _terminal_log_file
 
-    logs_dir = Path(__file__).resolve().parent / "logs"
-    logs_dir.mkdir(parents=True, exist_ok=True)
+    def _looks_like_apworld_virtual_path(path: Path) -> bool:
+        parts = [p.lower() for p in path.parts]
+        return any(part.endswith(".apworld") for part in parts)
+
+    candidates = []
+
+    # Primary candidate: local logs folder beside this module (works in dev runs).
+    try:
+        module_logs = Path(__file__).resolve().parent / "logs"
+        candidates.append(module_logs)
+    except Exception:
+        pass
+
+    # Stable fallback for launcher/apworld runs.
+    try:
+        from platform_utils import get_archipelago_dir
+        candidates.append(get_archipelago_dir() / "logs" / "sshd")
+    except Exception:
+        pass
+
+    # Last resort: temp directory.
+    try:
+        import tempfile
+        candidates.append(Path(tempfile.gettempdir()) / "archipelago" / "sshd" / "logs")
+    except Exception:
+        pass
+
+    logs_dir = None
+    for candidate in candidates:
+        try:
+            # Skip pseudo-paths like .../custom_worlds/sshd.apworld/sshd/logs
+            # where one path segment is actually a file on disk.
+            if _looks_like_apworld_virtual_path(candidate):
+                continue
+            candidate.mkdir(parents=True, exist_ok=True)
+            logs_dir = candidate
+            break
+        except Exception:
+            continue
+
+    if logs_dir is None:
+        raise RuntimeError("Unable to create a writable logs directory for SSHDClient")
+
     log_path = logs_dir / f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}.log"
     _terminal_log_file = open(log_path, "a", encoding="utf-8", buffering=1)
 

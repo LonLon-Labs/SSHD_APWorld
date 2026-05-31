@@ -84,6 +84,10 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     // Archipelago - Check for items to give from the buffer
     item::archipelago_check_item_buffer();
 
+    // Ensure silent realm vessel state is valid even if gate/event flow paths
+    // were skipped by AP progression timing.
+    item::archipelago_silent_realm_tear_fix();
+
     // Archipelago - Apply deferred AP item string args to the layout TextMgr.
     // On the first item-216 pickup of a session, LYT_MSG_WINDOW.text_mgr may
     // be null when cmd 81 fires.  The main loop retries until it's ready.

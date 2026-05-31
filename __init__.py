@@ -174,10 +174,56 @@ def _safe_wait_for_enter(prompt: str) -> None:
 def _run_client_process(*args: str) -> None:
     """Run the SSHD client entrypoint in an isolated process."""
     import asyncio
-    from .SSHDClient import main as client_main
+    import colorama
+    from . import SSHDClient as client_module
 
-    client_args = list(args) if args else None
-    asyncio.run(client_main(client_args))
+    # In launcher-spawned child processes on Windows, there is often no
+    # attached console. Allocate one so users get a dedicated debug window.
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            if kernel32.GetConsoleWindow() == 0 and kernel32.AllocConsole() != 0:
+                sys.stdin = open("CONIN$", "r", encoding="utf-8", errors="replace")
+                sys.stdout = open("CONOUT$", "w", encoding="utf-8", buffering=1, errors="replace")
+                sys.stderr = open("CONOUT$", "w", encoding="utf-8", buffering=1, errors="replace")
+        except Exception:
+            pass
+
+    logging.basicConfig(
+        format="[%(name)s]: %(message)s",
+        level=logging.DEBUG,
+        force=True,
+    )
+
+    class DebugToTerminalOnly(logging.Filter):
+        def filter(self, record):
+            if record.levelno == logging.DEBUG:
+                record.skip_gui = True
+            return True
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    for handler in root_logger.handlers:
+        handler.setLevel(logging.DEBUG)
+    root_logger.addFilter(DebugToTerminalOnly())
+
+    colorama.just_fix_windows_console()
+    client_module._enable_terminal_log_capture("sshd_client")
+
+    client_args = list(args) if args else []
+
+    # Launcher patch-only mode: when invoked with an .apsshd file, install the
+    # mod and exit without starting the Kivy client UI.
+    patch_file = next((arg for arg in client_args if isinstance(arg, str) and arg.lower().endswith(".apsshd")), None)
+    if patch_file:
+        print("[SSHD Launcher] Patch-only mode active (.apsshd provided)")
+        success, _ = client_module.install_patch(patch_file)
+        if not success:
+            print("[SSHD Launcher] Patch install failed")
+        return
+
+    asyncio.run(client_module.main(client_args or None))
 
 
 def run_client(*args: str) -> None:
@@ -188,6 +234,8 @@ def run_client(*args: str) -> None:
     try:
         # Force a dedicated process boundary so the launcher's Kivy app
         # and the SSHD client's Kivy app never share lifecycle/state.
+        # The child process allocates its own console window and enables
+        # DEBUG logging, so full runtime diagnostics stay visible.
         launch_subprocess(_run_client_process, name="SSHDClient", args=tuple(args))
     except Exception:
         _run_client_process(*args)

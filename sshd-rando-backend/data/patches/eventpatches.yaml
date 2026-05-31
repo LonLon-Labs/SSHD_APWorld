@@ -89,6 +89,16 @@
     entry:
       name: "003_216"
       value: Set AP Item String Args
+  - name: Greg Item Entry
+    type: entryadd
+    entry:
+      name: "003_217"
+      value: Show Greg Item Get Text
+  - name: Tim Item Entry
+    type: entryadd
+    entry:
+      name: "003_218"
+      value: Show Tim Item Get Text
   - name: Set AP Item String Args
     type: flowadd
     flow:
@@ -119,6 +129,30 @@
       next: -1
       param3: 3
       param4: Archipelago Item Get Text Page 2
+
+  - name: Greg Item Get Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Greg Item Get Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Greg Item Get Text
+
+  - name: Tim Item Get Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Tim Item Get Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Tim Item Get Text
 
   - name: Give Scrapper Storyflag
     type: flowadd
