@@ -315,20 +315,22 @@ pub extern "C" fn fix_tbox_traps() {
             NEXT_TRAP_ID = trapid;
         }
 
-        // Read Archipelago custom_flag from TBox params2 bits 8-17 (10 bits).
-        // For Goddess Chests (chest_subtype == 3), force 0x3FF (no-op sentinel):
-        //   - Their vanilla params2 bits 8-17 are NOT 0x3FF (typically 0x300 = 768)
-        //     because those bits encode the spawn-gate sceneflag, not an AP flag.
-        //   - Propagating this value would cause two bugs: (a) Wrong AP location
-        //     detected: the propagated flag triggers set_global_sceneflag/dungeonflag
-        //     for a random AP scene/flag. (b) Crash on second opened chest:
-        //     check_and_modify_item_actor sees the flag as already-set and reverts the
-        //     item to original_itemid=0, causing giveItem(0) -> getItemName(NULL) ->
-        //     strlen crash.
-        //   - Goddess chests use tboxflags (not sceneflag/dungeonflag) for AP
-        //     detection.
+        // Read Archipelago custom_flag from TBox params2.
+        // Normal chests:   custom_flag lives in bits 8-17 (written by patcher).
+        // Goddess Chests (chest_subtype == 3): custom_flag lives in bits 18-27.
+        //   - Bits 8-17 encode the vanilla spawn-gate sceneflag and must NOT be used —
+        //     their value is not an AP custom_flag.
+        //   - The patcher writes the AP custom_flag into bits 18-27 instead, which are
+        //     unused by vanilla and safe to use.
+        //   - Propagating via NEXT_CUSTOM_FLAG lets spawned_actor_traps encode the
+        //     flag into the item actor's param2 bits 8-17 so
+        //     check_and_modify_item_actor and handle_custom_item_get work correctly
+        //     for item 216 (Archipelago Item).
+        //   - AP location completion is ALSO detected via the vanilla tboxflag polled
+        //     by check_goddess_chest_flags in the AP client (belt-and-suspenders).
         let custom_flag = if (*tbox_actor).chest_subtype == 3 {
-            0x3FF // goddess chest: skip AP flag propagation
+            // Goddess chest: AP custom_flag is in bits 18-27
+            (((*tbox_actor).base.members.base.param2 >> 18) & 0x3FF) as u16
         } else {
             (((*tbox_actor).base.members.base.param2 >> 8) & 0x3FF) as u16
         };

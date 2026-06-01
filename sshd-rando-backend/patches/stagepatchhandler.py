@@ -139,43 +139,36 @@ def patch_tbox(
         # the item id for the item they have (for some reason)
         # 9 bits means 2^9 - 1 = 511
         #
-        # AP items (id > 215) are not valid vanilla items and crash the vanilla
-        # ItemGetGoddessT event flow, which calls the game's internal giveItem()
-        # directly (bypassing our dAcItem hooks). Use the original vanilla item
-        # as a safe placeholder; the AP client detects completion via the vanilla
-        # set_sceneflag (polled by check_goddess_chest_flags), so the AP check
-        # is sent correctly regardless of what vanilla item is displayed.
-        if itemid > 215:
-            # original_itemid is the HD-encoded value (511 - vanilla_item_id).
-            # Setting itemid = (511 - original_itemid) here means the 511-flip
-            # below re-encodes it back to original_itemid in anglez, giving
-            # exactly the original vanilla item.
-            itemid = 511 - original_itemid
+        # For AP items (id > 215), store the AP item ID directly in anglez so
+        # the game shows the Archipelago Item model (id 216) from the chest.
+        # The AP custom_flag is written to params2 bits 18-27 (below) so
+        # fix_tbox_traps can read it and propagate it through NEXT_CUSTOM_FLAG.
+        # AP location completion is also detected via the vanilla tboxflag
+        # polled by check_goddess_chest_flags.
         itemid = 511 - itemid
         tbox_subtype = 3
     elif tbox_subtype == -1:
         tbox_subtype = vanilla_tbox_subtype
 
-    # Encode Archipelago custom_flag into params2 bits 8-17 (10 bits)
-    # This gets read by fix_tbox_traps in Rust and propagated to the spawned
-    # item actor via ACTORBASE_PARAM2, where unpack_custom_item_params will
-    # extract it and call set_global_sceneflag for Archipelago detection.
-    # 0x3FF = no custom flag (flag bits = 0x7F = skip sentinel in Rust)
+    # For normal chests: encode AP custom_flag into params2 bits 8-17 (10 bits).
+    # fix_tbox_traps reads bits 8-17 and propagates it to the spawned item actor.
     #
-    # IMPORTANT: Do NOT write custom_flag to params2 for Goddess Chests
-    # (vanilla subtype 3). The game engine uses params2 bits 8-17 as part of
-    # the TBox spawn condition check. Writing non-vanilla values to these bits
-    # causes goddess chests to bypass the spawn_sceneflag gate and appear
-    # without their corresponding goddess cubes being struck.
+    # IMPORTANT: Do NOT write custom_flag to params2 bits 8-17 for Goddess Chests
+    # (vanilla subtype 3). The game engine uses bits 8-17 as part of the TBox
+    # spawn condition check — writing non-vanilla values causes goddess chests to
+    # bypass their spawn_sceneflag gate and appear without the cube being struck.
     #
-    # For goddess chests, AP location completion is detected via the vanilla
-    # tboxflag (chestflag = anglez >> 9) that the game engine sets when the chest
-    # is opened. The AP client polls FA.tboxflags[scene_index][chestflag//8] bit
-    # (chestflag % 8) directly (set_global_tboxflag / check_global_tboxflag).
-    # Note: anglex & 0xFF (set_sceneflag) is always 0xFF for goddess chests —
-    # the sentinel value meaning "no vanilla scene flag" — so it cannot be used.
+    # For goddess chests: encode AP custom_flag into params2 bits 18-27 instead.
+    # Bits 18-27 are unused by vanilla and safe to use for our custom flag.
+    # fix_tbox_traps reads bits 18-27 for goddess chests and propagates the flag
+    # through NEXT_CUSTOM_FLAG → spawned_actor_traps → item actor param2.
+    # AP location completion is ALSO detected via the vanilla tboxflag
+    # (polled by check_goddess_chest_flags in the AP client).
     if vanilla_tbox_subtype != 3:
         tbox["params2"] = mask_shift_set(tbox["params2"], 0x3FF, 8, custom_flag)
+    elif custom_flag != 0x3FF:
+        # Goddess chest: store AP custom_flag in bits 18-27 (bits 8-17 reserved)
+        tbox["params2"] = mask_shift_set(tbox["params2"], 0x3FF, 18, custom_flag)
 
     tbox["params1"] = mask_shift_set(tbox["params1"], 0x3, 4, tbox_subtype)
 
