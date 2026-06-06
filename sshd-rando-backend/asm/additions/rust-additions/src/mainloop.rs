@@ -96,6 +96,17 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     fix::apply_loftwing_speed_override();
     cheats::handle_moon_jump();
     cheats::handle_hovercraft();
+    cheats::handle_infinite_health();
+    cheats::handle_infinite_stamina();
+    cheats::handle_infinite_ammo();
+    cheats::handle_infinite_bugs();
+    cheats::handle_infinite_materials();
+    cheats::handle_infinite_shield();
+    cheats::handle_infinite_skyward_strike();
+    cheats::handle_infinite_rupees();
+    cheats::handle_infinite_loftwing();
+    cheats::handle_no_electric_stun();
+    cheats::handle_speed_multiplier();
 
     return unsafe { dSystem };
 }

@@ -2,8 +2,10 @@
 #![allow(non_snake_case)]
 #![allow(unused)]
 
+use crate::flag;
 use crate::input;
 use crate::player;
+use crate::savefile;
 use static_assertions::assert_eq_size;
 
 // ─── Extern symbols
@@ -11,6 +13,8 @@ use static_assertions::assert_eq_size;
 
 extern "C" {
     static PLAYER_PTR: *mut player::dPlayer;
+    static FILE_MGR: *mut savefile::FileMgr;
+    static mut CURRENT_STAGE_NAME: [u8; 8];
 }
 
 // ─── Cheat enable flags (written by Python client via /cheat toggle)
@@ -18,32 +22,77 @@ extern "C" {
 //
 // Python locates this struct at runtime by scanning for magic bytes
 // "CF\x00\x01". Offsets within the struct:
-//   +0  magic           [u8; 4]  — "CF\x00\x01"
-//   +4  moon_jump       bool     — enable Y-button moon jump
-//   +5  hovercraft      bool     — enable X + L-stick hovercraft
-//   +6  _pad            [u8; 2]  — alignment padding
-//   +8  hover_vel_y_bits u32     — f32 bits: lower-clamp for hover vel_y
-//                                  0x00000000 = 0.0 (stock stable hover)
-//                                  Set via /cheat hovercraft <value>
+//   +0   magic                [u8; 4]  — "CF\x00\x01"
+//   +4   moon_jump            bool     — Y-button moon jump
+//   +5   hovercraft           bool     — X + L-stick hovercraft
+//   +6   _pad                 [u8; 2]  — alignment padding
+//   +8   hover_vel_y_bits     u32      — f32 bits: lower-clamp for hover vel_y
+//   +12  infinite_health      bool
+//   +13  infinite_stamina     bool
+//   +14  infinite_ammo        bool
+//   +15  infinite_bugs        bool
+//   +16  infinite_materials   bool
+//   +17  infinite_shield      bool
+//   +18  infinite_skyward_strike bool
+//   +19  infinite_rupees      bool
+//   +20  infinite_loftwing    bool
+//   +21  no_electric_stun     bool
+//   +22  _pad2                [u8; 2]
+//   +24  speed_multiplier_bits u32     — f32 bits; 0 or 0x3F800000 = disabled
 
 #[repr(C, packed(1))]
 pub struct ApCheatFlags {
-    pub magic:            [u8; 4], // "CF\x00\x01" — Python magic scan key
-    pub moon_jump:        bool,    // +4 toggled by /cheat moon_jump
-    pub hovercraft:       bool,    // +5 toggled by /cheat hovercraft
-    pub _pad:             [u8; 2], // +6..7 alignment
-    pub hover_vel_y_bits: u32,     // +8 f32 bits for hover sustain clamp
+    pub magic:                   [u8; 4], // +0  "CF\x00\x01" — Python magic scan key
+    pub moon_jump:               bool,    // +4  toggled by /cheat moon_jump
+    pub hovercraft:              bool,    // +5  toggled by /cheat hovercraft
+    pub _pad:                    [u8; 2], // +6..7 alignment
+    pub hover_vel_y_bits:        u32,     // +8  f32 bits for hover sustain clamp
+    pub infinite_health:         bool,    // +12
+    pub infinite_stamina:        bool,    // +13
+    pub infinite_ammo:           bool,    // +14
+    pub infinite_bugs:           bool,    // +15
+    pub infinite_materials:      bool,    // +16
+    pub infinite_shield:         bool,    // +17
+    pub infinite_skyward_strike: bool,    // +18
+    pub infinite_rupees:         bool,    // +19
+    pub infinite_loftwing:       bool,    // +20
+    pub no_electric_stun:        bool,    // +21
+    pub _pad2:                   [u8; 2], // +22..23 alignment
+    pub speed_multiplier_bits:   u32,     // +24 f32 bits; 0 or 0x3F800000 = disabled
 }
-assert_eq_size!([u8; 12], ApCheatFlags);
+assert_eq_size!([u8; 28], ApCheatFlags);
 
 #[no_mangle]
 pub static mut AP_CHEAT_FLAGS: ApCheatFlags = ApCheatFlags {
-    magic:            [0x43, 0x46, 0x00, 0x01], // "CF\x00\x01"
-    moon_jump:        false,
-    hovercraft:       false,
-    _pad:             [0u8; 2],
-    hover_vel_y_bits: 0x3FECCCCDu32, // 1.85f32 — cancels gravity at 60 Hz
+    magic:                   [0x43, 0x46, 0x00, 0x01], // "CF\x00\x01"
+    moon_jump:               false,
+    hovercraft:              false,
+    _pad:                    [0u8; 2],
+    hover_vel_y_bits:        0x3FECCCCDu32, // 1.85f32 — cancels gravity at 60 Hz
+    infinite_health:         false,
+    infinite_stamina:        false,
+    infinite_ammo:           false,
+    infinite_bugs:           false,
+    infinite_materials:      false,
+    infinite_shield:         false,
+    infinite_skyward_strike: false,
+    infinite_rupees:         false,
+    infinite_loftwing:       false,
+    no_electric_stun:        false,
+    _pad2:                   [0u8; 2],
+    speed_multiplier_bits:   0u32,
 };
+
+// Loftwing (dBird) pointer obtained each frame via the player vtable.
+// Only valid while current_action == ON_BIRD; cleared when dismounted.
+// Exposed as pub so CE can read the address (subsdk8_base + symbol_offset).
+pub static mut MY_BIRD_PTR: *mut player::dBird = core::ptr::null_mut();
+
+// Byte offset of the spiral-charge field from the START of the dBird struct.
+// usize::MAX = not yet discovered.  Once any candidate write succeeds, this
+// is set and reused for all future frames and stages without needing the
+// player-relative candidate table (which varies by build/heap layout).
+static mut CHARGE_FIELD_DBIRD_OFFSET: usize = usize::MAX;
 
 // Tracks whether X was held on the previous frame so we can fire the
 // takeoff kick exactly once when X is first pressed.
@@ -289,6 +338,257 @@ pub fn handle_hovercraft() {
             let new_hi = (*rot_hi_ptr).wrapping_sub(0x0A);
             *rot_hi_ptr = new_hi;
             *copy_hi_ptr = new_hi;
+        }
+    }
+}
+
+pub fn handle_infinite_health() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.infinite_health {
+            return;
+        }
+        if FILE_MGR.is_null() {
+            return;
+        }
+        let cap = (*FILE_MGR).FA.health_capacity;
+        if cap > 0 {
+            (*FILE_MGR).FA.current_health = cap;
+        }
+    }
+}
+
+pub fn handle_infinite_stamina() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.infinite_stamina {
+            return;
+        }
+        if PLAYER_PTR.is_null() {
+            return;
+        }
+        // Stamina field shifts in certain stages; use the same stage-keyed
+        // offsets as the Python client (relative to PLAYER_PTR base address).
+        let stage = &CURRENT_STAGE_NAME[..5];
+        let stamina_ptr: *mut u32 = if stage == b"F103\0" {
+            // Flooded Faron Woods — stamina at player_base - 0x7FA8
+            (PLAYER_PTR as *mut u8).offset(-0x7FA8isize) as *mut u32
+        } else if stage == b"B301\0" {
+            // Tentalus boss — stamina at player_base + 0x5CD8
+            (PLAYER_PTR as *mut u8).add(0x5CD8) as *mut u32
+        } else {
+            core::ptr::addr_of_mut!((*PLAYER_PTR).stamina_amount)
+        };
+        *stamina_ptr = 1_000_000;
+        (*PLAYER_PTR).stamina_recovery_timer = 0;
+        (*PLAYER_PTR).something_we_use_for_stamina = 0;
+    }
+}
+
+pub fn handle_infinite_ammo() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.infinite_ammo {
+            return;
+        }
+        flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::ARROW_COUNTER, 20);
+        flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::BOMB_COUNTER, 20);
+        flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::DEKU_SEED_COUNTER, 20);
+    }
+}
+
+pub fn handle_infinite_bugs() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.infinite_bugs {
+            return;
+        }
+        // Boolean itemflags 0x8D..=0x98 (FARON_GRASSHOPPER through STARRY_FIREFLY)
+        for id in 0x8Du16..=0x98u16 {
+            flag::set_itemflag_raw(id);
+        }
+    }
+}
+
+pub fn handle_infinite_materials() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.infinite_materials {
+            return;
+        }
+        // Boolean itemflags 0xA1..=0xB0 (HORNET_LAVAE through GODDESS_PLUME)
+        for id in 0xA1u16..=0xB0u16 {
+            flag::set_itemflag_raw(id);
+        }
+    }
+}
+
+pub fn handle_infinite_shield() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.infinite_shield {
+            return;
+        }
+        if PLAYER_PTR.is_null() || FILE_MGR.is_null() {
+            return;
+        }
+        // Zero the shield burn timer so the shield never degrades
+        (*PLAYER_PTR).shield_burn_timer = 0;
+        // Restore durability in the pouch item slot so it shows as fully repaired
+        let slot = (*FILE_MGR).FA.shield_pouch_slot;
+        if slot < 8 {
+            let pouch_val = (*FILE_MGR).FA.pouch_items[slot as usize];
+            let item_id = (pouch_val & 0xFF) as u8;
+            // Shield item IDs: 0x74 (Wooden Shield) through 0x7D (Hylian Shield)
+            if item_id >= 0x74 && item_id <= 0x7D {
+                let repaired = item_id as i32 | (0x30 << 16);
+                if pouch_val != repaired {
+                    (*FILE_MGR).FA.pouch_items[slot as usize] = repaired;
+                }
+            }
+        }
+    }
+}
+
+pub fn handle_infinite_skyward_strike() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.infinite_skyward_strike {
+            return;
+        }
+        if PLAYER_PTR.is_null() {
+            return;
+        }
+        // Keep the timer at 300 whenever it is positive (sword is being charged
+        // or is already charged).  Writing 300 while the timer is 0 would force
+        // the charge animation to start even when the player isn't swinging.
+        if (*PLAYER_PTR).skyward_strike_timer > 0 {
+            (*PLAYER_PTR).skyward_strike_timer = 300;
+        }
+    }
+}
+
+pub fn handle_infinite_rupees() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.infinite_rupees {
+            return;
+        }
+        flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::RUPEE_COUNTER, 9999);
+    }
+}
+
+pub fn handle_infinite_loftwing() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.infinite_loftwing {
+            MY_BIRD_PTR = core::ptr::null_mut();
+            return;
+        }
+        if PLAYER_PTR.is_null() {
+            MY_BIRD_PTR = core::ptr::null_mut();
+            return;
+        }
+
+        // Obtain the live dBird pointer via the player vtable.  This is
+        // reliable across all builds because get_riding_actor (vtable+0x448)
+        // resolves the actual actor pointer from the game engine regardless of
+        // where the heap placed the dBird struct this session.
+        //
+        // IMPORTANT: get_riding_actor dereferences an internal sub-pointer that
+        // is only initialised while the player action is ON_BIRD.  Guard here to
+        // prevent a null-pointer crash when the player is on foot.
+        let action = (*PLAYER_PTR).current_action;
+        if action != player::PLAYER_ACTIONS::ON_BIRD {
+            MY_BIRD_PTR = core::ptr::null_mut();
+            return;
+        }
+
+        // Transmute: the vtable declaration omits the return type, but the
+        // function actually returns *mut dBird.
+        let get_bird_fn: extern "C" fn(*mut player::dPlayer) -> *mut player::dBird =
+            core::mem::transmute((*(*PLAYER_PTR).vtable).get_riding_actor);
+        let bird_ptr = get_bird_fn(PLAYER_PTR);
+        MY_BIRD_PTR = bird_ptr;
+
+        if bird_ptr.is_null() {
+            return;
+        }
+
+        let bird_start = bird_ptr as usize;
+        let bird_end = bird_start + core::mem::size_of::<player::dBird>();
+
+        // Fast path: once we have identified the intra-dBird offset (either
+        // from a prior candidate hit or from a previous session frame), use it
+        // directly.  The charge field is at a fixed C++ struct offset in the
+        // game binary, so it is constant across all heap layouts and stages.
+        if CHARGE_FIELD_DBIRD_OFFSET != usize::MAX {
+            let charge_ptr = (bird_start + CHARGE_FIELD_DBIRD_OFFSET) as *mut u32;
+            let current = *charge_ptr;
+            if current <= 3 {
+                *charge_ptr = 3;
+            }
+            return;
+        }
+
+        // Discovery path: try empirically-known player-relative candidates.
+        // dBird lands at different positions relative to dPlayer across emulator
+        // builds, so multiple candidates are needed.  F023 (Thunderhead) has a
+        // single reliable candidate and will typically seed the offset before
+        // the player spends time in F020 (The Sky).
+        // Only write when the candidate address is inside dBird (bounds-checked)
+        // so stale offsets cannot corrupt unrelated memory.
+        let stage = &CURRENT_STAGE_NAME[..5];
+        let candidates: &[isize] = if stage == b"F020\0" {
+            &[-0xB57E6isize, -0x8B24Eisize]
+        } else if stage == b"F023\0" {
+            &[-0x37A2Eisize]
+        } else {
+            return;
+        };
+        for &offset in candidates {
+            let cand_addr = (PLAYER_PTR as isize + offset) as usize;
+            if cand_addr >= bird_start && cand_addr + 4 <= bird_end {
+                let charge_ptr = cand_addr as *mut u32;
+                let current = *charge_ptr;
+                if current <= 3 {
+                    *charge_ptr = 3;
+                    // Cache the offset: all future frames skip the candidate
+                    // table and use bird_ptr + CHARGE_FIELD_DBIRD_OFFSET.
+                    CHARGE_FIELD_DBIRD_OFFSET = cand_addr - bird_start;
+                }
+            }
+        }
+    }
+}
+
+pub fn handle_no_electric_stun() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.no_electric_stun {
+            return;
+        }
+        if PLAYER_PTR.is_null() {
+            return;
+        }
+        (*PLAYER_PTR).shock_effect_timer = 0;
+        // Override the electric damage/stunlock actions with a generic hit
+        // so the player is staggered briefly but not locked in the stun loop.
+        let action = (*PLAYER_PTR).current_action;
+        if action == player::PLAYER_ACTIONS::DAMAGE_ELECTRIC
+            || action == player::PLAYER_ACTIONS::ELECTRICUTED_MAYBE
+        {
+            (*PLAYER_PTR).current_action = player::PLAYER_ACTIONS::HIT_BY_ENEMY;
+        }
+    }
+}
+
+pub fn handle_speed_multiplier() {
+    unsafe {
+        let mult_bits = AP_CHEAT_FLAGS.speed_multiplier_bits;
+        // 0 = not configured; 0x3F800000 = 1.0 (identity) — both mean disabled
+        if mult_bits == 0 || mult_bits == 0x3F800000u32 {
+            return;
+        }
+        if PLAYER_PTR.is_null() {
+            return;
+        }
+        let multiplier = f32::from_bits(mult_bits);
+        let speed = (*PLAYER_PTR).obj_base_members.forward_speed;
+        // Only apply in the normal movement speed range to prevent runaway
+        // multiplication if the game or another system already modified speed.
+        if speed > 0.1f32 && speed < 200.0f32 {
+            (*PLAYER_PTR).obj_base_members.forward_speed = speed * multiplier;
         }
     }
 }

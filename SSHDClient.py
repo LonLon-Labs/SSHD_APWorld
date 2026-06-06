@@ -2587,6 +2587,29 @@ class SSHDContext(CommonContext):
                 old_stage = self.current_stage
                 logger.debug(f"Entered stage: {stage_name}")
 
+                # Silent realm entry: log custom flag mappings for tear locations
+                if stage_name.startswith("S") and stage_name[:4] in ("S000","S100","S200","S300") and self.custom_flag_to_location:
+                    logger.info(f"[TEAR-DEBUG] Entered silent realm stage: {stage_name}")
+                    sr_flags = {}
+                    for _fid, _loc_code in self.custom_flag_to_location.items():
+                        try:
+                            _loc_name = self.location_names.lookup_in_slot(_loc_code, self.slot)
+                            if _loc_name and ("Silent Realm" in _loc_name or "Siren" in _loc_name):
+                                sr_flags[_fid] = _loc_name
+                        except Exception:
+                            pass
+                    if sr_flags:
+                        _scene_idx_map = {0: 6, 1: 13, 2: 16, 3: 19}
+                        logger.info(f"[TEAR-DEBUG] {len(sr_flags)} silent realm custom flag mappings:")
+                        for _fid, _name in sorted(sr_flags.items()):
+                            _fn = _fid & 0x7F
+                            _si = _scene_idx_map.get((_fid >> 7) & 0x03, 6)
+                            _fs = (_fid >> 9) & 0x01
+                            _already = self.previous_custom_flags.get(_fid, 0)
+                            logger.info(f"[TEAR-DEBUG]   flag_id={_fid} already_set={_already} scene={_si} u16={_fn//16} bit={_fn%16} space={'dungeon' if _fs else 'scene'} -> {_name}")
+                    else:
+                        logger.warning(f"[TEAR-DEBUG] No custom flag mappings found for silent realm locations in {stage_name}!")
+
                 # Game autosave happens on scene transition — unsafe items are now safe
                 if self._unsafe_items_count > 0:
                     self.delivered_item_count += self._unsafe_items_count
@@ -3895,6 +3918,49 @@ class SSHDContext(CommonContext):
         # OPTIMIZATION: Batch-read entire scenes instead of individual flags
         # This reduces 911 individual memory reads to just 8 batch reads (4 scenes × 2 flag types)
         
+        if not hasattr(self, '_flag_check_count'):
+            self._flag_check_count = 0
+        self._flag_check_count += 1
+
+        # Read current stage for silent realm debug
+        try:
+            _ccf_stage = self.memory.read_string(OFFSET_CURRENT_STAGE + OFFSET_STAGE_NAME, 8) or ""
+        except Exception:
+            _ccf_stage = ""
+        _in_silent_realm = _ccf_stage[:4] in ("S000", "S100", "S200", "S300")
+
+        # Periodic dungeon flag dump while in silent realm (every 5 seconds)
+        if _in_silent_realm:
+            _now = time.time()
+            if _now - getattr(self, '_last_sr_df_dump', 0.0) > 5.0:
+                self._last_sr_df_dump = _now
+                try:
+                    _all_df_data = self.memory.read_bytes(
+                        OFFSET_SAVEFILE_A + OFFSET_FA_DUNGEONFLAGS, 26 * 16
+                    )
+                    if _all_df_data and len(_all_df_data) == 26 * 16:
+                        _nonzero = []
+                        for _si in range(26):
+                            for _bi in range(0, 16, 2):
+                                _v = int.from_bytes(_all_df_data[_si*16+_bi:_si*16+_bi+2], 'little')
+                                if _v:
+                                    _nonzero.append(f"s{_si}[u16_{_bi//2}]=0x{_v:04X}")
+                        logger.info(f"[TEAR-DEBUG] Dungeon flags ({_ccf_stage}): {_nonzero if _nonzero else 'ALL ZERO'}")
+                        # Also dump scene flags for the custom flag scenes
+                        _all_sf_data = self.memory.read_bytes(
+                            OFFSET_SAVEFILE_A + OFFSET_FA_SCENEFLAGS, 26 * 16
+                        )
+                        if _all_sf_data and len(_all_sf_data) == 26 * 16:
+                            _sf_nonzero = []
+                            for _si in (6, 13, 16, 19):
+                                for _bi in range(0, 16, 2):
+                                    _v = int.from_bytes(_all_sf_data[_si*16+_bi:_si*16+_bi+2], 'little')
+                                    if _v:
+                                        _sf_nonzero.append(f"s{_si}[u16_{_bi//2}]=0x{_v:04X}")
+                            logger.info(f"[TEAR-DEBUG] Scene flags (custom scenes 6/13/16/19) ({_ccf_stage}): {_sf_nonzero if _sf_nonzero else 'ALL ZERO'}")
+                except Exception as _e:
+                    logger.debug(f"[TEAR-DEBUG] Dungeon flag dump failed: {_e}")
+
         # Cache for scene data to avoid re-reading the same scene multiple times
         scene_cache = {}
         
@@ -4012,6 +4078,22 @@ class SSHDContext(CommonContext):
                         logger.debug(f"Location checked: {location_name}")
                         logger.debug(f"   Flag details: type={flag_type}, scene={sceneindex}, flag={lower_flag}, u16=0x{current_u16:04X}, bit={lower_flag}")
                         logger.debug(f"   Previous was {previous_state}, now is {flag_state}")
+
+                        # Extra logging for silent realm locations
+                        if _in_silent_realm or (location_name and ("Silent Realm" in location_name or "Siren" in location_name)):
+                            logger.info(f"[TEAR-DEBUG] SILENT REALM location checked: {location_name}")
+                            logger.info(f"[TEAR-DEBUG]   Stage={_ccf_stage}, flag_id={flag_id}, scene={sceneindex}, u16={upper_flag}, bit={lower_flag}, space={flag_type}")
+                            # Dump dungeon flags for the affected scene and adjacent scenes
+                            try:
+                                _dump_scenes = list({max(0, sceneindex-1), sceneindex, min(25, sceneindex+1)})
+                                for _dsi in _dump_scenes:
+                                    _df_offset = OFFSET_SAVEFILE_A + OFFSET_FA_DUNGEONFLAGS + (_dsi * 16)
+                                    _df_data = self.memory.read_bytes(_df_offset, 16)
+                                    if _df_data:
+                                        _df_u16s = [int.from_bytes(_df_data[i:i+2], 'little') for i in range(0, 16, 2)]
+                                        logger.info(f"[TEAR-DEBUG]   DungeonFlags scene {_dsi}: {[hex(v) for v in _df_u16s]}")
+                            except Exception as _e:
+                                logger.info(f"[TEAR-DEBUG]   DungeonFlag read failed: {_e}")
 
                         # ARCHIPELAGO: If this location contains our own Progressive Sword,
                         # increment the sword counter and write sf906-911 to memory so
@@ -4252,9 +4334,17 @@ class SSHDContext(CommonContext):
                 )
 
     async def check_beedle_shop_storyflags(self):
-        """Beedle's Airshop detection — disabled (was misfiring on silent realm completion storyflags)."""
-        return
-
+        """
+        Detect Beedle's Airshop purchases by monitoring multiple signal sources:
+        
+        1. MSBF-injected storyflags (1950-1962) - set_storyflag commands injected
+           into 105-Terry.msbf purchase flows at build time, after the start node.
+        2. Vanilla sold_out storyflags from SHOP_ITEMS[N]+0x52 (813-944) - set by
+           the Rust ASM hooks if they fire.
+        3. SHOP_ITEMS entry byte-level diffs - detects any field change in entries.
+        
+        Storyflags: stored as [u16; 128]. Storyflag N -> word[N//16] bit (N%16).
+        """
         if not self.memory.connected or not self.memory.base_address:
             return
         
