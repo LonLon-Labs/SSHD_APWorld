@@ -2589,7 +2589,7 @@ class SSHDContext(CommonContext):
 
                 # Silent realm entry: log custom flag mappings for tear locations
                 if stage_name.startswith("S") and stage_name[:4] in ("S000","S100","S200","S300") and self.custom_flag_to_location:
-                    logger.info(f"[TEAR-DEBUG] Entered silent realm stage: {stage_name}")
+                    logger.debug(f"[TEAR-DEBUG] Entered silent realm stage: {stage_name}")
                     sr_flags = {}
                     for _fid, _loc_code in self.custom_flag_to_location.items():
                         try:
@@ -2600,13 +2600,13 @@ class SSHDContext(CommonContext):
                             pass
                     if sr_flags:
                         _scene_idx_map = {0: 6, 1: 13, 2: 16, 3: 19}
-                        logger.info(f"[TEAR-DEBUG] {len(sr_flags)} silent realm custom flag mappings:")
+                        logger.debug(f"[TEAR-DEBUG] {len(sr_flags)} silent realm custom flag mappings:")
                         for _fid, _name in sorted(sr_flags.items()):
                             _fn = _fid & 0x7F
                             _si = _scene_idx_map.get((_fid >> 7) & 0x03, 6)
                             _fs = (_fid >> 9) & 0x01
                             _already = self.previous_custom_flags.get(_fid, 0)
-                            logger.info(f"[TEAR-DEBUG]   flag_id={_fid} already_set={_already} scene={_si} u16={_fn//16} bit={_fn%16} space={'dungeon' if _fs else 'scene'} -> {_name}")
+                            logger.debug(f"[TEAR-DEBUG]   flag_id={_fid} already_set={_already} scene={_si} u16={_fn//16} bit={_fn%16} space={'dungeon' if _fs else 'scene'} -> {_name}")
                     else:
                         logger.warning(f"[TEAR-DEBUG] No custom flag mappings found for silent realm locations in {stage_name}!")
 
@@ -3945,7 +3945,7 @@ class SSHDContext(CommonContext):
                                 _v = int.from_bytes(_all_df_data[_si*16+_bi:_si*16+_bi+2], 'little')
                                 if _v:
                                     _nonzero.append(f"s{_si}[u16_{_bi//2}]=0x{_v:04X}")
-                        logger.info(f"[TEAR-DEBUG] Dungeon flags ({_ccf_stage}): {_nonzero if _nonzero else 'ALL ZERO'}")
+                        logger.debug(f"[TEAR-DEBUG] Dungeon flags ({_ccf_stage}): {_nonzero if _nonzero else 'ALL ZERO'}")
                         # Also dump scene flags for the custom flag scenes
                         _all_sf_data = self.memory.read_bytes(
                             OFFSET_SAVEFILE_A + OFFSET_FA_SCENEFLAGS, 26 * 16
@@ -3957,7 +3957,7 @@ class SSHDContext(CommonContext):
                                     _v = int.from_bytes(_all_sf_data[_si*16+_bi:_si*16+_bi+2], 'little')
                                     if _v:
                                         _sf_nonzero.append(f"s{_si}[u16_{_bi//2}]=0x{_v:04X}")
-                            logger.info(f"[TEAR-DEBUG] Scene flags (custom scenes 6/13/16/19) ({_ccf_stage}): {_sf_nonzero if _sf_nonzero else 'ALL ZERO'}")
+                            logger.debug(f"[TEAR-DEBUG] Scene flags (custom scenes 6/13/16/19) ({_ccf_stage}): {_sf_nonzero if _sf_nonzero else 'ALL ZERO'}")
                 except Exception as _e:
                     logger.debug(f"[TEAR-DEBUG] Dungeon flag dump failed: {_e}")
 
@@ -4081,8 +4081,8 @@ class SSHDContext(CommonContext):
 
                         # Extra logging for silent realm locations
                         if _in_silent_realm or (location_name and ("Silent Realm" in location_name or "Siren" in location_name)):
-                            logger.info(f"[TEAR-DEBUG] SILENT REALM location checked: {location_name}")
-                            logger.info(f"[TEAR-DEBUG]   Stage={_ccf_stage}, flag_id={flag_id}, scene={sceneindex}, u16={upper_flag}, bit={lower_flag}, space={flag_type}")
+                            logger.debug(f"[TEAR-DEBUG] SILENT REALM location checked: {location_name}")
+                            logger.debug(f"[TEAR-DEBUG]   Stage={_ccf_stage}, flag_id={flag_id}, scene={sceneindex}, u16={upper_flag}, bit={lower_flag}, space={flag_type}")
                             # Dump dungeon flags for the affected scene and adjacent scenes
                             try:
                                 _dump_scenes = list({max(0, sceneindex-1), sceneindex, min(25, sceneindex+1)})
@@ -4091,9 +4091,9 @@ class SSHDContext(CommonContext):
                                     _df_data = self.memory.read_bytes(_df_offset, 16)
                                     if _df_data:
                                         _df_u16s = [int.from_bytes(_df_data[i:i+2], 'little') for i in range(0, 16, 2)]
-                                        logger.info(f"[TEAR-DEBUG]   DungeonFlags scene {_dsi}: {[hex(v) for v in _df_u16s]}")
+                                        logger.debug(f"[TEAR-DEBUG]   DungeonFlags scene {_dsi}: {[hex(v) for v in _df_u16s]}")
                             except Exception as _e:
-                                logger.info(f"[TEAR-DEBUG]   DungeonFlag read failed: {_e}")
+                                logger.warning(f"[TEAR-DEBUG]   DungeonFlag read failed: {_e}")
 
                         # ARCHIPELAGO: If this location contains our own Progressive Sword,
                         # increment the sword counter and write sf906-911 to memory so
