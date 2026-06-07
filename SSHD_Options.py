@@ -58,7 +58,7 @@ class RequiredDungeonCount(Range):
     """
     display_name = "Required Dungeon Count"
     range_start = 0
-    range_end = 6
+    range_end = 7
     default = 2
 
 
