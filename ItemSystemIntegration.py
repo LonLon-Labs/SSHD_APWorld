@@ -43,6 +43,7 @@ class GameOffsets:
     # Player
     PLAYER = 0x623E680  # Direct offset to player structure
     PLAYER_CURRENT_ACTION = 0x468  # dPlayer.current_action (u32, relative to PLAYER)
+    PLAYER_ITEM_BEING_USED = 0x6404  # dPlayer.item_being_used (u16, relative to PLAYER)
     
     # Archipelago integration
     # Buffer is allocated as a Rust static variable in item.rs
@@ -97,9 +98,11 @@ BUSY_PLAYER_ACTIONS = frozenset([
     0x5F,  # USE_BEETLE  (controlling beetle in flight)
     0x60,  # FINAL_BLOW
     0x61,  # FINAL_BLOW_FINISH
+    0x66,  # CRAWLING
     0x69,  # USE_BELLOWS
     0x6E,  # USING_DOOR
     0x6F,  # USE_DDOOR
+    0x74,  # CRAWLSPACE
     0x77,  # ZEV_EVENT_MAYBE  (cutscene / event)
     0x78,  # ITEM_GET
     0x7B,  # RELATED_TO_NEW_SWORD_IN_CS_
@@ -122,6 +125,23 @@ BUSY_PLAYER_ACTIONS = frozenset([
     0xB4,  # ENTER_GODDESS_WALL
     0xB6,  # EXIT_GODDESS_WALL
     0xB7,  # SPIRIT_VESSEL_CHEST_EXIT
+])
+
+BUSY_ITEM_USED = frozenset([
+    0x0,  # BOMB_BAG
+    0x1,  # BOW
+    0x2,  # CLAWSHOTS
+    0x3,  # BEETLE
+    0x4,  # SLINGSHOT
+    0x5,  # GUST_BELLOWS
+    0x6,  # WHIP
+    0x7,  # MITTS
+    0x8,  # BUG_NET
+    0x9,  # HARP
+    0xA,  # SAILCLOTH
+    0xC,  # POTION
+    0x12, # WATER_DRAGON_SCALE
+    0x13, # GUIDE_PT_PM
 ])
 
 
@@ -741,7 +761,9 @@ class GameItemSystem:
         try:
             action_offset = GameOffsets.PLAYER + GameOffsets.PLAYER_CURRENT_ACTION
             current_action = self.memory.read_int(action_offset)
-            if current_action is not None and current_action in BUSY_PLAYER_ACTIONS:
+            item_offsets = GameOffsets.PLAYER + GameOffsets.PLAYER_ITEM_BEING_USED
+            current_item_being_used = self.memory.read_int(item_offsets)
+            if current_action is not None and current_action in BUSY_PLAYER_ACTIONS and current_item_being_used in BUSY_ITEM_USED:
                 # Log only every 60th call (~once per second) to avoid spam
                 self._busy_log_counter = getattr(self, '_busy_log_counter', 0) + 1
                 if self._busy_log_counter % 60 == 1:
