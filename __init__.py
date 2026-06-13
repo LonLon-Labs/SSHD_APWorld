@@ -2067,16 +2067,18 @@ class SSHDWorld(World):
         boss_key_mode = self.options.boss_key_shuffle.current_key     # e.g. "own_dungeon" 
         map_mode = self.options.map_shuffle.current_key               # e.g. "own_dungeon_restricted"
         triforce_mode = self.options.triforce_shuffle.current_key     # e.g. "anywhere"
-        # When dungeon_goal_requirement AP toggle is on, the goal condition checks dungeon count
-        # at victory time — no progression items should be locked behind dungeon completion.
-        # Set required_count=0 so pre_fill doesn't place any progression at dungeon ends.
-        if self.options.dungeon_goal_requirement.value:
-            required_count = 0
-        else:
-            required_count = self.options.required_dungeon_count.value
+        # Keep the true AP required-dungeon count for selection/barren handling.
+        required_count = self.options.required_dungeon_count.value
+        # When dungeon_goal_requirement AP toggle is on, the goal condition checks
+        # dungeon count at victory time, so progression should not be forced to
+        # dungeon-end locations.
+        should_force_end_of_dungeon_progression = (
+            not self.options.dungeon_goal_requirement.value and required_count > 0
+        )
         
         print(f"[__init__.py] pre_fill (v2-direct): small_keys={small_key_mode}, boss_keys={boss_key_mode}, "
-              f"map_mode={map_mode}, triforce={triforce_mode}, required_dungeons={required_count}")
+              f"map_mode={map_mode}, triforce={triforce_mode}, required_dungeons={required_count}, "
+              f"dungeon_goal_requirement={self.options.dungeon_goal_requirement.value}")
         
         # "anywhere" and "removed" modes need no restriction — AP fill handles them.
         # "vanilla" is handled by sshd-rando's fill, but we also enforce it here.
@@ -2377,8 +2379,15 @@ class SSHDWorld(World):
                 print(f"[__init__.py] pre_fill: Demoted {demoted} event item(s) in {label} "
                       f"unrequired dungeon regions from progression to filler")
 
-        # If required_count == 0 and empty_unrequired_dungeons is on, all dungeons are barren.
-        if required_count == 0 and self.options.empty_unrequired_dungeons.value:
+        # If the true required count is 0 and empty_unrequired_dungeons is on,
+        # all dungeons are barren.
+        # Do not apply this while dungeon_goal_requirement is on, or dungeon
+        # completion events can become permanently unreachable.
+        if (
+            required_count == 0
+            and self.options.empty_unrequired_dungeons.value
+            and not self.options.dungeon_goal_requirement.value
+        ):
             _demote_dungeon_progression_items(all_main_dungeons, "all dungeons")
             _all_barren_region_names = set()
             for _d in all_main_dungeons:
@@ -2392,6 +2401,8 @@ class SSHDWorld(World):
                     dungeon_locations.append(loc)
             _apply_barren_exclusions(dungeon_locations, "all dungeons")
             _demote_unrequired_dungeon_events(list(all_main_dungeons), "all dungeons")
+        elif required_count == 0 and self.options.empty_unrequired_dungeons.value:
+            print("[__init__.py] pre_fill: Skipping all-dungeons barren mode because dungeon_goal_requirement is enabled")
 
         if required_count > 0:
             eligible_dungeons = list(all_main_dungeons)
@@ -2427,86 +2438,89 @@ class SSHDWorld(World):
                 _apply_barren_exclusions(dungeon_locations, str(unrequired_dungeons))
                 _demote_unrequired_dungeon_events(unrequired_dungeons, str(unrequired_dungeons))
 
-            # Collect unfilled end-of-dungeon locations for the selected dungeons
-            end_loc_names: set[str] = set()
-            for dungeon in selected_dungeons:
-                end_loc_names.update(DUNGEON_END_LOCATIONS.get(dungeon, []))
-            
-            def _get_unfilled_end_locations() -> list:
-                return [
-                    loc for loc in self.multiworld.get_locations(self.player)
-                    if loc.address is not None
-                    and loc.item is None
-                    and loc.name in end_loc_names
-                ]
-            
-            available_end_locs = _get_unfilled_end_locations()
-            print(f"[__init__.py] pre_fill: End-of-dungeon placement for {selected_count} dungeons: "
-                  f"{selected_dungeons} ({len(available_end_locs)} available end locations)")
-            
-            # Phase 1: Triforce pieces (highest priority)
-            # Direct placement — sshd-rando verified completability, so we just
-            # need triforces at dungeon end locations without AP reachability checks.
-            triforce_end_items = _collect_items_from_pool([
-                "Triforce of Courage", "Triforce of Power", "Triforce of Wisdom"
-            ])
-            if triforce_end_items:
-                locs = _get_unfilled_end_locations()
-                self.random.shuffle(locs)
-                self.random.shuffle(triforce_end_items)
-                placed_count = 0
-                while triforce_end_items and locs:
-                    item = triforce_end_items.pop(0)
-                    loc = locs.pop(0)
-                    loc.place_locked_item(item)
-                    placed_count += 1
-                print(f"[__init__.py] pre_fill: Placed {placed_count}/3 Triforce pieces at dungeon ends")
-                if triforce_end_items:
-                    self.multiworld.itempool.extend(triforce_end_items)
-            
-            # Phase 2: Progressive Swords (second priority)
-            sword_end_items = _collect_items_from_pool(["Progressive Sword"])
-            if sword_end_items:
-                locs = _get_unfilled_end_locations()
-                self.random.shuffle(locs)
-                sword_count = len(sword_end_items)
-                placed = 0
-                while sword_end_items and locs:
-                    item = sword_end_items.pop(0)
-                    loc = locs.pop(0)
-                    loc.place_locked_item(item)
-                    placed += 1
-                print(f"[__init__.py] pre_fill: Placed {placed}/{sword_count} Progressive Swords at dungeon ends")
-                if sword_end_items:
-                    self.multiworld.itempool.extend(sword_end_items)
-            
-            # Phase 3: Other progression items (lowest priority, fill remaining slots)
-            remaining_end_locs = _get_unfilled_end_locations()
-            if remaining_end_locs:
-                other_progression = [
-                    item for item in self.multiworld.itempool
-                    if item.player == self.player and item.classification == IC.progression
-                ]
-                if other_progression:
-                    # Remove from pool temporarily
-                    other_set = set(id(item) for item in other_progression)
-                    self.multiworld.itempool = [
-                        item for item in self.multiworld.itempool
-                        if id(item) not in other_set
+            if should_force_end_of_dungeon_progression:
+                # Collect unfilled end-of-dungeon locations for the selected dungeons
+                end_loc_names: set[str] = set()
+                for dungeon in selected_dungeons:
+                    end_loc_names.update(DUNGEON_END_LOCATIONS.get(dungeon, []))
+
+                def _get_unfilled_end_locations() -> list:
+                    return [
+                        loc for loc in self.multiworld.get_locations(self.player)
+                        if loc.address is not None
+                        and loc.item is None
+                        and loc.name in end_loc_names
                     ]
-                    self.random.shuffle(remaining_end_locs)
-                    self.random.shuffle(other_progression)
-                    other_count = len(other_progression)
+
+                available_end_locs = _get_unfilled_end_locations()
+                print(f"[__init__.py] pre_fill: End-of-dungeon placement for {selected_count} dungeons: "
+                      f"{selected_dungeons} ({len(available_end_locs)} available end locations)")
+
+                # Phase 1: Triforce pieces (highest priority)
+                # Direct placement — sshd-rando verified completability, so we just
+                # need triforces at dungeon end locations without AP reachability checks.
+                triforce_end_items = _collect_items_from_pool([
+                    "Triforce of Courage", "Triforce of Power", "Triforce of Wisdom"
+                ])
+                if triforce_end_items:
+                    locs = _get_unfilled_end_locations()
+                    self.random.shuffle(locs)
+                    self.random.shuffle(triforce_end_items)
+                    placed_count = 0
+                    while triforce_end_items and locs:
+                        item = triforce_end_items.pop(0)
+                        loc = locs.pop(0)
+                        loc.place_locked_item(item)
+                        placed_count += 1
+                    print(f"[__init__.py] pre_fill: Placed {placed_count}/3 Triforce pieces at dungeon ends")
+                    if triforce_end_items:
+                        self.multiworld.itempool.extend(triforce_end_items)
+
+                # Phase 2: Progressive Swords (second priority)
+                sword_end_items = _collect_items_from_pool(["Progressive Sword"])
+                if sword_end_items:
+                    locs = _get_unfilled_end_locations()
+                    self.random.shuffle(locs)
+                    sword_count = len(sword_end_items)
                     placed = 0
-                    while other_progression and remaining_end_locs:
-                        item = other_progression.pop(0)
-                        loc = remaining_end_locs.pop(0)
+                    while sword_end_items and locs:
+                        item = sword_end_items.pop(0)
+                        loc = locs.pop(0)
                         loc.place_locked_item(item)
                         placed += 1
-                    
-                    print(f"[__init__.py] pre_fill: Placed {placed}/{other_count} other progression items at dungeon ends")
+                    print(f"[__init__.py] pre_fill: Placed {placed}/{sword_count} Progressive Swords at dungeon ends")
+                    if sword_end_items:
+                        self.multiworld.itempool.extend(sword_end_items)
+
+                # Phase 3: Other progression items (lowest priority, fill remaining slots)
+                remaining_end_locs = _get_unfilled_end_locations()
+                if remaining_end_locs:
+                    other_progression = [
+                        item for item in self.multiworld.itempool
+                        if item.player == self.player and item.classification == IC.progression
+                    ]
                     if other_progression:
-                        self.multiworld.itempool.extend(other_progression)
+                        # Remove from pool temporarily
+                        other_set = set(id(item) for item in other_progression)
+                        self.multiworld.itempool = [
+                            item for item in self.multiworld.itempool
+                            if id(item) not in other_set
+                        ]
+                        self.random.shuffle(remaining_end_locs)
+                        self.random.shuffle(other_progression)
+                        other_count = len(other_progression)
+                        placed = 0
+                        while other_progression and remaining_end_locs:
+                            item = other_progression.pop(0)
+                            loc = remaining_end_locs.pop(0)
+                            loc.place_locked_item(item)
+                            placed += 1
+
+                        print(f"[__init__.py] pre_fill: Placed {placed}/{other_count} other progression items at dungeon ends")
+                        if other_progression:
+                            self.multiworld.itempool.extend(other_progression)
+            else:
+                print("[__init__.py] pre_fill: Skipping end-of-dungeon progression placement (dungeon_goal_requirement is enabled)")
         
         # ── Small Keys ───────────────────────────────────────────────────
         if small_key_mode not in ("anywhere", "removed"):
@@ -3619,9 +3633,16 @@ class SSHDWorld(World):
             # so it does not lock any progression items behind dungeon completion.
             if self.options.dungeon_goal_requirement.value:
                 settings_dict["required_dungeons"] = "0"
+            # If config.yaml does not specify this toggle, keep it synchronized
+            # with the AP option so required_dungeons=7 works as expected.
+            if "dungeons_include_sky_keep" not in settings_dict:
+                settings_dict["dungeons_include_sky_keep"] = "on" if self.options.dungeons_include_sky_keep.value else "off"
             settings_dict["require_greg"] = "on" if self.options.require_greg.value else "off"
             settings_dict["require_tim"] = "on" if self.options.require_tim.value else "off"
             settings_dict["require_all_progression_items"] = "on" if self.options.require_all_progression_items.value else "off"
+            # Keep Demise count synchronized with AP options unless config.yaml explicitly provides it.
+            if "demise_count" not in settings_dict:
+                settings_dict["demise_count"] = str(self.options.demise_count.value)
             
             # NOTE: Starting inventory settings (starting_sword, random_starting_tablet_count,
             # starting_hearts, random_starting_item_count, random_starting_statues, etc.)
@@ -3669,6 +3690,7 @@ class SSHDWorld(World):
         settings_dict["require_greg"] = "on" if self.options.require_greg.value else "off"
         settings_dict["require_tim"] = "on" if self.options.require_tim.value else "off"
         settings_dict["require_all_progression_items"] = "on" if self.options.require_all_progression_items.value else "off"
+        settings_dict["demise_count"] = str(self.options.demise_count.value)
         
         # Set skip settings based on goal (same logic as the config.yaml path above)
         goal_value = self.options.goal.value

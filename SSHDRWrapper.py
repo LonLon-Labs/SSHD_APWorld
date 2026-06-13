@@ -492,6 +492,14 @@ def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, see
             "skip_demise": "off",
             "spawn_hearts": "on",
         }
+        # Keys that are not sshd-rando SettingMap options.
+        skip_setting_overlay_keys = {
+            'extract_path', 'setting_string', 'seed', 'generate_spoiler_log',
+            'use_plandomizer', 'plandomizer_file', 'custom_starting_items',
+            '_setting_string_starting_items', '_sshd_hash',
+            'starting_inventory', 'excluded_locations', 'excluded_hint_locations',
+            'mixed_entrance_pools', 'other_mods',
+        }
         if hasattr(config, 'settings') and config.settings and len(config.settings) > 0:
             setting_map_for_overrides = config.settings[0]
             if hasattr(setting_map_for_overrides, 'settings'):
@@ -505,8 +513,21 @@ def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, see
                         else:
                             print(f"[SSHDRWrapper] WARNING: Could not apply override {override_key}={override_val} (option not found)")
 
+                # Overlay all AP-provided settings onto the decoded Setting String.
+                # This keeps AP options authoritative even when the setting string
+                # has stale values (for example dungeons_include_sky_keep=off).
+                for setting_name, raw_val in settings_dict.items():
+                    if setting_name in skip_setting_overlay_keys:
+                        continue
+                    setting = setting_map_for_overrides.settings.get(setting_name)
+                    if not setting or not setting.info:
+                        continue
+                    val = str(raw_val)
+                    if val in setting.info.options:
+                        setting.update_current_value(setting.info.options.index(val))
+
                 # Cosmetic settings are not encoded in the setting string,
-                # so apply them from the AP settings dict.
+                # so ensure they're also applied from AP settings.
                 from logic.settings import SettingType
                 for setting_name, setting in setting_map_for_overrides.settings.items():
                     if setting.info and setting.info.type == SettingType.COSMETIC:
