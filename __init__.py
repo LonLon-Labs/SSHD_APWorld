@@ -3261,21 +3261,31 @@ class SSHDWorld(World):
         try:
             # Collect Archipelago settings as a dictionary for the wrapper
             ap_settings = self._collect_archipelago_settings()
+
+            world = getattr(self, '_sshd_world_cache', None)
+            if world is not None:
+                # Reuse the exact world generated in generate_early() so entrance
+                # randomization (including random starting spawn) always matches
+                # the logic graph Archipelago used for fill.
+                print("[__init__.py] Reusing cached sshd-rando world from generate_early()")
+                world.config.output_dir = output_dir
+                actual_output_dir = output_dir
+                setting_string = getattr(self, '_sshd_setting_string', "")
+            else:
+                # Use the same seed that was resolved in generate_early() so that
+                # randomly-chosen starting items (e.g. tablets from random_starting_tablet_count)
+                # are identical in both the precollect step and the ROM patching step.
+                # Fall back to the user-specified sshdr_seed option, then to None (random).
+                seed = getattr(self, '_sshdr_resolved_seed', None)
+                if seed is None:
+                    seed = self.options.sshdr_seed.value if self.options.sshdr_seed.value else None
             
-            # Use the same seed that was resolved in generate_early() so that
-            # randomly-chosen starting items (e.g. tablets from random_starting_tablet_count)
-            # are identical in both the precollect step and the ROM patching step.
-            # Fall back to the user-specified sshdr_seed option, then to None (random).
-            seed = getattr(self, '_sshdr_resolved_seed', None)
-            if seed is None:
-                seed = self.options.sshdr_seed.value if self.options.sshdr_seed.value else None
-            
-            # Use sshd-rando wrapper to generate the mod WITHOUT patches
-            # We'll apply patches after overlaying Archipelago items
-            print("[__init__.py] Calling SSHDRWrapper to generate mod (without patches)...")
-            world, actual_output_dir, setting_string = generate_sshd_rando_mod(
-                ap_settings, output_dir, seed=seed, apply_patches=False
-            )
+                # Use sshd-rando wrapper to generate the mod WITHOUT patches
+                # We'll apply patches after overlaying Archipelago items
+                print("[__init__.py] Calling SSHDRWrapper to generate mod (without patches)...")
+                world, actual_output_dir, setting_string = generate_sshd_rando_mod(
+                    ap_settings, output_dir, seed=seed, apply_patches=False
+                )
             
             # Store setting string for patch data
             self._sshd_setting_string = setting_string
