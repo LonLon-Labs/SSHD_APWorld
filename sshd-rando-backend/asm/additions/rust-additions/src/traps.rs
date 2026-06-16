@@ -120,10 +120,6 @@ pub extern "C" fn setup_traps(item_actor: *mut item::dAcItem) -> u16 {
             if trapid == 0 {
                 TRAP_DURATION = 255;
             }
-        } else {
-            // Just to be sure, reset the trap values
-            TRAP_ID = u8::MAX;
-            TRAP_DURATION = 0;
         }
 
         return (*item_actor).final_determined_itemid;
