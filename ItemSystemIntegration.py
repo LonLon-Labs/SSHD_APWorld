@@ -763,13 +763,20 @@ class GameItemSystem:
             current_action = self.memory.read_int(action_offset)
             item_offsets = GameOffsets.PLAYER + GameOffsets.PLAYER_ITEM_BEING_USED
             current_item_being_used = self.memory.read_int(item_offsets)
-            if current_action is not None and current_action in BUSY_PLAYER_ACTIONS and current_item_being_used in BUSY_ITEM_USED:
+
+            is_action_busy = current_action is not None and current_action in BUSY_PLAYER_ACTIONS
+            is_item_busy = current_item_being_used is not None and current_item_being_used in BUSY_ITEM_USED
+
+            if is_action_busy or is_item_busy:
                 # Log only every 60th call (~once per second) to avoid spam
                 self._busy_log_counter = getattr(self, '_busy_log_counter', 0) + 1
                 if self._busy_log_counter % 60 == 1:
-                    logger.debug(
-                        f"Player not ready: current action 0x{current_action:X} is busy"
-                    )
+                    # Construct the log pieces safely to handle None values and nested formatting
+                    action_str = f"0x{current_action:X}" if current_action is not None else "None"
+                    item_str = f" and current item 0x{current_item_being_used:X} is busy" if is_item_busy else ""
+                    
+                    logger.debug(f"Player not ready: current action {action_str} is busy{item_str}")
+                    
                 return False
             else:
                 self._busy_log_counter = 0
