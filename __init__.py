@@ -1089,15 +1089,18 @@ class SSHDWorld(World):
             # Cache immediately so both except paths (outer and inner) can use
             # it to populate resolved settings even when generation fails.
             self._ap_settings_cache = ap_settings
-            seed = self.options.sshdr_seed.value if self.options.sshdr_seed.value else None
+            # Seed is driven by the Archipelago generation seed, not YAML.
+            # Include player id so multiple SSHD players in one multiworld
+            # get stable but distinct sshd-rando seeds.
+            seed = f"AP{self.multiworld.seed}P{self.player}"
             
             print("[__init__.py] Generating sshd-rando world to determine starting items...")
             world, _, setting_string = generate_sshd_rando_mod(
                 ap_settings, temp_dir, seed=seed, apply_patches=False
             )
             
-            # Store the ACTUAL seed that sshd-rando used (may have been randomly generated
-            # when seed=None).  generate_output() must use the same seed so that any
+            # Store the ACTUAL seed that sshd-rando used.
+            # generate_output() must use the same seed so that any
             # randomly-chosen starting items (e.g. random_starting_tablet_count) are
             # identical between the two generate_sshd_rando_mod calls — otherwise the
             # ROM gets one tablet baked in while AP precollects a different one.
@@ -3171,7 +3174,7 @@ class SSHDWorld(World):
                 },
                 "seed": self.multiworld.seed,
                 "sshd_setting_string": getattr(self, '_sshd_setting_string', ""),
-                "sshdr_seed": self.options.sshdr_seed.value if self.options.sshdr_seed.value else None,
+                "sshdr_seed": getattr(self, '_sshdr_resolved_seed', f"AP{self.multiworld.seed}P{self.player}"),
             }
             
             # Create the .apsshd patch file
@@ -3275,10 +3278,10 @@ class SSHDWorld(World):
                 # Use the same seed that was resolved in generate_early() so that
                 # randomly-chosen starting items (e.g. tablets from random_starting_tablet_count)
                 # are identical in both the precollect step and the ROM patching step.
-                # Fall back to the user-specified sshdr_seed option, then to None (random).
+                # Fall back to the AP-derived seed if generate_early() did not cache one.
                 seed = getattr(self, '_sshdr_resolved_seed', None)
                 if seed is None:
-                    seed = self.options.sshdr_seed.value if self.options.sshdr_seed.value else None
+                    seed = f"AP{self.multiworld.seed}P{self.player}"
             
                 # Use sshd-rando wrapper to generate the mod WITHOUT patches
                 # We'll apply patches after overlaying Archipelago items
