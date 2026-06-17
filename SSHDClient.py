@@ -5148,11 +5148,85 @@ async def main(args=None):
 
 
 _terminal_log_file = None
+_terminal_log_handler = None
+
+
+def _resolve_runtime_archipelago_dir() -> Path | None:
+    """Best-effort detection of the active Archipelago runtime directory."""
+    def _extract_launch_dir(command_text: str) -> Path | None:
+        try:
+            import shlex
+
+            parts = shlex.split(command_text, posix=False)
+            if not parts:
+                return None
+            executable = Path(parts[0].strip('"'))
+            if executable.exists():
+                return executable.resolve().parent
+            return executable.parent if executable.parent.exists() else None
+        except Exception:
+            return None
+
+    if sys.platform == "win32":
+        try:
+            import winreg
+
+            registry_keys = (
+                r"Applications\ArchipelagoLauncher.exe\shell\open\command",
+                r"multiworldgg\shell\open\command",
+            )
+
+            for registry_path in registry_keys:
+                try:
+                    with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, registry_path) as key:
+                        command_text = winreg.QueryValue(key, None)
+                    resolved = _extract_launch_dir(str(command_text))
+                    if resolved is not None:
+                        return resolved
+                except FileNotFoundError:
+                    continue
+                except OSError:
+                    continue
+        except Exception:
+            pass
+
+    env_keys = (
+        "ARCHIPELAGO_DIR",
+        "AP_DIR",
+        "ARCHIPELAGO_HOME",
+        "MULTIWORLDGG_ARCHIPELAGO_DIR",
+    )
+
+    for key in env_keys:
+        value = os.environ.get(key)
+        if value:
+            p = Path(value)
+            if p.exists():
+                return p
+
+    runtime_candidates: list[Path] = []
+    try:
+        if getattr(sys, "frozen", False):
+            runtime_candidates.append(Path(sys.executable).resolve().parent)
+        runtime_candidates.append(Path.cwd())
+    except Exception:
+        pass
+
+    for base in runtime_candidates:
+        for candidate in (base, base.parent):
+            if candidate.exists() and (
+                (candidate / "Players").exists()
+                or (candidate / "custom_worlds").exists()
+                or (candidate / "logs").exists()
+            ):
+                return candidate
+
+    return None
 
 
 def _enable_terminal_log_capture(prefix: str) -> Path:
     """Mirror stdout/stderr to a timestamped log file in the local logs folder."""
-    global _terminal_log_file
+    global _terminal_log_file, _terminal_log_handler
 
     def _looks_like_apworld_virtual_path(path: Path) -> bool:
         parts = [p.lower() for p in path.parts]
@@ -5160,7 +5234,12 @@ def _enable_terminal_log_capture(prefix: str) -> Path:
 
     candidates = []
 
-    # Primary candidate: local logs folder beside this module (works in dev runs).
+    # Primary candidate: active runtime/install folder (supports custom installs and MultiworldGG).
+    runtime_dir = _resolve_runtime_archipelago_dir()
+    if runtime_dir is not None:
+        candidates.append(runtime_dir / "logs" / "sshd")
+
+    # Secondary candidate: local logs folder beside this module (works in dev runs).
     try:
         module_logs = Path(__file__).resolve().parent / "logs"
         candidates.append(module_logs)
@@ -5203,21 +5282,66 @@ def _enable_terminal_log_capture(prefix: str) -> Path:
     class TeeStream:
         def __init__(self, *streams):
             self.streams = streams
+            self.encoding = getattr(streams[0], "encoding", "utf-8") if streams else "utf-8"
+            self.errors = getattr(streams[0], "errors", "replace") if streams else "replace"
 
         def write(self, data):
+            written = 0
             for stream in self.streams:
-                stream.write(data)
-            return len(data)
+                try:
+                    stream.write(data)
+                    written = len(data)
+                except Exception:
+                    continue
+            return written
 
         def flush(self):
             for stream in self.streams:
-                stream.flush()
+                try:
+                    stream.flush()
+                except Exception:
+                    continue
+
+        def writelines(self, lines):
+            for line in lines:
+                self.write(line)
+
+        def fileno(self):
+            for stream in self.streams:
+                try:
+                    return stream.fileno()
+                except Exception:
+                    continue
+            raise OSError("No fileno available")
 
         def isatty(self):
             return any(getattr(stream, "isatty", lambda: False)() for stream in self.streams)
 
+        def __getattr__(self, name):
+            for stream in self.streams:
+                if hasattr(stream, name):
+                    return getattr(stream, name)
+            raise AttributeError(name)
+
     sys.stdout = TeeStream(sys.stdout, _terminal_log_file)
     sys.stderr = TeeStream(sys.stderr, _terminal_log_file)
+
+    # Also attach a direct logging handler so logs continue even if a UI framework
+    # replaces stdout/stderr later in runtime.
+    root_logger = logging.getLogger()
+    if _terminal_log_handler is not None:
+        try:
+            root_logger.removeHandler(_terminal_log_handler)
+            _terminal_log_handler.close()
+        except Exception:
+            pass
+        _terminal_log_handler = None
+
+    _terminal_log_handler = logging.FileHandler(log_path, encoding="utf-8")
+    _terminal_log_handler.setLevel(logging.DEBUG)
+    _terminal_log_handler.setFormatter(logging.Formatter("[%(name)s]: %(message)s"))
+    root_logger.addHandler(_terminal_log_handler)
+
     print(f"[SSHD Client] Terminal output is being logged to: {log_path}")
     return log_path
 
@@ -5246,6 +5370,16 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     finally:
+        if _terminal_log_handler is not None:
+            try:
+                logging.getLogger().removeHandler(_terminal_log_handler)
+            except Exception:
+                pass
+            try:
+                _terminal_log_handler.flush()
+                _terminal_log_handler.close()
+            except Exception:
+                pass
         if _terminal_log_file is not None:
             _terminal_log_file.flush()
             _terminal_log_file.close()
