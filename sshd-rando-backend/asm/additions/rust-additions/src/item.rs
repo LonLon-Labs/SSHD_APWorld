@@ -2334,12 +2334,27 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 return;
             }
 
+            // Trap pseudo-items (250..=254) are AP-only IDs and are not valid
+            // vanilla item IDs.  Convert them into a normal rupoor item actor
+            // and encode the trap id in param2 bits 4-7 so setup_traps can set
+            // TRAP_ID and fire the runtime effect (e.g., Groose spawn).
+            let is_buffer_trap = (250..=254).contains(&item_id_val);
+            let trap_id = if is_buffer_trap {
+                (254u8 - item_id_val) as u32
+            } else {
+                0xFu32
+            };
+
             // Resolve progressive items (e.g., Progressive Bow → Iron Bow)
             // to their concrete tier based on the player's current inventory
             // so the correct OARC model is loaded and the right item actor
             // is spawned.
             let item_id = item_id_val as u64;
-            let final_id = dAcItem__determineFinalItemid(item_id) as u16;
+            let final_id = if is_buffer_trap {
+                34u16
+            } else {
+                dAcItem__determineFinalItemid(item_id) as u16
+            };
 
             NUMBER_OF_ITEMS = 0;
             ITEM_GET_BOTTLE_POUCH_SLOT = 0xFFFFFFFF;
@@ -2352,6 +2367,11 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 item_id_val as u32
             };
             let param1: u32 = spawn_id | (0xFFu32 << 10) | 0x580000;
+            let param2: u32 = if is_buffer_trap {
+                0xFFFFFF0F | (trap_id << 4)
+            } else {
+                0xFFFFFFFF
+            };
 
             // All item OARCs are now in ObjectPack (loaded globally at boot),
             // so no async pre-load is needed — spawn immediately.
@@ -2376,7 +2396,7 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 player_pos_ptr,
                 core::ptr::null_mut(),
                 core::ptr::null_mut(),
-                0xFFFFFFFF,
+                param2,
             ) as *mut dAcItem;
 
             AP_FORCE_FALLBACK_MODEL = false;
