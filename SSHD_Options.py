@@ -1624,8 +1624,8 @@ class SettingString(FreeText):
 
 class CheatInfiniteHealth(Toggle):
     """
-    When enabled, the damage multiplier is forced to 0 so Link takes no damage.
-    Your health will never decrease from enemy attacks or hazards.
+    When enabled, Link's current health is continuously refilled to max health.
+    Damage multiplier remains unchanged.
     """
     display_name = "Infinite Health"
 

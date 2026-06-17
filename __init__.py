@@ -3929,11 +3929,8 @@ class SSHDWorld(World):
         settings_dict["archipelago_item_model"] = item_model_map.get(self.options.archipelago_item_model.value, "archipelago_logo")
 
         # === Cheat overrides ===
-        # Infinite Health: force damage_multiplier to 0 (invincible)
-        # The client also writes max health each tick as a safety net.
-        if getattr(self.options, "cheat_infinite_health", None) and self.options.cheat_infinite_health.value:
-            settings_dict["damage_multiplier"] = "0"
-            print("[Cheats] Infinite Health enabled - damage_multiplier forced to 0 (invincible)")
+        # Infinite Health is handled at runtime by Rust (current_health <-
+        # health_capacity) so we keep the selected damage multiplier intact.
 
         # Infinite Bugs: force start_with_all_bugs on (gives 99 at generation)
         if getattr(self.options, "cheat_infinite_bugs", None) and self.options.cheat_infinite_bugs.value:
