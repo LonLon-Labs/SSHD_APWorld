@@ -120,7 +120,6 @@ def build_apworld():
         "SSHDClient.py",
         "SSHDRWrapper.py",
         "TrackerBridge.py",
-        "setting_string_decoder.py",
         "README.md",
         "archipelago.json",
         "ItemSystemIntegration.py",

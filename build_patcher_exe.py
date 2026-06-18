@@ -60,7 +60,7 @@ def build_patcher_exe():
     # SSHD world modules the patcher imports at runtime
     sshd_files = [
         "Locations.py", "Items.py", "SSHD_Options.py",
-        "platform_utils.py", "setting_string_decoder.py",
+        "platform_utils.py",
         "SSHDRWrapper.py", "archipelago.json",
     ]
     for f in sshd_files:

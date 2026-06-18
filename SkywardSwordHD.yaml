@@ -11,7 +11,7 @@ Skyward Sword HD:
 
   # ALL REQUIRED SETTINGS
   #  - PATH TO EXTRACTED SSHD ROM FILES
-  #  - One of the three configuration methods (config.yaml, setting string, or manual settings)
+  #  - One of the two configuration methods (config.yaml or manual settings)
   # ALL RECOMMENDED SETTINGS
   #  - Archipelago Options
   #    - Death Link
@@ -193,7 +193,7 @@ Skyward Sword HD:
 
 
 
-  # YOU HAVE THREE OPTIONS TO CONFIGURE YOUR RANDOMIZER SETTINGS:
+  # YOU HAVE TWO OPTIONS TO CONFIGURE YOUR RANDOMIZER SETTINGS:
 
 
   # ========================================
@@ -212,25 +212,7 @@ Skyward Sword HD:
 
 
   # ========================================
-  # CONFIGURATION METHOD TWO: SETTING STRING
-  # NOT CURRENTLY WORKING RELIABLY ENOUGH - USE METHOD ONE OR THREE INSTEAD FOR NOW
-  # ========================================
-  # Leave setting_string BLANK to use manual configuration below
-  # Manual configuration gives you full control and avoids item mapping issues
-  setting_string: ""
-    
-  # Seed (e.g., "AirStrongholdPlantSkipper")
-  # Leave blank for random seed
-  sshdr_seed: ""
-
-
-
-  # ====================================================================================
-
-
-
-  # ========================================
-  # CONFIGURATION METHOD THREE: MANUAL SETTINGS
+  # CONFIGURATION METHOD TWO: MANUAL SETTINGS
   # ========================================
   
   
@@ -259,7 +241,7 @@ Skyward Sword HD:
   # COMPLETION REQUIREMENTS
   # ========================================
   
-  # Number of dungeons required to complete the game (0-6)
+  # Number of dungeons required to complete the game (0-7)
   # Beating Sky Keep is NOT required for this count
   # Lanayru Mining Facility is beaten when exiting to the Temple of Time
   # Other dungeons are beaten when the Goddess Crest is struck with a Skyward Strike

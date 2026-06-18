@@ -1095,7 +1095,7 @@ class SSHDWorld(World):
             seed = f"AP{self.multiworld.seed}P{self.player}"
             
             print("[__init__.py] Generating sshd-rando world to determine starting items...")
-            world, _, setting_string = generate_sshd_rando_mod(
+            world, _ = generate_sshd_rando_mod(
                 ap_settings, temp_dir, seed=seed, apply_patches=False
             )
             
@@ -1106,12 +1106,12 @@ class SSHDWorld(World):
             # ROM gets one tablet baked in while AP precollects a different one.
             self._sshdr_resolved_seed = world.config.seed
             
-            # Extract Setting String decoded starting items (these are the ONLY items we want)
-            # ap_settings contains _setting_string_starting_items if Setting String was used
-            starting_item_dict = ap_settings.get('_setting_string_starting_items', {})
+            # Extract the starting items from the generated world.
+            starting_item_dict = {
+                item.name: count for item, count in world.starting_item_pool.items()
+            }
             
             self._sshd_starting_items = starting_item_dict
-            self._sshd_setting_string = setting_string
             self._sshd_world_cache = world  # Cache for later use in generate_output
             
             # Store individually excluded locations from config.yaml so both
@@ -1127,7 +1127,7 @@ class SSHDWorld(World):
                 print(f"[__init__.py] Individually excluded locations ({len(self._sshd_excluded_locations)}): will stay vanilla")
             
             if starting_item_dict:
-                print(f"[__init__.py] Starting items from Setting String:")
+                print(f"[__init__.py] Starting items from sshd-rando:")
                 for item_name, count in starting_item_dict.items():
                     print(f"  {item_name} x{count}")
             
@@ -3005,7 +3005,6 @@ class SSHDWorld(World):
                 "seed": self.multiworld.seed,
                 "player_name": self.player_name,
                 "player_id": self.player,
-                "sshd_setting_string": getattr(self, '_sshd_setting_string', ""),  # Set by _generate_sshd_patches
                 "locations": {},
                 "items": {},
                 "options": {},
@@ -3173,7 +3172,6 @@ class SSHDWorld(World):
                      else self._build_custom_flag_mapping()).items()
                 },
                 "seed": self.multiworld.seed,
-                "sshd_setting_string": getattr(self, '_sshd_setting_string', ""),
                 "sshdr_seed": getattr(self, '_sshdr_resolved_seed', f"AP{self.multiworld.seed}P{self.player}"),
             }
             
@@ -3273,7 +3271,6 @@ class SSHDWorld(World):
                 print("[__init__.py] Reusing cached sshd-rando world from generate_early()")
                 world.config.output_dir = output_dir
                 actual_output_dir = output_dir
-                setting_string = getattr(self, '_sshd_setting_string', "")
             else:
                 # Use the same seed that was resolved in generate_early() so that
                 # randomly-chosen starting items (e.g. tablets from random_starting_tablet_count)
@@ -3286,17 +3283,14 @@ class SSHDWorld(World):
                 # Use sshd-rando wrapper to generate the mod WITHOUT patches
                 # We'll apply patches after overlaying Archipelago items
                 print("[__init__.py] Calling SSHDRWrapper to generate mod (without patches)...")
-                world, actual_output_dir, setting_string = generate_sshd_rando_mod(
+                world, actual_output_dir = generate_sshd_rando_mod(
                     ap_settings, output_dir, seed=seed, apply_patches=False
                 )
             
-            # Store setting string for patch data
-            self._sshd_setting_string = setting_string
-            
             # Extract starting items from the sshd-rando world
             # These items should be excluded from the Archipelago item pool
-            # NOTE: If _sshd_starting_items was already set in generate_early() from the Setting String decoder,
-            # DON'T overwrite it with world.starting_item_pool (which includes extra items from starting_sword/hearts)
+            # NOTE: If _sshd_starting_items was already set in generate_early(),
+            # don't overwrite it with world.starting_item_pool.
             if not hasattr(self, '_sshd_starting_items') or not self._sshd_starting_items:
                 starting_item_dict = {}
                 for item, count in world.starting_item_pool.items():
@@ -3308,8 +3302,8 @@ class SSHDWorld(World):
                     for item_name, count in starting_item_dict.items():
                         print(f"  {item_name} x{count}")
             else:
-                # We already have the Setting String items from generate_early(), so don't extract from world.starting_item_pool
-                print(f"[__init__.py] Using Setting String starting items (already extracted in generate_early())")
+                # Starting items were already cached in generate_early().
+                print(f"[__init__.py] Using cached starting items (already extracted in generate_early())")
             
             # Build multiworld item overlay mapping
             # Map Archipelago locations → SSHD locations → items
@@ -3474,8 +3468,6 @@ class SSHDWorld(World):
                 print(f"[__init__.py] ✓ Mod generated successfully with multiworld items")
                 print(f"  romfs: {len(list(romfs_path.rglob('*')))} items")
                 print(f"  exefs: {len(list(exefs_path.rglob('*')))} items")
-                if setting_string:
-                    print(f"  Setting String: {setting_string[:60]}...")
                 return romfs_path, exefs_path
             else:
                 print(f"[__init__.py] WARNING: Some output files missing")
@@ -3587,10 +3579,6 @@ class SSHDWorld(World):
             # Handle extract_path if not in config
             if 'extract_path' not in settings_dict:
                 settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())
-            
-            # Handle setting_string if not in config
-            if 'setting_string' not in settings_dict:
-                settings_dict["setting_string"] = self.options.setting_string.value or ""
             
             # OVERRIDE settings that would break Archipelago functionality
             # These must be set regardless of what's in config.yaml
@@ -3990,7 +3978,6 @@ class SSHDWorld(World):
         
         # Configuration
         settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())
-        settings_dict["setting_string"] = self.options.setting_string.value or ""
         
         return settings_dict
 

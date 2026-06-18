@@ -1611,15 +1611,6 @@ class SshdrSeed(FreeText):
     display_name = "SSHD-Rando Seed"
     default = ""
 
-
-class SettingString(FreeText):
-    """
-    The sshd-rando Setting String for this seed. This is an advanced option - leave blank to auto-generate.
-    This string uniquely identifies all randomization settings and can be used to recreate an exact seed.
-    """
-    display_name = "Setting String"
-    default = ""
-
 # === Cheats ===
 
 class CheatInfiniteHealth(Toggle):
@@ -1975,7 +1966,6 @@ class SSHDOptions(PerGameCommonOptions):
     extract_path: ExtractPath
     config_yaml_path: ConfigYamlPath
     sshdr_seed: SshdrSeed
-    setting_string: SettingString
     
     # Cheats
     cheat_infinite_health: CheatInfiniteHealth
@@ -2224,6 +2214,5 @@ sshd_option_groups = [
         ExtractPath,
         ConfigYamlPath,
         SshdrSeed,
-        SettingString,
     ]),
 ]

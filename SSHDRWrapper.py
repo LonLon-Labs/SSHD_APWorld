@@ -196,9 +196,9 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
     # Apply ALL settings that exist in both settings_dict and sshd-rando settings
     # Skip special keys that are handled separately or are metadata
     skip_keys = {
-        'extract_path', 'setting_string', 'seed', 'generate_spoiler_log', 
+        'extract_path', 'seed', 'generate_spoiler_log', 
         'use_plandomizer', 'plandomizer_file', 'custom_starting_items',
-        '_setting_string_starting_items', '_sshd_hash',
+        '_sshd_hash',
         'starting_inventory', 'excluded_locations', 'excluded_hint_locations',
         'mixed_entrance_pools', 'other_mods',
         # AP-specific goal requirement settings (not part of sshd-rando backend)
@@ -363,7 +363,7 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
     return config
 
 
-def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, seed: str = None, apply_patches: bool = True) -> Tuple[Any, Path, str]:
+def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, seed: str = None, apply_patches: bool = True) -> Tuple[Any, Path]:
     """
     Generate SSHD randomizer mod using sshd-rando backend.
     
@@ -374,7 +374,7 @@ def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, see
         apply_patches: If True, apply patches immediately. If False, return world without patching (for Archipelago integration)
     
     Returns:
-        Tuple of (World object, output_dir path, setting_string)
+        Tuple of (World object, output_dir path)
     
     Raises:
         Exception: If sshd-rando generation fails
@@ -467,128 +467,24 @@ def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, see
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # CHECK IF SETTING STRING WAS PROVIDED FIRST (before creating config)
-    setting_string = settings_dict.get("setting_string", "")
-    if setting_string and setting_string.strip():
-        print(f"[SSHDRWrapper] Using Setting String from Archipelago YAML")
-        try:
-            setting_string_file = output_dir / "setting_string.txt"
-            setting_string_file.write_text(setting_string, encoding="utf-8")
-            print(f"[SSHDRWrapper] Setting String written to: {setting_string_file}")
-        except Exception as e:
-            print(f"[SSHDRWrapper] WARNING: Could not write Setting String to file: {e}")
-        
-        # Use helper module to decode Setting String
-        from .setting_string_decoder import decode_setting_string_to_config
-        config = decode_setting_string_to_config(setting_string, output_dir, seed)
-        
-        # CRITICAL: Apply Archipelago-required overrides to the Setting String config.
-        # The Setting String may have been generated with different settings (e.g.
-        # progressive_items=off) that would break Archipelago's item system. The
-        # overrides in settings_dict (set by _collect_archipelago_settings) must
-        # take precedence.
-        AP_REQUIRED_OVERRIDES = {
-            "progressive_items": "on",
-            "skip_demise": "off",
-            "spawn_hearts": "on",
-        }
-        # Keys that are not sshd-rando SettingMap options.
-        skip_setting_overlay_keys = {
-            'extract_path', 'setting_string', 'seed', 'generate_spoiler_log',
-            'use_plandomizer', 'plandomizer_file', 'custom_starting_items',
-            '_setting_string_starting_items', '_sshd_hash',
-            'starting_inventory', 'excluded_locations', 'excluded_hint_locations',
-            'mixed_entrance_pools', 'other_mods',
-        }
-        if hasattr(config, 'settings') and config.settings and len(config.settings) > 0:
-            setting_map_for_overrides = config.settings[0]
-            if hasattr(setting_map_for_overrides, 'settings'):
-                for override_key, override_val in AP_REQUIRED_OVERRIDES.items():
-                    if override_key in setting_map_for_overrides.settings:
-                        setting = setting_map_for_overrides.settings[override_key]
-                        if setting.info and override_val in setting.info.options:
-                            option_index = setting.info.options.index(override_val)
-                            setting.update_current_value(option_index)
-                            print(f"[SSHDRWrapper] Applied AP override to Setting String config: {override_key}={override_val}")
-                        else:
-                            print(f"[SSHDRWrapper] WARNING: Could not apply override {override_key}={override_val} (option not found)")
+    print(f"[SSHDRWrapper] Building config from Archipelago settings")
+    config = create_sshd_rando_config(settings_dict, output_dir, seed)
+    config.output_dir = output_dir
 
-                # Overlay all AP-provided settings onto the decoded Setting String.
-                # This keeps AP options authoritative even when the setting string
-                # has stale values (for example dungeons_include_sky_keep=off).
-                for setting_name, raw_val in settings_dict.items():
-                    if setting_name in skip_setting_overlay_keys:
-                        continue
-                    setting = setting_map_for_overrides.settings.get(setting_name)
-                    if not setting or not setting.info:
-                        continue
-                    val = str(raw_val)
-                    if val in setting.info.options:
-                        setting.update_current_value(setting.info.options.index(val))
+    # Write config to the output directory
+    config_file = output_dir / "ap_config.yaml"
+    from logic.config import write_config_to_file
+    write_config_to_file(config_file, config, write_preferences=False)
 
-                # Cosmetic settings are not encoded in the setting string,
-                # so ensure they're also applied from AP settings.
-                from logic.settings import SettingType
-                for setting_name, setting in setting_map_for_overrides.settings.items():
-                    if setting.info and setting.info.type == SettingType.COSMETIC:
-                        if setting_name in settings_dict:
-                            val = str(settings_dict[setting_name])
-                            if val in setting.info.options:
-                                setting.update_current_value(setting.info.options.index(val))
-                                print(f"[SSHDRWrapper] Applied cosmetic setting: {setting_name}={val}")
-                            else:
-                                print(f"[SSHDRWrapper] WARNING: Value '{val}' not in options {setting.info.options} for {setting_name}")
-        
-        # EXTRACT SETTING STRING DECODED STARTING ITEMS (before other settings are applied)
-        # These are the items that come directly from the Setting String, not from starting_sword/starting_hearts
-        try:
-            if hasattr(config, 'settings') and config.settings and len(config.settings) > 0:
-                setting_map = config.settings[0]  # It's a list, not a dict!
-                if hasattr(setting_map, 'starting_inventory'):
-                    setting_string_starting_items = dict(setting_map.starting_inventory)
-                    print(f"[SSHDRWrapper] Setting String decoded items: {len(setting_string_starting_items)} item types")
-                    for item_name, count in setting_string_starting_items.items():
-                        print(f"[SSHDRWrapper]   {item_name} x{count}")
-                    # Store in settings_dict so __init__.py can access it
-                    settings_dict['_setting_string_starting_items'] = setting_string_starting_items
-        except Exception as e:
-            print(f"[SSHDRWrapper] Exception during extraction: {e}")
-            import traceback
-            traceback.print_exc()
-        
-        # Write the populated config to file
-        config_file = output_dir / "ap_config.yaml"
-        from logic.config import write_config_to_file
-        write_config_to_file(config_file, config, write_preferences=False)
-        
-        print(f"[SSHDRWrapper] Created config from Setting String")
-        print(f"[SSHDRWrapper] Config written to: {config_file}")
-    else:
-        # FALLBACK: Use individual YAML settings conversion (if no Setting String provided)
-        print(f"[SSHDRWrapper] Using individual YAML settings (no Setting String provided)")
-        config = create_sshd_rando_config(settings_dict, output_dir, seed)
-        config.output_dir = output_dir
-        
-        # Write config to the output directory
-        config_file = output_dir / "ap_config.yaml"
-        write_config_to_file(config_file, config, write_preferences=False)
-        
-        # If seed is specified, append it to the YAML config file
-        # sshd-rando expects: seed: "12345" (as string) at the top level of the YAML
-        if seed is not None:
-            import yaml
-            with open(config_file, 'r') as f:
-                config_data = yaml.safe_load(f) or {}
-            config_data['seed'] = str(seed)  # Convert to string for YAML
-            with open(config_file, 'w') as f:
-                yaml.dump(config_data, f, default_flow_style=False)
-        
-    
-    # Now we have 'config' object populated either from Setting String or from individual settings
-    # Ensure it's saved to the config file for reference
-    if 'config_file' not in locals():
-        # This shouldn't happen, but just in case
-        config_file = output_dir / "ap_config.yaml"
+    # If seed is specified, append it to the YAML config file
+    # sshd-rando expects: seed: "12345" (as string) at the top level of the YAML
+    if seed is not None:
+        import yaml
+        with open(config_file, 'r') as f:
+            config_data = yaml.safe_load(f) or {}
+        config_data['seed'] = str(seed)  # Convert to string for YAML
+        with open(config_file, 'w') as f:
+            yaml.dump(config_data, f, default_flow_style=False)
     
     print(f"[SSHDRWrapper] Generating world logic with sshd-rando...")
     print(f"[SSHDRWrapper] Target output directory: {output_dir}")
@@ -668,13 +564,7 @@ def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, see
     # Store the hash in settings_dict so __init__.py can pass it to Archipelago
     settings_dict['_sshd_hash'] = hash_value
     
-    # Extract Setting String if available
-    setting_string = ""
-    if hasattr(world, 'config') and hasattr(world.config, 'setting_string'):
-        setting_string = world.config.setting_string
-        print(f"[SSHDRWrapper] Setting String: {setting_string[:60]}...")
-    
-    return world, output_dir, setting_string
+    return world, output_dir
 
 
 def extract_location_item_mapping(world: Any) -> Dict[str, str]:
@@ -944,10 +834,9 @@ if __name__ == "__main__":
     
     try:
         # Test WITHOUT seed first to verify basic functionality
-        world, output_path, setting_string = generate_sshd_rando_mod(test_settings, test_output)
+        world, output_path = generate_sshd_rando_mod(test_settings, test_output)
         print(f"\n✓ Test successful!")
         print(f"  Generated at: {output_path}")
-        print(f"  Setting String: {setting_string[:80] if setting_string else 'N/A'}...")
         
         # Show location mapping
         mapping = extract_location_item_mapping(world)
