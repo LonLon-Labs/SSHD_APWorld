@@ -2236,6 +2236,24 @@ const BUSY_ACTIONS: [player::PLAYER_ACTIONS; 46] = [
     player::PLAYER_ACTIONS::SPIRIT_VESSEL_CHEST_EXIT,    // 0xB7
 ];
 
+// Player held-item states during which we must NOT deliver an Archipelago
+// item. Values match BUSY_ITEM_USED in ItemSystemIntegration.py.
+const BUSY_ITEM_USED: [player::ITEM_BEING_USED; 13] = [
+    player::ITEM_BEING_USED::BOMB_BAG,           // 0x0
+    player::ITEM_BEING_USED::BOW,                // 0x1
+    player::ITEM_BEING_USED::CLAWSHOTS,          // 0x2
+    player::ITEM_BEING_USED::BEETLE,             // 0x3
+    player::ITEM_BEING_USED::SLINGSHOT,          // 0x4
+    player::ITEM_BEING_USED::GUST_BELLOWS,       // 0x5
+    player::ITEM_BEING_USED::WHIP,               // 0x6
+    player::ITEM_BEING_USED::MITTS,              // 0x7
+    player::ITEM_BEING_USED::BUG_NET,            // 0x8
+    player::ITEM_BEING_USED::HARP,               // 0x9
+    player::ITEM_BEING_USED::POTION,             // 0xC
+    player::ITEM_BEING_USED::WATER_DRAGON_SCALE, // 0x12
+    player::ITEM_BEING_USED::GUIDE_PT_PM,        // 0x13
+];
+
 /// Returns true if the player is currently in a "busy" action and must not
 /// receive an Archipelago item right now.
 #[inline]
@@ -2244,12 +2262,22 @@ fn player_is_busy() -> bool {
         if PLAYER_PTR.is_null() {
             return true; // No player yet — treat as busy
         }
+
         let action = core::ptr::read_volatile(core::ptr::addr_of!((*PLAYER_PTR).current_action));
         for &busy in &BUSY_ACTIONS {
             if action == busy {
                 return true;
             }
         }
+
+        let item_being_used =
+            core::ptr::read_volatile(core::ptr::addr_of!((*PLAYER_PTR).item_being_used));
+        for &busy in &BUSY_ITEM_USED {
+            if item_being_used == busy {
+                return true;
+            }
+        }
+
         false
     }
 }
