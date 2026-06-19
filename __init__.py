@@ -1520,6 +1520,61 @@ class SSHDWorld(World):
         """Create an item by name."""
         data = ITEM_TABLE[name]
         return Item(name, data.classification, data.code, self.player)
+
+    def _apply_fallback_traps(self, item_pool: list[Item]) -> None:
+        """
+        Apply trap replacement to the hardcoded fallback pool.
+
+        This mirrors sshd-rando trap behavior for fallback generation by
+        replacing a fraction of filler items based on trap_mode and enabled
+        trap toggles.
+        """
+        mode_value = self.options.trap_mode.value
+        if mode_value == 0:
+            return
+
+        enabled_traps: list[str] = []
+        if self.options.burn_traps.value:
+            enabled_traps.append("Burn Trap")
+        if self.options.curse_traps.value:
+            enabled_traps.append("Curse Trap")
+        if self.options.noise_traps.value:
+            enabled_traps.append("Noise Trap")
+        if self.options.groose_traps.value:
+            enabled_traps.append("Groose Trap")
+        if self.options.health_traps.value:
+            enabled_traps.append("Health Trap")
+
+        if not enabled_traps:
+            return
+
+        filler_indexes = [
+            index for index, pool_item in enumerate(item_pool)
+            if pool_item.classification == IC.filler
+        ]
+        if not filler_indexes:
+            return
+
+        if mode_value == 1:      # trapish
+            num_traps = len(filler_indexes) // 10
+        elif mode_value == 2:    # trapsome
+            num_traps = len(filler_indexes) // 4
+        elif mode_value == 3:    # traps_o_plenty
+            num_traps = len(filler_indexes) // 2
+        elif mode_value == 4:    # traptacular
+            num_traps = len(filler_indexes)
+        else:
+            num_traps = 0
+
+        if num_traps <= 0:
+            return
+
+        self.random.shuffle(filler_indexes)
+        for replace_index in filler_indexes[:num_traps]:
+            trap_name = self.random.choice(enabled_traps)
+            item_pool[replace_index] = self.create_item(trap_name)
+
+        print(f"[__init__.py] Fallback trap injection: replaced {num_traps} filler items with traps")
     
     def create_items(self) -> None:
         """
@@ -1793,6 +1848,10 @@ class SSHDWorld(World):
                     replaced_unsafe += 1
             if replaced_unsafe:
                 print(f"[__init__.py] Replaced {replaced_unsafe} chest-unsafe fallback items with safe junk")
+
+            # The hardcoded fallback pool starts trap-free by default.
+            # Apply trap replacement so trap_mode works without extract data.
+            self._apply_fallback_traps(item_pool)
 
         # If we have more items than locations (can happen when items from
         # excluded locations are recovered into the pool), trim non-progression first
