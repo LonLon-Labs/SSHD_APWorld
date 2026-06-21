@@ -998,16 +998,12 @@ class SSHDWorld(World):
         except (ValueError, TypeError):
             trial_treasure_num = 0
         
-        # Individually excluded locations from config.yaml always stay vanilla,
-        # regardless of what any shuffle setting says.
+        # Individually excluded locations from config.yaml remain AP locations,
+        # but they are later marked EXCLUDED so only filler/trap items can land there.
         manually_excluded = getattr(self, '_sshd_excluded_locations', set())
         
         for name, data in LOCATION_TABLE.items():
             if data.code is not None:
-                # Skip individually excluded locations (highest priority)
-                if name in manually_excluded:
-                    continue
-                
                 # Skip locations whose types are in the excluded set
                 if any(t in excluded_types for t in data.types):
                     continue
@@ -1114,17 +1110,16 @@ class SSHDWorld(World):
             self._sshd_starting_items = starting_item_dict
             self._sshd_world_cache = world  # Cache for later use in generate_output
             
-            # Store individually excluded locations from config.yaml so both
-            # the logic_converter and _create_basic_regions() paths can filter
-            # them out of the AP world.  These must stay vanilla regardless of
-            # any shuffle setting (excluded_locations has highest priority).
+            # Store individually excluded locations from config.yaml so the AP
+            # world can later mark them EXCLUDED. These remain AP locations,
+            # but only filler/trap items can be placed there.
             excluded_locs = ap_settings.get('excluded_locations', [])
             if isinstance(excluded_locs, list):
                 self._sshd_excluded_locations = set(excluded_locs)
             else:
                 self._sshd_excluded_locations = set()
             if self._sshd_excluded_locations:
-                print(f"[__init__.py] Individually excluded locations ({len(self._sshd_excluded_locations)}): will stay vanilla")
+                print(f"[__init__.py] Individually excluded locations ({len(self._sshd_excluded_locations)}): filler/trap only")
             
             if starting_item_dict:
                 print(f"[__init__.py] Starting items from sshd-rando:")
@@ -1208,9 +1203,9 @@ class SSHDWorld(World):
                 if _type_specific_skip_items:
                     print(f"[__init__.py] Will skip shuffle-specific items at excluded locations: {sorted(_type_specific_skip_items)}")
                 
-                # Individually excluded locations from config.yaml — items at
-                # these locations must NOT enter the AP pool because the AP world
-                # will not have corresponding Location objects for them.
+                # Individually excluded locations from config.yaml remain in the
+                # AP world as EXCLUDED locations, so their items still belong in
+                # the reconstructed pool.
                 individually_excluded = getattr(self, '_sshd_excluded_locations', set())
                 
                 # Scan all filled locations to reconstruct the placed item pool
@@ -1267,14 +1262,15 @@ class SSHDWorld(World):
                         #   gratitude crystals, stamina fruits) to avoid bloat.  Keep
                         #   standard-pool items (Heart Piece, Heart Container, keys, etc.)
                         #   so the AP pool has the correct counts for those items.
-                        # - Individually excluded locations → may have progression items
-                        #   placed by sshd-rando's fill; DO extract so they aren't lost.
+                        # - Individually excluded locations → backend generation
+                        #   already treats these as non-progress, so keep their
+                        #   filler/trap items in the pool.
                         # - Non-excluded locations → always extract.
                         is_type_excluded = False
                         if not is_excluded:
                             pass  # Normal location — always extract
                         elif loc_name in individually_excluded:
-                            pass  # Individually excluded — extract to save progression items
+                            pass  # Individually excluded — extract their non-progress items
                         else:
                             is_type_excluded = True  # Type-excluded — selective skip
                         
@@ -2791,6 +2787,21 @@ class SSHDWorld(World):
             # Fallback: use basic rules from Rules.py
             set_rules(self)
         
+        manually_excluded = getattr(self, '_sshd_excluded_locations', set())
+        if manually_excluded:
+            excluded_count = 0
+            for region in self.multiworld.regions:
+                if region.player != self.player:
+                    continue
+                for location in region.locations:
+                    if location.name in manually_excluded:
+                        location.progress_type = LocationProgressType.EXCLUDED
+                        excluded_count += 1
+
+            if excluded_count:
+                print(f"[__init__.py] Applied manual excluded-location restrictions: "
+                      f"{excluded_count} locations - filler/trap only")
+
         # ── Beedle's Airshop item restrictions ──────────────────────────────
         # The client cannot detect purchases of items belonging to other
         # players (which become "Archipelago Item" ID 216 in the ROM).

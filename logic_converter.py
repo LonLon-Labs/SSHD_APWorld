@@ -844,9 +844,6 @@ class SSHDLogicConverter:
         
         excluded_types = self._get_excluded_location_types()
 
-        # Get manually excluded locations from config.yaml
-        manually_excluded = getattr(self.world, '_sshd_excluded_locations', set())
-
         # Dusk Relic exclusion: trial_treasure_shuffle is a numeric value (0-10).
         # Relics whose number exceeds the setting are excluded.
         # When 0, all Dusk Relic locations are excluded.
@@ -870,11 +867,6 @@ class SSHDLogicConverter:
             
             # Exclude location types determined by _get_excluded_location_types()
             if excluded_types and any(t in excluded_types for t in data.types):
-                locations_excluded += 1
-                continue
-
-            # Skip manually excluded locations (must stay vanilla)
-            if name in manually_excluded:
                 locations_excluded += 1
                 continue
 

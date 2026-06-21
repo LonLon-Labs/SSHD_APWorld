@@ -272,19 +272,19 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
             print(f"[SSHDRWrapper] Added {len(starting_items_list)} items to starting_inventory")
     
     # Handle excluded_locations from config.yaml (if present)
-    # This is a list of location names that should NOT be randomized
+    # These remain randomized AP locations, but are restricted to junk/filler.
     if "excluded_locations" in settings_dict:
         excluded_locs_list = settings_dict["excluded_locations"]
         if isinstance(excluded_locs_list, list):
             print(f"[SSHDRWrapper] Processing excluded_locations from config.yaml ({len(excluded_locs_list)} locations)")
             setting_map.excluded_locations = excluded_locs_list
-            print(f"[SSHDRWrapper] Excluded {len(excluded_locs_list)} locations from randomization")
+            print(f"[SSHDRWrapper] Marked {len(excluded_locs_list)} locations as excluded (filler/trap only)")
     
     # NOTE: excluded_locations from config.yaml always have the highest priority.
     # Even if a shuffle setting (like beedle_shop_shuffle) is turned on, individually
-    # excluded locations remain vanilla.  We no longer strip Beedle locations from
-    # the excluded list when the shop shuffle is enabled — the user's explicit
-    # exclusions must be respected.
+    # excluded locations stay restricted to junk/filler only. We no longer strip
+    # Beedle locations from the excluded list when the shop shuffle is enabled —
+    # the user's explicit exclusions must be respected.
     
     # NOTE: excluded_hint_locations is NOT used in Archipelago mode
     # Archipelago disables all hints (overrides all hint counts to 0), so there's no need
@@ -728,7 +728,7 @@ def overlay_multiworld_items(world: Any, location_item_mapping: Dict[str, str]) 
         return results
     
     print(f"[SSHDRWrapper] Processing {len(world.location_table)} locations from location_table")
-    
+
     # Debug: Check if Archipelago Item is in item_table
     ap_item_lookup = "Archipelago Item"
     if ap_item_lookup in world.item_table:
@@ -744,7 +744,7 @@ def overlay_multiworld_items(world: Any, location_item_mapping: Dict[str, str]) 
     # Iterate through all locations in the mapping
     for location_name, location in world.location_table.items():
         results["total_locations"] += 1
-        
+
         # Skip protected locations - they have hardcoded game logic that depends on specific items
         if location_name in PROTECTED_LOCATIONS:
             protected_count += 1
