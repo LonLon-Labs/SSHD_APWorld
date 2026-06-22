@@ -5,7 +5,7 @@ game: Skyward Sword HD
 requires:
   version: 0.6.6 # Version of Archipelago required for this yaml to work as expected.
   game:
-    Skyward Sword HD: 0.7.3
+    Skyward Sword HD: 0.7.4
 
 Skyward Sword HD:
 
