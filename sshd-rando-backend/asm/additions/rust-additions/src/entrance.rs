@@ -229,6 +229,56 @@ pub extern "C" fn handle_er_action_states() {
     }
 }
 
+pub fn reload_current_stage() {
+    unsafe {
+        if GAME_RELOADER_PTR.is_null() || FILE_MGR.is_null() {
+            return;
+        }
+
+        if &CURRENT_STAGE_NAME[..5] == b"F000\0" {
+            // Stage names are stored as 8 bytes in globals, while the vanilla
+            // trigger API takes a pointer to a 7-byte stage name buffer.
+            let stage_name_ptr = (&mut CURRENT_STAGE_NAME as *mut [u8; 8]).cast::<[u8; 7]>();
+
+            GameReloader__triggerEntrance(
+                GAME_RELOADER_PTR,
+                stage_name_ptr,
+                CURRENT_ROOM.into(),
+                CURRENT_LAYER.into(),
+                CURRENT_ENTRANCE.into(),
+                CURRENT_NIGHT.into(),
+                CURRENT_TRIAL.into(),
+                0,
+                0xF,
+                0,
+                0xFF,
+            );
+        } else {
+            // Mark this transition as an autosave-triggering reload.
+            (*FILE_MGR).FA.is_auto_save = 1;
+            (*GAME_RELOADER_PTR).is_reloading = 1;
+
+            // Stage names are stored as 8 bytes in globals, while the vanilla
+            // trigger API takes a pointer to a 7-byte stage name buffer.
+            let stage_name_ptr = (&mut CURRENT_STAGE_NAME as *mut [u8; 8]).cast::<[u8; 7]>();
+
+            GameReloader__triggerEntrance(
+                GAME_RELOADER_PTR,
+                stage_name_ptr,
+                CURRENT_ROOM.into(),
+                CURRENT_LAYER.into(),
+                CURRENT_ENTRANCE.into(),
+                CURRENT_NIGHT.into(),
+                CURRENT_TRIAL.into(),
+                0,
+                0xF,
+                0,
+                0xFF,
+            );
+        }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn warp_to_start() -> bool {
     unsafe {

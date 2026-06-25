@@ -5,6 +5,7 @@
 use crate::cheats;
 use crate::color;
 use crate::debug;
+use crate::entrance;
 use crate::event;
 use crate::fix;
 use crate::input;
@@ -77,6 +78,14 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
         && input::check_button_pressed_up(input::BUTTON_INPUTS::R_BUTTON))
     {
         mem::debug_print_all_heap_info();
+    }
+
+    // Reload current stage at its current entrance
+    if (input::check_button_held_down(input::BUTTON_INPUTS::LEFT_STICK_BUTTON)
+        && input::check_button_held_down(input::BUTTON_INPUTS::R_BUTTON)
+        && input::check_button_pressed_down(input::BUTTON_INPUTS::Y_BUTTON))
+    {
+        entrance::reload_current_stage();
     }
 
     color::handle_colors();
