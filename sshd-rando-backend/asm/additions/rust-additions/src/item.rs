@@ -697,17 +697,19 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
         let sceneindex = unpacked_params.sceneindex;
         let flag_space_trigger = unpacked_params.flag_space_trigger;
         let original_itemid = unpacked_params.original_itemid;
+        let raw_custom_flag: u32 = ((*item_actor).base.members.base.param2 >> 8) & 0x3FF;
 
         let is_trial_tear = is_trial_tear_actor(item_actor);
 
-        // Guard flag==0: dynamically-spawned items
-        // have param2==0 which decodes as flag==0, not 0x7F; without this guard
-        // they would accidentally call set_global_sceneflag(scene6, 0).
+        // Guard invalid raw custom flags: dynamically-spawned items can have
+        // param2==0, which yields raw_custom_flag==0 and must NOT write any
+        // global flag. But legitimate AP custom flags may have flag==0 in the
+        // lower 7 bits (e.g. raw 640), so do not reject based on flag==0.
         //
         // Spirit Vessel is managed entirely by archipelago_silent_realm_tear_fix()
         // (main loop, every frame) using the Dungeonflags.
         // No per-tear FlagMgr writes are needed here.
-        if !is_trial_tear && flag != 0x7F && flag != 0 {
+        if !is_trial_tear && raw_custom_flag != 0 && raw_custom_flag != 0x3FF {
             // Use different flag spaces depending on the value of the
             // flag_space_trigger
             match flag_space_trigger {
