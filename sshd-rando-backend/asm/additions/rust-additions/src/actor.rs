@@ -1315,6 +1315,41 @@ pub extern "C" fn find_actor_by_type(
     }
 }
 
+pub fn count_actors_by_type(actorid: ACTORID, max_count: u32) -> u32 {
+    unsafe {
+        let mut count: u32 = 0;
+        let mut cur_node: *mut ActorTreeNode = CONNECT_MGR.root;
+
+        while !cur_node.is_null() {
+            let owner = (*cur_node).owner;
+            if !owner.is_null() && (*owner).members.members.actorid == actorid as u16 {
+                count += 1;
+                if max_count != 0 && count >= max_count {
+                    return count;
+                }
+            }
+
+            let mut cursor: *mut TreeNode = &mut (*cur_node).tree_node;
+            if !(*cursor).child.is_null() {
+                cur_node = (*cursor).child as *mut ActorTreeNode;
+                continue;
+            }
+
+            while !cursor.is_null() && (*cursor).next.is_null() {
+                cursor = (*cursor).parent;
+            }
+
+            if cursor.is_null() {
+                break;
+            }
+
+            cur_node = (*cursor).next as *mut ActorTreeNode;
+        }
+
+        count
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn should_spawn_eldin_platforms(
     platform_actor_maybe: *mut dAcORockBoatMaybe,

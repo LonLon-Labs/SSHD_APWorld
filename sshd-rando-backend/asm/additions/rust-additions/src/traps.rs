@@ -16,6 +16,8 @@ use core::ffi::{c_char, c_void};
 use core::ptr::{from_ref, read_unaligned};
 use static_assertions::assert_eq_size;
 
+const MAX_GROOSE_TRAP_SPAWNS_ACTIVE: u32 = 8;
+
 // repr(C) prevents rust from reordering struct fields.
 // packed(1) prevents rust from aligning structs to the size of the largest
 // field.
@@ -188,8 +190,13 @@ pub extern "C" fn update_traps() {
                 } as *mut math::Vec3f;
 
                 // Only spawn Groose if not in a Silent Realm because it lags for 2-3 seconds
+                let active_grooses = actor::count_actors_by_type(
+                    actor::ACTORID::NPC_RVL,
+                    MAX_GROOSE_TRAP_SPAWNS_ACTIVE,
+                );
                 if (&CURRENT_STAGE_NAME[..1] != b"S" || &CURRENT_STAGE_NAME[..7] == b"D003_8\0")
                     && !ROOM_MGR.is_null()
+                    && active_grooses < MAX_GROOSE_TRAP_SPAWNS_ACTIVE
                 {
                     actor::spawn_actor(
                         actor::ACTORID::NPC_RVL,
