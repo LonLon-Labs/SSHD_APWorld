@@ -3,6 +3,7 @@
 #![allow(unused)]
 
 use crate::actor;
+use crate::debug;
 use crate::event;
 use crate::fix;
 use crate::flag;
@@ -1217,8 +1218,8 @@ pub extern "C" fn fix_freestanding_item_y_offset(item_actor: *mut dAcItem) {
                     y_offset = 24.0;
                     use_default_scaling = true;
                 },
-                // Seed Satchel | Golden Skull
-                128 | 175 => y_offset = 14.0,
+                // Sailcloth | Seed Satchel | Golden Skull
+                15 | 128 | 175 => y_offset = 14.0,
                 // Map | Quiver | Whip | Emerald Tablet | Maps
                 50 | 131 | 137 | 177 | 207..=213 => y_offset = 19.0,
                 // Earrings
@@ -1585,6 +1586,7 @@ pub extern "C" fn resolve_progressive_item_models(
         // Deal with unique archive names
         if arc_or_model == 1 {
             model_name = match item_id {
+                15 => c"Demo11_01".as_ptr(),
                 214 => c"Onp".as_ptr(),
                 215 => c"DesertRobot".as_ptr(),
                 216 => {
@@ -1609,6 +1611,7 @@ pub extern "C" fn resolve_progressive_item_models(
         // Deal with unique model names
         } else if arc_or_model == 2 {
             model_name = match item_id {
+                15 => c"GetStole".as_ptr(),
                 // Randomly pick which of the two tadtone models is used for fun :p
                 214 if (s_rng & 1) == 0 => c"OnpA".as_ptr(),
                 214 => c"OnpB".as_ptr(),

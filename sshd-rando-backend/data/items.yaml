@@ -96,13 +96,14 @@
     - Swords
   oarc: null
   advancement: true
-# TODO: Get model to work
 - id: 15
   name: Sailcloth
   types:
     - Major Items
     - Main Quest Items
-  oarc: null # Placeholder (defaults to green rupee)
+  oarc: Demo11_01
+  shop_arc_name: Demo11_01
+  shop_model_name: GetStole
   advancement: true
 - id: 16
   name: Goddess's Harp

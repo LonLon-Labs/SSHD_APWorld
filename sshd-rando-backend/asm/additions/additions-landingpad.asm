@@ -315,6 +315,15 @@ b.eq prefer_modreplace_for_general_arcs
 cmp w8, #98
 b.eq setup_gossip_stone_item_params
 
+cmp w8, #99
+b.eq check_sailcloth_for_air_vents
+
+cmp w8, #100
+b.eq require_sailcloth_to_fly_to_sky
+
+cmp w8, #101
+b.eq voidout_near_skyloft_or_light_pillars_without_sailcloth
+
 ret ; this should never be reached
 
 ; Wrapper for custom_event_commands.
@@ -331,5 +340,5 @@ _ce_wrapper:
     ldrh w8, [x1, #0xa]
     mov w21, #1
     ret
-
+    
 ; ends at 0x712e0a7000

@@ -7,7 +7,6 @@ import sys
 import tempfile
 import yaml
 
-
 # Causes the assembler to print out each instruction it's assembling and it's binary.
 DEBUG_SHOW_ASSEMBLY = False
 

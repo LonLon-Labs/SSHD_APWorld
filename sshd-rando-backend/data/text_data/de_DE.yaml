@@ -6,7 +6,7 @@
     \n\n\n\nKümmere dich gut um ihn.\n...auch wenn er gemein sein kann."
 
 - name: Some Tadtones Collected text
-  standard: "Du hast eine <y<Melodinen>>-Gruppe\ngefunden! Noch <r<<numeric arg0>>> sind übrig!"
+  standard: "Du hast eine <y<Melodinen>>-Gruppe\ngefunden! Noch <r<<numeric arg0> >> sind übrig!"
 
 - name: All Tadtones Collected text
   standard:
@@ -68,10 +68,17 @@
   standard: "Du hast <y<Kalte Kürbissuppe>> erhalten!\nDiese hausgemachte Kürbissuppe ist Biskurs Spezialität,\naber jemand hat sie kalt werden lassen..."
 
 - name: Five Gratitude crystal counter
+<<<<<<< HEAD
   standard: "Du hast <r<fünf>> <y<Juwelen der Güte>> erhalten!\nDamit hast du insgesamt <r<<numeric arg1>>>!"
 
 - name: Single Gratitude crystal counter
   standard: "Du hast <r<ein>> <y<Juwel der Güte>> erhalten!\nDamit hast du insgesamt <r<<numeric arg1>>>!"
+=======
+  standard: "Du hast <r<fünf>> <y<Juwelen der Güte>> erhalten!\nDamit hast du insgesamt <r<<numeric arg1> >>!"
+
+- name: Single Gratitude crystal counter
+  standard: "Du hast <r<ein>> <y<Juwel der Güte>> erhalten!\nDamit hast du insgesamt <r<<numeric arg1> >>!"
+>>>>>>> upstream-backend/main
 
 # TODO: Needs updating to include the key count text.
 - name: Skyview Key Text
@@ -6353,8 +6360,13 @@
 - name: First Groosenator Choice Text
   standard: "Nun, wohin fliegst du heute?\n[1]Zum Wolkenmeer![2]Zum Erdboden.[3]<b<Unterwasserwald von Phirone>>[4-]Schon gut!"
 
+# TODO: replace "sorry"?
 - name: Groosenator can't fling text
   standard: "Sorry, <heroname>. Ich kann dich\nnicht an einen Ort schleudern,\nan dem du noch nie warst."
+
+# TODO: add text
+# - name: Groosenator needs sailcloth text
+#   standard: ""
 
 - name: FFW Bucha leave question text
   standard: "<action6 \x03>Kewwww... Magst du das Wasser nicht?\nIch kenne einen geheimen Weg aus dem Wald,\nsoll ich ihn dir zeigen?\n[1]Ja, bitte![2-]Nein, Danke."

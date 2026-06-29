@@ -5,7 +5,6 @@ Storyflags:
   - 24 # Skip Fi text around Faron Pillar
   - 27 # Loftwing Unlocked
   - 28 # Pratice Sword
-  - 32 # Sailcoth
   - 36 # Hero's tunic
   - 58 # B-Wheel Unlocked
   - 60 # Fi text before Yerbal
@@ -408,7 +407,6 @@ Itemflags:
   - 6 # Heart
   - 7 # Single Arrow
   - 8 # Bundle of Arrows
-  - 15 # Sailcloth (actually the item in this case)
   - 40 # 5 Bombs
   - 41 # 10 Bombs
   - 42 # Stamina Fruit

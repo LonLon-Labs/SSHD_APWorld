@@ -311,7 +311,7 @@ pub extern "C" fn custom_event_commands(
     actor_event_flow_mgr: *mut ActorEventFlowMgr,
     p_event_flow_element: *const EventFlowElement,
 ) {
-    let mut event_flow_element = unsafe { &*p_event_flow_element };
+    let event_flow_element = unsafe { &*p_event_flow_element };
     match event_flow_element.param3 {
         // Fi Warp
         70 => unsafe {
@@ -348,13 +348,11 @@ pub extern "C" fn custom_event_commands(
         77 => minigame::boss_rush_restore_flags(),
         78 => unsafe {
             let sceneindex = event_flow_element.param1;
-
-            if !LYT_MSG_WINDOW.is_null() {
-                let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
-                if !text_mgr.is_null() {
-                    (*text_mgr).numeric_args[1] = 1
-                        + (((*FILE_MGR).FA.dungeonflags[sceneindex as usize][1] >> 4) & 0xF) as u32;
-                }
+            
+            // Reconciled upstream change safely here:
+            if !LYT_MSG_WINDOW.is_null() && !(*LYT_MSG_WINDOW).text_mgr.is_null() {
+                (*(*LYT_MSG_WINDOW).text_mgr).numeric_args[1] =
+                    1 + (((*FILE_MGR).FA.dungeonflags[sceneindex as usize][1] >> 4) & 0xF) as u32;
             }
         },
         // Give item with custom sceneflag (for Archipelago)
@@ -375,7 +373,7 @@ pub extern "C" fn custom_event_commands(
 
     // The replaced instructions (ldrh w8, [x1, #0xa]; mov w21, #1) are now
     // executed by the ASM wrapper `_ce_wrapper` in the landing pad, AFTER
-    // this function's epilogue.  This prevents the compiler from clobbering
+    // this function's epilogue. This prevents the compiler from clobbering
     // w21 (a callee-saved register) in the epilogue — which would break all
     // type-3 event flows.
 }

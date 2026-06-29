@@ -67,6 +67,7 @@ DEFAULT_SETTINGS = {
     "first_time_seed_gen_text": False,
     "starting_inventory": Counter(
         [
+            SAILCLOTH,
             HYLIAN_SHIELD,
             PROGRESSIVE_POUCH,
             SCRAPPER,
