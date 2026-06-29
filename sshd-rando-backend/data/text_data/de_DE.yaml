@@ -68,17 +68,10 @@
   standard: "Du hast <y<Kalte Kürbissuppe>> erhalten!\nDiese hausgemachte Kürbissuppe ist Biskurs Spezialität,\naber jemand hat sie kalt werden lassen..."
 
 - name: Five Gratitude crystal counter
-<<<<<<< HEAD
-  standard: "Du hast <r<fünf>> <y<Juwelen der Güte>> erhalten!\nDamit hast du insgesamt <r<<numeric arg1>>>!"
-
-- name: Single Gratitude crystal counter
-  standard: "Du hast <r<ein>> <y<Juwel der Güte>> erhalten!\nDamit hast du insgesamt <r<<numeric arg1>>>!"
-=======
   standard: "Du hast <r<fünf>> <y<Juwelen der Güte>> erhalten!\nDamit hast du insgesamt <r<<numeric arg1> >>!"
 
 - name: Single Gratitude crystal counter
   standard: "Du hast <r<ein>> <y<Juwel der Güte>> erhalten!\nDamit hast du insgesamt <r<<numeric arg1> >>!"
->>>>>>> upstream-backend/main
 
 # TODO: Needs updating to include the key count text.
 - name: Skyview Key Text
