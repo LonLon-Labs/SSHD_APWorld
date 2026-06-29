@@ -308,6 +308,11 @@ Skyward Sword HD:
   # Number of trial treasures to shuffle (0-10)
   # Randomizes treasures in Silent Realms to items. Items other than dusk relics will glow in Silent Realms (Yellow in Faron, Blue in Eldin, Green in Lanayru, and Red on Skyloft).
   trial_treasure_shuffle: 0
+
+  # Sailcloth Randomization
+  # true: The Sailcloth is shuffled into the item pool like any other major item.
+  # false: The Sailcloth is always granted at the start of the game (default).
+  randomize_sailcloth: false
   
   # ========================================
   # KEY AND MAP PLACEMENT

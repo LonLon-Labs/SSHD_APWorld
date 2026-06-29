@@ -1628,19 +1628,21 @@ class SSHDWorld(World):
         SKIP_ITEMS = {
             "Game Beatable",      # Victory event, placed separately
             "Archipelago Item",   # Cross-world placeholder, not in our pool
-            "Sailcloth",          # Always given as a starting item, never randomized
         }
+        # If sailcloth is not being randomized, skip it from the pool (will be precollected below)
+        if not self.options.randomize_sailcloth.value:
+            SKIP_ITEMS.add("Sailcloth")
 
         # Goddess Cube items are dummy logic items with no in-game model (oarc: null).
         # They exist in sshd-rando to link cube-strike locations → sky Goddess Chests
         # but must never appear as real items in the AP pool.
         SKIP_GODDESS_CUBES = {name for name in ITEM_TABLE if "Goddess Cube" in name}
         
-        # --- FORCE SAILCLOTH AS STARTING ITEM ---
-        # Sailcloth is always given to the player unconditionally.
-        # Rando devs are still working on logic for it; until then it must not be randomized.
-        self.multiworld.push_precollected(self.create_item("Sailcloth"))
-        print(f"[__init__.py] Sailcloth granted as forced starting item")
+        # --- SAILCLOTH STARTING ITEM (when not randomized) ---
+        # When randomize_sailcloth is off, grant it unconditionally as a precollected item.
+        if not self.options.randomize_sailcloth.value:
+            self.multiworld.push_precollected(self.create_item("Sailcloth"))
+            print(f"[__init__.py] Sailcloth granted as forced starting item (randomize_sailcloth=off)")
         
         # --- PRECOLLECT STARTING ITEMS ---
         # sshd-rando's starting_item_pool (extracted in generate_early) contains items
@@ -1654,8 +1656,8 @@ class SSHDWorld(World):
             for raw_name, count in starting_items.items():
                 # Convert any stage names to progressive (safety net for progressive_items=on)
                 item_name = STAGE_TO_PROGRESSIVE.get(raw_name, raw_name)
-                # Skip Sailcloth — already force-granted above
-                if item_name == "Sailcloth":
+                # Skip Sailcloth if already force-precollected above
+                if item_name == "Sailcloth" and not self.options.randomize_sailcloth.value:
                     print(f"  {item_name} x{count} (skipped, already force-granted)")
                     continue
                 if item_name in ITEM_TABLE:
