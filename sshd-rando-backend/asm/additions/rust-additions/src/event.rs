@@ -348,7 +348,7 @@ pub extern "C" fn custom_event_commands(
         77 => minigame::boss_rush_restore_flags(),
         78 => unsafe {
             let sceneindex = event_flow_element.param1;
-            
+
             // Reconciled upstream change safely here:
             if !LYT_MSG_WINDOW.is_null() && !(*LYT_MSG_WINDOW).text_mgr.is_null() {
                 (*(*LYT_MSG_WINDOW).text_mgr).numeric_args[1] =

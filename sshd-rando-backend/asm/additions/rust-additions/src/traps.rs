@@ -17,6 +17,7 @@ use core::ptr::{from_ref, read_unaligned};
 use static_assertions::assert_eq_size;
 
 const MAX_GROOSE_TRAP_SPAWNS_ACTIVE: u32 = 8;
+static mut DID_SPAWN_EXTRA_DEMISE_THIS_LOAD: bool = false;
 
 // repr(C) prevents rust from reordering struct fields.
 // packed(1) prevents rust from aligning structs to the size of the largest
@@ -61,6 +62,7 @@ extern "C" {
     static mut TRAP_DURATION: u16;
     static mut NEXT_CUSTOM_FLAG: u16;
     static mut NEXT_CUSTOM_FLAG_PENDING: u8;
+    static mut EXTRA_DEMISE_COUNT: u8;
 
     // Functions
     fn debugPrint_128(string: *const c_char, fstr: *const c_char, ...);
@@ -71,6 +73,127 @@ extern "C" {
 // IMPORTANT: when adding functions here that need to get called from the game,
 // add `#[no_mangle]` and add a .global *symbolname* to
 // additions/rust-additions.asm
+
+/// Called once when the B400 arena finishes loading.
+/// Spawns (EXTRA_DEMISE_COUNT) additional Demise actors at the player's
+/// position, mirroring the Groose trap spawn pattern.
+#[no_mangle]
+pub extern "C" fn spawn_extra_demise() {
+    unsafe {
+        // Allow a fresh spawn when we leave B400 and later re-enter it.
+        if &CURRENT_STAGE_NAME[..4] != b"B400" {
+            DID_SPAWN_EXTRA_DEMISE_THIS_LOAD = false;
+            return;
+        }
+
+        if DID_SPAWN_EXTRA_DEMISE_THIS_LOAD {
+            return;
+        }
+
+        let extra = EXTRA_DEMISE_COUNT;
+        if extra == 0 {
+            return;
+        }
+
+        // Retry on later frames until the arena/player are fully initialized.
+        if PLAYER_PTR.is_null() || ROOM_MGR.is_null() {
+            return;
+        }
+
+        // Keep total Demises at 1 (vanilla) + extra. This avoids over-spawning
+        // if this runs after some actors already exist.
+        let existing = actor::count_actors_by_type(actor::ACTORID::B_LASTBOSS, 32);
+        let target_total = 1u32 + (extra as u32);
+        if existing >= target_total {
+            DID_SPAWN_EXTRA_DEMISE_THIS_LOAD = true;
+            return;
+        }
+
+        let to_spawn = target_total - existing;
+        let player_pos = (*PLAYER_PTR).obj_base_members.base.pos;
+        let mut spawned_count: u32 = 0;
+
+        for i in 0..to_spawn {
+            let actor_pos: *mut math::Vec3f = &mut math::Vec3f {
+                x: player_pos.x,
+                // Start above vanilla actor and fan out vertically.
+                y: player_pos.y + (1000.0 * (i as f32 + 1.0)),
+                z: player_pos.z,
+            } as *mut math::Vec3f;
+
+            let actor_rot: *mut math::Vec3s =
+                &mut math::Vec3s { x: 0, y: 0, z: 0 } as *mut math::Vec3s;
+
+            let actor_scale: *mut math::Vec3f = &mut math::Vec3f {
+                x: 1.0,
+                y: 1.0,
+                z: 1.0,
+            } as *mut math::Vec3f;
+
+            let spawned_actor = actor::spawn_actor(
+                actor::ACTORID::B_LASTBOSS,
+                (*ROOM_MGR).roomid.into(),
+                // Matches the known-good static B400 BLasBos param1 value.
+                0xFFFFFFC0,
+                actor_pos,
+                actor_rot,
+                actor_scale,
+                0xFFFFFFFF,
+            );
+
+            if !spawned_actor.is_null() {
+                spawned_count += 1;
+            }
+        }
+
+        if (s_rng & 1) == 0 {
+            playFanfareMaybe(FANFARE_SOUND_MGR, 0x1705);
+        } else {
+            playFanfareMaybe(FANFARE_SOUND_MGR, 0x1707);
+        }
+
+        // Only lock this for the current load if we actually spawned extras.
+        // If allocation failed (null actor pointers), keep retrying on later frames.
+        if spawned_count > 0 || to_spawn == 0 {
+            DID_SPAWN_EXTRA_DEMISE_THIS_LOAD = true;
+        }
+    }
+}
+
+/// Manual one-shot Demise spawn that works in any loaded stage.
+#[no_mangle]
+pub extern "C" fn spawn_demise_manual_current_stage() {
+    unsafe {
+        if PLAYER_PTR.is_null() || ROOM_MGR.is_null() {
+            return;
+        }
+
+        let player_pos = (*PLAYER_PTR).obj_base_members.base.pos;
+        let actor_pos: *mut math::Vec3f = &mut math::Vec3f {
+            x: player_pos.x,
+            y: player_pos.y + 300.0,
+            z: player_pos.z,
+        } as *mut math::Vec3f;
+
+        let actor_rot: *mut math::Vec3s = &mut math::Vec3s { x: 0, y: 0, z: 0 } as *mut math::Vec3s;
+
+        let actor_scale: *mut math::Vec3f = &mut math::Vec3f {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0,
+        } as *mut math::Vec3f;
+
+        let spawned_actor = actor::spawn_actor(
+            actor::ACTORID::B_LASTBOSS,
+            (*ROOM_MGR).roomid.into(),
+            0xFFFFFFC0,
+            actor_pos,
+            actor_rot,
+            actor_scale,
+            0xFFFFFFFF,
+        );
+    }
+}
 
 // Traps
 #[no_mangle]

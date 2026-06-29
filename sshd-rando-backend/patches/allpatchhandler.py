@@ -150,6 +150,11 @@ class AllPatchHandler:
         # init_global_variables can write them into the CREST_CUSTOM_FLAGS
         # Rust static.
         self.asm_patch_handler.crest_custom_flags = self.stage_patch_handler.crest_custom_flags
+        # Pass global symbol initializers collected during stage patch setup
+        # (e.g. EXTRA_DEMISE_COUNT) so init_global_variables can emit them.
+        self.asm_patch_handler.global_symbol_values = (
+            self.stage_patch_handler.get_global_symbol_values()
+        )
         self.asm_patch_handler.patch_all_asm(self.world, self.conditional_patch_handler)
         copy_extra_mod_files(
             self.world.setting_map.other_mods, self.world.config.output_dir

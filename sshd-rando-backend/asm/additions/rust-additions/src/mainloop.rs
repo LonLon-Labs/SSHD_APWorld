@@ -11,6 +11,7 @@ use crate::fix;
 use crate::input;
 use crate::item;
 use crate::mem;
+use crate::traps;
 
 use core::arch::asm;
 use core::ffi::{c_char, c_void};
@@ -116,6 +117,10 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     cheats::handle_infinite_loftwing();
     cheats::handle_no_electric_stun();
     cheats::handle_speed_multiplier();
+    cheats::handle_spawn_demise_request();
+
+    // Runtime Demise trap: spawns configured extras once when entering B400.
+    traps::spawn_extra_demise();
 
     return unsafe { dSystem };
 }

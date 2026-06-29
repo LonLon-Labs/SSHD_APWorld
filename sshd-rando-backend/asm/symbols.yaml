@@ -271,6 +271,9 @@ main:
     ## Size: 1 (u8) - Whether NEXT_CUSTOM_FLAG was set by fix_tbox_traps (0=no, 1=yes)
     NEXT_CUSTOM_FLAG_PENDING: 0x712e5ff07e
 
+    ## Size: 1 (u8) - Number of extra Demise bosses to spawn beyond the vanilla one
+    EXTRA_DEMISE_COUNT: 0x712e5ff07f
+
     ## Size: 6 (3 x u16) - Archipelago custom flags for the 3 Isle of Songs crest rewards
     ## Placed in RODATA segment (read-only) past original rodata end (0x20FCAC).
     CREST_CUSTOM_FLAGS: 0x712e5fecb0

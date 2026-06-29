@@ -673,6 +673,13 @@ class ASMPatchHandler:
             flags[2] & 0xFF, (flags[2] >> 8) & 0xFF,
         ]  # CREST_CUSTOM_FLAGS
 
+        # Apply additional symbol initializers provided by stage patch setup.
+        global_symbol_values: dict[str, int] = getattr(self, "global_symbol_values", {})
+        if "EXTRA_DEMISE_COUNT" in global_symbol_values:
+            init_rw_globals_dict[0x712E5FF07F] = [
+                global_symbol_values["EXTRA_DEMISE_COUNT"] & 0xFF
+            ]
+
         yaml_write(output_path, init_rw_globals_dict)
 
         # Write the global variables binary to a non-temp file.

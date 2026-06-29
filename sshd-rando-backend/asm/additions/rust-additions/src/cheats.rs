@@ -6,6 +6,7 @@ use crate::flag;
 use crate::input;
 use crate::player;
 use crate::savefile;
+use crate::traps;
 use static_assertions::assert_eq_size;
 
 // ─── Extern symbols
@@ -37,7 +38,8 @@ extern "C" {
 //   +19  infinite_rupees      bool
 //   +20  infinite_loftwing    bool
 //   +21  no_electric_stun     bool
-//   +22  _pad2                [u8; 2]
+//   +22  spawn_demise_request bool     — one-shot trigger from /sapwn_demise
+//   +23  _pad2                [u8; 1]
 //   +24  speed_multiplier_bits u32     — f32 bits; 0 or 0x3F800000 = disabled
 
 #[repr(C, packed(1))]
@@ -57,7 +59,8 @@ pub struct ApCheatFlags {
     pub infinite_rupees:         bool,    // +19
     pub infinite_loftwing:       bool,    // +20
     pub no_electric_stun:        bool,    // +21
-    pub _pad2:                   [u8; 2], // +22..23 alignment
+    pub spawn_demise_request:    bool,    // +22 one-shot manual spawn trigger
+    pub _pad2:                   [u8; 1], // +23 alignment
     pub speed_multiplier_bits:   u32,     // +24 f32 bits; 0 or 0x3F800000 = disabled
 }
 assert_eq_size!([u8; 28], ApCheatFlags);
@@ -79,7 +82,8 @@ pub static mut AP_CHEAT_FLAGS: ApCheatFlags = ApCheatFlags {
     infinite_rupees:         false,
     infinite_loftwing:       false,
     no_electric_stun:        false,
-    _pad2:                   [0u8; 2],
+    spawn_demise_request:    false,
+    _pad2:                   [0u8; 1],
     speed_multiplier_bits:   0u32,
 };
 
@@ -590,5 +594,17 @@ pub fn handle_speed_multiplier() {
         if speed > 0.1f32 && speed < 200.0f32 {
             (*PLAYER_PTR).obj_base_members.forward_speed = speed * multiplier;
         }
+    }
+}
+
+pub fn handle_spawn_demise_request() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.spawn_demise_request {
+            return;
+        }
+
+        // Always clear first so the request is one-shot even if spawn fails.
+        AP_CHEAT_FLAGS.spawn_demise_request = false;
+        traps::spawn_demise_manual_current_stage();
     }
 }

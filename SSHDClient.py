@@ -1479,6 +1479,19 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
             asyncio.ensure_future(self.ctx.send_msgs([{"cmd": "ConnectUpdate", "tags": self.ctx.tags}]))
         logger.info(f"BreathLink is now {'ON' if enabled else 'OFF'}")
 
+    def _cmd_spawn_demise(self):
+        """Request a one-shot Demise spawn in the current stage.
+
+        Usage: /spawn_demise
+        """
+        if not isinstance(self.ctx, SSHDContext):
+            logger.warning("Not connected to SSHD context")
+            return
+        if self.ctx.request_spawn_demise():
+            logger.info("Spawn request sent: Demise will be spawned in the current stage when runtime hooks are active.")
+        else:
+            logger.warning("Could not send spawn request. Ensure emulator is connected and AP_CHEAT_FLAGS is available.")
+
 
 class SSHDContext(CommonContext):
     """
@@ -3596,6 +3609,7 @@ class SSHDContext(CommonContext):
           offset 5: hovercraft (u8 bool)
           offset 6: _pad [u8; 2]
           offset 8: hover_vel_y_bits (u32, f32 bits) — lower-clamp for vel_y
+          offset 22: spawn_demise_request (u8 bool, one-shot trigger)
         """
         if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
             return
@@ -3627,6 +3641,30 @@ class SSHDContext(CommonContext):
             if "998" in err_str or "noaccess" in err_str.lower() or "access" in err_str.lower():
                 logger.warning("Cheat flags write hit non-writable memory — invalidating cached offset for rescan")
                 self._ap_cheat_flags_offset = None
+
+    def request_spawn_demise(self) -> bool:
+        """Set a one-shot Rust flag to spawn Demise in the current stage."""
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return False
+
+        if self._ap_cheat_flags_offset is None:
+            self._ap_cheat_flags_offset = self._scan_for_buffer(
+                bytes([0x43, 0x46, 0x00, 0x01]), "AP_CHEAT_FLAGS"
+            )
+
+        if self._ap_cheat_flags_offset is None:
+            return False
+
+        try:
+            flags_addr = self.memory.base_address + self._ap_cheat_flags_offset
+            self.memory.pm.write_bytes(flags_addr + 22, bytes([1]), 1)
+            return True
+        except Exception as e:
+            logger.debug(f"Could not request Demise spawn: {e}")
+            err_str = str(e)
+            if "998" in err_str or "noaccess" in err_str.lower() or "access" in err_str.lower():
+                self._ap_cheat_flags_offset = None
+            return False
 
     def _update_ap_check_stats(self):
         """

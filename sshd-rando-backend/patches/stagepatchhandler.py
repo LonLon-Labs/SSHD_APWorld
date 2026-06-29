@@ -1054,6 +1054,9 @@ class StagePatchHandler:
         # Populated during handle_stage_patches() when SwSB check patches are processed.
         # Written to the CREST_CUSTOM_FLAGS Rust static via init_global_variables.
         self.crest_custom_flags: list[int] = [0x3FF, 0x3FF, 0x3FF]
+        # Global symbol initializers consumed by ASM global init.
+        # Format: {"type": "symbol", "symbol": <name>, "value": <int>}.
+        self.global_patches: list[dict] = []
 
     def handle_stage_patches(self, onlyif_handler: ConditionalPatchHandler):
         for stage in self.stage_patches:
@@ -1671,6 +1674,33 @@ class StagePatchHandler:
             )
         )
 
+    def add_global_patch(self, patch: dict):
+        patch_type = patch.get("type")
+        if patch_type != "symbol":
+            raise Exception(
+                f"Unsupported global patch type '{patch_type}'. Patch: {patch}"
+            )
+
+        symbol = patch.get("symbol")
+        if not isinstance(symbol, str) or symbol == "":
+            raise Exception(f"Global symbol patch missing valid symbol. Patch: {patch}")
+
+        value = patch.get("value")
+        if not isinstance(value, int):
+            raise Exception(f"Global symbol patch missing valid integer value. Patch: {patch}")
+
+        self.global_patches.append(patch)
+
+    def get_global_symbol_values(self) -> dict[str, int]:
+        values: dict[str, int] = {}
+        for patch in self.global_patches:
+            if patch.get("type") == "symbol":
+                symbol = patch.get("symbol")
+                value = patch.get("value")
+                if isinstance(symbol, str) and isinstance(value, int):
+                    values[symbol] = value
+        return values
+
     def add_entrance_patch(
         self,
         exit_stage: str,
@@ -1792,7 +1822,10 @@ def create_shuffled_trial_object_patches(
 def create_demise_patches(
     world: World, stage_patch_handler: StagePatchHandler
 ) -> None:
-    """Add extra Demise bosses to the final fight arena (B400) based on the demise_count setting."""
+    """Add extra Demise bosses to B400 via stage patches.
+
+    This avoids live runtime spawning, which can cause model/state issues.
+    """
     demise_count = world.setting("demise_count").value_as_number()
     if demise_count <= 1:
         return
@@ -1813,6 +1846,7 @@ def create_demise_patches(
         "name": "BLasBos",
     }
 
+    # Vanilla includes one Demise already. Add (demise_count - 1) extras.
     for idx in range(1, demise_count):
         demise = orig_demise.copy()
         demise["posy"] = 1000 * idx
