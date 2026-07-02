@@ -392,8 +392,25 @@ pub fn handle_infinite_ammo() {
         if !AP_CHEAT_FLAGS.infinite_ammo {
             return;
         }
+
+        // Compute bomb capacity from pouch items
+        let mut bomb_capacity = 9;
+        if !FILE_MGR.is_null() {
+            let pouch = &(*FILE_MGR).FA.pouch_items;
+            for &pouch_val in pouch.iter() {
+                let item_id = (pouch_val & 0xFF) as u8;
+                match item_id {
+                    0x5C => bomb_capacity += 0,  // BOMB_BAG
+                    0x86 => bomb_capacity += 5,  // SMALL_BOMB_BAG
+                    0x87 => bomb_capacity += 10, // MEDIUM_BOMB_BAG
+                    0x88 => bomb_capacity += 15, // LARGE_BOMB_BAG
+                    _ => {}
+                }
+            }
+        }
+
+        flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::BOMB_COUNTER, bomb_capacity as u16);
         flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::ARROW_COUNTER, 20);
-        flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::BOMB_COUNTER, 20);
         flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::DEKU_SEED_COUNTER, 20);
     }
 }
