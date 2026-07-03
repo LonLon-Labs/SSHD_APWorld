@@ -8,6 +8,7 @@ use crate::event;
 use crate::flag;
 use crate::item;
 use crate::math;
+use crate::mem;
 use crate::player;
 use crate::savefile;
 
@@ -68,6 +69,13 @@ extern "C" {
     fn debugPrint_128(string: *const c_char, fstr: *const c_char, ...);
     fn playFanfareMaybe(soundMgr: *mut c_void, soundIndex: u16) -> u64;
     fn dPlayer__putItemAway(player: *mut player::dPlayer, unk1: u64, unk2: u64) -> i32;
+    fn dRawArcTable_c__getArcOrLoadFromDisk(
+        arc_table: *mut mem::ArcEntryTable,
+        arc_name: *const c_char,
+        parent_dir_name: *const c_char,
+        heap: *mut mem::Heap,
+    ) -> bool;
+    static WORK2_HEAP: *mut mem::Heap;
 }
 
 // IMPORTANT: when adding functions here that need to get called from the game,
@@ -163,9 +171,73 @@ pub extern "C" fn spawn_extra_demise() {
 /// Manual one-shot Demise spawn that works in any loaded stage.
 #[no_mangle]
 pub extern "C" fn spawn_demise_manual_current_stage() {
+    spawn_actor_manual_current_stage(
+        actor::ACTORID::B_LASTBOSS as u16,
+        0xFFFFFFC0,
+        0xFFFFFFFF,
+        c"BLasBos".as_ptr(),
+    );
+}
+
+unsafe fn try_preload_oarc(oarc_name: *const c_char) -> bool {
+    if oarc_name.is_null() || *oarc_name == 0 {
+        return false;
+    }
+    if mem::STAGE_ARC_MGR.is_null() || WORK2_HEAP.is_null() {
+        return false;
+    }
+
+    let arc_table = &mut (*mem::STAGE_ARC_MGR).entries_table as *mut mem::ArcEntryTable;
+
+    // Try likely parents in order. Different call sites/path configurations
+    // can resolve archive names through different roots.
+    dRawArcTable_c__getArcOrLoadFromDisk(arc_table, oarc_name, c"Object".as_ptr(), WORK2_HEAP)
+        || dRawArcTable_c__getArcOrLoadFromDisk(
+            arc_table,
+            oarc_name,
+            c"ObjectPack".as_ptr(),
+            WORK2_HEAP,
+        )
+        || dRawArcTable_c__getArcOrLoadFromDisk(
+            arc_table,
+            oarc_name,
+            c"ModReplace".as_ptr(),
+            WORK2_HEAP,
+        )
+}
+
+/// Manual one-shot actor spawn that works in any loaded stage.
+#[no_mangle]
+pub extern "C" fn spawn_actor_manual_current_stage(
+    actorid_raw: u16,
+    actor_param1: u32,
+    actor_param2: u32,
+    oarc_name: *const c_char,
+) {
     unsafe {
         if PLAYER_PTR.is_null() || ROOM_MGR.is_null() {
             return;
+        }
+
+        if actorid_raw > actor::ACTORID::LAST as u16 {
+            return;
+        }
+
+        let actorid: actor::ACTORID = core::mem::transmute::<u16, actor::ACTORID>(actorid_raw);
+
+        let default_oarc = if actorid == actor::ACTORID::B_LASTBOSS {
+            c"BLasBos".as_ptr()
+        } else {
+            core::ptr::null()
+        };
+        let oarc_to_load = if !oarc_name.is_null() && *oarc_name != 0 {
+            oarc_name
+        } else {
+            default_oarc
+        };
+
+        if !oarc_to_load.is_null() {
+            try_preload_oarc(oarc_to_load);
         }
 
         let player_pos = (*PLAYER_PTR).obj_base_members.base.pos;
@@ -183,14 +255,20 @@ pub extern "C" fn spawn_demise_manual_current_stage() {
             z: 1.0,
         } as *mut math::Vec3f;
 
-        let spawned_actor = actor::spawn_actor(
-            actor::ACTORID::B_LASTBOSS,
+        let param1 = if actorid == actor::ACTORID::B_LASTBOSS && actor_param1 == 0xFFFFFFFF {
+            0xFFFFFFC0
+        } else {
+            actor_param1
+        };
+
+        let _spawned_actor = actor::spawn_actor(
+            actorid,
             (*ROOM_MGR).roomid.into(),
-            0xFFFFFFC0,
+            param1,
             actor_pos,
             actor_rot,
             actor_scale,
-            0xFFFFFFFF,
+            actor_param2,
         );
     }
 }

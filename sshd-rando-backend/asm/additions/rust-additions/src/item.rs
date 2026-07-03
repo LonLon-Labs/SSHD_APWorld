@@ -2074,14 +2074,11 @@ pub struct ArchipelagoItemSlot {
 assert_eq_size!([u8; 4], ArchipelagoItemSlot);
 
 const fn build_archipelago_item_buffer() -> [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] {
-    let mut buffer = [
-        ArchipelagoItemSlot {
-            item_id:   0,
-            flags:     0,
-            _reserved: [0, 0],
-        };
-        ARCHIPELAGO_BUFFER_SIZE
-    ];
+    let mut buffer = [ArchipelagoItemSlot {
+        item_id:   0,
+        flags:     0,
+        _reserved: [0, 0],
+    }; ARCHIPELAGO_BUFFER_SIZE];
 
     buffer[0] = ArchipelagoItemSlot {
         item_id:   0x41,

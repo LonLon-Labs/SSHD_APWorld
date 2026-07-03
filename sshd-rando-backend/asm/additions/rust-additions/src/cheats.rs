@@ -7,6 +7,8 @@ use crate::input;
 use crate::player;
 use crate::savefile;
 use crate::traps;
+use core::ffi::c_char;
+use core::ptr::{addr_of, read_unaligned};
 use static_assertions::assert_eq_size;
 
 // ─── Extern symbols
@@ -85,6 +87,38 @@ pub static mut AP_CHEAT_FLAGS: ApCheatFlags = ApCheatFlags {
     spawn_demise_request:    false,
     _pad2:                   [0u8; 1],
     speed_multiplier_bits:   0u32,
+};
+
+// Python locates this struct by scanning for magic bytes "SA\x00\x01".
+// Layout (packed):
+//   +0   magic                 [u8; 4]  — "SA\x00\x01"
+//   +4   request               bool     — one-shot spawn trigger
+//   +5   _pad0                 [u8; 1]
+//   +6   actorid               u16      — ACTORID value
+//   +8   actor_param1          u32
+//   +12  actor_param2          u32
+//   +16  oarc_name             [u8; 32] — null-terminated ASCII, optional
+#[repr(C, packed(1))]
+pub struct ApSpawnRequest {
+    pub magic:        [u8; 4],
+    pub request:      bool,
+    pub _pad0:        [u8; 1],
+    pub actorid:      u16,
+    pub actor_param1: u32,
+    pub actor_param2: u32,
+    pub oarc_name:    [u8; 32],
+}
+assert_eq_size!([u8; 48], ApSpawnRequest);
+
+#[no_mangle]
+pub static mut AP_SPAWN_REQUEST: ApSpawnRequest = ApSpawnRequest {
+    magic:        [0x53, 0x41, 0x00, 0x01], // "SA\x00\x01"
+    request:      false,
+    _pad0:        [0u8; 1],
+    actorid:      0,
+    actor_param1: 0xFFFFFFFF,
+    actor_param2: 0xFFFFFFFF,
+    oarc_name:    [0u8; 32],
 };
 
 // Loftwing (dBird) pointer obtained each frame via the player vtable.
@@ -396,7 +430,8 @@ pub fn handle_infinite_ammo() {
         // Compute bomb capacity from pouch items
         let mut bomb_capacity = 9;
         if !FILE_MGR.is_null() {
-            let pouch = &(*FILE_MGR).FA.pouch_items;
+            // FileA is packed, so copy the pouch array with an unaligned read.
+            let pouch = read_unaligned(addr_of!((*FILE_MGR).FA.pouch_items));
             for &pouch_val in pouch.iter() {
                 let item_id = (pouch_val & 0xFF) as u8;
                 match item_id {
@@ -404,7 +439,7 @@ pub fn handle_infinite_ammo() {
                     0x86 => bomb_capacity += 5,  // SMALL_BOMB_BAG
                     0x87 => bomb_capacity += 10, // MEDIUM_BOMB_BAG
                     0x88 => bomb_capacity += 15, // LARGE_BOMB_BAG
-                    _ => {}
+                    _ => {},
                 }
             }
         }
@@ -623,5 +658,23 @@ pub fn handle_spawn_demise_request() {
         // Always clear first so the request is one-shot even if spawn fails.
         AP_CHEAT_FLAGS.spawn_demise_request = false;
         traps::spawn_demise_manual_current_stage();
+    }
+}
+
+pub fn handle_spawn_actor_request() {
+    unsafe {
+        if !AP_SPAWN_REQUEST.request {
+            return;
+        }
+
+        // Clear first so this is one-shot even if spawn fails.
+        AP_SPAWN_REQUEST.request = false;
+
+        let actorid = AP_SPAWN_REQUEST.actorid;
+        let actor_param1 = AP_SPAWN_REQUEST.actor_param1;
+        let actor_param2 = AP_SPAWN_REQUEST.actor_param2;
+        let oarc_ptr = AP_SPAWN_REQUEST.oarc_name.as_ptr() as *const c_char;
+
+        traps::spawn_actor_manual_current_stage(actorid, actor_param1, actor_param2, oarc_ptr);
     }
 }

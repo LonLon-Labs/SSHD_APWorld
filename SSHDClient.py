@@ -11,6 +11,7 @@ import json
 import logging
 import math
 import os
+import re
 import struct
 import sys
 import time
@@ -633,6 +634,7 @@ class EmulatorMemoryReader:
         "AP_CHECK_STATS":     bytes([0x43, 0x53, 0x00, 0x01]),  # "CS\x00\x01"
         "AP_ITEM_BUFFER":     bytes([0x41, 0x50, 0x00, 0x01]),  # "AP\x00\x01"
         "AP_CHEAT_FLAGS":     bytes([0x43, 0x46, 0x00, 0x01]),  # "CF\x00\x01"
+        "AP_SPAWN_REQUEST":   bytes([0x53, 0x41, 0x00, 0x01]),  # "SA\x00\x01"
     }
 
     # --- Connection health thresholds ---
@@ -1479,18 +1481,53 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
             asyncio.ensure_future(self.ctx.send_msgs([{"cmd": "ConnectUpdate", "tags": self.ctx.tags}]))
         logger.info(f"BreathLink is now {'ON' if enabled else 'OFF'}")
 
-    def _cmd_spawn_demise(self):
-        """Request a one-shot Demise spawn in the current stage.
+    def _cmd_spawn_actor(self, actor_id_or_name: str = "", param1_str: str = "", oarc_name: str = ""):
+        """Request a one-shot actor spawn in the current stage.
 
-        Usage: /spawn_demise
+        Usage: /spawn_actor <ACTORID name|id> [param1] [oarc]
+        Example: /spawn_actor B_LASTBOSS 0xFFFFFFC0 BLasBos
         """
         if not isinstance(self.ctx, SSHDContext):
             logger.warning("Not connected to SSHD context")
             return
-        if self.ctx.request_spawn_demise():
-            logger.info("Spawn request sent: Demise will be spawned in the current stage when runtime hooks are active.")
+
+        if not actor_id_or_name:
+            logger.info("Usage: /spawn_actor <ACTORID name|id> [param1] [oarc]")
+            logger.info("Example: /spawn_actor B_LASTBOSS 0xFFFFFFC0 BLasBos")
+            return
+
+        actor_id = self.ctx.resolve_actor_id(actor_id_or_name)
+        if actor_id is None:
+            logger.warning(f"Unknown ACTORID '{actor_id_or_name}'. Use a valid ACTORID enum name or numeric id.")
+            return
+
+        actor_param1 = 0xFFFFFFFF
+        if param1_str:
+            try:
+                actor_param1 = int(param1_str, 0) & 0xFFFFFFFF
+            except ValueError:
+                # If param1 is omitted, allow /spawn_actor <id> <oarc>.
+                if not oarc_name:
+                    oarc_name = param1_str
+                else:
+                    logger.warning(f"Invalid param1 '{param1_str}'. Use decimal or 0x-prefixed hex.")
+                    return
+
+        oarc = oarc_name.strip()
+        if not oarc and actor_id == self.ctx.resolve_actor_id("B_LASTBOSS"):
+            oarc = "BLasBos"
+
+        if self.ctx.request_spawn_actor(actor_id, actor_param1=actor_param1, actor_param2=0xFFFFFFFF, oarc_name=oarc):
+            oarc_text = f", OARC '{oarc}'" if oarc else ""
+            logger.info(
+                f"Spawn request sent: actor=0x{actor_id:04X}, param1=0x{actor_param1:08X}{oarc_text}."
+            )
         else:
-            logger.warning("Could not send spawn request. Ensure emulator is connected and AP_CHEAT_FLAGS is available.")
+            logger.warning("Could not send spawn request. Ensure emulator is connected and AP_SPAWN_REQUEST is available.")
+
+    def _cmd_spawn_demise(self):
+        """Compatibility alias for /spawn_actor B_LASTBOSS 0xFFFFFFC0 BLasBos."""
+        self._cmd_spawn_actor("B_LASTBOSS", "0xFFFFFFC0", "BLasBos")
 
 
 class SSHDContext(CommonContext):
@@ -1584,9 +1621,12 @@ class SSHDContext(CommonContext):
         self.last_death_link: float = 0.0   # For DeathLink echo prevention
         self.delivered_item_count: int = 0  # Items marked "Safe" (persisted in game save via AP DataStorage)
         self._unsafe_items_count: int = 0  # Items marked "Unsafe" (in game memory, waiting for autosave)
+        self._pending_unsafe_items: list = []  # Unsafe items delivered to memory but not yet autosaved
+        self._pending_unsafe_item_indexes: set[int] = set()  # Item indexes for unsafe deliveries
         self._datastorage_loaded: bool = False  # True once DataStorage delivery index is restored
         self._pending_received_items: list = []  # Buffer ReceivedItems until DataStorage loads
         self._skip_sword_sync: bool = False  # True while unsafe items are being re-delivered
+        self._recover_unsafe_items_on_reconnect: bool = False  # Set after a real game-process disconnect
         self.connection_time: float = 0.0   # When we connected (to avoid false death on startup)
         self.slot_options: Dict[str, Any] = {}  # Player options from slot data
         self.killed_by_deathlink: bool = False  # Flag to prevent sending death when killed by death link
@@ -1643,6 +1683,8 @@ class SSHDContext(CommonContext):
         self._ap_item_info_offset: Optional[int] = None  # Memory offset of AP_ITEM_INFO_TABLE
         self._ap_check_stats_offset: Optional[int] = None  # Memory offset of AP_CHECK_STATS
         self._ap_cheat_flags_offset: Optional[int] = None  # Memory offset of AP_CHEAT_FLAGS
+        self._ap_spawn_request_offset: Optional[int] = None  # Memory offset of AP_SPAWN_REQUEST
+        self._actor_id_map: Dict[str, int] = self._load_actorid_map()
         self._ap_item_info_written: bool = False  # Whether we've written the info table
         self._ap_item_info_last_refresh: float = 0.0  # Last time we refreshed the count field
         
@@ -1804,6 +1846,13 @@ class SSHDContext(CommonContext):
         seed = self.seed_name or "default"
         return f"sshd_{seed}_{self.auth}_delivery_index"
 
+    def _get_pending_unsafe_items_datastorage_key(self) -> str | None:
+        """Get the DataStorage key for persisting unsafe item deliveries."""
+        if not self.auth:
+            return None
+        seed = self.seed_name or "default"
+        return f"sshd_{seed}_{self.auth}_pending_unsafe_items"
+
     def _persist_delivery_index(self):
         """Persist delivered_item_count to AP DataStorage (fire-and-forget)."""
         ds_key = self._get_datastorage_key()
@@ -1815,6 +1864,35 @@ class SSHDContext(CommonContext):
             "default": 0,
             "want_reply": False,
             "operations": [{"operation": "replace", "value": self.delivered_item_count}]
+        }]))
+
+    def _persist_pending_unsafe_items(self):
+        """Persist the list of unsafe item deliveries to AP DataStorage."""
+        ds_key = self._get_pending_unsafe_items_datastorage_key()
+        if not ds_key:
+            return
+
+        payload = [dict(item_data) for item_data in self._pending_unsafe_items]
+        asyncio.create_task(self.send_msgs([{
+            "cmd": "Set",
+            "key": ds_key,
+            "default": [],
+            "want_reply": False,
+            "operations": [{"operation": "replace", "value": payload}]
+        }]))
+
+    def _clear_pending_unsafe_items_datastorage(self):
+        """Clear the AP DataStorage copy of unsafe item deliveries."""
+        ds_key = self._get_pending_unsafe_items_datastorage_key()
+        if not ds_key:
+            return
+
+        asyncio.create_task(self.send_msgs([{
+            "cmd": "Set",
+            "key": ds_key,
+            "default": [],
+            "want_reply": False,
+            "operations": [{"operation": "replace", "value": []}]
         }]))
 
     async def _datastorage_timeout_guard(self):
@@ -1843,6 +1921,10 @@ class SSHDContext(CommonContext):
 
         for i, network_item in enumerate(items_list):
             item_global_index = start_index + i
+
+            if item_global_index in self._pending_unsafe_item_indexes:
+                logger.debug(f"[ReceivedItems] Skipping unsafe recovery item at index {item_global_index}")
+                continue
 
             # Skip items already delivered in a previous session (safe items only; unsafe items must be re-delivered),
             # but still rebuild progressive counters so the next progressive item resolves to the correct tier.
@@ -2049,6 +2131,7 @@ class SSHDContext(CommonContext):
                 self._ap_item_info_offset = None
                 self._ap_check_stats_offset = None
                 self._ap_cheat_flags_offset = None
+                self._ap_spawn_request_offset = None
                 # Eagerly attempt to write the table right now if memory is
                 # already connected.  This reduces the window during which a
                 # player can check a location before the table is populated.
@@ -2145,7 +2228,8 @@ class SSHDContext(CommonContext):
             self._datastorage_loaded = False
             self._pending_received_items.clear()
             ds_key = self._get_datastorage_key()
-            asyncio.create_task(self.send_msgs([{"cmd": "Get", "keys": [ds_key]}]))
+            unsafe_key = self._get_pending_unsafe_items_datastorage_key()
+            asyncio.create_task(self.send_msgs([{"cmd": "Get", "keys": [ds_key, unsafe_key]}]))
             asyncio.create_task(self._datastorage_timeout_guard())
             logger.debug(f"[DataStorage] Requested delivery index key: {ds_key}")
 
@@ -2163,6 +2247,7 @@ class SSHDContext(CommonContext):
         elif cmd == "Retrieved":
             # DataStorage response - restore persisted delivery index
             ds_key = self._get_datastorage_key()
+            unsafe_key = self._get_pending_unsafe_items_datastorage_key()
             if ds_key and ds_key in args.get("keys", {}):
                 value = args["keys"][ds_key]
                 if value is not None:
@@ -2172,11 +2257,26 @@ class SSHDContext(CommonContext):
                         logger.info(f"[DataStorage] Restored delivery count: {self.delivered_item_count} for {self.auth}")
                 else:
                     logger.info("[DataStorage] No stored delivery count (first connect or new slot)")
+            if unsafe_key and unsafe_key in args.get("keys", {}):
+                stored_unsafe = args["keys"][unsafe_key] or []
+                self._pending_unsafe_items = [dict(item_data) for item_data in stored_unsafe]
+                self._pending_unsafe_item_indexes = {
+                    int(item_data.get("index", -1)) for item_data in self._pending_unsafe_items
+                    if item_data.get("index") is not None
+                }
+                self._unsafe_items_count = len(self._pending_unsafe_items)
+                if self._pending_unsafe_items:
+                    self._skip_sword_sync = True
+                    logger.info(f"[DataStorage] Restored {len(self._pending_unsafe_items)} unsafe item(s) for recovery")
+                    self.item_queue = [dict(item_data) for item_data in self._pending_unsafe_items] + self.item_queue
+                else:
+                    self._pending_unsafe_item_indexes.clear()
+                    self._skip_sword_sync = False
+
                 self._datastorage_loaded = True
                 # Check if there are items waiting to be re-delivered (not in safe items yet)
                 # These came from previous session but weren't autosaved before crash
                 # We'll re-deliver them now, but skip sword/beetle sync until they're all processed
-                self._skip_sword_sync = True
                 for pending_args in self._pending_received_items:
                     self._process_received_items(pending_args)
                 self._pending_received_items.clear()
@@ -2431,6 +2531,51 @@ class SSHDContext(CommonContext):
         """
         pass
 
+    def _queue_unsafe_item_for_recovery(self, item_data: dict):
+        """Remember an item that has been delivered in memory but is not yet safe."""
+        pending_item = dict(item_data)
+        self._pending_unsafe_items.append(pending_item)
+        item_index = pending_item.get("index")
+        if item_index is not None:
+            self._pending_unsafe_item_indexes.add(int(item_index))
+        self._unsafe_items_count = len(self._pending_unsafe_items)
+        self._persist_pending_unsafe_items()
+
+    def _commit_unsafe_items_on_autosave(self):
+        """Mark all pending unsafe items as safe after a scene-transition autosave."""
+        unsafe_count = len(self._pending_unsafe_items)
+        if unsafe_count == 0:
+            return
+
+        self.delivered_item_count += unsafe_count
+        self._persist_delivery_index()
+        logger.info(f"[AutoSave] Committed {unsafe_count} unsafe items to safe after scene transition")
+        self._pending_unsafe_items.clear()
+        self._pending_unsafe_item_indexes.clear()
+        self._unsafe_items_count = 0
+        self._skip_sword_sync = False  # Re-enable sword/beetle sync
+        self._clear_pending_unsafe_items_datastorage()
+
+    def _recover_unsafe_items_after_game_disconnect(self):
+        """Put unsaved item deliveries back into the queue after the game process disappears."""
+        if not self._pending_unsafe_items:
+            return
+
+        recovered_items = [dict(item_data) for item_data in self._pending_unsafe_items]
+        for item_data in recovered_items:
+            item_name = item_data.get("name")
+            if item_name in self.progressive_counts:
+                self.progressive_counts[item_name] = max(0, self.progressive_counts[item_name] - 1)
+
+        self.item_queue = recovered_items + self.item_queue
+        self._pending_unsafe_items.clear()
+        self._pending_unsafe_item_indexes.clear()
+        self._unsafe_items_count = 0
+        self._skip_sword_sync = False
+        logger.warning(
+            f"[Recovery] Restored {len(recovered_items)} unsafe items to the queue after game disconnect"
+        )
+
     async def emulator_connection_task(self):
         """Background task to maintain connection to the Switch emulator."""
         while not self.exit_event.is_set():
@@ -2442,16 +2587,23 @@ class SSHDContext(CommonContext):
                         if not await self.memory.find_base_address():
                             logger.error("Failed to find SSHD in memory. Is the game running?")
                             self.memory.connected = False
+                            self._recover_unsafe_items_on_reconnect = True
                         else:
                             # Set connection time to prevent false death detection on startup
                             self.connection_time = time.time()
                             logger.debug(f"Connection time set to {self.connection_time}")
+
+                            if self._recover_unsafe_items_on_reconnect:
+                                self._recover_unsafe_items_after_game_disconnect()
+                                self._recover_unsafe_items_on_reconnect = False
                             
                             # Eagerly try to write the AP item info table now
                             # that memory is connected. This minimises the window
                             # during which a player can check a location before
                             # the table has been written.
                             self._write_ap_item_info_table()
+                    elif self._pending_unsafe_items:
+                        self._recover_unsafe_items_on_reconnect = True
                     
                     # Wait before retrying
                     await asyncio.sleep(5)
@@ -2476,6 +2628,7 @@ class SSHDContext(CommonContext):
                     self._ap_item_info_offset = None
                     self._ap_check_stats_offset = None
                     self._ap_cheat_flags_offset = None
+                    self._ap_spawn_request_offset = None
                     self._ap_item_info_written = False
                     self.beetle_patch_applied = False
                     self.memory.invalidate_base()
@@ -2507,9 +2660,13 @@ class SSHDContext(CommonContext):
                             "Rescan failed — will retry in 10 s.  "
                             "Is the game still running?"
                         )
+                        self._recover_unsafe_items_on_reconnect = True
                         await asyncio.sleep(10)
                     else:
                         self.connection_time = time.time()
+                        if self._recover_unsafe_items_on_reconnect:
+                            self._recover_unsafe_items_after_game_disconnect()
+                            self._recover_unsafe_items_on_reconnect = False
                         self._write_ap_item_info_table()
                     continue
 
@@ -2518,6 +2675,7 @@ class SSHDContext(CommonContext):
             except Exception as e:
                 logger.error(f"Error in emulator connection task: {e}")
                 self.memory.connected = False
+                self._recover_unsafe_items_on_reconnect = True
                 await asyncio.sleep(5)
 
     # Keep old name as alias for backward compatibility
@@ -2639,12 +2797,7 @@ class SSHDContext(CommonContext):
                         logger.warning(f"[TEAR-DEBUG] No custom flag mappings found for silent realm locations in {stage_name}!")
 
                 # Game autosave happens on scene transition — unsafe items are now safe
-                if self._unsafe_items_count > 0:
-                    self.delivered_item_count += self._unsafe_items_count
-                    self._persist_delivery_index()
-                    logger.info(f"[AutoSave] Committed {self._unsafe_items_count} unsafe items to safe after scene transition")
-                    self._unsafe_items_count = 0
-                    self._skip_sword_sync = False  # Re-enable sword/beetle sync
+                self._commit_unsafe_items_on_autosave()
 
                 self.current_stage = stage_name
 
@@ -2842,6 +2995,7 @@ class SSHDContext(CommonContext):
                     # Mark as unsafe (will become safe after next scene transition/autosave)
                     self._unsafe_items_count += 1
                     if self.give_item_to_player(item_data["name"], item_data["id"]):
+                        self._queue_unsafe_item_for_recovery(item_data)
                         player_name = item_data.get("player_name", "another player")
                         location_name = item_data.get("location", "unknown location")
                         logger.info(f"Received {item_data['name']} ({location_name}) [awaiting autosave]")
@@ -2855,6 +3009,7 @@ class SSHDContext(CommonContext):
                     # Remote item — mark as unsafe (will become safe after next scene transition/autosave)
                     self._unsafe_items_count += 1
                     if self.give_item_to_player(item_data["name"], item_data["id"]):
+                        self._queue_unsafe_item_for_recovery(item_data)
                         # Successfully gave item
                         player_name = item_data.get("player_name", "another player")
                         location_name = item_data.get("location", "unknown location")
@@ -3624,7 +3779,7 @@ class SSHDContext(CommonContext):
           offset 5: hovercraft (u8 bool)
           offset 6: _pad [u8; 2]
           offset 8: hover_vel_y_bits (u32, f32 bits) — lower-clamp for vel_y
-          offset 22: spawn_demise_request (u8 bool, one-shot trigger)
+                Spawn requests now use AP_SPAWN_REQUEST (magic "SA\\x00\\x01").
         """
         if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
             return
@@ -3659,26 +3814,98 @@ class SSHDContext(CommonContext):
 
     def request_spawn_demise(self) -> bool:
         """Set a one-shot Rust flag to spawn Demise in the current stage."""
+        actor_id = self.resolve_actor_id("B_LASTBOSS")
+        if actor_id is None:
+            return False
+        return self.request_spawn_actor(
+            actor_id,
+            actor_param1=0xFFFFFFC0,
+            actor_param2=0xFFFFFFFF,
+            oarc_name="BLasBos",
+        )
+
+    def _load_actorid_map(self) -> Dict[str, int]:
+        """Load ACTORID enum names from the Rust actor.rs source if available."""
+        actor_map: Dict[str, int] = {}
+        actor_rs = Path(__file__).parent / "sshd-rando-backend" / "asm" / "additions" / "rust-additions" / "src" / "actor.rs"
+        if not actor_rs.exists():
+            return actor_map
+
+        try:
+            text = actor_rs.read_text(encoding="utf-8", errors="ignore")
+            match = re.search(r"pub enum ACTORID\s*\{(?P<body>.*?)\n\}", text, re.S)
+            if not match:
+                return actor_map
+
+            for name, value in re.findall(r"^\s*([A-Z0-9_]+)\s*=\s*(0x[0-9A-Fa-f]+|\d+)\s*,\s*$", match.group("body"), re.M):
+                actor_map[name.upper()] = int(value, 0)
+        except Exception as e:
+            logger.debug(f"Could not parse ACTORID enum: {e}")
+
+        return actor_map
+
+    def resolve_actor_id(self, actor_id_or_name: str) -> Optional[int]:
+        """Resolve ACTORID from enum name (e.g. B_LASTBOSS) or integer literal."""
+        if not actor_id_or_name:
+            return None
+
+        token = actor_id_or_name.strip()
+        if not token:
+            return None
+
+        try:
+            value = int(token, 0)
+            if 0 <= value <= 0xFFFF:
+                return value
+            return None
+        except ValueError:
+            pass
+
+        return self._actor_id_map.get(token.upper())
+
+    def request_spawn_actor(
+        self,
+        actor_id: int,
+        actor_param1: int = 0xFFFFFFFF,
+        actor_param2: int = 0xFFFFFFFF,
+        oarc_name: str = "",
+    ) -> bool:
+        """Set a one-shot Rust request to spawn an actor in the current stage."""
         if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
             return False
 
-        if self._ap_cheat_flags_offset is None:
-            self._ap_cheat_flags_offset = self._scan_for_buffer(
-                bytes([0x43, 0x46, 0x00, 0x01]), "AP_CHEAT_FLAGS"
+        if self._ap_spawn_request_offset is None:
+            self._ap_spawn_request_offset = self._scan_for_buffer(
+                bytes([0x53, 0x41, 0x00, 0x01]), "AP_SPAWN_REQUEST"
             )
 
-        if self._ap_cheat_flags_offset is None:
+        if self._ap_spawn_request_offset is None:
             return False
 
         try:
-            flags_addr = self.memory.base_address + self._ap_cheat_flags_offset
-            self.memory.pm.write_bytes(flags_addr + 22, bytes([1]), 1)
+            request_addr = self.memory.base_address + self._ap_spawn_request_offset
+
+            oarc_clean = (oarc_name or "").strip()
+            oarc_bytes = oarc_clean.encode("ascii", errors="ignore")[:31]
+            oarc_bytes = (oarc_bytes + b"\x00").ljust(32, b"\x00")
+
+            payload = struct.pack(
+                "<BBHII32s",
+                1,
+                0,
+                actor_id & 0xFFFF,
+                actor_param1 & 0xFFFFFFFF,
+                actor_param2 & 0xFFFFFFFF,
+                oarc_bytes,
+            )
+            # Skip magic bytes (+0..+3), write payload at +4.
+            self.memory.pm.write_bytes(request_addr + 4, payload, len(payload))
             return True
         except Exception as e:
-            logger.debug(f"Could not request Demise spawn: {e}")
+            logger.debug(f"Could not request actor spawn: {e}")
             err_str = str(e)
             if "998" in err_str or "noaccess" in err_str.lower() or "access" in err_str.lower():
-                self._ap_cheat_flags_offset = None
+                self._ap_spawn_request_offset = None
             return False
 
     def _update_ap_check_stats(self):
