@@ -39,6 +39,8 @@ class GameOffsets:
     ROOM_MGR = 0x2bfdd90
     STAGE_MGR = 0x2bfdda8
     CURRENT_STAGE_NAME = 0x2bf98d8
+    NEXT_STAGE_NAME = 0x2bf9904
+    TITLE_STAGE = b"F000"
     
     # Player
     PLAYER = 0x623E680  # Direct offset to player structure
@@ -47,9 +49,9 @@ class GameOffsets:
     
     # Archipelago integration
     # Buffer is allocated as a Rust static variable in item.rs
-    # Structure: 16 slots × 4 bytes each = 64 bytes total
+    # Structure: 1024 slots × 4 bytes each = 4096 bytes total
     # Each slot: [item_id (u8), flags (u8), reserved (u16)]
-    ARCHIPELAGO_BUFFER_SIZE = 16  # Number of slots
+    ARCHIPELAGO_BUFFER_SIZE = 1024  # Number of slots
     ARCHIPELAGO_BUFFER_SLOT_SIZE = 4  # Bytes per slot
 
     # Save-file item flag addresses for direct flag writing fallback.
@@ -203,7 +205,7 @@ class GameItemSystem:
         Returns (total_score, detail_dict) where higher score = more likely real.
 
         Scoring criteria:
-          +1 per zero byte in slots 1-15 (max 60) — real buffer is all-zero
+          +1 per zero byte in data slots (max 4092) — real buffer is all-zero
           +100 if write-read-back test passes (writable memory)
           +50  if within 4 MB of any AP_CHECK_STATS address (same module)
           -200 if fewer than 40 of 60 data bytes are zero (very unlikely real)
@@ -211,19 +213,20 @@ class GameItemSystem:
         details = {"zero_count": 0, "writable": False, "near_stats": False}
         score = 0
 
-        # Read full 64 bytes (16 slots × 4 bytes)
+        # Read the full buffer so scoring sees every slot.
         try:
-            data = self.memory.read_bytes(offset, 64)
-            if not data or len(data) < 64:
+            buffer_size = GameOffsets.ARCHIPELAGO_BUFFER_SIZE * GameOffsets.ARCHIPELAGO_BUFFER_SLOT_SIZE
+            data = self.memory.read_bytes(offset, buffer_size)
+            if not data or len(data) < buffer_size:
                 return (-1000, details)
             if data[:4] != magic_signature:
                 return (-1000, details)
         except Exception:
             return (-1000, details)
 
-        # Count zero bytes in slots 1-15 (bytes 4-63).
-        # The real buffer should have 60/60 zeros when no items are pending.
-        zero_count = sum(1 for b in data[4:64] if b == 0)
+        # Count zero bytes in the data slots (bytes 4+).
+        # The real buffer should be all zeros when no items are pending.
+        zero_count = sum(1 for b in data[4:] if b == 0)
         details["zero_count"] = zero_count
         score += zero_count
         if zero_count < 40:
@@ -263,7 +266,7 @@ class GameItemSystem:
         
         **Buffer scoring (v2):** Instead of blindly picking the first candidate,
         each candidate is scored by:
-          - Zero-byte count in slots 1-15 (real buffer = 60/60 zeros on init)
+          - Zero-byte count in data slots (real buffer = all zeros on init)
           - Writability (write + read-back test)
           - Proximity to AP_CHECK_STATS (same subsdk8 module)
         The highest-scoring candidate is selected.
@@ -372,9 +375,9 @@ class GameItemSystem:
                         idx = chunk.find(magic_signature)
                         if idx != -1:
                             buffer_offset = offset + idx
-                            # Verify it's actually the buffer by checking size
-                            test_data = self.memory.read_bytes(buffer_offset, 64)
-                            if test_data and len(test_data) == 64 and test_data[0:4] == magic_signature:
+                            # Verify it's actually the buffer by checking the signature
+                            test_data = self.memory.read_bytes(buffer_offset, 4)
+                            if test_data and len(test_data) == 4 and test_data[0:4] == magic_signature:
                                 logger.debug(f"Found Archipelago buffer at offset 0x{buffer_offset:x}")
                                 return buffer_offset
                 except Exception:
@@ -454,6 +457,17 @@ class GameItemSystem:
                 # a single check and return False immediately if busy.
                 # The caller's item queue will retry on the next tick.
                 if not self._is_player_ready():
+                    return False
+
+                if self._scene_transition_active():
+                    logger.debug("Scene transition active — skipping item delivery")
+                    return False
+
+                # Re-check immediately before writing; the scene can start
+                # transitioning in the gap between the readiness test and
+                # the actual memory write.
+                if self._scene_transition_active():
+                    logger.debug("Scene transition became active before buffer write — retrying later")
                     return False
                 
                 # Player is ready — proceed with buffer write
@@ -568,7 +582,7 @@ class GameItemSystem:
     def _find_empty_buffer_slot(self) -> Optional[int]:
         """Find first empty slot in item buffer."""
         # Slot 0 is RESERVED for magic signature "AP\x00\x01" - game ignores it
-        # Only use slots 1-15 for actual items
+        # Only use slots 1-(N-1) for actual items
         for slot in range(1, GameOffsets.ARCHIPELAGO_BUFFER_SIZE):
             buffer_offset = self.buffer_addr + (slot * GameOffsets.ARCHIPELAGO_BUFFER_SLOT_SIZE)
             item_id = self.memory.read_byte(buffer_offset)
@@ -626,6 +640,11 @@ class GameItemSystem:
 
             if item_id == 0:
                 if ever_saw_item:
+                    if self._scene_transition_active():
+                        logger.warning(
+                            f"Item {expected_item_id} cleared during a scene transition; will retry instead of confirming delivery"
+                        )
+                        return False
                     # Normal path: we saw our item, now it's cleared → success
                     logger.info(f"Item processed after {frame} frames")
                     return True
@@ -639,6 +658,11 @@ class GameItemSystem:
                         action_offset = GameOffsets.PLAYER + GameOffsets.PLAYER_CURRENT_ACTION
                         current_action = self.memory.read_int(action_offset)
                         if current_action == 0x78:  # ITEM_GET
+                            if self._scene_transition_active():
+                                logger.warning(
+                                    f"Item {expected_item_id} entered ITEM_GET during a scene transition; waiting instead of confirming"
+                                )
+                                continue
                             logger.info(
                                 f"Item processed after {frame} frames (player in ITEM_GET)"
                             )
@@ -700,6 +724,21 @@ class GameItemSystem:
             return magic == bytes([0x41, 0x50, 0x00, 0x01])
         except Exception:
             return False
+
+    def _scene_transition_active(self) -> bool:
+        """Return True when the game is in or entering a scene transition."""
+        try:
+            stage = self.memory.read_bytes(GameOffsets.CURRENT_STAGE_NAME, 8)
+            if not stage:
+                return True
+
+            next_stage = self.memory.read_bytes(GameOffsets.NEXT_STAGE_NAME, 8)
+            if next_stage and next_stage != stage:
+                return True
+
+            return time.time() < self._scene_transition_cooldown_until
+        except Exception:
+            return True
     
     def _is_player_ready(self) -> bool:
         """Check if player is in valid state to receive items.
@@ -731,6 +770,9 @@ class GameItemSystem:
                 GameOffsets.CURRENT_STAGE_NAME, 8
             )
             if stage_bytes is not None:
+                if stage_bytes[:4] == GameOffsets.TITLE_STAGE:
+                    logger.debug("Player not ready: title stage active")
+                    return False
                 if self._last_known_stage is None:
                     self._last_known_stage = stage_bytes
                 elif stage_bytes != self._last_known_stage:
@@ -754,6 +796,10 @@ class GameItemSystem:
                 return False
         except Exception as e:
             logger.debug(f"Could not read stage name: {e}")
+
+        if self._scene_transition_active():
+            logger.debug("Player not ready: scene transition active or imminent")
+            return False
         
         # ---- Player action busy-state check --------------------------------
         # Read the player's current action and reject if it's one of the

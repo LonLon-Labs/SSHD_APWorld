@@ -2058,11 +2058,11 @@ pub extern "C" fn setup_gossip_stone_item_params(
 }
 
 // Archipelago item receiving system
-// Buffer structure: 16 slots, 4 bytes each
+// Buffer structure: 1024 slots, 4 bytes each
 // Byte 0: Item ID (0 = empty slot)
 // Byte 1: Flags (0x01 = show animation, 0x02 = play jingle)
 // Bytes 2-3: Reserved
-const ARCHIPELAGO_BUFFER_SIZE: usize = 16;
+const ARCHIPELAGO_BUFFER_SIZE: usize = 1024;
 
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
@@ -2073,6 +2073,25 @@ pub struct ArchipelagoItemSlot {
 }
 assert_eq_size!([u8; 4], ArchipelagoItemSlot);
 
+const fn build_archipelago_item_buffer() -> [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] {
+    let mut buffer = [
+        ArchipelagoItemSlot {
+            item_id:   0,
+            flags:     0,
+            _reserved: [0, 0],
+        };
+        ARCHIPELAGO_BUFFER_SIZE
+    ];
+
+    buffer[0] = ArchipelagoItemSlot {
+        item_id:   0x41,
+        flags:     0x50,
+        _reserved: [0x00, 0x01],
+    };
+
+    buffer
+}
+
 // Static buffer for Archipelago item queue
 // This will be written to by the Python client and read by the game
 // Magic signature at the start: "AP" in ASCII (0x4150), followed by version
@@ -2080,90 +2099,8 @@ assert_eq_size!([u8; 4], ArchipelagoItemSlot);
 // signature Format: [magic_high, magic_low, version_high, version_low,
 // ...actual slots...]
 #[no_mangle]
-pub static mut ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] = [
-    // First slot contains magic signature: "AP\x00\x01"
-    ArchipelagoItemSlot {
-        item_id:   0x41,         // 'A'
-        flags:     0x50,         // 'P'
-        _reserved: [0x00, 0x01], // Version
-    },
-    // Remaining slots for actual items (15 slots)
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-    ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
-    },
-];
+pub static mut ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] =
+    build_archipelago_item_buffer();
 
 #[inline(always)]
 fn should_force_itemflag_for_buffer_item(item_id: u32) -> bool {
@@ -2310,6 +2247,16 @@ const MAX_RETRY_FRAMES: u32 = 300;
 
 static mut AP_LAST_STAGE: [u8; 8] = [0u8; 8];
 static mut AP_STAGE_COOLDOWN: u32 = 0;
+static mut AP_RECEIVED_ITEMS_THIS_BATCH: u32 = 0;
+
+const AP_RECEIVE_BATCH_LIMIT: u32 = 50;
+
+#[no_mangle]
+pub extern "C" fn reset_ap_item_receive_batch() {
+    unsafe {
+        AP_RECEIVED_ITEMS_THIS_BATCH = 0;
+    }
+}
 
 /// Per-slot retry counters — one for each buffer slot (excluding slot 0
 /// which holds the magic signature).
@@ -2325,6 +2272,7 @@ fn ap_stage_cooldown_active() -> bool {
         if cur != AP_LAST_STAGE {
             AP_LAST_STAGE = cur;
             AP_STAGE_COOLDOWN = STAGE_COOLDOWN_FRAMES;
+            AP_RECEIVED_ITEMS_THIS_BATCH = 0;
         }
         if AP_STAGE_COOLDOWN > 0 {
             AP_STAGE_COOLDOWN -= 1;
@@ -2339,6 +2287,16 @@ pub extern "C" fn archipelago_check_item_buffer() {
     unsafe {
         // Wait for the stage to finish loading before we attempt any spawns.
         if ap_stage_cooldown_active() {
+            return;
+        }
+
+        if &CURRENT_STAGE_NAME[..4] == b"F000" {
+            return;
+        }
+
+        // Pause after 50 successful deliveries until a reload or stage
+        // transition resets the batch counter.
+        if AP_RECEIVED_ITEMS_THIS_BATCH >= AP_RECEIVE_BATCH_LIMIT {
             return;
         }
 
@@ -2460,6 +2418,7 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).flags), 0u8);
                 (*slot_ptr)._reserved = [0, 0];
                 AP_SLOT_RETRIES[i] = 0;
+                AP_RECEIVED_ITEMS_THIS_BATCH += 1;
             } else {
                 // Spawn returned null — increment retry counter.
                 // If we've retried too many times, give up and clear the

@@ -2285,6 +2285,14 @@ class SSHDContext(CommonContext):
         if not self.memory.connected or not self.memory.base_address:
             logger.debug(f"Cannot give item: not connected to game")
             return False
+
+        try:
+            stage_name = self.memory.read_string(OFFSET_CURRENT_STAGE + OFFSET_STAGE_NAME, 8)
+            if stage_name == "F000":
+                logger.debug("Cannot give item: title stage active")
+                return False
+        except Exception:
+            return False
         
         logger.debug(f"[give_item_to_player] Received item_name='{item_name}', item_id={item_id}")
         
@@ -2552,6 +2560,13 @@ class SSHDContext(CommonContext):
             stage_name = self.memory.read_string(OFFSET_CURRENT_STAGE + OFFSET_STAGE_NAME, 16)
             if not stage_name or len(stage_name) == 0:
                 # Game not loaded yet (title screen, loading, etc.)
+                return
+
+            if stage_name == "F000":
+                # Title stage: do not process item delivery, flag checks, or writes.
+                self.current_stage = stage_name
+                self.last_hearts = None
+                self.last_stamina = None
                 return
 
             # Save-file-alive guard: when the player saves & quits at a

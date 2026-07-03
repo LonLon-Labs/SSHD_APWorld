@@ -5,6 +5,7 @@
 use crate::actor;
 use crate::debug;
 use crate::flag;
+use crate::item;
 use crate::math;
 use crate::player;
 use crate::savefile;
@@ -269,6 +270,8 @@ pub fn reload_current_stage() {
         if GAME_RELOADER_PTR.is_null() || FILE_MGR.is_null() {
             return;
         }
+
+        item::reset_ap_item_receive_batch();
 
         if &CURRENT_STAGE_NAME[..5] == b"F000\0" {
             // Stage names are stored as 8 bytes in globals, while the vanilla
