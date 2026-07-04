@@ -1529,6 +1529,35 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         """Compatibility alias for /spawn_actor B_LASTBOSS 0xFFFFFFC0 BLasBos."""
         self._cmd_spawn_actor("B_LASTBOSS", "0xFFFFFFC0", "BLasBos")
 
+    def _cmd_go_mode(self):
+        """Show seed-specific completion item requirements and whether you currently have them."""
+        if not isinstance(self.ctx, SSHDContext):
+            logger.warning("Not connected to SSHD context")
+            return
+
+        requirements, notes = self.ctx.get_go_mode_requirements()
+        if not requirements:
+            logger.info("Go Mode: no item requirements could be determined yet (connect to a slot first).")
+            return
+
+        try:
+            from colorama import Fore, Style
+
+            def paint(text: str, met: bool) -> str:
+                color = Fore.GREEN if met else Fore.RED
+                return f"{color}{text}{Style.RESET_ALL}"
+        except Exception:
+            def paint(text: str, met: bool) -> str:
+                return text
+
+        logger.info("=== Go Mode Requirements ===")
+        for req in requirements:
+            label = paint(req["label"], req["met"])
+            logger.info(f"  {label}: {req['have']}/{req['need']}")
+
+        for note in notes:
+            logger.info(f"[Go Mode] {note}")
+
 
 class SSHDContext(CommonContext):
     """
@@ -1824,6 +1853,168 @@ class SSHDContext(CommonContext):
             logger.info(f"Cheats loaded from YAML: {', '.join(active)}")
         else:
             logger.info("No cheats enabled in YAML.")
+
+    def _slot_option_enabled(self, option_name: str, default: bool = False) -> bool:
+        """Read an option_* value from slot_data and normalize it to bool."""
+        if not isinstance(self.slot_data, dict):
+            return default
+        raw = self.slot_data.get(f"option_{option_name}", default)
+        if isinstance(raw, bool):
+            return raw
+        if isinstance(raw, (int, float)):
+            return int(raw) != 0
+        return str(raw).strip().lower() in {"1", "true", "on", "yes"}
+
+    def _resolve_item_name(self, item_id: int) -> str:
+        """Resolve an Archipelago item code into a display name for this slot."""
+        if hasattr(self, "item_names") and self.item_names and self.slot:
+            try:
+                return self.item_names.lookup_in_slot(item_id, self.slot)
+            except Exception:
+                pass
+
+        for item_name, item_data in ITEM_TABLE.items():
+            if getattr(item_data, "code", None) == item_id:
+                return item_name
+        return str(item_id)
+
+    def get_owned_item_counts(self) -> Dict[str, int]:
+        """Return current owned item counts from network receives and checked local locations."""
+        owned: Dict[str, int] = {}
+        seen_source_keys: set[tuple[int, int, int]] = set()
+
+        def _add_item(item_id: int, source_location: int, source_player: int) -> None:
+            if not isinstance(item_id, int):
+                return
+            source_key = (source_location, source_player, item_id)
+            if source_key in seen_source_keys:
+                return
+            seen_source_keys.add(source_key)
+            item_name = self._resolve_item_name(item_id)
+            owned[item_name] = owned.get(item_name, 0) + 1
+
+        # Items explicitly received from AP (remote items + start inventory).
+        for network_item in (self.items_received or []):
+            if isinstance(network_item, dict):
+                item_id = network_item.get("item")
+                location_id = int(network_item.get("location", -1))
+                source_player = int(network_item.get("player", 0))
+            else:
+                item_id = getattr(network_item, "item", None)
+                location_id = int(getattr(network_item, "location", -1))
+                source_player = int(getattr(network_item, "player", 0))
+
+            if isinstance(item_id, int):
+                _add_item(item_id, location_id, source_player)
+
+        # Locally checked locations that contain items for this player.
+        for location_code in self.checked_locations:
+            item_info = self.location_to_item_map.get(location_code)
+            if not isinstance(item_info, dict):
+                continue
+
+            recipient_player = item_info.get("player")
+            if recipient_player != self.slot:
+                continue
+
+            item_id = item_info.get("item_id")
+            if isinstance(item_id, int):
+                _add_item(item_id, int(location_code), int(self.slot or 0))
+
+        return owned
+
+    def get_go_mode_requirements(self) -> tuple[list[dict[str, Any]], list[str]]:
+        """Build seed-specific game-completion item requirements from slot options."""
+        requirements: list[dict[str, Any]] = []
+        notes: list[str] = []
+
+        if not isinstance(self.slot_data, dict) or not self.slot_data:
+            return requirements, notes
+
+        owned = self.get_owned_item_counts()
+
+        def add_requirement(label: str, have: int, need: int) -> None:
+            requirements.append({
+                "label": label,
+                "have": have,
+                "need": need,
+                "met": have >= need,
+            })
+
+        # Gate of Time sword requirement (mirrors logic_converter victory rule).
+        sword_level_map = {
+            0: 2,  # goddess_sword
+            1: 3,  # goddess_longsword
+            2: 4,  # goddess_white_sword
+            3: 5,  # master_sword
+            4: 6,  # true_master_sword
+        }
+        sword_req = int(self.slot_data.get("option_gate_of_time_sword_requirement", 4))
+        sword_needed = sword_level_map.get(sword_req, 6)
+        add_requirement("Progressive Sword", owned.get("Progressive Sword", 0), sword_needed)
+
+        # Main-quest song chain used by logic to open Gate of Time and
+        # complete the Song of the Hero requirement path.
+        add_requirement("Goddess's Harp", owned.get("Goddess's Harp", 0), 1)
+        add_requirement("Ballad of the Goddess", owned.get("Ballad of the Goddess", 0), 1)
+        song_part_names = [
+            "Song of the Hero Part",
+            "Eldin Song of the Hero Part",
+            "Lanayru Song of the Hero Part",
+            "Song of the Hero",
+        ]
+        song_parts_have = sum(owned.get(item_name, 0) for item_name in song_part_names)
+        add_requirement("Song of the Hero Parts", song_parts_have, 4)
+
+        # Optional dungeon requirement (any N boss keys), if boss keys exist.
+        boss_key_shuffle = int(self.slot_data.get("option_boss_key_shuffle", 1))
+        if self._slot_option_enabled("dungeon_goal_requirement") and boss_key_shuffle != 6:
+            try:
+                required_dungeons = int(self.slot_data.get("option_required_dungeon_count", 2))
+            except (TypeError, ValueError):
+                required_dungeons = 2
+
+            boss_keys = [
+                "Skyview Temple Boss Key",
+                "Earth Temple Boss Key",
+                "Lanayru Mining Facility Boss Key",
+                "Ancient Cistern Boss Key",
+                "Sandship Boss Key",
+                "Fire Sanctuary Boss Key",
+            ]
+            boss_keys_needed = max(0, min(required_dungeons, len(boss_keys)))
+            boss_keys_have = sum(owned.get(item_name, 0) for item_name in boss_keys)
+            add_requirement(f"Any Boss Keys ({', '.join(boss_keys)})", boss_keys_have, boss_keys_needed)
+
+        # Optional Triforce requirement.
+        if self._slot_option_enabled("require_triforce_pieces"):
+            try:
+                triforce_needed = int(self.slot_data.get("option_required_triforce_pieces", 3))
+            except (TypeError, ValueError):
+                triforce_needed = 3
+
+            triforce_items = ["Triforce of Courage", "Triforce of Power", "Triforce of Wisdom"]
+            triforce_needed = max(0, min(triforce_needed, len(triforce_items)))
+            triforce_have = sum(owned.get(item_name, 0) for item_name in triforce_items)
+            add_requirement(f"Any Triforce Pieces ({', '.join(triforce_items)})", triforce_have, triforce_needed)
+
+        # Optional Greg / Tim requirements.
+        if self._slot_option_enabled("require_greg"):
+            add_requirement("Greg The Green Rupee", owned.get("Greg The Green Rupee", 0), 1)
+        if self._slot_option_enabled("require_tim"):
+            add_requirement("Tim The Tumbleweed", owned.get("Tim The Tumbleweed", 0), 1)
+
+        # Optional all progression requirement. We cannot derive the full target
+        # set client-side from slot_data alone, so call this out explicitly.
+        if self._slot_option_enabled("require_all_progression_items"):
+            notes.append(
+                "Require All Progression Items is enabled: every progression item in your seed is required."
+            )
+            notes.append(
+                "This command currently reports the explicit victory-rule requirements above."
+            )
+
+        return requirements, notes
 
     async def server_auth(self, password_requested: bool = False):
         """Authenticate with the Archipelago server."""
