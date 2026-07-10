@@ -58,6 +58,7 @@ args = get_program_args()
 # Names are bare OARC names (no .arc extension), matching BZS ARCN format.
 # Only includes OARCs NOT already in ObjectPack (those are globally available).
 AP_ITEM_OARC_NAMES: frozenset[str] = frozenset({
+    "Demo11_01",
     "GetSwordA", "GetHarp",
     "GetBowA", "GetBowB", "GetBowC",
     "GetHookShot", "GetBirdStatue",
@@ -1139,23 +1140,13 @@ class StagePatchHandler:
                 room_bzs_bytes = room_bzs_path.read_bytes()
                 room_bzs = parse_bzs(room_bzs_bytes)
 
-                # Only inject AP item OARCs when the room has randomized
-                # checks (item locations) AND the stage is not in the
-                # ending-cutscene exclusion list.
+                # Inject AP item OARCs into every room's layer 0 for every
+                # stage except explicitly excluded stages (e.g. F402).
                 #
-                # Rooms with only structural object patches do NOT need
-                # the full ~80 AP OARCs and adding them can overwhelm the
-                # game's resource loader — causing a PANIC on SSystem::mDvd
-                # (observed in F404 during the B400→F404 Demise transition
-                # and in F402 during the F404→F402 ending cutscene).
-                #
-                # Stages in _SKIP_AP_OARC_STAGES (currently F402) still
-                # receive per-item OARCs via add_arcn_for_check, so their
-                # randomised check pickups display the correct model.
-                # Only blanket network-item OARCs are skipped; those items
-                # fall back to GetRupee via the OARC-lookup-failure path.
-                if (check_patches_for_current_room
-                        and stage_name not in _SKIP_AP_OARC_STAGES):
+                # This guarantees Archipelago network items always have their
+                # models available regardless of whether the room has local
+                # randomized check patches.
+                if stage_name not in _SKIP_AP_OARC_STAGES:
                     l0 = room_bzs["LAY "]["l0"]
                     l0_arcn = set(l0.get("ARCN", []))
                     l0_arcn |= AP_ITEM_OARC_NAMES

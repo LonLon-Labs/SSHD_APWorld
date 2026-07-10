@@ -485,6 +485,18 @@ def _stage_to_region(stage: str) -> Optional[str]:
         return "lanayru"
     return None
 
+
+def _is_valid_stage_code(stage: Optional[str]) -> bool:
+    """Return True if *stage* looks like a real SSHD stage code."""
+    if not stage:
+        return False
+    return stage in STAGE_NAMES
+
+
+def _is_title_stage(stage_name: Optional[str], stage_layer: Optional[int]) -> bool:
+    """Title screen is F000 only on layer 26; other F000 layers are Skyloft."""
+    return stage_name == "F000" and stage_layer == 26
+
 # Scene name to scene flag base address mapping (base-relative offsets for SSHD)
 # Stage name mapping (internal codes to friendly names)
 STAGE_NAMES = {
@@ -1666,8 +1678,9 @@ class SSHDContext(CommonContext):
         # writes during the transition can corrupt game objects and cause
         # null-pointer crashes (e.g. Groosenator → Flooded Faron).
         self._scene_transition_cooldown_until: float = 0.0
-        self._SCENE_TRANSITION_COOLDOWN_SECS: float = 10.0
+        self._SCENE_TRANSITION_COOLDOWN_SECS: float = 3.0
         self._last_next_stage: Optional[str] = None  # For early transition detection via NEXT_STAGE
+        self._last_next_stage_change_at: float = 0.0
         
         # BreathLink state tracking
         self.last_breath_link: float = 0.0      # For BreathLink echo prevention
@@ -1741,6 +1754,21 @@ class SSHDContext(CommonContext):
 
         # Load cheats from player YAML immediately so they work before server connect
         self._load_cheats_from_yaml()
+
+    def _log_item_queue_stall(self, reason: str) -> None:
+        """Throttled warning when queued items cannot be processed."""
+        if not self.item_queue:
+            return
+        now = time.time()
+        last_log = getattr(self, "_last_item_queue_stall_log", 0.0)
+        if now - last_log < 2.0:
+            return
+        self._last_item_queue_stall_log = now
+        head = self.item_queue[0] if self.item_queue else {}
+        logger.debug(
+            f"[ItemDelivery] Queue stalled ({reason}); len={len(self.item_queue)}, "
+            f"head={head.get('name')}#{head.get('id')}"
+        )
 
     def _load_cheats_from_yaml(self):
         """
@@ -2448,6 +2476,7 @@ class SSHDContext(CommonContext):
                         logger.info(f"[DataStorage] Restored delivery count: {self.delivered_item_count} for {self.auth}")
                 else:
                     logger.info("[DataStorage] No stored delivery count (first connect or new slot)")
+
             if unsafe_key and unsafe_key in args.get("keys", {}):
                 stored_unsafe = args["keys"][unsafe_key] or []
                 self._pending_unsafe_items = [dict(item_data) for item_data in stored_unsafe]
@@ -2464,13 +2493,13 @@ class SSHDContext(CommonContext):
                     self._pending_unsafe_item_indexes.clear()
                     self._skip_sword_sync = False
 
-                self._datastorage_loaded = True
-                # Check if there are items waiting to be re-delivered (not in safe items yet)
-                # These came from previous session but weren't autosaved before crash
-                # We'll re-deliver them now, but skip sword/beetle sync until they're all processed
-                for pending_args in self._pending_received_items:
-                    self._process_received_items(pending_args)
-                self._pending_received_items.clear()
+            self._datastorage_loaded = True
+            # Check if there are items waiting to be re-delivered (not in safe items yet)
+            # These came from previous session but weren't autosaved before crash
+            # We'll re-deliver them now, but skip sword/beetle sync until they're all processed
+            for pending_args in self._pending_received_items:
+                self._process_received_items(pending_args)
+            self._pending_received_items.clear()
 
         elif cmd == "LocationInfo":
             # Information about locations - used for hints
@@ -2531,12 +2560,12 @@ class SSHDContext(CommonContext):
             try:
                 receiving_player = args.get("receiving", 0)
                 item = args.get("item", {})
+                item_id = item.item if hasattr(item, 'item') else item.get("item", 0)
+                location_id = item.location if hasattr(item, 'location') else item.get("location", 0)
+                finding_player = item.player if hasattr(item, 'player') else item.get("player", 0)
                 
                 # Only show if this concerns our player (our items or items we're receiving)
                 if self.slot_concerns_self(receiving_player):
-                    item_id = item.item if hasattr(item, 'item') else item.get("item", 0)
-                    location_id = item.location if hasattr(item, 'location') else item.get("location", 0)
-                    finding_player = item.player if hasattr(item, 'player') else item.get("player", 0)
                     item_flags = item.flags if hasattr(item, 'flags') else item.get("flags", 0)
                     
                     # Get player name (the one who found the item)
@@ -2545,7 +2574,7 @@ class SSHDContext(CommonContext):
                     # Get item and location names
                     item_name = self.item_names.lookup_in_slot(item_id, receiving_player)
                     location_name = self.location_names.lookup_in_slot(location_id, finding_player)
-                    
+
                     # Determine item color based on flags
                     if item_flags & 0b001:  # advancement
                         color = "magenta"
@@ -2579,7 +2608,8 @@ class SSHDContext(CommonContext):
 
         try:
             stage_name = self.memory.read_string(OFFSET_CURRENT_STAGE + OFFSET_STAGE_NAME, 8)
-            if stage_name == "F000":
+            stage_layer = self.memory.read_byte(OFFSET_CURRENT_STAGE + OFFSET_STAGE_LAYER)
+            if _is_title_stage(stage_name, stage_layer):
                 logger.debug("Cannot give item: title stage active")
                 return False
         except Exception:
@@ -2701,7 +2731,13 @@ class SSHDContext(CommonContext):
                                 sf_list = self._PROGRESSIVE_STORY_FLAGS.get(item_name, [])
                                 logger.debug(f"[StoryFlags] Set story flags for {item_name} #{next_count}: {sf_list[:next_count]}")
 
-                    logger.debug(f"Gave {actual_item_name} via item buffer (game will handle animation)")
+                    delivery_mode = getattr(self.game_item_system, "last_delivery_mode", "unknown")
+                    if delivery_mode == "buffer":
+                        logger.debug(f"Gave {actual_item_name} via item buffer (game will handle animation)")
+                    elif delivery_mode == "direct_flag":
+                        logger.debug(f"Gave {actual_item_name} via direct flag fallback")
+                    else:
+                        logger.debug(f"Gave {actual_item_name} via item system ({delivery_mode})")
                 else:
                     logger.debug(f"Failed to give {actual_item_name} via item system (player may be busy)")
                 return success
@@ -2895,6 +2931,7 @@ class SSHDContext(CommonContext):
         This is called frequently to monitor game progress.
         """
         if not self.memory.connected or not self.memory.base_address:
+            self._log_item_queue_stall("memory disconnected or base missing")
             return
         
         # After goal completion (Demise defeated), stop ALL game memory
@@ -2902,20 +2939,24 @@ class SSHDContext(CommonContext):
         # gameplay structures; any read/write to player, flag, or room
         # offsets risks hitting freed memory and crashing the game.
         if self.goal_completed:
+            self._log_item_queue_stall("goal completed write-suppression")
             return
         
         try:
             # Verify game is loaded by reading stage name
-            stage_name = self.memory.read_string(OFFSET_CURRENT_STAGE + OFFSET_STAGE_NAME, 16)
+            stage_name = self.memory.read_string(OFFSET_CURRENT_STAGE + OFFSET_STAGE_NAME, 8)
             if not stage_name or len(stage_name) == 0:
                 # Game not loaded yet (title screen, loading, etc.)
+                self._log_item_queue_stall("stage name unreadable")
                 return
 
-            if stage_name == "F000":
+            stage_layer = self.memory.read_byte(OFFSET_CURRENT_STAGE + OFFSET_STAGE_LAYER)
+            if _is_title_stage(stage_name, stage_layer):
                 # Title stage: do not process item delivery, flag checks, or writes.
                 self.current_stage = stage_name
                 self.last_hearts = None
                 self.last_stamina = None
+                self._log_item_queue_stall("title stage F000 layer 26")
                 return
 
             # Save-file-alive guard: when the player saves & quits at a
@@ -2927,11 +2968,23 @@ class SSHDContext(CommonContext):
             # BreathLink/DeathLink sends and emulator crashes.
             health_cap = self.memory.read_short(OFFSET_CURRENT_HEALTH - 4)
             if health_cap is None or health_cap <= 0:
-                # Reset tracking state so stale zeros don't trigger
-                # false events once the game reloads.
-                self.last_hearts = None
-                self.last_stamina = None
-                return
+                # If the health-capacity offset reads 0 but player action is
+                # readable, keep running. Some builds shift this offset and a
+                # hard return here would block all item delivery forever.
+                action_probe = self.memory.read_int(OFFSET_PLAYER + OFFSET_CURRENT_ACTION)
+                if action_probe is None:
+                    # Reset tracking state so stale zeros don't trigger
+                    # false events once the game reloads.
+                    self.last_hearts = None
+                    self.last_stamina = None
+                    self._log_item_queue_stall("health-capacity guard (save not ready)")
+                    return
+                if not getattr(self, "_logged_healthcap_offset_bypass", False):
+                    logger.warning(
+                        "[HealthGuard] health_capacity read as 0, but player action is valid; "
+                        "continuing update loop to avoid item-delivery stall"
+                    )
+                    self._logged_healthcap_offset_bypass = True
             
             # The game sets NEXT_STAGE before tearing down ROOM_MGR and
             # other scene structures, whereas CURRENT_STAGE only changes
@@ -2940,22 +2993,36 @@ class SSHDContext(CommonContext):
             # race window where the Rust AP-buffer code could dereference
             # a null ROOM_MGR.
             try:
+                now = time.time()
                 next_stage = self.memory.read_string(
                     OFFSET_NEXT_STAGE + OFFSET_STAGE_NAME, 8
                 )
-                if next_stage and next_stage != self._last_next_stage:
-                    # NEXT_STAGE changed — a scene transition is imminent.
-                    if (self._last_next_stage is not None
-                            and next_stage != stage_name
-                            and time.time() >= self._scene_transition_cooldown_until):
+                # Some emulator builds can expose transient garbage bytes at
+                # NEXT_STAGE outside transitions. Ignore unknown stage codes,
+                # otherwise cooldown can be re-armed forever and block item
+                # delivery permanently.
+                if next_stage and not _is_valid_stage_code(next_stage):
+                    next_stage = None
+                if not next_stage:
+                    self._last_next_stage = None
+                else:
+                    if next_stage != self._last_next_stage:
+                        self._last_next_stage = next_stage
+                        self._last_next_stage_change_at = now
+
+                    # Treat NEXT_STAGE mismatch as imminent transition only
+                    # briefly after NEXT_STAGE changes; stale NEXT_STAGE
+                    # values can otherwise keep write-blocking forever.
+                    if (next_stage != stage_name
+                            and (now - self._last_next_stage_change_at) <= 1.0
+                            and now >= self._scene_transition_cooldown_until):
                         logger.debug(
                             f"Early transition detected via NEXT_STAGE: "
-                            f"{self._last_next_stage} -> {next_stage}"
+                            f"{stage_name} -> {next_stage}"
                         )
                         self._scene_transition_cooldown_until = (
-                            time.time() + self._SCENE_TRANSITION_COOLDOWN_SECS
+                            now + self._SCENE_TRANSITION_COOLDOWN_SECS
                         )
-                    self._last_next_stage = next_stage
             except Exception:
                 pass  # Non-critical; fall through to CURRENT_STAGE detection
             
@@ -3095,6 +3162,18 @@ class SSHDContext(CommonContext):
             # The post-Demise cutscene and credits tear down gameplay
             # structures; writing to player/flag/room offsets crashes.
             _block_writes = _in_transition or self.goal_completed
+
+            if self.item_queue and _block_writes:
+                now = time.time()
+                last_log = getattr(self, "_last_item_queue_block_log", 0.0)
+                if now - last_log >= 2.0:
+                    self._last_item_queue_block_log = now
+                    logger.debug(
+                        f"[ItemDelivery] Queue blocked (len={len(self.item_queue)}), "
+                        f"in_transition={_in_transition}, goal_completed={self.goal_completed}, "
+                        f"cooldown_until={self._scene_transition_cooldown_until:.1f}, now={now:.1f}, "
+                        f"stage={self.current_stage}, next_stage={self._last_next_stage}"
+                    )
             
             if not _block_writes:
                 # Write AP buffers to game memory (item info table + check stats)
@@ -3143,13 +3222,23 @@ class SSHDContext(CommonContext):
                         # Synthetic upgrade entry: deliver correct concrete tier via buffer.
                         if not self.game_item_system:
                             self.game_item_system = GameItemSystem(self.memory)
+
+                        retry_after = float(item_data.get("_retry_after", 0.0))
+                        if time.time() < retry_after:
+                            return
+
                         success = self.game_item_system.give_item(concrete_id)
                         if not success:
                             retry_count = item_data.get("_retry_count", 0) + 1
                             item_data["_retry_count"] = retry_count
+                            base_delay = min(2.0, 0.2 * retry_count)
+                            if self.game_item_system and self.game_item_system._scene_transition_active():
+                                base_delay = max(base_delay, 1.0)
+                            item_data["_retry_after"] = time.time() + base_delay
                             if retry_count < 50:
                                 return  # Retry next cycle
                         item_data.pop("_retry_count", None)
+                        item_data.pop("_retry_after", None)
                         logger.info(f"[LocalItem] Delivered local upgrade (id {concrete_id}) for {item_name}")
                         self.item_queue.pop(0)
                         # Do NOT increment delivered_item_count — synthetic entry,
@@ -3184,6 +3273,13 @@ class SSHDContext(CommonContext):
                     # Not natively delivered (e.g. Beedle shop) — fall through to
                     # give_item_to_player for normal buffer delivery below.
                     # Mark as unsafe (will become safe after next scene transition/autosave)
+                    retry_after = float(item_data.get("_retry_after", 0.0))
+                    if time.time() < retry_after:
+                        return
+
+                    if not self.game_item_system:
+                        self.game_item_system = GameItemSystem(self.memory)
+
                     self._unsafe_items_count += 1
                     if self.give_item_to_player(item_data["name"], item_data["id"]):
                         self._queue_unsafe_item_for_recovery(item_data)
@@ -3191,13 +3287,24 @@ class SSHDContext(CommonContext):
                         location_name = item_data.get("location", "unknown location")
                         logger.info(f"Received {item_data['name']} ({location_name}) [awaiting autosave]")
                         item_data.pop("_retry_count", None)
+                        item_data.pop("_retry_after", None)
                         self.item_queue.pop(0)
                         self.update_tracker_state()
                     else:
                         # Delivery failed — revert the unsafe count and retry next cycle
                         self._unsafe_items_count -= 1
+                        retry_count = item_data.get("_retry_count", 0) + 1
+                        item_data["_retry_count"] = retry_count
+                        item_data["_retry_after"] = time.time() + min(2.5, 0.25 * retry_count)
                 else:
                     # Remote item — mark as unsafe (will become safe after next scene transition/autosave)
+                    retry_after = float(item_data.get("_retry_after", 0.0))
+                    if time.time() < retry_after:
+                        return
+
+                    if not self.game_item_system:
+                        self.game_item_system = GameItemSystem(self.memory)
+
                     self._unsafe_items_count += 1
                     if self.give_item_to_player(item_data["name"], item_data["id"]):
                         self._queue_unsafe_item_for_recovery(item_data)
@@ -3215,6 +3322,7 @@ class SSHDContext(CommonContext):
 
                         # Clear retry counter on success
                         item_data.pop("_retry_count", None)
+                        item_data.pop("_retry_after", None)
 
                         # Remove from queue and update tracker
                         self.item_queue.pop(0)
@@ -3226,10 +3334,11 @@ class SSHDContext(CommonContext):
                         MAX_ITEM_RETRIES = 50  # ~50 attempts × 5s timeout = ~4 min max
                         retry_count = item_data.get("_retry_count", 0) + 1
                         item_data["_retry_count"] = retry_count
+                        item_data["_retry_after"] = time.time() + min(2.0, 0.2 * retry_count)
 
                         if retry_count >= MAX_ITEM_RETRIES:
                             item_name = item_data["name"]
-                            logger.error(
+                            logger.debug(
                                 f"[ItemDelivery] Giving up on {item_name} after {retry_count} attempts. "
                                 f"Item will be re-delivered on next reconnect."
                             )

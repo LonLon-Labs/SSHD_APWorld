@@ -283,6 +283,32 @@
       param2: 364
       param3: 0
 
+  - name: Loftwing Entry
+    type: entryadd
+    entry:
+      name: "003_219"
+      value: Show Loftwing Text
+  - name: Loftwing Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Loftwing Text
+    type: flowadd
+    flow:
+      type: type1
+      next: Give Loftwing Storyflag
+      param3: 3
+      param4: Loftwing Text
+  - name: Give Loftwing Storyflag
+    type: flowadd
+    flow:
+      type: type3
+      subType: 0
+      param1: 0
+      param2: 27 # Loftwing unlocked
+      next: -1
+      param3: 0
+
   - name: Remove Goddess Sword Scene change
     type: flowpatch
     index: 462 # skip scene change after getting goddess sword

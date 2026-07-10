@@ -808,6 +808,20 @@ class AllowFlyingAtNight(Toggle):
     display_name = "Allow Flying at Night"
 
 
+class RandomizeLoftwing(Choice):
+    """
+    Controls whether storyflag 27 (Loftwing unlocked) is set at game start.
+    Off: Do not start with Loftwing unlocked.
+    On: Start with Loftwing unlocked.
+    Random: Randomly choose Off or On during seed generation.
+    """
+    display_name = "Start with Loftwing"
+    option_off = 0
+    option_on = 1
+    option_random = 2
+    default = 1
+
+
 class NaturalNightConnections(DefaultOnToggle):
     """
     If enabled, nighttime-only checks are only accessible via natural night connections in the overworld.
@@ -1841,6 +1855,7 @@ class SSHDOptions(PerGameCommonOptions):
     faster_air_meter_depletion: FasterAirMeterDepletion
     unlock_all_groosenator_destinations: UnlockAllGroosenatorDestinations
     allow_flying_at_night: AllowFlyingAtNight
+    randomize_loftwing: RandomizeLoftwing
     natural_night_connections: NaturalNightConnections
     dungeons_include_sky_keep: DungeonsIncludeSkyKeep
     empty_unrequired_dungeons: EmptyUnrequiredDungeons
@@ -2130,6 +2145,7 @@ sshd_option_groups = [
         FasterAirMeterDepletion,
         UnlockAllGroosenatorDestinations,
         AllowFlyingAtNight,
+        RandomizeLoftwing,
         RandomTrialObjectPositions,
         EnableBackInTime,
         UndergroundRupeeShufle,

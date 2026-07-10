@@ -484,6 +484,7 @@ class SSHDWorld(World):
         "faster_air_meter_depletion": ("faster_air_meter_depletion", "toggle", None),
         "unlock_all_groosenator_destinations": ("unlock_all_groosenator_destinations", "toggle", None),
         "allow_flying_at_night": ("allow_flying_at_night", "toggle", None),
+        "randomize_loftwing": ("randomize_loftwing", "choice", {"off": 0, "on": 1, "random": 2}),
         "natural_night_connections": ("natural_night_connections", "toggle", None),
         "dungeons_include_sky_keep": ("dungeons_include_sky_keep", "toggle", None),
         "empty_unrequired_dungeons": ("empty_unrequired_dungeons", "toggle", None),
@@ -3873,6 +3874,8 @@ class SSHDWorld(World):
         settings_dict["faster_air_meter_depletion"] = "on" if self.options.faster_air_meter_depletion.value else "off"
         settings_dict["unlock_all_groosenator_destinations"] = "on" if self.options.unlock_all_groosenator_destinations.value else "off"
         settings_dict["allow_flying_at_night"] = "on" if self.options.allow_flying_at_night.value else "off"
+        loftwing_start_map = {0: "off", 1: "on", 2: "random"}
+        settings_dict["randomize_loftwing"] = loftwing_start_map[self.options.randomize_loftwing.value]
         settings_dict["natural_night_connections"] = "on" if self.options.natural_night_connections.value else "off"
         settings_dict["peatrice_conversations"] = str(self.options.peatrice_conversations.value)
         

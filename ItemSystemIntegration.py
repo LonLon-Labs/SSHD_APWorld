@@ -39,6 +39,7 @@ class GameOffsets:
     ROOM_MGR = 0x2bfdd90
     STAGE_MGR = 0x2bfdda8
     CURRENT_STAGE_NAME = 0x2bf98d8
+    CURRENT_STAGE_LAYER = 0x2bf98fb
     NEXT_STAGE_NAME = 0x2bf9904
     TITLE_STAGE = b"F000"
     
@@ -165,6 +166,7 @@ class GameItemSystem:
         self.base_address = getattr(memory_accessor, 'base_address', None)
         self.buffer_addr = None  # Will be found dynamically
         self.timeout_frames = 900  # 15 seconds at 60 FPS polling rate — must cover Rust stage-transition cooldown (90 game frames) + retry window (300 game frames)
+        self.last_delivery_mode = "none"  # "buffer" | "direct_flag" | "none"
         
         # Stage-transition cooldown (mirrors Rust-side protection).
         # When the Python client detects a stage change it blocks item
@@ -175,6 +177,9 @@ class GameItemSystem:
         self._last_known_stage: Optional[bytes] = None
         self._stage_cooldown_until: float = 0.0
         self._STAGE_COOLDOWN_SECS: float = 3.0  # seconds after a stage change
+        self._scene_transition_cooldown_until: float = 0.0
+        self._last_next_stage: Optional[bytes] = None
+        self._last_next_stage_change_at: float = 0.0
         
         # Buffer address cycling: store ALL valid candidate addresses
         self._candidate_buffer_addrs: list = []  # All prescan hits with valid magic
@@ -440,6 +445,8 @@ class GameItemSystem:
         if not self.memory.connected:
             logger.error("Cannot give item: not connected to game")
             return False
+
+        self.last_delivery_mode = "none"
         
         # ---- Path 1: Buffer-based delivery (with animation) -----------------
         buffer_success = False
@@ -469,7 +476,7 @@ class GameItemSystem:
                 if self._scene_transition_active():
                     logger.debug("Scene transition became active before buffer write — retrying later")
                     return False
-                
+
                 # Player is ready — proceed with buffer write
                 slot = self._find_empty_buffer_slot()
                 if slot is None:
@@ -481,7 +488,7 @@ class GameItemSystem:
                         flags |= 0x01
                     if play_jingle:
                         flags |= 0x02
-                    
+
                     # Write to buffer ATOMICALLY using a single 16-bit write.
                     buffer_offset = self.buffer_addr + (slot * GameOffsets.ARCHIPELAGO_BUFFER_SLOT_SIZE)
                     slot_value = item_id | (flags << 8)  # little-endian: [item_id, flags]
@@ -516,7 +523,10 @@ class GameItemSystem:
         
         # Item is delivered if EITHER path succeeded.
         delivered = buffer_success or flag_confirmed
-        if delivered and not buffer_success:
+        if delivered and buffer_success:
+            self.last_delivery_mode = "buffer"
+        elif delivered and not buffer_success:
+            self.last_delivery_mode = "direct_flag"
             logger.info(
                 f"Item {item_id} delivered via direct flag write "
                 f"(buffer path unavailable)"
@@ -627,7 +637,6 @@ class GameItemSystem:
         GRACE_FRAMES = 4  # ~67ms at 60 FPS — enough for the game loop
 
         ever_saw_item = False
-
         for frame in range(self.timeout_frames):
             item_id = self.memory.read_byte(buffer_offset)
             flags = self.memory.read_byte(buffer_offset + 1)
@@ -728,13 +737,31 @@ class GameItemSystem:
     def _scene_transition_active(self) -> bool:
         """Return True when the game is in or entering a scene transition."""
         try:
-            stage = self.memory.read_bytes(GameOffsets.CURRENT_STAGE_NAME, 8)
+            stage_raw = self.memory.read_bytes(GameOffsets.CURRENT_STAGE_NAME, 8)
+            if not stage_raw:
+                return True
+
+            stage = stage_raw.split(b"\x00", 1)[0]
             if not stage:
                 return True
 
-            next_stage = self.memory.read_bytes(GameOffsets.NEXT_STAGE_NAME, 8)
-            if next_stage and next_stage != stage:
-                return True
+            next_stage_raw = self.memory.read_bytes(GameOffsets.NEXT_STAGE_NAME, 8)
+            if not next_stage_raw:
+                return time.time() < self._scene_transition_cooldown_until
+
+            next_stage = next_stage_raw.split(b"\x00", 1)[0]
+            # Empty NEXT_STAGE means no pending transition.
+            if not next_stage:
+                return time.time() < self._scene_transition_cooldown_until
+
+            now = time.time()
+            if next_stage != self._last_next_stage:
+                self._last_next_stage = next_stage
+                self._last_next_stage_change_at = now
+
+            # Do not hard-block solely on NEXT_STAGE mismatch. On some builds
+            # NEXT_STAGE can hold stale values for long periods, which would
+            # permanently block AP item delivery.
 
             return time.time() < self._scene_transition_cooldown_until
         except Exception:
@@ -766,13 +793,18 @@ class GameItemSystem:
         # changed since the last check, impose a cooldown so the engine
         # finishes loading rooms, OARCs and heaps before we spawn items.
         try:
-            stage_bytes = self.memory.read_bytes(
+            stage_raw = self.memory.read_bytes(
                 GameOffsets.CURRENT_STAGE_NAME, 8
             )
-            if stage_bytes is not None:
-                if stage_bytes[:4] == GameOffsets.TITLE_STAGE:
-                    logger.debug("Player not ready: title stage active")
+            if stage_raw is not None:
+                stage_bytes = stage_raw.split(b"\x00", 1)[0]
+                if not stage_bytes:
                     return False
+                if stage_bytes == GameOffsets.TITLE_STAGE:
+                    stage_layer = self.memory.read_byte(GameOffsets.CURRENT_STAGE_LAYER)
+                    if stage_layer == 26:
+                        logger.debug("Player not ready: title stage active")
+                        return False
                 if self._last_known_stage is None:
                     self._last_known_stage = stage_bytes
                 elif stage_bytes != self._last_known_stage:

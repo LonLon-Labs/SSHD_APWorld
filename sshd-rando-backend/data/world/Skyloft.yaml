@@ -200,7 +200,7 @@
     Peatrice's House: Nothing # Open the door.
     Kukiel's House: Nothing # Open the door.
     Piper's House: Nothing # Open the door.
-    The Sky: Day or natural_night_connections == off
+    Skyloft Jump Platforms: Nothing # Walk to the jump point.
     Upper Skyloft: Nothing # Run up to the top of Skyloft near the academy.
     Skyloft Village: Nothing # Run over the bridge to the east of the island.
     # Omit Stone of Trial here intentionally.
@@ -372,10 +372,15 @@
   allowed_time_of_day: All
   exits:
     Waterfall Cave: Nothing # Run into the cave.
-    The Sky: Day or natural_night_connections == off
+    Skyloft Jump Platforms: Nothing # Walk to the jump point.
   locations:
     Central Skyloft - Crystal near Bird Statue after Waterfall Cave: Night
     Central Skyloft - Crystal in Loftwing Prison after Waterfall Cave: Night
+
+- name: Skyloft Jump Platforms
+  allowed_time_of_day: All
+  exits:
+    The Sky: Loftwing and (Day or natural_night_connections == off)
 
 
 # SILENT REALM
@@ -413,7 +418,7 @@
     Gondo's House: Nothing # Open the door and enter the house.
     Rupin's House: Nothing # Open the door and enter the house.
     Batreaux's House: open_batreaux_shed or 'Opened_Shed' or logic_gravestone_jump
-    The Sky: Day or natural_night_connections == off
+    Skyloft Jump Platforms: Nothing # Walk to the jump point.
     Skyloft Past Waterfall Cave Jump: logic_waterfall_cave_jump and Day
     Central Skyloft: Nothing # Run across the bridge to the centre of the island.
   locations:

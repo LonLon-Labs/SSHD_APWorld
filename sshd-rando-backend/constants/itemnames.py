@@ -81,6 +81,7 @@ CLAWSHOTS = "Clawshots"
 
 # 21
 SPIRAL_CHARGE = "Spiral Charge"
+LOFTWING = "Loftwing"
 
 # 22
 COMMON_BUG = "Common " + BUG

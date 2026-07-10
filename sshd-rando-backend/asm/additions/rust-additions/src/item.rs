@@ -117,6 +117,7 @@ extern "C" {
 
     static mut STATIC_DUNGEONFLAGS: [u16; 8];
     static mut CURRENT_STAGE_NAME: [u8; 8];
+    static mut CURRENT_LAYER: u8;
 
     static EQUIPPED_SWORD: u8;
     static mut ITEM_GET_BOTTLE_POUCH_SLOT: u32;
@@ -1158,8 +1159,8 @@ pub extern "C" fn fix_freestanding_item_y_offset(item_actor: *mut dAcItem) {
                 9..=15 | 16 | 56 | 105 | 159 | 166 | 180 | 186..=193 => y_offset = 20.0,
                 // Bow | Iron Bow | Sacred Bow | Sea Chart | Wooden Shield | Hylian Shield
                 19 | 90 | 91 | 98 | 116 | 125 => y_offset = 23.0,
-                // Clawshots | Spiral Charge | Mogma Mitts | Life Tree Seedling
-                20 | 21 | 99 | 197 => y_offset = 25.0,
+                // Clawshots | Spiral Charge | Loftwing | Mogma Mitts | Life Tree Seedling
+                20 | 21 | 219 | 99 | 197 => y_offset = 25.0,
                 // AC BK | FS BK
                 25 | 26 => y_offset = 30.0,
                 // SSH BK, ET Key, SVT BK, ET BK | Amber Tablet
@@ -1295,8 +1296,8 @@ pub extern "C" fn fix_freestanding_item_horizontal_offset(item_actor: *mut dAcIt
                     angle_change_x = 0x0500;
                     angle_change_y = 0x2400;
                 },
-                // Spiral Charge
-                21 => {
+                // Spiral Charge | Loftwing
+                21 | 219 => {
                     h_offset = 27.0;
                     angle_change_y = 0x3000;
                     angle_change_z = 0x0300;
@@ -1568,6 +1569,9 @@ pub extern "C" fn after_item_collection_hook(collected_item: flag::ITEMFLAGS) ->
     unsafe {
         fix::fix_ammo_counts(collected_item);
         check_and_open_trial_gates(collected_item);
+        if collected_item == flag::ITEMFLAGS::LOFTWING {
+            flag::set_storyflag(27);
+        }
 
         // Replaced code
         asm!("mov w8, {0:w}", in(reg) ((collected_item as u16) - 2));
@@ -1587,6 +1591,7 @@ pub extern "C" fn resolve_progressive_item_models(
         if arc_or_model == 1 {
             model_name = match item_id {
                 15 => c"Demo11_01".as_ptr(),
+                21 | 219 => c"GetBirdStatue".as_ptr(),
                 214 => c"Onp".as_ptr(),
                 215 => c"DesertRobot".as_ptr(),
                 216 => {
@@ -1612,6 +1617,7 @@ pub extern "C" fn resolve_progressive_item_models(
         } else if arc_or_model == 2 {
             model_name = match item_id {
                 15 => c"GetStole".as_ptr(),
+                21 | 219 => c"GetBirdStatue".as_ptr(),
                 // Randomly pick which of the two tadtone models is used for fun :p
                 214 if (s_rng & 1) == 0 => c"OnpA".as_ptr(),
                 214 => c"OnpB".as_ptr(),
@@ -2120,7 +2126,9 @@ fn should_force_itemflag_for_buffer_item(item_id: u32) -> bool {
         // Progressive Wallet
         108 | 109 | 110 | 111 |
         // Progressive Pouch / pouch expansion
-        112 | 113
+        112 | 113 |
+        // Loftwing
+        219
     )
 }
 
@@ -2287,7 +2295,9 @@ pub extern "C" fn archipelago_check_item_buffer() {
             return;
         }
 
-        if &CURRENT_STAGE_NAME[..4] == b"F000" {
+        // F000 is used by both Skyloft and the title flow.
+        // Only block AP delivery on known title layers.
+        if &CURRENT_STAGE_NAME[..4] == b"F000" && (CURRENT_LAYER == 26 || CURRENT_LAYER == 29) {
             return;
         }
 
@@ -2340,6 +2350,11 @@ pub extern "C" fn archipelago_check_item_buffer() {
             let item_id = item_id_val as u64;
             let final_id = if is_buffer_trap {
                 34u16
+            } else if item_id_val == 219 {
+                // Loftwing must remain item 219 for AP delivery. Vanilla
+                // determineFinalItemid can remap this to rupee logic,
+                // which forces GetRupee visuals instead of GetBirdStatue.
+                219u16
             } else {
                 dAcItem__determineFinalItemid(item_id) as u16
             };
@@ -2405,7 +2420,9 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 // We also commit immediately because set_flag only writes
                 // to the uncommitted copy, and get_flag_or_counter reads
                 // the committed copy.
-                if spawn_id <= 215 && should_force_itemflag_for_buffer_item(spawn_id) {
+                if (spawn_id <= 215 || spawn_id == 219)
+                    && should_force_itemflag_for_buffer_item(spawn_id)
+                {
                     flag::set_itemflag_raw(spawn_id as u16);
                     flag::commit_itemflags();
                 }

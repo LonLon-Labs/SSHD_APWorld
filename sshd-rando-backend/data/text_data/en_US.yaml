@@ -28,6 +28,9 @@
 - name: Spiral Charge Text
   standard: "You learned the <y<Spiral Charge>>!"
 
+- name: Loftwing Text
+  standard: "You have found your <y<Loftwing>>!"
+
 - name: Goddess Longsword Text
   standard: "You got the <y<Goddess Longsword>>!\nThe flames of Farore have improved your\nsword, making it longer and sharp enough\nto do twice as much damage!"
 
@@ -392,6 +395,12 @@
   standard: Spiral Charge
   pretty: the <Spiral Charge>
   cryptic: the <r<barrel roll>>
+  plurality: Singular
+
+- name: Loftwing
+  standard: Loftwing
+  pretty: the <Loftwing>
+  cryptic: the <r<Loftwing>>
   plurality: Singular
 
 - name: Ancient Cistern Boss Key

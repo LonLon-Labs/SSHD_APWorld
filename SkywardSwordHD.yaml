@@ -39,6 +39,8 @@ Skyward Sword HD:
   #    - Infinite Loftwing Charges
   #    - No Electric Stun
   #    - Speed Multiplier
+  #  - Advanced Game Options
+  #    - Start with Loftwing
 
 
 
@@ -664,6 +666,13 @@ Skyward Sword HD:
   # false: You will not be able to fly at night (default). If Require Natural Night Connections is disabled, night flying will be enabled to facilitate this
   # true: You will be able to call your loftwing and fly in The Sky at night
   allow_flying_at_night: false
+
+  # Start with Loftwing
+  # Controls whether storyflag 27 (Loftwing unlocked) is set at game start.
+  # off: Do not start with Loftwing unlocked
+  # on: Start with Loftwing unlocked (default)
+  # random: Randomly choose off/on during seed generation
+  randomize_loftwing: on
   
   # Require Natural Night Connections
   # false: You may be required to sleep to night and travel anywhere in the world to access nighttime-only checks, including flying at night

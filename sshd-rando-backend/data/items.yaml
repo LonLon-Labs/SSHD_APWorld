@@ -145,6 +145,15 @@
   shop_arc_name: GetBirdStatue
   shop_model_name: GetBirdStatue
   advancement: true
+- id: 219
+  name: Loftwing
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: GetBirdStatue
+  shop_arc_name: GetBirdStatue
+  shop_model_name: GetBirdStatue
+  advancement: true
 - id: 25
   name: Ancient Cistern Boss Key
   types:

@@ -308,6 +308,7 @@ pub enum ITEMFLAGS {
     SKY_KEEP_MAP                     = 0xD5,
     GROUP_OF_TADTONES                = 0xD6,
     SCRAPPER                         = 0xD7,
+    LOFTWING                         = 0xDB,
     HEART_PIECE_COUNTER              = 0x1E9,
     POUCH_EXPANSION_COUNTER          = 0x1EA,
     DEKU_SEED_COUNTER                = 0x1ED,

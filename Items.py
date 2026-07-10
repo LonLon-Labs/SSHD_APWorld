@@ -181,6 +181,7 @@ ITEM_TABLE: dict[str, SSHDItem] = {
     "Archipelago Item": SSHDItem("Archipelago Item", 2773216, IC.filler, 216),
     "Greg The Green Rupee": SSHDItem("Greg The Green Rupee", 2773217, IC.progression, 217),
     "Tim The Tumbleweed": SSHDItem("Tim The Tumbleweed", 2773218, IC.progression, 218),
+    "Loftwing": SSHDItem("Loftwing", 2773219, IC.progression, 219),
     "Health Trap": SSHDItem("Health Trap", 2773250, IC.trap, 250),
     "Groose Trap": SSHDItem("Groose Trap", 2773251, IC.trap, 251),
     "Noise Trap": SSHDItem("Noise Trap", 2773252, IC.trap, 252),
