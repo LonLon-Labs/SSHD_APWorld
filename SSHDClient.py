@@ -2116,9 +2116,9 @@ class SSHDContext(CommonContext):
 
     async def _datastorage_timeout_guard(self):
         """Unblock item processing if Retrieved never arrives (e.g. old server)."""
-        await asyncio.sleep(5.0)
+        await asyncio.sleep(15.0)
         if not self._datastorage_loaded:
-            logger.warning("[DataStorage] Retrieved not received within 5s; proceeding with count=0")
+            logger.warning("[DataStorage] Retrieved not received within 15s; proceeding with count=0")
             self._datastorage_loaded = True
             for pending_args in self._pending_received_items:
                 self._process_received_items(pending_args)
@@ -2491,7 +2491,67 @@ class SSHDContext(CommonContext):
 
             if unsafe_key and unsafe_key in args.get("keys", {}):
                 stored_unsafe = args["keys"][unsafe_key] or []
-                self._pending_unsafe_items = [dict(item_data) for item_data in stored_unsafe]
+                restored_items = [dict(item_data) for item_data in stored_unsafe]
+                logger.debug(
+                    f"[Recovery] Retrieved {len(restored_items)} pending unsafe item(s) from DataStorage"
+                )
+
+                # Reconnect reconciliation: if a pending progressive item is
+                # already reflected in save memory, do not re-deliver it.
+                # This avoids progressive dupes when the client was closed
+                # before it could observe the autosave scene transition.
+                recover_items: list[dict] = []
+                reconciled_count = 0
+                replay_progressive_count = 0
+                replay_non_progressive_count = 0
+                for item_data in restored_items:
+                    item_name = item_data.get("name")
+                    if item_name in self.progressive_counts:
+                        item_index = int(item_data.get("index", -1))
+                        actual_count = self._read_current_progressive_count_from_memory(item_name)
+                        expected_count = self._count_progressive_items_received_up_to(
+                            item_name, item_index + 1
+                        )
+                        if (
+                            actual_count is not None
+                            and item_index >= 0
+                            and actual_count >= expected_count
+                        ):
+                            reconciled_count += 1
+                            logger.info(
+                                f"[Recovery] Skipping re-delivery of {item_name} "
+                                f"at index {item_index} (memory={actual_count}, expected={expected_count})"
+                            )
+                            continue
+                        replay_progressive_count += 1
+                        logger.debug(
+                            f"[Recovery] Re-delivering progressive {item_name} at index {item_index} "
+                            f"(memory={actual_count}, expected={expected_count})"
+                        )
+                    else:
+                        replay_non_progressive_count += 1
+                        logger.debug(
+                            f"[Recovery] Re-delivering non-progressive {item_name} "
+                            f"at index {item_data.get('index', -1)}"
+                        )
+                    recover_items.append(item_data)
+
+                if reconciled_count:
+                    self.delivered_item_count += reconciled_count
+                    self._persist_delivery_index()
+                    logger.info(
+                        f"[Recovery] Marked {reconciled_count} pending progressive "
+                        f"item(s) as already applied from save memory"
+                    )
+
+                logger.debug(
+                    "[Recovery] Reconnect reconciliation summary: "
+                    f"restored={len(restored_items)}, reconciled={reconciled_count}, "
+                    f"replay_progressive={replay_progressive_count}, "
+                    f"replay_non_progressive={replay_non_progressive_count}"
+                )
+
+                self._pending_unsafe_items = recover_items
                 self._pending_unsafe_item_indexes = {
                     int(item_data.get("index", -1)) for item_data in self._pending_unsafe_items
                     if item_data.get("index") is not None
@@ -2504,6 +2564,7 @@ class SSHDContext(CommonContext):
                 else:
                     self._pending_unsafe_item_indexes.clear()
                     self._skip_sword_sync = False
+                    self._clear_pending_unsafe_items_datastorage()
 
             self._datastorage_loaded = True
             # Check if there are items waiting to be re-delivered (not in safe items yet)
@@ -4389,6 +4450,82 @@ class SSHDContext(CommonContext):
             return beetle_count
         except Exception:
             return None
+
+    def _read_current_progressive_count_from_memory(self, item_name: str) -> int | None:
+        """Read the current in-save count for a progressive item.
+
+        Returns None when a reliable count cannot be derived.
+        """
+        if item_name == "Progressive Sword":
+            return self._read_current_sword_count_from_memory()
+        if item_name == "Progressive Beetle":
+            return self._read_current_beetle_count_from_memory()
+
+        try:
+            if not self.memory.connected or not self.memory.base_address:
+                return None
+
+            if item_name == "Progressive Pouch":
+                # Pouch expansions reuse the same identifiers for multiple
+                # tiers, so only a minimum count can be inferred:
+                # sf30 => at least 1 pouch, sf932 => at least 2.
+                sf_base = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
+
+                def _storyflag_is_set(flag_id: int) -> bool:
+                    word_off = (flag_id // 16) * 2
+                    bit = flag_id % 16
+                    val = self.memory.read_short(sf_base + word_off)
+                    return val is not None and bool(val & (1 << bit))
+
+                pouch_count = 0
+                if _storyflag_is_set(30):
+                    pouch_count = 1
+                if _storyflag_is_set(932):
+                    pouch_count = max(pouch_count, 2)
+                return pouch_count
+
+            tier_ids = self._PROGRESSIVE_TIER_FLAGS.get(item_name)
+            if not tier_ids:
+                return None
+
+            # Use unique tier IDs in order, then count contiguous owned tiers.
+            ordered_unique_ids: list[int] = []
+            for tier_id in tier_ids:
+                if tier_id not in ordered_unique_ids:
+                    ordered_unique_ids.append(tier_id)
+
+            fa_item_base = OFFSET_SAVEFILE_A + OFFSET_FA_ITEMFLAGS
+            count = 0
+            for item_id in ordered_unique_ids:
+                byte_off = item_id // 8
+                bit = item_id % 8
+                byte_val = self.memory.read_bytes(fa_item_base + byte_off, 1)
+                if byte_val and (byte_val[0] & (1 << bit)):
+                    count += 1
+                else:
+                    break
+            return count
+        except Exception:
+            return None
+
+    def _count_progressive_items_received_up_to(self, item_name: str, end_index_exclusive: int) -> int:
+        """Count how many times a progressive item appears in the received prefix."""
+        try:
+            if end_index_exclusive <= 0:
+                return 0
+            count = 0
+            for idx, network_item in enumerate(self.items_received or []):
+                if idx >= end_index_exclusive:
+                    break
+                try:
+                    resolved_name = self.item_names.lookup_in_slot(network_item.item, self.slot)
+                except Exception:
+                    continue
+                if resolved_name == item_name:
+                    count += 1
+            return count
+        except Exception:
+            return 0
 
     def _location_has_own_sword(self, location_code: int) -> bool:
         """Return True if this location contains our own Progressive Sword."""
