@@ -2154,7 +2154,19 @@ class SSHDContext(CommonContext):
                 except Exception:
                     skipped_name = None
                 if skipped_name and skipped_name in self.progressive_counts:
-                    self.progressive_counts[skipped_name] += 1
+                    if skipped_name == "Progressive Sword":
+                        actual_count = self._read_current_sword_count_from_memory()
+                    elif skipped_name == "Progressive Beetle":
+                        actual_count = self._read_current_beetle_count_from_memory()
+                    else:
+                        actual_count = None
+
+                    if actual_count is not None:
+                        self.progressive_counts[skipped_name] = max(
+                            self.progressive_counts[skipped_name], actual_count
+                        )
+                    else:
+                        self.progressive_counts[skipped_name] += 1
                     logger.debug(
                         f"[ReceivedItems] Rebuilt progressive count for "
                         f"already-delivered {skipped_name} -> "
@@ -3198,8 +3210,23 @@ class SSHDContext(CommonContext):
                 if item_data.get("is_start_inventory", False):
                     item_name = item_data["name"]
                     if item_name in self.progressive_counts:
-                        self.progressive_counts[item_name] += 1
-                        logger.debug(f"[StartInventory] Tracked {item_name} progressive count -> {self.progressive_counts[item_name]}")
+                        if item_name == "Progressive Sword":
+                            actual_count = self._read_current_sword_count_from_memory()
+                        elif item_name == "Progressive Beetle":
+                            actual_count = self._read_current_beetle_count_from_memory()
+                        else:
+                            actual_count = None
+
+                        if actual_count is not None:
+                            self.progressive_counts[item_name] = max(
+                                self.progressive_counts[item_name], actual_count
+                            )
+                        else:
+                            self.progressive_counts[item_name] += 1
+
+                        logger.debug(
+                            f"[StartInventory] Tracked {item_name} progressive count -> {self.progressive_counts[item_name]}"
+                        )
                     logger.debug(f"[StartInventory] Skipped in-game delivery of {item_name} (already in save from patches)")
                     self.item_queue.pop(0)
                     # Mark as delivered immediately since game already has it
@@ -3251,7 +3278,19 @@ class SSHDContext(CommonContext):
                     ):
                         # Game already gave this via its own actor — skip buffer.
                         if item_name in self.progressive_counts:
-                            self.progressive_counts[item_name] += 1
+                            if item_name == "Progressive Sword":
+                                actual_count = self._read_current_sword_count_from_memory()
+                            elif item_name == "Progressive Beetle":
+                                actual_count = self._read_current_beetle_count_from_memory()
+                            else:
+                                actual_count = None
+
+                            if actual_count is not None:
+                                self.progressive_counts[item_name] = max(
+                                    self.progressive_counts[item_name], actual_count
+                                )
+                            else:
+                                self.progressive_counts[item_name] += 1
                             logger.debug(
                                 f"[LocalItem] Tracked {item_name} progressive "
                                 f"count -> {self.progressive_counts[item_name]}"
@@ -4314,6 +4353,42 @@ class SSHDContext(CommonContext):
 
         except Exception as e:
             logger.debug(f"[Sync] Error during progressive item sync: {e}")
+
+    def _read_current_sword_count_from_memory(self) -> int | None:
+        """Read the current sword tier count from the save file."""
+        try:
+            if not self.memory.connected or not self.memory.base_address:
+                return None
+
+            SF_WORD_OFFSET = 112  # u16[56] * 2
+            fa_sf_base = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
+            sf_val = self.memory.read_short(fa_sf_base + SF_WORD_OFFSET)
+            if sf_val is None:
+                return None
+            return sum(1 for b in range(10, 16) if sf_val & (1 << b))
+        except Exception:
+            return None
+
+    def _read_current_beetle_count_from_memory(self) -> int | None:
+        """Read the current beetle tier count from the save file."""
+        try:
+            if not self.memory.connected or not self.memory.base_address:
+                return None
+
+            fa_item_base = OFFSET_SAVEFILE_A + OFFSET_FA_ITEMFLAGS
+            beetle_ids = [53, 75, 76, 77]
+            beetle_count = 0
+            for item_id in beetle_ids:
+                byte_off = item_id // 8
+                bit = item_id % 8
+                byte_val = self.memory.read_bytes(fa_item_base + byte_off, 1)
+                if byte_val and (byte_val[0] & (1 << bit)):
+                    beetle_count += 1
+                else:
+                    break
+            return beetle_count
+        except Exception:
+            return None
 
     def _location_has_own_sword(self, location_code: int) -> bool:
         """Return True if this location contains our own Progressive Sword."""
