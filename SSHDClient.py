@@ -2114,6 +2114,44 @@ class SSHDContext(CommonContext):
             "operations": [{"operation": "replace", "value": []}]
         }]))
 
+    def _unsafe_item_signature(self, item_data: dict) -> tuple:
+        """Build a stable signature for deduping unsafe deliveries."""
+        return (
+            item_data.get("id"),
+            item_data.get("name"),
+            item_data.get("location_id"),
+            item_data.get("location_player"),
+            item_data.get("location"),
+            item_data.get("player_name"),
+        )
+
+    def _dedupe_pending_unsafe_items(self, items: list[dict]) -> tuple[list[dict], int]:
+        """Deduplicate pending-unsafe items, preferring unique AP indexes."""
+        deduped: list[dict] = []
+        seen_indexes: set[int] = set()
+        seen_signatures: set[tuple] = set()
+        dropped = 0
+
+        for item_data in items:
+            idx_raw = item_data.get("index")
+            idx = int(idx_raw) if idx_raw is not None else None
+            if idx is not None:
+                if idx in seen_indexes:
+                    dropped += 1
+                    continue
+                seen_indexes.add(idx)
+                deduped.append(item_data)
+                continue
+
+            sig = self._unsafe_item_signature(item_data)
+            if sig in seen_signatures:
+                dropped += 1
+                continue
+            seen_signatures.add(sig)
+            deduped.append(item_data)
+
+        return deduped, dropped
+
     async def _datastorage_timeout_guard(self):
         """Unblock item processing if Retrieved never arrives (e.g. old server)."""
         await asyncio.sleep(15.0)
@@ -2492,9 +2530,14 @@ class SSHDContext(CommonContext):
             if unsafe_key and unsafe_key in args.get("keys", {}):
                 stored_unsafe = args["keys"][unsafe_key] or []
                 restored_items = [dict(item_data) for item_data in stored_unsafe]
+                restored_items, dropped_dupes = self._dedupe_pending_unsafe_items(restored_items)
                 logger.debug(
                     f"[Recovery] Retrieved {len(restored_items)} pending unsafe item(s) from DataStorage"
                 )
+                if dropped_dupes:
+                    logger.warning(
+                        f"[Recovery] Deduped {dropped_dupes} duplicate pending unsafe item(s) from DataStorage"
+                    )
 
                 # Reconnect reconciliation: if a pending progressive item is
                 # already reflected in save memory, do not re-deliver it.
@@ -2535,6 +2578,12 @@ class SSHDContext(CommonContext):
                             f"at index {item_data.get('index', -1)}"
                         )
                     recover_items.append(item_data)
+
+                recover_items, replay_dropped_dupes = self._dedupe_pending_unsafe_items(recover_items)
+                if replay_dropped_dupes:
+                    logger.warning(
+                        f"[Recovery] Dropped {replay_dropped_dupes} duplicate item(s) from replay queue"
+                    )
 
                 if reconciled_count:
                     self.delivered_item_count += reconciled_count
@@ -2834,10 +2883,28 @@ class SSHDContext(CommonContext):
     def _queue_unsafe_item_for_recovery(self, item_data: dict):
         """Remember an item that has been delivered in memory but is not yet safe."""
         pending_item = dict(item_data)
-        self._pending_unsafe_items.append(pending_item)
         item_index = pending_item.get("index")
         if item_index is not None:
-            self._pending_unsafe_item_indexes.add(int(item_index))
+            item_index = int(item_index)
+            if item_index in self._pending_unsafe_item_indexes:
+                logger.debug(
+                    f"[Recovery] Unsafe item index {item_index} already pending; skipping duplicate append"
+                )
+                self._unsafe_items_count = len(self._pending_unsafe_items)
+                return
+        else:
+            sig = self._unsafe_item_signature(pending_item)
+            for existing in self._pending_unsafe_items:
+                if self._unsafe_item_signature(existing) == sig:
+                    logger.debug(
+                        "[Recovery] Unsafe item without index already pending; skipping duplicate append"
+                    )
+                    self._unsafe_items_count = len(self._pending_unsafe_items)
+                    return
+
+        self._pending_unsafe_items.append(pending_item)
+        if item_index is not None:
+            self._pending_unsafe_item_indexes.add(item_index)
         self._unsafe_items_count = len(self._pending_unsafe_items)
         self._persist_pending_unsafe_items()
 
