@@ -2531,12 +2531,37 @@ class SSHDContext(CommonContext):
                 stored_unsafe = args["keys"][unsafe_key] or []
                 restored_items = [dict(item_data) for item_data in stored_unsafe]
                 restored_items, dropped_dupes = self._dedupe_pending_unsafe_items(restored_items)
+
+                stale_by_count = 0
+                if self.delivered_item_count > 0:
+                    filtered_items: list[dict] = []
+                    for item_data in restored_items:
+                        idx_raw = item_data.get("index")
+                        if idx_raw is None:
+                            filtered_items.append(item_data)
+                            continue
+                        try:
+                            idx = int(idx_raw)
+                        except Exception:
+                            filtered_items.append(item_data)
+                            continue
+                        if idx < self.delivered_item_count:
+                            stale_by_count += 1
+                            continue
+                        filtered_items.append(item_data)
+                    restored_items = filtered_items
+
                 logger.debug(
                     f"[Recovery] Retrieved {len(restored_items)} pending unsafe item(s) from DataStorage"
                 )
                 if dropped_dupes:
                     logger.warning(
                         f"[Recovery] Deduped {dropped_dupes} duplicate pending unsafe item(s) from DataStorage"
+                    )
+                if stale_by_count:
+                    logger.warning(
+                        f"[Recovery] Dropped {stale_by_count} stale pending unsafe item(s) "
+                        f"already covered by delivery_count={self.delivered_item_count}"
                     )
 
                 # Reconnect reconciliation: if a pending progressive item is
@@ -2545,12 +2570,13 @@ class SSHDContext(CommonContext):
                 # before it could observe the autosave scene transition.
                 recover_items: list[dict] = []
                 reconciled_count = 0
+                reconciled_non_progressive_count = 0
                 replay_progressive_count = 0
                 replay_non_progressive_count = 0
                 for item_data in restored_items:
                     item_name = item_data.get("name")
+                    item_index = int(item_data.get("index", -1))
                     if item_name in self.progressive_counts:
-                        item_index = int(item_data.get("index", -1))
                         actual_count = self._read_current_progressive_count_from_memory(item_name)
                         expected_count = self._count_progressive_items_received_up_to(
                             item_name, item_index + 1
@@ -2572,6 +2598,21 @@ class SSHDContext(CommonContext):
                             f"(memory={actual_count}, expected={expected_count})"
                         )
                     else:
+                        # If the item's persistent flag is already set in save,
+                        # treat this pending replay as stale and mark it safe.
+                        game_id = self._item_code_to_game_id(item_data.get("id"))
+                        flag_set = None
+                        if game_id is not None:
+                            flag_set = self._is_itemflag_set_in_save(game_id)
+                        if item_index >= 0 and flag_set is True:
+                            reconciled_count += 1
+                            reconciled_non_progressive_count += 1
+                            logger.info(
+                                f"[Recovery] Skipping re-delivery of {item_name} at index {item_index} "
+                                f"(itemflag {game_id} already set in save)"
+                            )
+                            continue
+
                         replay_non_progressive_count += 1
                         logger.debug(
                             f"[Recovery] Re-delivering non-progressive {item_name} "
@@ -2589,9 +2630,14 @@ class SSHDContext(CommonContext):
                     self.delivered_item_count += reconciled_count
                     self._persist_delivery_index()
                     logger.info(
-                        f"[Recovery] Marked {reconciled_count} pending progressive "
+                        f"[Recovery] Marked {reconciled_count} pending "
                         f"item(s) as already applied from save memory"
                     )
+                    if reconciled_non_progressive_count:
+                        logger.info(
+                            f"[Recovery] Included {reconciled_non_progressive_count} non-progressive "
+                            "item(s) reconciled by itemflags"
+                        )
 
                 logger.debug(
                     "[Recovery] Reconnect reconciliation summary: "
@@ -4593,6 +4639,36 @@ class SSHDContext(CommonContext):
             return count
         except Exception:
             return 0
+
+    def _item_code_to_game_id(self, item_code: Any) -> int | None:
+        """Convert AP item code (2773000+game_id) to in-game item ID."""
+        try:
+            if not isinstance(item_code, int):
+                return None
+            game_id = item_code - 2773000
+            if 0 <= game_id <= 0x3FFF:
+                return game_id
+            return None
+        except Exception:
+            return None
+
+    def _is_itemflag_set_in_save(self, game_id: int) -> bool | None:
+        """Return whether a given itemflag is set in FA itemflags."""
+        try:
+            if not self.memory.connected or not self.memory.base_address:
+                return None
+            if game_id < 0:
+                return None
+
+            fa_item_base = OFFSET_SAVEFILE_A + OFFSET_FA_ITEMFLAGS
+            byte_off = game_id // 8
+            bit = game_id % 8
+            byte_val = self.memory.read_bytes(fa_item_base + byte_off, 1)
+            if not byte_val:
+                return None
+            return bool(byte_val[0] & (1 << bit))
+        except Exception:
+            return None
 
     def _location_has_own_sword(self, location_code: int) -> bool:
         """Return True if this location contains our own Progressive Sword."""
