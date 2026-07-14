@@ -1666,6 +1666,7 @@ class SSHDContext(CommonContext):
         self._pending_unsafe_item_indexes: set[int] = set()  # Item indexes for unsafe deliveries
         self._datastorage_loaded: bool = False  # True once DataStorage delivery index is restored
         self._pending_received_items: list = []  # Buffer ReceivedItems until DataStorage loads
+        self._datastorage_request_id: int = 0  # Monotonic token for connect-time DataStorage requests
         self._skip_sword_sync: bool = False  # True while unsafe items are being re-delivered
         self._recover_unsafe_items_on_reconnect: bool = False  # Set after a real game-process disconnect
         self.connection_time: float = 0.0   # When we connected (to avoid false death on startup)
@@ -2152,15 +2153,33 @@ class SSHDContext(CommonContext):
 
         return deduped, dropped
 
-    async def _datastorage_timeout_guard(self):
-        """Unblock item processing if Retrieved never arrives (e.g. old server)."""
-        await asyncio.sleep(15.0)
-        if not self._datastorage_loaded:
-            logger.warning("[DataStorage] Retrieved not received within 15s; proceeding with count=0")
-            self._datastorage_loaded = True
-            for pending_args in self._pending_received_items:
-                self._process_received_items(pending_args)
-            self._pending_received_items.clear()
+    async def _datastorage_timeout_guard(self, request_id: int):
+        """Unblock item processing if Retrieved never arrives (e.g. old server).
+
+        If ReceivedItems are already buffered, wait longer before falling back so
+        a slightly-delayed Retrieved does not race and cause duplicate replays.
+        """
+        initial_wait = 15.0
+        extended_wait = 30.0
+
+        await asyncio.sleep(initial_wait)
+        if request_id != self._datastorage_request_id or self._datastorage_loaded:
+            return
+
+        if self._pending_received_items:
+            logger.warning(
+                "[DataStorage] Retrieved not received within 15s; "
+                "ReceivedItems are buffered, extending wait to avoid replay race"
+            )
+            await asyncio.sleep(extended_wait)
+            if request_id != self._datastorage_request_id or self._datastorage_loaded:
+                return
+
+        logger.warning("[DataStorage] Retrieved not received; proceeding with count=0 fallback")
+        self._datastorage_loaded = True
+        for pending_args in self._pending_received_items:
+            self._process_received_items(pending_args)
+        self._pending_received_items.clear()
 
     def _process_received_items(self, args: dict):
         """Process a ReceivedItems packet — extract and queue items from server."""
@@ -2496,10 +2515,12 @@ class SSHDContext(CommonContext):
             # Request persisted delivery index from AP DataStorage
             self._datastorage_loaded = False
             self._pending_received_items.clear()
+            self._datastorage_request_id += 1
+            request_id = self._datastorage_request_id
             ds_key = self._get_datastorage_key()
             unsafe_key = self._get_pending_unsafe_items_datastorage_key()
             asyncio.create_task(self.send_msgs([{"cmd": "Get", "keys": [ds_key, unsafe_key]}]))
-            asyncio.create_task(self._datastorage_timeout_guard())
+            asyncio.create_task(self._datastorage_timeout_guard(request_id))
             logger.debug(f"[DataStorage] Requested delivery index key: {ds_key}")
 
             # Initialize tracker state file on connection

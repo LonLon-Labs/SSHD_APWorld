@@ -202,6 +202,7 @@ class GameItemSystem:
         self._guest_to_host_delta: Optional[int] = None
         self._committed_flag_offset: Optional[int] = None  # host offset of committed flag data
         self._flagmgr_discovery_retry_at: float = 0.0  # earliest time to retry discovery
+        self._flagmgr_invalid_log_retry_at: float = 0.0  # throttle repeated null/invalid pointer logs
         
     def _score_buffer_candidate(self, offset: int, magic_signature: bytes,
                                 cs_addresses: list) -> tuple:
@@ -635,6 +636,7 @@ class GameItemSystem:
         # duplication: the game would process the item, Python would think
         # the write failed, and the retry would give a second copy.
         GRACE_FRAMES = 4  # ~67ms at 60 FPS — enough for the game loop
+        STUCK_ITEM_TIMEOUT_FRAMES = 300  # fail fast after ~5s if item never clears
 
         ever_saw_item = False
         for frame in range(self.timeout_frames):
@@ -646,6 +648,16 @@ class GameItemSystem:
 
             if item_id == expected_item_id and expected_item_id != 0:
                 ever_saw_item = True
+
+                # If the slot remains occupied by the same item for too long,
+                # fail fast so caller can retry/cycle instead of stalling for
+                # the full timeout window.
+                if frame >= STUCK_ITEM_TIMEOUT_FRAMES:
+                    logger.warning(
+                        f"Item {expected_item_id} stuck in buffer for {frame} frames; "
+                        "treating as timeout and retrying"
+                    )
+                    return False
 
             if item_id == 0:
                 if ever_saw_item:
@@ -715,8 +727,14 @@ class GameItemSystem:
             time.sleep(1.0 / 60.0)
 
         logger.error(f"Item processing timeout after {self.timeout_frames} frames")
-        # Clear the slot fully so stale data doesn't block future writes
-        self.memory.write_short(buffer_offset, 0)
+        # Only clear slot when buffer magic is valid. If magic is invalid, do
+        # not write into potentially stale memory; force caller to retry.
+        if self._verify_buffer_magic():
+            self.memory.write_short(buffer_offset, 0)
+        else:
+            logger.warning(
+                "Buffer magic invalid at timeout; skipping slot clear to avoid stale-memory write"
+            )
         return False
     
     def _verify_buffer_magic(self) -> bool:
@@ -950,7 +968,11 @@ class GameItemSystem:
         # Step 1: Read the ITEMFLAG_MGR pointer (guest address of FlagMgr).
         flagmgr_guest = self.memory.read_pointer(GameOffsets.ITEMFLAG_MGR)
         if not flagmgr_guest or flagmgr_guest < 0x7100000000:
-            logger.debug("[FlagMgr] ITEMFLAG_MGR pointer is null or invalid")
+            now = time.time()
+            if now >= self._flagmgr_invalid_log_retry_at:
+                logger.debug("[FlagMgr] ITEMFLAG_MGR pointer is null or invalid")
+                self._flagmgr_invalid_log_retry_at = now + 2.0
+            self._flagmgr_discovery_retry_at = now + 2.0
             return False
 
         # Step 2: Try candidate guest→host deltas.
