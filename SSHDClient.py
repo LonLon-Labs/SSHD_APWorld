@@ -2156,6 +2156,61 @@ class SSHDContext(CommonContext):
 
         return deduped, dropped
 
+    def _dedupe_item_queue_by_index(self) -> int:
+        """Deduplicate queued AP items by index, preserving first occurrence."""
+        deduped_queue: list[dict] = []
+        seen_indexes: set[int] = set()
+        dropped = 0
+
+        for item_data in self.item_queue:
+            idx_raw = item_data.get("index")
+            if idx_raw is None:
+                deduped_queue.append(item_data)
+                continue
+            try:
+                idx = int(idx_raw)
+            except Exception:
+                deduped_queue.append(item_data)
+                continue
+
+            if idx in seen_indexes:
+                dropped += 1
+                continue
+            seen_indexes.add(idx)
+            deduped_queue.append(item_data)
+
+        if dropped:
+            self.item_queue = deduped_queue
+        return dropped
+
+    def _drop_stale_queued_items_by_delivery_count(self) -> int:
+        """Drop queued AP items that are already covered by delivered_item_count."""
+        if self.delivered_item_count <= 0 or not self.item_queue:
+            return 0
+
+        filtered_queue: list[dict] = []
+        dropped = 0
+        for item_data in self.item_queue:
+            idx_raw = item_data.get("index")
+            if idx_raw is None:
+                filtered_queue.append(item_data)
+                continue
+            try:
+                idx = int(idx_raw)
+            except Exception:
+                filtered_queue.append(item_data)
+                continue
+
+            if idx < self.delivered_item_count:
+                dropped += 1
+                continue
+
+            filtered_queue.append(item_data)
+
+        if dropped:
+            self.item_queue = filtered_queue
+        return dropped
+
     async def _datastorage_timeout_guard(self, request_id: int):
         """Unblock item processing if Retrieved never arrives (e.g. old server).
 
@@ -2576,6 +2631,19 @@ class SSHDContext(CommonContext):
                 else:
                     logger.info("[DataStorage] No stored delivery count (first connect or new slot)")
 
+            dropped_stale_queue = self._drop_stale_queued_items_by_delivery_count()
+            if dropped_stale_queue:
+                logger.warning(
+                    f"[Recovery] Dropped {dropped_stale_queue} stale queued item(s) "
+                    f"already covered by delivery_count={self.delivered_item_count}"
+                )
+
+            dropped_dupe_queue = self._dedupe_item_queue_by_index()
+            if dropped_dupe_queue:
+                logger.warning(
+                    f"[Recovery] Deduped {dropped_dupe_queue} duplicate queued item(s) by AP index"
+                )
+
             if unsafe_key and unsafe_key in args.get("keys", {}):
                 stored_unsafe = args["keys"][unsafe_key] or []
                 restored_items = [dict(item_data) for item_data in stored_unsafe]
@@ -2705,6 +2773,11 @@ class SSHDContext(CommonContext):
                     self._skip_sword_sync = True
                     logger.info(f"[DataStorage] Restored {len(self._pending_unsafe_items)} unsafe item(s) for recovery")
                     self.item_queue = [dict(item_data) for item_data in self._pending_unsafe_items] + self.item_queue
+                    dropped_dupe_queue = self._dedupe_item_queue_by_index()
+                    if dropped_dupe_queue:
+                        logger.warning(
+                            f"[Recovery] Deduped {dropped_dupe_queue} queued item(s) after unsafe replay merge"
+                        )
                 else:
                     self._pending_unsafe_item_indexes.clear()
                     self._skip_sword_sync = False
