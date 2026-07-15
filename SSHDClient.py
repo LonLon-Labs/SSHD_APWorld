@@ -2055,8 +2055,11 @@ class SSHDContext(CommonContext):
     async def connection_closed(self):
         """Handle disconnection from server."""
         await super().connection_closed()
+        # Invalidate any in-flight timeout guard from the previous connect.
+        self._datastorage_request_id += 1
         self._datastorage_loaded = False
-        self.delivered_item_count = 0
+        # Drop buffered packets from the previous websocket session.
+        self._pending_received_items.clear()
         logger.info("Connection to Archipelago server closed")
 
     def _get_datastorage_key(self) -> str | None:
@@ -2186,6 +2189,16 @@ class SSHDContext(CommonContext):
         # Received items from other players
         start_index = args.get("index", 0)
         items_list = args.get("items", [])
+        existing_queue_indexes: set[int] = set()
+
+        for queued_item in self.item_queue:
+            idx = queued_item.get("index")
+            if idx is None:
+                continue
+            try:
+                existing_queue_indexes.add(int(idx))
+            except Exception:
+                continue
 
         # When the server sends a full resync (start_index == 0), reset
         # progressive counters so they are rebuilt from the authoritative
@@ -2200,6 +2213,12 @@ class SSHDContext(CommonContext):
 
             if item_global_index in self._pending_unsafe_item_indexes:
                 logger.debug(f"[ReceivedItems] Skipping unsafe recovery item at index {item_global_index}")
+                continue
+
+            if item_global_index in existing_queue_indexes:
+                logger.debug(
+                    f"[ReceivedItems] Skipping already-queued item at index {item_global_index}"
+                )
                 continue
 
             # Skip items already delivered in a previous session (safe items only; unsafe items must be re-delivered),
@@ -2264,6 +2283,7 @@ class SSHDContext(CommonContext):
                 "index": start_index + i,
                 "is_start_inventory": is_start_inventory,
             })
+            existing_queue_indexes.add(item_global_index)
 
     def update_tracker_state(self):
         """Update the tracker bridge with current state for autotracking."""
@@ -2515,6 +2535,14 @@ class SSHDContext(CommonContext):
             # Request persisted delivery index from AP DataStorage
             self._datastorage_loaded = False
             self._pending_received_items.clear()
+            if self.item_queue:
+                logger.info(
+                    f"[Recovery] Clearing {len(self.item_queue)} stale queued item(s) before reconnect sync"
+                )
+                self.item_queue.clear()
+            self._pending_unsafe_items.clear()
+            self._pending_unsafe_item_indexes.clear()
+            self._unsafe_items_count = 0
             self._datastorage_request_id += 1
             request_id = self._datastorage_request_id
             ds_key = self._get_datastorage_key()
