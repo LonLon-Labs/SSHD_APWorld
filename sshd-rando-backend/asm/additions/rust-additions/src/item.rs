@@ -629,6 +629,22 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
         20, // SK MAP - item id 213
     ];
 
+    // Key rings: one per dungeon, sets all small key flags for that dungeon
+    // Matches SK_TO_FLAGINDEX order (item ids 220-226 -> same scene indices as
+    // 200-206)
+    const KR_TO_FLAGINDEX: [usize; 7] = [
+        11, // SVT KR - item id 220
+        17, // LMF KR - item id 221
+        12, // AC KR - item id 222
+        15, // FS KR - item id 223
+        18, // SSH KR - item id 224
+        20, // SK KR - item id 225
+        9,  // Caves KR - item id 226
+    ];
+
+    const KEY_RING_FORCED_COUNT: u16 = 4;
+    const SKELETON_FORCED_COUNT: u16 = 5;
+
     unsafe {
         let itemid = (*item_actor).itemid;
 
@@ -690,6 +706,36 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
                 obtained_key_count += 1;
                 (*FILE_MGR).FA.dungeonflags[dungeon_item_scene_index][1] =
                     (obtained_key_count << 4) | current_key_count;
+            }
+        }
+
+        // Key Ring: set all small keys for the specific dungeon to max
+        if itemid >= 220 && itemid <= 226 {
+            let kr_idx = (itemid - 220) as usize;
+            let kr_scene_index = KR_TO_FLAGINDEX[kr_idx];
+            let key_bits = (KEY_RING_FORCED_COUNT << 4) | KEY_RING_FORCED_COUNT;
+
+            let current_scene_index = (*DUNGEONFLAG_MGR).sceneindex as usize;
+            // Update STATIC if currently inside this dungeon
+            if current_scene_index == kr_scene_index {
+                STATIC_DUNGEONFLAGS[1] = key_bits;
+            }
+            // Always update global save data
+            (*FILE_MGR).FA.dungeonflags[kr_scene_index][1] = key_bits;
+        }
+
+        // Skeleton Key: set all small keys for ALL dungeons to max
+        if itemid == 227 {
+            let current_scene_index = (*DUNGEONFLAG_MGR).sceneindex as usize;
+            for kr_idx in 0..7usize {
+                let kr_scene_index = KR_TO_FLAGINDEX[kr_idx];
+                let key_bits = (SKELETON_FORCED_COUNT << 4) | SKELETON_FORCED_COUNT;
+                // Update STATIC if currently inside this dungeon
+                if current_scene_index == kr_scene_index {
+                    STATIC_DUNGEONFLAGS[1] = key_bits;
+                }
+                // Always update global save data
+                (*FILE_MGR).FA.dungeonflags[kr_scene_index][1] = key_bits;
             }
         }
 
@@ -1747,10 +1793,25 @@ pub extern "C" fn get_arc_model_from_item(
     unsafe {
         AP_HOOK46_USED_FALLBACK = false;
 
-        // Resolve the arc name through progressive item logic.
+        // Safety: arc_table can be null/uninitialized during very early boot
+        // (same underlying issue as the stage-bzs arc table being unready at
+        // title screen). Calling dRawArcTable_c__getDataFromOarc with an
+        // invalid arc_table crashes deep inside the game's arc lookup code
+        // (observed as a null-pointer strlen crash). Bail out to a null
+        // result so callers fall back gracefully instead of crashing.
+        if arc_table.is_null() {
+            return core::ptr::null_mut();
+        }
+
+        // Resolve the arc name through progressive item logic. arc_name may
+        // itself be null here (the vanilla item table has no oarc entry for
+        // this item_id yet during early boot); resolve_progressive_item_models
+        // only overrides specific item_ids and otherwise returns its input
+        // unchanged, so a null arc_name can flow straight through.
         let resolved_model_name = resolve_progressive_item_models(arc_name, item_id, 1);
 
-        // If resolution returned null, use GetRupee fallback.
+        // If resolution returned null, use GetRupee fallback. This also
+        // catches the case where arc_name was null and no override applied.
         if resolved_model_name.is_null() {
             AP_HOOK46_USED_FALLBACK = true;
             let fallback_model = get_fallback_model_for_item(item_id);
@@ -1811,7 +1872,9 @@ pub extern "C" fn get_item_model_name_ptr(
         asm!("mov x1, {0:x}", in(reg) item_id);
         asm!("cmp x1, #0x1C");
 
-        // If still null after resolution, use fallback.
+        // If still null after resolution, use fallback. This is the primary
+        // guard against passing a null c_char* back to the game's string
+        // lookup code (observed to crash inside a null-pointer strlen call).
         if resolved_model_name.is_null() {
             return get_fallback_model_for_item(item_id);
         }

@@ -169,6 +169,16 @@ ITEM_TABLE: dict[str, SSHDItem] = {
     "Sandship Small Key": SSHDItem("Sandship Small Key", 2773204, IC.progression, 204),
     "Sky Keep Small Key": SSHDItem("Sky Keep Small Key", 2773205, IC.progression, 205),
     "Lanayru Caves Small Key": SSHDItem("Lanayru Caves Small Key", 2773206, IC.progression, 206),
+    # Key Rings: one per dungeon, replaces all small keys for that dungeon
+    "Skyview Temple Key Ring": SSHDItem("Skyview Temple Key Ring", 2773220, IC.progression, 220),
+    "Lanayru Mining Facility Key Ring": SSHDItem("Lanayru Mining Facility Key Ring", 2773221, IC.progression, 221),
+    "Ancient Cistern Key Ring": SSHDItem("Ancient Cistern Key Ring", 2773222, IC.progression, 222),
+    "Fire Sanctuary Key Ring": SSHDItem("Fire Sanctuary Key Ring", 2773223, IC.progression, 223),
+    "Sandship Key Ring": SSHDItem("Sandship Key Ring", 2773224, IC.progression, 224),
+    "Sky Keep Key Ring": SSHDItem("Sky Keep Key Ring", 2773225, IC.progression, 225),
+    "Lanayru Caves Key Ring": SSHDItem("Lanayru Caves Key Ring", 2773226, IC.progression, 226),
+    # Skeleton Key: one global item that opens all small key doors in all dungeons
+    "Skeleton Key": SSHDItem("Skeleton Key", 2773227, IC.progression, 227),
     "Skyview Temple Map": SSHDItem("Skyview Temple Map", 2773207, IC.useful, 207),
     "Earth Temple Map": SSHDItem("Earth Temple Map", 2773208, IC.useful, 208),
     "Lanayru Mining Facility Map": SSHDItem("Lanayru Mining Facility Map", 2773209, IC.useful, 209),

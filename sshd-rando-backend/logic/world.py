@@ -87,6 +87,7 @@ class World:
         return f"World {self.id + 1}"
 
     def build(self) -> None:
+        self.resolve_small_key_settings()
         self.build_item_table()
         self.build_location_table()
         self.load_logic_macros()
@@ -94,6 +95,10 @@ class World:
         self.verify_hint_data()
         self.place_hardcoded_items()
         self.build_item_pools()
+
+    def resolve_small_key_settings(self) -> None:
+        """No-op: small key locking is resolved dynamically in setting comparisons."""
+        return
 
     # Read items.yaml and store all necessary data in a dict
     # for this world
@@ -923,7 +928,11 @@ class World:
             raise SettingInfoError(
                 f'No Setting named "{setting_name}" in settings for {self}'
             )
-        return SettingGet(setting_name, self.setting_map.settings[setting_name])
+        return SettingGet(
+            setting_name,
+            self.setting_map.settings[setting_name],
+            self.setting_map.settings,
+        )
 
     def set_search_starting_properties(self, search: "Search"):
         # Set the root to have all times of day (necessary for entrance rando)

@@ -320,15 +320,23 @@ Skyward Sword HD:
   # KEY AND MAP PLACEMENT
   # ========================================
   
-  # Small Key Shuffle
+  # Small Keys In The Pool
   # vanilla: Small Keys will appear in their vanilla locations
-  # own_dungeon: Keys only in their own dungeon (default)
-  # any_dungeon: Keys can be in any dungeon
-  # own_region: Keys will appear in their dungeon's region
+  # own_region: Keys will appear in their dungeon's region (default)
   # overworld: Keys will only appear in the overworld
   # anywhere: Keys can be anywhere in the world
-  # removed: Keys removed, locks start opened
-  small_key_shuffle: own_dungeon
+  # removed: No locked doors for small keys (doors start opened)
+  small_key_shuffle: own_region
+
+  # Key Rings In The Pool
+  # false: Do not add key rings
+  # true: Replace each dungeon's small keys with one key ring
+  key_rings_in_pool: false
+
+  # Skeleton Key In The Pool
+  # false: Do not add the skeleton key
+  # true: Replace all dungeon small keys with one skeleton key
+  skeleton_key_in_pool: false
   
   # Boss Key Shuffle
   # vanilla: Boss Keys will appear in their vanilla locations

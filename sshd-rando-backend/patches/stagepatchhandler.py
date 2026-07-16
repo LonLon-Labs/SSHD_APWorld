@@ -82,6 +82,7 @@ AP_ITEM_OARC_NAMES: frozenset[str] = frozenset({
     "GetWhip", "GetEarring",
     "GetKobunALetter", "GetTerryCage",
     "ArchipelagoItem", "ArchipelagoItem2",
+    "KeyRing", "SkeletonKey",
     "GetGaragara", "PutGaragara",
     "GetSozaiC", "GetSozaiF", "GetSozaiH",
     "GetSozaiL", "GetSozaiN", "GetSozaiO", "GetSozaiP",

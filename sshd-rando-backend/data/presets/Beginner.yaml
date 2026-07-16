@@ -21,7 +21,9 @@ World 1:
   random_trial_object_positions: none
   randomize_skykeep_layout: 'off'
   peatrice_conversations: '0'
-  small_keys: own_dungeon
+  small_keys: own_region
+  key_rings_in_pool: off
+  skeleton_key_in_pool: off
   lanayru_caves_keys: removed
   boss_keys: own_dungeon
   map_mode: own_dungeon_restricted

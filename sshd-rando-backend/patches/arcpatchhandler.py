@@ -202,3 +202,33 @@ def patch_tablet_ui(output_path: Path):
     write_bytes_create_dirs(
         output_path / "Layout" / "MenuPause.arc", menu_pause_arc.build_U8()
     )
+
+
+def patch_small_key_ui(output_path: Path):
+    print_progress_text("Patching Small Key UI")
+    # Get Do Button Data
+    do_button_path = ROMFS_EXTRACT_PATH / "Layout" / "DoButton.arc"
+    do_button_arc = U8File.get_parsed_U8_from_path(do_button_path)
+
+    # Set BRLAN Data
+    brlan_data = (
+        RANDO_ROOT_PATH / "assets" / "smallkeys" / "keySmall_00_keySmall.brlan"
+    ).read_bytes()
+    do_button_arc.set_file_data("anim/keySmall_00_keySmall.brlan", brlan_data)
+
+    # Set BRLYT Data
+    brlyt_data = (
+        RANDO_ROOT_PATH / "assets" / "smallkeys" / "keySmall_00.brlyt"
+    ).read_bytes()
+    do_button_arc.set_file_data("blyt/keySmall_00.brlyt", brlyt_data)
+
+    # Add Icons
+    for suffix in ("1", "2"):
+        name = f"tr_keySmall_0{suffix}.tpl"
+        tpl_data = (RANDO_ROOT_PATH / "assets" / "smallkeys" / name).read_bytes()
+        do_button_arc.add_file_data("timg/" + name, tpl_data)
+
+    # Set Do Button Data
+    write_bytes_create_dirs(
+        output_path / "Layout" / "DoButton.arc", do_button_arc.build_U8()
+    )

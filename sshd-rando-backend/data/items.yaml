@@ -1469,6 +1469,82 @@
   shop_model_name: GetSozaiC
   advancement: true
 
+# AP-only dungeon key ring items (one ring per dungeon, replaces all small keys)
+- id: 220
+  name: Skyview Temple Key Ring
+  types:
+    - Dungeon Items
+    - Small Keys
+  oarc: KeyRing
+  shop_arc_name: KeyRing
+  shop_model_name: KeyRing
+  advancement: true
+- id: 221
+  name: Lanayru Mining Facility Key Ring
+  types:
+    - Dungeon Items
+    - Small Keys
+  oarc: KeyRing
+  shop_arc_name: KeyRing
+  shop_model_name: KeyRing
+  advancement: true
+- id: 222
+  name: Ancient Cistern Key Ring
+  types:
+    - Dungeon Items
+    - Small Keys
+  oarc: KeyRing
+  shop_arc_name: KeyRing
+  shop_model_name: KeyRing
+  advancement: true
+- id: 223
+  name: Fire Sanctuary Key Ring
+  types:
+    - Dungeon Items
+    - Small Keys
+  oarc: KeyRing
+  shop_arc_name: KeyRing
+  shop_model_name: KeyRing
+  advancement: true
+- id: 224
+  name: Sandship Key Ring
+  types:
+    - Dungeon Items
+    - Small Keys
+  oarc: KeyRing
+  shop_arc_name: KeyRing
+  shop_model_name: KeyRing
+  advancement: true
+- id: 225
+  name: Sky Keep Key Ring
+  types:
+    - Dungeon Items
+    - Small Keys
+  oarc: KeyRing
+  shop_arc_name: KeyRing
+  shop_model_name: KeyRing
+  advancement: true
+- id: 226
+  name: Lanayru Caves Key Ring
+  types:
+    - Dungeon Items
+    - Small Keys
+  oarc: KeyRing
+  shop_arc_name: KeyRing
+  shop_model_name: KeyRing
+  advancement: true
+
+# AP-only skeleton key (one item unlocks all small key doors across all dungeons)
+- id: 227
+  name: Skeleton Key
+  types:
+    - Dungeon Items
+    - Small Keys
+  oarc: SkeletonKey
+  shop_arc_name: SkeletonKey
+  shop_model_name: SkeletonKey
+  advancement: true
+
 # - id: 240+ == traps
 
 - id: 250

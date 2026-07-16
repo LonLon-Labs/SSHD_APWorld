@@ -1178,7 +1178,10 @@ class GameItemSystem:
         # Item IDs above 215 are custom/virtual (Archipelago Item 216,
         # traps 250+, goddess cubes 257+, Game Beatable 256).  These do
         # not have a real item flag in the vanilla flag table.
+        # Exception: Key Rings (220-226) and Skeleton Key (227) write dungeon key counts.
         if item_id > 215:
+            if 220 <= item_id <= 227:
+                return self._ensure_dungeon_keys_set(item_id)
             return True  # nothing to set — not a failure
 
         flag_id = item_id
@@ -1242,6 +1245,67 @@ class GameItemSystem:
                     confirmed = True
             except Exception as exc:
                 logger.warning(f"[DirectFlag] Could not write flag {flag_id}: {exc}")
+
+        return confirmed
+
+    def _ensure_dungeon_keys_set(self, item_id: int) -> bool:
+        """Direct-write fallback for Key Rings (220-226) and Skeleton Key (227).
+
+        Writes the max key count for the relevant dungeon(s) directly to save
+        memory (FA.dungeonflags) and the static dungeon flags so the doors
+        open immediately without needing the game's actor system.
+        """
+        if not self.memory or not self.memory.connected:
+            return False
+
+        # FA.dungeonflags offset: FA base + 0xA64, layout [[u16;8];26]
+        # Each u16[8] block is 16 bytes (8 × 2 bytes).
+        # Key count is stored in slot [1]: lower nibble = current, upper nibble = obtained.
+        FA_DUNGEON_FLAGS_OFFSET = 0x5AEAD54 + 0xA64  # absolute host offset
+        STATIC_DUNGEON_FLAGS    = 0x182E128           # absolute host offset
+
+        # scene_index per dungeon.
+        DUNGEON_KEY_INFO = [
+            11,  # SVT - item id 220
+            17,  # LMF - item id 221
+            12,  # AC  - item id 222
+            15,  # FS  - item id 223
+            18,  # SSH - item id 224
+            20,  # SK  - item id 225
+            9,   # Caves - item id 226
+        ]
+
+        if item_id == 227:
+            targets = [(scene_idx, 5) for scene_idx in DUNGEON_KEY_INFO]  # skeleton key → all dungeons
+        else:
+            scene_idx = DUNGEON_KEY_INFO[item_id - 220]
+            targets = [(scene_idx, 4)]  # one key ring
+
+        confirmed = False
+        for scene_idx, max_keys in targets:
+            key_bits = (max_keys << 4) | max_keys
+            # FA dungeonflags[scene_idx][1]
+            fa_offset = FA_DUNGEON_FLAGS_OFFSET + scene_idx * 16 + 1 * 2
+            # STATIC dungeonflags[1] (only meaningful if player is in that dungeon,
+            # but writing it unconditionally is safe — it will be overwritten on
+            # the next scene load if wrong)
+            static_offset = STATIC_DUNGEON_FLAGS + 1 * 2  # slot [1] of current scene
+
+            try:
+                self.memory.write_short(fa_offset, key_bits)
+                confirmed = True
+                logger.info(
+                    f"[DungeonKeys] Set scene {scene_idx} FA.dungeonflags[1] = "
+                    f"0x{key_bits:04x} (max={max_keys}) for item_id {item_id}"
+                )
+            except Exception as exc:
+                logger.warning(f"[DungeonKeys] Failed to write FA dungeon flags for scene {scene_idx}: {exc}")
+
+            # Also write to STATIC (best-effort; only correct if currently in that dungeon)
+            try:
+                self.memory.write_short(static_offset, key_bits)
+            except Exception:
+                pass
 
         return confirmed
 

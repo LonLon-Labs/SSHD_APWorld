@@ -112,9 +112,10 @@ class SettingMap:
 # Helper class to allow for automatic sanity checking and syntactic sugar when
 # checking setting values
 class SettingGet:
-    def __init__(self, name_: str, setting_: Setting) -> None:
+    def __init__(self, name_: str, setting_: Setting, settings_map: dict[str, Setting] | None = None) -> None:
         self.setting_name: str = name_
         self.setting: Setting = setting_
+        self.settings_map: dict[str, Setting] = settings_map if settings_map is not None else {}
 
     def value(self) -> str:
         return self.setting.value
@@ -162,6 +163,27 @@ class SettingGet:
             raise SettingInfoError(
                 f'ERROR: "{value_}" is not a known value for {self.setting_name}'
             )
+
+        # Keep key doors locked when key rings or skeleton key are active,
+        # even if Small Keys In The Pool is set to removed.
+        if self.setting_name == "small_keys" and value_ == "removed":
+            key_rings = self.settings_map.get("key_rings_in_pool")
+            skeleton = self.settings_map.get("skeleton_key_in_pool")
+            key_rings_on = key_rings is not None and key_rings.value == "on"
+            skeleton_on = skeleton is not None and skeleton.value == "on"
+            if key_rings_on or skeleton_on:
+                return False
+
+        # Lanayru Caves locks should stay locked when key rings or skeleton key
+        # are active; those items control access instead of auto-unlocking.
+        if self.setting_name == "lanayru_caves_keys" and value_ == "removed":
+            key_rings = self.settings_map.get("key_rings_in_pool")
+            skeleton = self.settings_map.get("skeleton_key_in_pool")
+            key_rings_on = key_rings is not None and key_rings.value == "on"
+            skeleton_on = skeleton is not None and skeleton.value == "on"
+            if key_rings_on or skeleton_on:
+                return False
+
         return self.setting.value == value_
 
     def is_any_of(self, *values) -> bool:

@@ -52,7 +52,7 @@ class Item:
             not self.is_major_item
             or (
                 self.is_dungeon_small_key
-                and self.world.setting("small_keys").is_any_of("vanilla", "own_dungeon")
+                and self.world.setting("small_keys") == "vanilla"
             )
             or (
                 self.is_boss_key

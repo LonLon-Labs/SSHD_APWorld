@@ -99,6 +99,46 @@
     entry:
       name: "003_218"
       value: Show Tim Item Get Text
+  - name: SVT Key Ring Entry
+    type: entryadd
+    entry:
+      name: "003_220"
+      value: Show Item 220 Text
+  - name: LMF Key Ring Entry
+    type: entryadd
+    entry:
+      name: "003_221"
+      value: Show Item 221 Text
+  - name: AC Key Ring Entry
+    type: entryadd
+    entry:
+      name: "003_222"
+      value: Show Item 222 Text
+  - name: FS Key Ring Entry
+    type: entryadd
+    entry:
+      name: "003_223"
+      value: Show Item 223 Text
+  - name: SSH Key Ring Entry
+    type: entryadd
+    entry:
+      name: "003_224"
+      value: Show Item 224 Text
+  - name: SK Key Ring Entry
+    type: entryadd
+    entry:
+      name: "003_225"
+      value: Show Item 225 Text
+  - name: Caves Key Ring Entry
+    type: entryadd
+    entry:
+      name: "003_226"
+      value: Show Item 226 Text
+  - name: Skeleton Key Entry
+    type: entryadd
+    entry:
+      name: "003_227"
+      value: Show Item 227 Text
   - name: Set AP Item String Args
     type: flowadd
     flow:
@@ -153,6 +193,102 @@
       next: -1
       param3: 3
       param4: Tim Item Get Text
+
+  - name: Item 220 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 220 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 220 Text
+
+  - name: Item 221 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 221 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 221 Text
+
+  - name: Item 222 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 222 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 222 Text
+
+  - name: Item 223 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 223 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 223 Text
+
+  - name: Item 224 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 224 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 224 Text
+
+  - name: Item 225 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 225 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 225 Text
+
+  - name: Item 226 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 226 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 226 Text
+
+  - name: Item 227 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 227 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 227 Text
 
   - name: Give Scrapper Storyflag
     type: flowadd

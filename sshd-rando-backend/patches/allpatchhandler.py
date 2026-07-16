@@ -32,6 +32,7 @@ from patches.arcpatchhandler import (
     patch_logo,
     patch_object_folder,
     patch_tablet_ui,
+    patch_small_key_ui,
 )
 
 
@@ -120,6 +121,7 @@ class AllPatchHandler:
 
         update_progress_value(81)
         patch_tablet_ui(output_dir / "romfs")
+        patch_small_key_ui(output_dir / "romfs")
 
         update_progress_value(82)
         add_dynamic_text_patches(self.world, self.event_patch_handler)

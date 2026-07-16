@@ -53,6 +53,19 @@ _ITEM_NAME_FIXES = {
     "Skippers_Retreat_Goddess_Cube": "Skipper's Retreat Goddess Cube",
 }
 
+# Maps each dungeon's small key AP name to its corresponding key ring name.
+# Used in logic rules to allow key rings and the skeleton key to satisfy
+# small key requirements.
+_SMALL_KEY_TO_KEY_RING: dict[str, str] = {
+    "Skyview Temple Small Key":          "Skyview Temple Key Ring",
+    "Lanayru Mining Facility Small Key": "Lanayru Mining Facility Key Ring",
+    "Ancient Cistern Small Key":         "Ancient Cistern Key Ring",
+    "Fire Sanctuary Small Key":          "Fire Sanctuary Key Ring",
+    "Sandship Small Key":                "Sandship Key Ring",
+    "Sky Keep Small Key":                "Sky Keep Key Ring",
+    "Lanayru Caves Small Key":           "Lanayru Caves Key Ring",
+}
+
 
 def _normalize_item_name(name: str) -> str:
     """Convert sshd-rando item/macro name (underscored) to AP item name (spaced)."""
@@ -354,6 +367,18 @@ class _ReqParser:
             # If this item is collected in vanilla (not shuffled), rule is auto-satisfied
             if item_name in self.vanilla_items:
                 return ALWAYS_TRUE
+            # Key rings and skeleton key can substitute for small key count requirements
+            key_ring = _SMALL_KEY_TO_KEY_RING.get(item_name)
+            if key_ring:
+                if count_val == 1:
+                    return lambda state, player, _i=item_name, _kr=key_ring: (
+                        state.has(_i, player) or state.has(_kr, player) or state.has("Skeleton Key", player)
+                    )
+                return lambda state, player, _c=count_val, _i=item_name, _kr=key_ring: (
+                    state.count(_i, player) >= _c
+                    or state.has(_kr, player)
+                    or state.has("Skeleton Key", player)
+                )
             if count_val == 1:
                 return lambda state, player, _i=item_name: state.has(_i, player)
             return lambda state, player, _c=count_val, _i=item_name: state.count(_i, player) >= _c
@@ -396,6 +421,12 @@ class _ReqParser:
             # If this item is collected in vanilla (not shuffled), rule is auto-satisfied
             if item_name in self.vanilla_items:
                 return ALWAYS_TRUE
+            # Key rings and skeleton key can substitute for small key checks
+            key_ring = _SMALL_KEY_TO_KEY_RING.get(item_name)
+            if key_ring:
+                return lambda state, player, _i=item_name, _kr=key_ring: (
+                    state.has(_i, player) or state.has(_kr, player) or state.has("Skeleton Key", player)
+                )
             return lambda state, player, _i=item_name: state.has(_i, player)
         
         # Check if it could be a setting we haven't seen
