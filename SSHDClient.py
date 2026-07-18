@@ -18,42 +18,6 @@ import time
 from pathlib import Path
 from typing import Optional, Set, Dict, Any
 
-# Add parent directory to path to find Archipelago modules when running as exe
-if getattr(sys, 'frozen', False):
-    # Running as compiled exe
-    bundle_dir = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    # Add Archipelago install directory to path (cross-platform)
-    try:
-        from platform_utils import get_archipelago_dir
-        archipelago_dir = str(get_archipelago_dir())
-    except ImportError:
-        # Fallback if platform_utils not available
-        if sys.platform == "win32":
-            archipelago_dir = os.path.join(os.environ.get('PROGRAMDATA', 'C:\\ProgramData'), 'Archipelago')
-        elif sys.platform == "linux":
-            archipelago_dir = os.path.expanduser("~/.local/share/Archipelago")
-        else:  # macOS and other
-            archipelago_dir = os.path.expanduser("~/Library/Application Support/Archipelago")
-    if os.path.exists(archipelago_dir):
-        sys.path.insert(0, archipelago_dir)
-else:
-    # Running as script - add current directory to find bundled modules
-    bundle_dir = os.path.dirname(os.path.abspath(__file__))
-    # Add current directory first (for bundled core files in .apworld)
-    sys.path.insert(0, bundle_dir)
-    # Also try Archipelago folder if available
-    archipelago_parent = os.path.dirname(bundle_dir)
-    archipelago_dir = os.path.join(archipelago_parent, 'Archipelago')
-    if os.path.exists(archipelago_dir):
-        sys.path.insert(0, archipelago_dir)
-
-# Disable ModuleUpdate (prevents unnecessary dependency checks)
-class DummyModuleUpdate:
-    @staticmethod
-    def update(*args, **kwargs):
-        pass
-sys.modules['ModuleUpdate'] = DummyModuleUpdate()
-
 
 def _configure_kivy_windows_input() -> None:
     """Use stable Windows input providers for Kivy in launcher context."""
@@ -80,84 +44,31 @@ def _configure_kivy_windows_input() -> None:
 _configure_kivy_windows_input()
 
 import psutil
-from process_memory import ProcessMemory, ProcessMemoryError
+from .process_memory import ProcessMemory, ProcessMemoryError
 
 # Import Archipelago core modules via absolute imports only.
 # CommonClient and NetUtils are never inside the sshd package, so relative
 # imports (from .CommonClient) always fail with ModuleNotFoundError and
 # pollute Python's exception __context__ chain, causing unrelated worlds
 # (e.g. dk64) to show the sshd error in their own failure tracebacks.
-try:
-    from CommonClient import CommonContext, server_loop, gui_enabled, \
-        ClientCommandProcessor, logger, get_base_parser
-    from NetUtils import ClientStatus
-except ImportError as e:
-    if getattr(sys, 'frozen', False):
-        # Standalone exe: show a user-facing message then exit.
-        print(f"ERROR: Cannot import Archipelago modules. Make sure Archipelago is installed.")
-        print(f"Import error: {e}")
-        print(f"\nTo fix this:")
-        print(f"1. Install Archipelago from https://github.com/ArchipelagoMW/Archipelago/releases")
-        print(f"2. Or run this script from within the Archipelago folder")
-        try:
-            if getattr(sys.stdin, 'isatty', lambda: False)():
-                input("Press Enter to exit...")
-        except (EOFError, RuntimeError, OSError):
-            pass
-        sys.exit(1)
-    else:
-        # apworld / script context: re-raise so the host handles it cleanly
-        # instead of calling sys.exit() which would kill the entire process.
-        raise
+from CommonClient import CommonContext, server_loop, gui_enabled, \
+    ClientCommandProcessor, logger, get_base_parser
+from NetUtils import ClientStatus
 
-# Import tracker bridge
-try:
-    from .TrackerBridge import TrackerBridge
-    print(f"[Import] Successfully imported TrackerBridge from package")
-except ImportError:
-    try:
-        from TrackerBridge import TrackerBridge
-        print(f"[Import] Successfully imported TrackerBridge from standalone")
-    except ImportError as e:
-        print(f"[Import] TrackerBridge not available: {e}")
-        TrackerBridge = None
+from .TrackerBridge import TrackerBridge
+from .Locations import LOCATION_TABLE
+from .Items import ITEM_TABLE
 
-# Import location table for proper location IDs
-try:
-    from .Locations import LOCATION_TABLE
-except ImportError:
-    try:
-        from Locations import LOCATION_TABLE
-    except ImportError:
-        LOCATION_TABLE = {}
-
-# Import item table for item code lookup
-try:
-    from .Items import ITEM_TABLE
-except ImportError:
-    try:
-        from Items import ITEM_TABLE
-    except ImportError:
-        ITEM_TABLE = {}
-
-# Import hint system
 try:
     from .Hints import HintSystem
 except ImportError:
-    try:
-        from Hints import HintSystem
-    except ImportError:
-        HintSystem = None
+    HintSystem = None
 
-# Import Archipelago item system integration
 try:
     from .ItemSystemIntegration import GameItemSystem
 except ImportError:
-    try:
-        from ItemSystemIntegration import GameItemSystem
-    except ImportError:
-        GameItemSystem = None
-        logger.warning("ItemSystemIntegration not found - falling back to direct memory writes")
+    GameItemSystem = None
+    logger.warning("ItemSystemIntegration not found - falling back to direct memory writes")
 
 
 # Beedle's Airshop detection constants
@@ -1789,17 +1700,12 @@ class SSHDContext(CommonContext):
         script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
         candidates.append(script_dir / yaml_name)
 
-        # 2-3. Archipelago install directory
+        # 2-3. Archipelago base user path
         try:
-            from platform_utils import get_archipelago_dir
-            ap_dir = Path(str(get_archipelago_dir()))
+            from Utils import user_path
+            ap_dir = Path(user_path())
         except Exception:
-            if sys.platform == "win32":
-                ap_dir = Path(os.environ.get('PROGRAMDATA', 'C:\\ProgramData')) / 'Archipelago'
-            elif sys.platform == "linux":
-                ap_dir = Path.home() / '.local' / 'share' / 'Archipelago'
-            else:
-                ap_dir = Path.home() / 'Library' / 'Application Support' / 'Archipelago'
+            ap_dir = script_dir
         candidates.append(ap_dir / 'Players' / yaml_name)
         candidates.append(ap_dir / yaml_name)
 
@@ -5977,159 +5883,95 @@ class SSHDContext(CommonContext):
 
 def install_patch(patch_file_path: str) -> tuple[bool, dict]:
     """
-    Extract and install .apsshd patch to emulator mod directory.
-    
-    Returns (success: bool, location_to_item: dict).
+    Install bundled romfs/exefs data from an .apsshd file to detected emulator mod directories.
+
+    Returns ``(success, location_to_item_map)``.
     """
-    import zipfile
-    import json
-    from pathlib import Path
     import shutil
-    
-    print(f"\n{'='*60}")
-    print(f"Installing SSHD Archipelago Patch")
-    print(f"{'='*60}")
+    import zipfile
+
+    print(f"\n{'=' * 60}")
+    print("Installing SSHD Archipelago Patch")
+    print(f"{'=' * 60}")
     print(f"Patch file: {patch_file_path}")
-    
+
     patch_path = Path(patch_file_path)
-    if not patch_path.exists():
+    if not patch_path.is_file():
         print(f"ERROR: Patch file not found: {patch_file_path}")
         return False, {}
-    
+
     try:
-        # Extract patch file
-        print(f"\nExtracting patch file...")
-        with zipfile.ZipFile(patch_path, 'r') as zip_file:
-            # Read manifest
+        with zipfile.ZipFile(patch_path, "r") as zip_file:
+            file_list = zip_file.namelist()
             manifest = json.loads(zip_file.read("manifest.json"))
             print(f"  Game: {manifest.get('game')}")
             print(f"  Player: {manifest.get('player')}")
             print(f"  Seed: {manifest.get('seed')}")
-            
-            # Load patch data with location-to-item mapping
+
             location_to_item = {}
-            if 'patch_data.json' in zip_file.namelist():
+            if "patch_data.json" in file_list:
                 patch_data = json.loads(zip_file.read("patch_data.json"))
-                location_to_item = patch_data.get('locations', {})
+                location_to_item = patch_data.get("locations", {})
                 print(f"\n  Loaded {len(location_to_item)} location-to-item mappings")
-            
-            # Check if romfs/exefs exist
-            file_list = zip_file.namelist()
-            has_romfs = any(f.startswith('romfs/') for f in file_list)
-            has_exefs = any(f.startswith('exefs/') for f in file_list)
-            
-            print(f"\nPatch contents:")
-            print(f"  - manifest.json: YES")
-            print(f"  - patch_data.json: YES")
+
+            has_romfs = any(name.startswith("romfs/") for name in file_list)
+            has_exefs = any(name.startswith("exefs/") for name in file_list)
+
+            print("\nPatch contents:")
+            print("  - manifest.json: YES")
+            print(f"  - patch_data.json: {'YES' if 'patch_data.json' in file_list else 'NO'}")
             print(f"  - romfs/: {'YES' if has_romfs else 'NO'}")
             print(f"  - exefs/: {'YES' if has_exefs else 'NO'}")
-            
+
             if not has_romfs and not has_exefs:
-                has_patcher_data = 'patcher_data.json' in file_list
-                if has_patcher_data:
-                    print(f"\nThis .apsshd does not contain ROM patches (lightweight patch file).")
-                    print(f"Use the standalone patcher to generate patches from your own ROM:")
-                    print(f"    ArchipelagoSSHDPatcher.exe \"{patch_file_path}\"")
-                    print(f"\nOr double-click the .apsshd file in Archipelago to auto-patch.")
-                else:
-                    print(f"\nWARNING: No game mod files found in patch!")
-                    print(f"This patch only contains item/location data.")
-                    print(f"You may need to apply the base randomizer mod manually.")
-                return False, {}
-            
-            # Find ALL emulator mod directories and install to each
-            emulator_mod_dirs = []
+                print("\nThis .apsshd does not contain full ROM patches (romfs/exefs).")
+                print("Use SSHDPatcher to generate/install emulator mod files from patcher_data.json.")
+                return False, location_to_item
+
             try:
-                from platform_utils import find_all_emulator_mod_dirs
+                from .platform_utils import find_all_emulator_mod_dirs
                 emulator_mod_dirs = find_all_emulator_mod_dirs()
-            except ImportError:
-                pass
+            except Exception:
+                emulator_mod_dirs = []
 
             if not emulator_mod_dirs:
-                # Fallback: try common paths for all supported emulators
-                game_id = "01002da013484000"
-                fallback_paths = []
-                if sys.platform == "win32":
-                    appdata = Path(os.environ.get('APPDATA', ''))
-                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
-                        fallback_paths.append(appdata / emu / "sdcard" / "atmosphere" / "contents" / game_id)
-                        fallback_paths.append(appdata / emu / "load" / game_id)
-                elif sys.platform == "linux":
-                    for emu_dir, emu_base in [(".config/Ryujinx", "sdcard/atmosphere/contents"),
-                                               (".local/share/yuzu", "load"),
-                                               (".local/share/suyu", "load"),
-                                               (".local/share/sudachi", "load"),
-                                               (".local/share/eden", "load")]:
-                        fallback_paths.append(Path.home() / emu_dir / emu_base / game_id)
-                else:  # macOS
-                    app_support = Path.home() / "Library" / "Application Support"
-                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
-                        fallback_paths.append(app_support / emu / "sdcard" / "atmosphere" / "contents" / game_id)
-                        fallback_paths.append(app_support / emu / "load" / game_id)
-
-                for path in fallback_paths:
-                    if path.parent.exists():
-                        emulator_mod_dirs.append(path)
-            
-            if emulator_mod_dirs:
-                print(f"\nFound {len(emulator_mod_dirs)} emulator mod director{'y' if len(emulator_mod_dirs) == 1 else 'ies'}:")
-                
-                for emulator_mod_dir in emulator_mod_dirs:
-                    emulator_mod_dir.mkdir(parents=True, exist_ok=True)
-                    mod_install_dir = emulator_mod_dir / "Archipelago"
-                    
-                    print(f"  Installing to: {mod_install_dir}")
-                    
-                    # Remove existing mod if present
-                    if mod_install_dir.exists():
-                        shutil.rmtree(mod_install_dir)
-                    
-                    # Extract romfs and exefs
-                    mod_install_dir.mkdir(parents=True, exist_ok=True)
-                    
-                    for file_name in file_list:
-                        if file_name.startswith('romfs/') or file_name.startswith('exefs/'):
-                            target_path = mod_install_dir / file_name
-                            target_path.parent.mkdir(parents=True, exist_ok=True)
-                            
-                            with zip_file.open(file_name) as source:
-                                with open(target_path, 'wb') as target:
-                                    target.write(source.read())
-                
-                print(f"\n✓ Patch installed to {len(emulator_mod_dirs)} emulator(s)!")
-                print(f"\nNext steps:")
-                print(f"  1. Launch Skyward Sword HD in your emulator")
-                print(f"  2. The LayeredFS mod will be automatically applied")
-                print(f"  3. Connect to the Archipelago server")
-                return True, location_to_item
-            else:
-                # No emulator found - extract to temp for manual install
-                print(f"\nWARNING: No supported emulator installation found automatically.")
-                print(f"Extracting patch files for manual installation...")
-                
-                # Extract to a folder next to the patch file
+                print("\nWARNING: No supported emulator installation found automatically.")
+                print("Extracting patch files for manual installation...")
                 extract_dir = patch_path.parent / f"{patch_path.stem}_extracted"
                 if extract_dir.exists():
                     shutil.rmtree(extract_dir)
                 extract_dir.mkdir(parents=True, exist_ok=True)
-                
                 zip_file.extractall(extract_dir)
-                
-                print(f"\nExtracted to: {extract_dir}")
-                print(f"\nManual installation:")
-                print(f"  1. Copy the romfs/ and exefs/ folders to your emulator's mod directory")
-                print(f"     (e.g. Ryujinx: sdcard/atmosphere/contents/01002da013484000/Archipelago/)")
-                print(f"     (e.g. yuzu: load/01002da013484000/Archipelago/)")
-                print(f"  2. Launch Skyward Sword HD in your emulator")
-                print(f"  3. The LayeredFS mod will be automatically applied")
+                print(f"Extracted to: {extract_dir}")
+                print("Copy romfs/ and exefs/ to your emulator mod folder under Archipelago/.")
                 return False, location_to_item
-                
-    except Exception as e:
-        print(f"\nERROR: Failed to install patch: {e}")
+
+            print(f"\nFound {len(emulator_mod_dirs)} emulator mod director{'y' if len(emulator_mod_dirs) == 1 else 'ies'}:")
+            for emulator_mod_dir in emulator_mod_dirs:
+                emulator_mod_dir.mkdir(parents=True, exist_ok=True)
+                mod_install_dir = emulator_mod_dir / "Archipelago"
+                print(f"  Installing to: {mod_install_dir}")
+
+                if mod_install_dir.exists():
+                    shutil.rmtree(mod_install_dir)
+                mod_install_dir.mkdir(parents=True, exist_ok=True)
+
+                for file_name in file_list:
+                    if not (file_name.startswith("romfs/") or file_name.startswith("exefs/")):
+                        continue
+                    target_path = mod_install_dir / file_name
+                    target_path.parent.mkdir(parents=True, exist_ok=True)
+                    with zip_file.open(file_name) as source, open(target_path, "wb") as target:
+                        target.write(source.read())
+
+            print(f"\nPatch installed to {len(emulator_mod_dirs)} emulator(s).")
+            print("Launch Skyward Sword HD in your emulator, then connect the AP client.")
+            return True, location_to_item
+    except Exception as exc:
+        print(f"\nERROR: Failed to install patch: {exc}")
         import traceback
         traceback.print_exc()
         return False, {}
-
 
 async def main(args=None):
     """
@@ -6145,27 +5987,7 @@ async def main(args=None):
     print(f"Arguments: {args}")
     
     parser = get_base_parser(description="Skyward Sword HD Client for Archipelago.")
-    parser.add_argument('diff_file', default="", type=str, nargs="?",
-                        help='Path to an Archipelago Binary Patch file (.apsshd)')
     parsed_args = parser.parse_args(args)
-    
-    # Install patch if provided and get location mapping
-    location_to_item = {}
-    if parsed_args.diff_file:
-        patch_file = parsed_args.diff_file
-        print(f"\nPatch file provided: {patch_file}")
-        if patch_file.endswith('.apsshd'):
-            success, location_to_item = install_patch(patch_file)
-            if not success:
-                print("ERROR: Failed to install patch")
-                return
-            print(f"\n" + "="*60)
-            print(f"Continuing to launch client...")
-            print(f"="*60 + "\n")
-        else:
-            print(f"WARNING: Expected .apsshd file, got {patch_file}")
-    
-    print(f"Parsed arguments: {parsed_args}")
     
     # Enable GUI when available (Archipelago launcher has all GUI dependencies)
     use_gui = gui_enabled
@@ -6175,7 +5997,6 @@ async def main(args=None):
     
     # Create context (requires event loop to already be running)
     ctx = SSHDContext(parsed_args.connect, parsed_args.password)
-    ctx.location_to_item = location_to_item  # Set mapping loaded from patch
     
     ctx.server_task = asyncio.create_task(server_loop(ctx), name="ServerLoop")
     

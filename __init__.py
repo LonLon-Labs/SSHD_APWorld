@@ -213,11 +213,11 @@ def _run_client_process(*args: str) -> None:
 
     client_args = list(args) if args else []
 
-    # Launcher patch-only mode: when invoked with an .apsshd file, install the
-    # mod and exit without starting the Kivy client UI.
+    # Launcher patch-only mode: if launched with an .apsshd file, install the
+    # bundled romfs/exefs payload and exit without opening the client UI.
     patch_file = next((arg for arg in client_args if isinstance(arg, str) and arg.lower().endswith(".apsshd")), None)
     if patch_file:
-        print("[SSHD Launcher] Patch-only mode active (.apsshd provided)")
+        print("[SSHD Launcher] Patch install mode (.apsshd provided)")
         success, _ = client_module.install_patch(patch_file)
         if not success:
             print("[SSHD Launcher] Patch install failed")
@@ -228,7 +228,7 @@ def _run_client_process(*args: str) -> None:
 
 def run_client(*args: str) -> None:
     """
-    Launch the SSHD client, optionally with an .apsshd patch file.
+    Launch the SSHD client through the Archipelago runtime.
     """
     print(f"Running SSHD Client with args: {args}")
     try:
