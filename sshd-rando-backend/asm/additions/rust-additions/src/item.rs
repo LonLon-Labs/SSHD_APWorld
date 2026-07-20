@@ -1649,6 +1649,8 @@ pub extern "C" fn resolve_progressive_item_models(
                 },
                 217 => c"GetRupee".as_ptr(),
                 218 => c"GetSozaiC".as_ptr(),
+                220..=226 => c"KeyRing".as_ptr(),
+                227 => c"SkeletonKey".as_ptr(),
                 _ => model_name,
             };
 
@@ -1678,6 +1680,8 @@ pub extern "C" fn resolve_progressive_item_models(
                 },
                 217 => c"GetRupee".as_ptr(),
                 218 => c"GetSozaiC".as_ptr(),
+                220..=226 => c"KeyRing".as_ptr(),
+                227 => c"SkeletonKey".as_ptr(),
                 _ => model_name,
             };
 
@@ -1756,6 +1760,12 @@ pub extern "C" fn resolve_progressive_item_models(
                     return c"GetPurseD".as_ptr();
                 }
                 return c"GetPurseE".as_ptr();
+            },
+            220..=226 => {
+                return c"KeyRing".as_ptr();
+            },
+            227 => {
+                return c"SkeletonKey".as_ptr();
             },
             _ => {
                 return model_name;
@@ -1888,8 +1898,10 @@ pub extern "C" fn get_item_model_name_ptr(
 pub extern "C" fn change_model_scale(item_actor: *mut dAcItem, world_matrix: *mut math::Matrix) {
     unsafe {
         let mut scale = match (*item_actor).final_determined_itemid {
-            214 => 0.5f32, // Tadtone
-            215 => 0.3f32, // Scrapper
+            214 => 0.5f32,     // Tadtone
+            215 => 0.3f32,     // Scrapper
+            220..=226 => 0.5f32, // Key Rings
+            227 => 0.014f32,   // Skeleton Key
             _ => 1.0f32,
         };
 

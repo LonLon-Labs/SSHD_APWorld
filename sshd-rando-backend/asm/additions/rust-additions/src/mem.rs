@@ -250,10 +250,6 @@ pub extern "C" fn fix_memory_leak(
     xtx_thing: *mut xtxThing,
 ) -> u32 {
     unsafe {
-        if xtx_thing.is_null() {
-            return 0;
-        }
-
         let mut arc_name = (*xtx_thing).arc_name;
         // debug::debug_print(arc_name.as_ptr() as *const c_char);
 
@@ -267,46 +263,29 @@ pub extern "C" fn fix_memory_leak(
                 arc_name_len += 1;
             }
 
-            // Only strip ".arc" when present. Avoid underflow/corruption on
-            // unexpected short names.
-            if arc_name_len >= 5 {
-                let ext_start = 6 + arc_name_len - 4;
-                if &arc_name[ext_start..(ext_start + 4)] == b".arc" {
-                    arc_name[ext_start] = 0;
-                }
-            }
+            arc_name[6 + arc_name_len - 4] = 0;
 
             let arc_name_cstr = arc_name[6..].as_ptr() as *const c_char;
 
-            // Check if arc has already been loaded. Bound iteration to the
-            // known table capacity to prevent out-of-bounds reads.
-            if !ARC_MGR.is_null() && !(*ARC_MGR).entries_table.entries.is_null() {
-                let mut current_entry_num = 0usize;
-                let max_entries =
-                    core::cmp::min((*ARC_MGR).entries_table.entry_count as usize, 400);
+            // Check if arc has already been loaded
+            let mut current_entry_num = 0;
+            let mut next_entry = (*(*ARC_MGR).entries_table.entries)[current_entry_num as usize];
 
-                while current_entry_num < max_entries {
-                    let next_entry = (*(*ARC_MGR).entries_table.entries)[current_entry_num];
-                    if next_entry.arc_name[0] == 0 {
-                        break;
-                    }
-
-                    if strcmp(arc_name_cstr, next_entry.arc_name.as_ptr()) == 0
-                        && next_entry.ref_count >= 1
-                    {
-                        // debug::debug_print_str(c"DUPLICATE: %s".as_ptr(), arc_name_cstr);
-                        return (*xtx_thing).some_index;
-                    }
-
-                    current_entry_num += 1;
+            while next_entry.arc_name[0] != 0 {
+                if strcmp(arc_name_cstr, next_entry.arc_name.as_ptr()) == 0
+                    && next_entry.ref_count >= 1
+                {
+                    // debug::debug_print_str(c"DUPLICATE: %s".as_ptr(), arc_name_cstr);
+                    return (*xtx_thing).some_index;
                 }
+
+                current_entry_num += 1;
+                next_entry = (*(*ARC_MGR).entries_table.entries)[current_entry_num as usize];
             }
         }
 
         let new_arc = EGG__Archive__mount(u8File, heap, align, xtx_thing_file_extension);
-        if !new_arc.is_null() {
-            (*new_arc).ref_count = 0;
-        }
+        (*new_arc).ref_count = 0;
 
         return (*xtx_thing).some_index;
     }
@@ -321,247 +300,92 @@ pub extern "C" fn load_custom_bzs(
 ) {
     unsafe {
         dRawArcTable_c__getArcOrLoadFromDisk(arc_table, arc_name, parent_dir_name, heap);
-
-        // Skip preloading "bzs" for the first BOOT_SKIP_CALLS invocations of
-        // this hook. During cold boot the arc/stage infrastructure is still
-        // being initialized; adding a "bzs" ArcEntry into a not-yet-ready
-        // table can leave neighbouring entries in a state that later crashes
-        // the game's own code (observed as a null-pointer strlen crash deep
-        // in vanilla arc-lookup code). Real gameplay calls this hook on every
-        // stage load, far more than a few times, so this only affects boot.
-        static mut LOAD_BZS_CALL_COUNT: u32 = 0;
-        const LOAD_BZS_BOOT_SKIP_CALLS: u32 = 8;
-        LOAD_BZS_CALL_COUNT = LOAD_BZS_CALL_COUNT.saturating_add(1);
-        if LOAD_BZS_CALL_COUNT <= LOAD_BZS_BOOT_SKIP_CALLS {
-            return;
-        }
-
-        // Only preload the "bzs" arc when the arc table's entries array is
-        // properly initialized. On the title screen at first boot the entries
-        // pointer is garbage (~0x67M); adding a "bzs" ArcEntry into that
-        // state corrupts the arc table and causes crashes in downstream code.
-        let entries_addr = (*arc_table).entries as usize;
-        if entries_addr != 0 && entries_addr < 0x40000000 {
-            dRawArcTable_c__getArcOrLoadFromDisk(
-                arc_table,
-                c"bzs".as_ptr(),
-                c"Stage".as_ptr(),
-                heap,
-            );
-        }
+        dRawArcTable_c__getArcOrLoadFromDisk(arc_table, c"bzs".as_ptr(), c"Stage".as_ptr(), heap);
     }
 }
 
-// Thin assembly wrapper: preserves caller-saved registers x3–x18 AND the
-// NZCV condition flags around the use_custom_bzs Rust implementation.
-//
-// Hook 83 replaces a bare `ldrh w23,[x0,#8]` instruction, which does NOT
-// affect flags. The game code that follows the `bl` to this hook may
-// branch on flags set by an EARLIER instruction (before the call), relying
-// on them surviving the call untouched. Our Rust impl executes strcmp/cmp
-// internally, which clobbers NZCV, sending the game down an unintended
-// (crashing) code path on the title screen regardless of our hook's logic.
-// Saving/restoring x3-x18 alone was not sufficient; NZCV must be preserved
-// too so the post-hook CPU state exactly matches what the original ldrh
-// would have left.
-core::arch::global_asm!(
-    ".global use_custom_bzs",
-    "use_custom_bzs:",
-    "    sub  sp,  sp,  #160",
-    "    stp  x30, x3,  [sp,   #0]",
-    "    stp  x4,  x5,  [sp,  #16]",
-    "    stp  x6,  x7,  [sp,  #32]",
-    "    stp  x8,  x9,  [sp,  #48]",
-    "    stp  x10, x11, [sp,  #64]",
-    "    stp  x12, x13, [sp,  #80]",
-    "    stp  x14, x15, [sp,  #96]",
-    "    stp  x16, x17, [sp, #112]",
-    "    str  x18,      [sp, #128]",
-    "    mrs  x3,  nzcv",
-    "    str  x3,       [sp, #136]",
-    "    bl   use_custom_bzs_impl",
-    "    ldr  x3,       [sp, #136]",
-    "    msr  nzcv, x3",
-    "    ldr  x18,      [sp, #128]",
-    "    ldp  x16, x17, [sp, #112]",
-    "    ldp  x14, x15, [sp,  #96]",
-    "    ldp  x12, x13, [sp,  #80]",
-    "    ldp  x10, x11, [sp,  #64]",
-    "    ldp  x8,  x9,  [sp,  #48]",
-    "    ldp  x6,  x7,  [sp,  #32]",
-    "    ldp  x4,  x5,  [sp,  #16]",
-    "    ldp  x30, x3,  [sp,   #0]",
-    "    add  sp,  sp,  #160",
-    "    ret",
-);
-
 #[no_mangle]
-pub extern "C" fn use_custom_bzs_impl(
+pub extern "C" fn use_custom_bzs(
     arc_table: *mut ArcEntryTable,
     arc_name: *const c_char,
     model_path: *const c_char,
 ) -> *mut ArcEntryTable {
     unsafe {
-        // Skip remapping for the first BOOT_SKIP_CALLS invocations of this
-        // hook overall. During cold boot, the game calls this hook only a
-        // handful of times while the stage/arc infrastructure is still being
-        // initialized; the "bzs" arc entry (and neighbouring entries in the
-        // same table) can pass our pointer-range/structural validation while
-        // still not being truly ready, causing the game's OWN subsequent
-        // code (in the same vanilla function, further down) to dereference
-        // an uninitialized entry name and crash inside strlen. Real gameplay
-        // calls this hook far more than a few times per stage load, so a
-        // small fixed skip count safely covers cold boot without affecting
-        // normal remapping later.
-        static mut BOOT_CALL_COUNT: u32 = 0;
-        const BOOT_SKIP_CALLS: u32 = 64;
-        BOOT_CALL_COUNT = BOOT_CALL_COUNT.saturating_add(1);
-        let past_boot_window = BOOT_CALL_COUNT > BOOT_SKIP_CALLS;
+        if strcmp(model_path, (*c"dat/stage.bzs").as_ptr()) == 0 {
+            let new_arc_name = (*c"bzs").as_ptr();
+            let mut current_char_index = 0;
 
-        let is_stage_bzs = strcmp(model_path, (*c"dat/stage.bzs").as_ptr()) == 0;
-        let is_room_bzs = !is_stage_bzs && strcmp(model_path, (*c"dat/room.bzs").as_ptr()) == 0;
+            for character in b"dat/" {
+                BZS_STRING[current_char_index] = *character as i8;
+                current_char_index += 1;
+            }
 
-        // Validate ALL of NEXT_STAGE_NAME[0..4] to distinguish a properly
-        // initialized stage name from a partially-initialized one.
-        let is_valid_stage = NEXT_STAGE_NAME[0..4]
-            .iter()
-            .all(|&c| (c >= b'A' && c <= b'Z') || (c >= b'0' && c <= b'9'));
-
-        // NOTE: CURRENT_STAGE_NAME/CURRENT_LAYER are NOT used here. They lag
-        // behind during legitimate stage transitions (e.g. loading a save
-        // from the title screen into a dungeon can leave CURRENT_STAGE_NAME
-        // == "F000" for a brief window while the target stage's bzs arc is
-        // already being resolved), causing false positives that break real
-        // gameplay transitions. We rely purely on structural validation of
-        // the Arc object itself instead.
-        //
-        // Only remap if the "bzs" arc is fully loaded with a valid, properly
-        // mounted arc object.
-        //
-        // Three layers of validation (threshold 0x40000000 = 1 GB range check,
-        // plus structural ordering):
-        //  1. arc_table.entries must be a plausible heap address. On early
-        //     title-screen boot this field is an uninitialised value ~0x68M.
-        //  2. The "bzs" ArcEntry.arc pointer must also be valid.
-        //  3. The Arc's internal offsets (arc_start_address, fst_start, file_start)
-        //     must be non-zero, in-range, AND in ascending order (arc_start_address <=
-        //     fst_start <= file_start), matching the structural layout of a genuinely
-        //     mounted archive. Uninitialized garbage values are extremely unlikely to
-        //     satisfy this ordering.
-        //
-        // All checks read POINTER VALUES only — they never dereference the
-        // questionable address — so they cannot fault.
-        let mut bzs_found = false;
-        let entries_addr = (*arc_table).entries as usize;
-        if entries_addr != 0 && entries_addr < 0x40000000 {
-            let max_entries = core::cmp::min((*arc_table).entry_count as usize, 400);
-            for i in 0..max_entries {
-                let entry = (*(*arc_table).entries)[i];
-                if entry.arc_name[0] == 0 {
-                    break;
-                }
-                if strcmp(entry.arc_name.as_ptr(), c"bzs".as_ptr()) == 0
-                    && !entry.arc.is_null()
-                    && (entry.arc as usize) < 0x40000000
-                    && {
-                        let arc_start = (*entry.arc).arc_start_address as usize;
-                        let fst = (*entry.arc).fst_start as usize;
-                        let file_data = (*entry.arc).file_start as usize;
-                        arc_start != 0
-                            && arc_start < 0x40000000
-                            && fst != 0
-                            && fst < 0x40000000
-                            && file_data != 0
-                            && file_data < 0x40000000
-                            && arc_start <= fst
-                            && fst <= file_data
-                    }
-                {
-                    bzs_found = true;
-                    break;
+            let mut found_string_terminator = false;
+            for stage_char in &mut NEXT_STAGE_NAME[0..6] {
+                if !found_string_terminator && *stage_char != 0 {
+                    BZS_STRING[current_char_index] = *stage_char as i8;
+                    current_char_index += 1;
+                } else {
+                    found_string_terminator = true;
                 }
             }
-        }
 
-        if (is_stage_bzs || is_room_bzs) && bzs_found && is_valid_stage && past_boot_window {
-            if is_stage_bzs {
-                let new_arc_name = (*c"bzs").as_ptr();
-                let mut current_char_index = 0;
-
-                for character in b"dat/" {
-                    BZS_STRING[current_char_index] = *character as i8;
-                    current_char_index += 1;
-                }
-
-                let mut found_string_terminator = false;
-                for stage_char in &mut NEXT_STAGE_NAME[0..6] {
-                    if !found_string_terminator && *stage_char != 0 {
-                        BZS_STRING[current_char_index] = *stage_char as i8;
-                        current_char_index += 1;
-                    } else {
-                        found_string_terminator = true;
-                    }
-                }
-
-                for character in b"_stage.bzs\0" {
-                    BZS_STRING[current_char_index] = *character as i8;
-                    current_char_index += 1;
-                }
-
-                asm!("mov x2, {0:x}", in(reg) &BZS_STRING);
-                asm!("mov x1, {0:x}", in(reg) new_arc_name);
-            } else if is_room_bzs {
-                let new_arc_name = (*c"bzs").as_ptr();
-                let mut current_char_index = 0;
-
-                for character in b"dat/" {
-                    BZS_STRING[current_char_index] = *character as i8;
-                    current_char_index += 1;
-                }
-
-                let mut found_string_terminator = false;
-                for stage_char in &mut NEXT_STAGE_NAME[0..8] {
-                    if !found_string_terminator && *stage_char != 0 {
-                        BZS_STRING[current_char_index] = *stage_char as i8;
-                        current_char_index += 1;
-                    } else {
-                        found_string_terminator = true;
-                    }
-                }
-
-                for character in b"_room_" {
-                    BZS_STRING[current_char_index] = *character as i8;
-                    current_char_index += 1;
-                }
-
-                let indexable_arc_name = core::slice::from_raw_parts(arc_name, 16);
-                let mut roomid_char_index = 0;
-
-                while roomid_char_index < 15 && indexable_arc_name[roomid_char_index] != 0 {
-                    roomid_char_index += 1;
-                }
-
-                if roomid_char_index >= 2 && indexable_arc_name[roomid_char_index - 2] != 48 {
-                    BZS_STRING[current_char_index] =
-                        indexable_arc_name[roomid_char_index - 2] as i8;
-                    current_char_index += 1;
-                }
-                if roomid_char_index >= 1 {
-                    BZS_STRING[current_char_index] =
-                        indexable_arc_name[roomid_char_index - 1] as i8;
-                    current_char_index += 1;
-                }
-
-                for character in b".bzs\0" {
-                    BZS_STRING[current_char_index] = *character as i8;
-                    current_char_index += 1;
-                }
-
-                asm!("mov x2, {0:x}", in(reg) &BZS_STRING);
-                asm!("mov x1, {0:x}", in(reg) new_arc_name);
+            for character in b"_stage.bzs\0" {
+                BZS_STRING[current_char_index] = *character as i8;
+                current_char_index += 1;
             }
+
+            asm!("mov x2, {0:x}", in(reg) &BZS_STRING);
+            asm!("mov x1, {0:x}", in(reg) new_arc_name);
+        } else if strcmp(model_path, (*c"dat/room.bzs").as_ptr()) == 0 {
+            let new_arc_name = (*c"bzs").as_ptr();
+            let mut current_char_index = 0;
+
+            for character in b"dat/" {
+                BZS_STRING[current_char_index] = *character as i8;
+                current_char_index += 1;
+            }
+
+            let mut found_string_terminator = false;
+            for stage_char in &mut NEXT_STAGE_NAME[0..8] {
+                if !found_string_terminator && *stage_char != 0 {
+                    BZS_STRING[current_char_index] = *stage_char as i8;
+                    current_char_index += 1;
+                } else {
+                    found_string_terminator = true;
+                }
+            }
+
+            for character in b"_room_" {
+                BZS_STRING[current_char_index] = *character as i8;
+                current_char_index += 1;
+            }
+
+            let indexable_arc_name = core::slice::from_raw_parts(arc_name, 16);
+            let mut roomid_char_index = 0;
+
+            // Get the roomid from the arc_name string
+            while indexable_arc_name[roomid_char_index] != 0 {
+                roomid_char_index += 1;
+            }
+
+            // b"0"
+            if indexable_arc_name[roomid_char_index - 2] != 48 {
+                BZS_STRING[current_char_index] = indexable_arc_name[roomid_char_index - 2];
+                current_char_index += 1;
+            }
+
+            BZS_STRING[current_char_index] = indexable_arc_name[roomid_char_index - 1];
+            current_char_index += 1;
+
+            for character in b".bzs\0" {
+                BZS_STRING[current_char_index] = *character as i8;
+                current_char_index += 1;
+            }
+
+            asm!("mov x2, {0:x}", in(reg) &BZS_STRING);
+            asm!("mov x1, {0:x}", in(reg) new_arc_name);
         } else {
-            // not a bzs path, uninit stage name, or title screen: use vanilla path
             asm!("mov x2, {0:x}", in(reg) model_path);
             asm!("mov x1, {0:x}", in(reg) arc_name);
         }
