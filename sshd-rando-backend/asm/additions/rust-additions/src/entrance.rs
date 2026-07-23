@@ -273,47 +273,33 @@ pub fn reload_current_stage() {
 
         item::reset_ap_item_receive_batch();
 
-        if &CURRENT_STAGE_NAME[..5] == b"F000\0" {
-            // Stage names are stored as 8 bytes in globals, while the vanilla
-            // trigger API takes a pointer to a 7-byte stage name buffer.
-            let stage_name_ptr = (&mut CURRENT_STAGE_NAME as *mut [u8; 8]).cast::<[u8; 7]>();
+        // Only skip autosave when we are on F000 layer 28.
+        let is_f000 = &CURRENT_STAGE_NAME[..5] == b"F000\0";
+        let should_autosave = !(is_f000 && CURRENT_LAYER == 28);
 
-            GameReloader__triggerEntrance(
-                GAME_RELOADER_PTR,
-                stage_name_ptr,
-                CURRENT_ROOM.into(),
-                CURRENT_LAYER.into(),
-                CURRENT_ENTRANCE.into(),
-                CURRENT_NIGHT.into(),
-                CURRENT_TRIAL.into(),
-                0,
-                0xF,
-                0,
-                0xFF,
-            );
-        } else {
+        if should_autosave {
             // Mark this transition as an autosave-triggering reload.
             (*FILE_MGR).FA.is_auto_save = 1;
             (*GAME_RELOADER_PTR).is_reloading = 1;
-
-            // Stage names are stored as 8 bytes in globals, while the vanilla
-            // trigger API takes a pointer to a 7-byte stage name buffer.
-            let stage_name_ptr = (&mut CURRENT_STAGE_NAME as *mut [u8; 8]).cast::<[u8; 7]>();
-
-            GameReloader__triggerEntrance(
-                GAME_RELOADER_PTR,
-                stage_name_ptr,
-                CURRENT_ROOM.into(),
-                CURRENT_LAYER.into(),
-                CURRENT_ENTRANCE.into(),
-                CURRENT_NIGHT.into(),
-                CURRENT_TRIAL.into(),
-                0,
-                0xF,
-                0,
-                0xFF,
-            );
         }
+
+        // Stage names are stored as 8 bytes in globals, while the vanilla
+        // trigger API takes a pointer to a 7-byte stage name buffer.
+        let stage_name_ptr = (&mut CURRENT_STAGE_NAME as *mut [u8; 8]).cast::<[u8; 7]>();
+
+        GameReloader__triggerEntrance(
+            GAME_RELOADER_PTR,
+            stage_name_ptr,
+            CURRENT_ROOM.into(),
+            CURRENT_LAYER.into(),
+            CURRENT_ENTRANCE.into(),
+            CURRENT_NIGHT.into(),
+            CURRENT_TRIAL.into(),
+            0,
+            0xF,
+            0,
+            0xFF,
+        );
     }
 }
 
