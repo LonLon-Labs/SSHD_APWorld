@@ -811,11 +811,11 @@ class AllowFlyingAtNight(Toggle):
 class RandomizeLoftwing(Choice):
     """
     Controls whether storyflag 27 (Loftwing unlocked) is set at game start.
-    Off: Do not start with Loftwing unlocked.
-    On: Start with Loftwing unlocked.
+    Off: Start with Loftwing unlocked.
+    On: Do not start with Loftwing unlocked.
     Random: Randomly choose Off or On during seed generation.
     """
-    display_name = "Start with Loftwing"
+    display_name = "Randomize Loftwing"
     option_off = 0
     option_on = 1
     option_random = 2

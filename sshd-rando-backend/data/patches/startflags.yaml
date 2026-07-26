@@ -3,7 +3,7 @@ Storyflags:
   - 13 # Groosenator completed
   - 20 # Groosenator is functional
   - 24 # Skip Fi text around Faron Pillar
-  - randomize_loftwing == on:
+  - randomize_loftwing == off:
     - 27 # Loftwing Unlocked
   - 28 # Pratice Sword
   - 36 # Hero's tunic
