@@ -4,6 +4,7 @@
 
 use crate::cheats;
 use crate::color;
+use crate::commands;
 use crate::debug;
 use crate::entrance;
 use crate::event;
@@ -117,8 +118,11 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     cheats::handle_infinite_loftwing();
     cheats::handle_no_electric_stun();
     cheats::handle_speed_multiplier();
+
+    // Commands from client
     cheats::handle_spawn_demise_request();
     cheats::handle_spawn_actor_request();
+    commands::handle_flag_request();
 
     // Runtime Demise trap: spawns configured extras once when entering B400.
     traps::spawn_extra_demise();

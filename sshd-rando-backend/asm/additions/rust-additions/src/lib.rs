@@ -17,6 +17,7 @@ mod actor;
 mod ammo;
 mod cheats;
 mod color;
+mod commands;
 mod debug;
 mod entrance;
 mod event;

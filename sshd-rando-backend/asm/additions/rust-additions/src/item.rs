@@ -1827,11 +1827,6 @@ pub extern "C" fn change_model_scale(item_actor: *mut dAcItem, world_matrix: *mu
         let mut scale = match (*item_actor).final_determined_itemid {
             214 => 0.5f32, // Tadtone
             215 => 0.3f32, // Scrapper
-<<<<<<< Updated upstream
-=======
-            // 220..=226 => 0.5f32, // Key Rings
-            227 => 0.014f32, // Skeleton Key
->>>>>>> Stashed changes
             _ => 1.0f32,
         };
 
