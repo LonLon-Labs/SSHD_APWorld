@@ -1408,6 +1408,14 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         else:
             logger.warning("Not connected to SSHD context")
 
+    def _cmd_rescan(self):
+        """Rescan for emulator, base address, and all magic signatures."""
+        if not isinstance(self.ctx, SSHDContext):
+            logger.warning("Not connected to SSHD context")
+            return
+        logger.info("Starting rescan...")
+        asyncio.ensure_future(self.ctx.rescan())
+
     def _cmd_cheats(self):
         """Show the status of all cheats (enabled/disabled)."""
         if not isinstance(self.ctx, SSHDContext):
@@ -4553,6 +4561,109 @@ class SSHDContext(CommonContext):
             self._ap_item_info_last_refresh = now
         except Exception:
             pass  # Non-critical; next refresh will retry
+
+    async def rescan(self):
+        """
+        Force a full rescan of the emulator connection, base address,
+        and all magic signature buffers (AP_ITEM_INFO_TABLE, AP_CHECK_STATS,
+        AP_CHEAT_FLAGS, AP_SPAWN_REQUEST, AP_FLAG_REQUEST, AP_WARP_REQUEST).
+        Resets all cached state that depends on the base address.
+        """
+        logger.info("[Rescan] Invalidating current base address and caches...")
+
+        # Invalidate base and clear prescan results in the memory reader
+        self.memory.invalidate_base()
+
+        # Clear context caches that are derived from memory offsets
+        self._ap_item_info_offset = None
+        self._ap_check_stats_offset = None
+        self._ap_cheat_flags_offset = None
+        self._ap_spawn_request_offset = None
+        self._ap_flag_request_offset = None
+        self._ap_warp_request_offset = None
+        self._ap_item_info_written = False
+        self.beetle_patch_applied = False
+        self.default_forward_speed = None
+
+        # Reset scene transition tracking
+        self._last_next_stage = None
+        self._last_next_stage_change_at = 0.0
+
+        # Reset bird-statue HD-progression enforcement
+        self._bird_statue_snapshot = None
+        self._bird_statue_enforcement_log.clear()
+        self._visited_regions.clear()
+
+        # Reset custom flag monitoring (so it re-initialises on next poll)
+        self.previous_custom_flags.clear()
+        self._initializing_flags = True
+        if hasattr(self, '_flag_already_set_logged'):
+            self._flag_already_set_logged.clear()
+
+        # Reset goddess chest monitoring
+        if hasattr(self, '_goddess_flags_initializing'):
+            self._goddess_flags_initializing = True
+        self.previous_goddess_chest_flags.clear()
+        if hasattr(self, '_prev_fa_tbox_snapshot'):
+            self._prev_fa_tbox_snapshot = None
+            self._prev_static_tbox_snapshot = None
+
+        # Reset Beedle shop monitoring
+        if hasattr(self, '_beedle_flags_initializing'):
+            self._beedle_flags_initializing = True
+        if hasattr(self, '_prev_beedle_flags'):
+            self._prev_beedle_flags.clear()
+        if hasattr(self, '_beedle_dynamic_map'):
+            self._beedle_dynamic_map.clear()
+        if hasattr(self, '_shop_entry_snapshots'):
+            self._shop_entry_snapshots.clear()
+        if hasattr(self, '_fa_storyflag_snapshot'):
+            self._fa_storyflag_snapshot = None
+        if hasattr(self, '_static_storyflag_snapshot'):
+            self._static_storyflag_snapshot = None
+
+        # Reset health / stamina tracking so we don't get false DeathLink/BreathLink
+        self.last_hearts = None
+        self.last_stamina = None
+        self.killed_by_deathlink = False
+        self.exhausted_by_breathlink = False
+
+        # Reset debug flag for address logging
+        if hasattr(self, '_logged_addresses'):
+            del self._logged_addresses
+
+        # Ensure we are connected to the emulator process
+        if not self.memory.connected:
+            logger.info("[Rescan] Reconnecting to emulator...")
+            if not self.memory.connect():
+                logger.error("[Rescan] Failed to reconnect to emulator")
+                return
+            logger.info("[Rescan] Reconnected to emulator")
+
+        # Perform the fresh base-address scan (this also re‑populates prescan_results)
+        logger.info("[Rescan] Scanning for SSHD base address and magic buffers...")
+        if not await self.memory.find_base_address():
+            logger.error("[Rescan] Failed to find SSHD base address")
+            return
+
+        # Reset connection time to avoid false death detection after rescan
+        self.connection_time = time.time()
+
+        # Re‑write AP item info table now that we have a new base and magic buffers
+        self._write_ap_item_info_table()
+
+        # If there were pending unsafe items, re‑deliver them after the rescan
+        if self._pending_unsafe_items:
+            recovered = [dict(item) for item in self._pending_unsafe_items]
+            self.item_queue = recovered + self.item_queue
+            self._pending_unsafe_items.clear()
+            self._pending_unsafe_item_indexes.clear()
+            self._unsafe_items_count = 0
+            self._skip_sword_sync = False
+            self._clear_pending_unsafe_items_datastorage()
+            logger.info(f"[Rescan] Re‑queued {len(recovered)} unsafe items for delivery")
+
+        logger.info("[Rescan] Rescan completed successfully")
 
     def _write_cheat_flags(self):
         """
