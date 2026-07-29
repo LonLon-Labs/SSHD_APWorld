@@ -123,6 +123,7 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     cheats::handle_spawn_demise_request();
     cheats::handle_spawn_actor_request();
     commands::handle_flag_request();
+    commands::handle_warp_request();
 
     // Runtime Demise trap: spawns configured extras once when entering B400.
     traps::spawn_extra_demise();

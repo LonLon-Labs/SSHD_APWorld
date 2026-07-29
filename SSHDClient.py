@@ -177,6 +177,29 @@ AP_FLAG_REQUEST_STRUCT = struct.Struct("<4sBBBBHHHBBI")
 AP_FLAG_REQUEST_SIZE = AP_FLAG_REQUEST_STRUCT.size  # 20 bytes
 assert AP_FLAG_REQUEST_SIZE == 20, AP_FLAG_REQUEST_SIZE
 
+# --- /warp command protocol ---------------------------------------------
+# "/warp start" reuses the game's own Fi-warp path (entrance::warp_to_start,
+# which reads the same WARP_TO_START_INFO the vanilla checkpoint system
+# already keeps up to date). "/warp <stage> [layer]" instead calls a new
+# entrance::warp_to_stage() that mirrors reload_current_stage()'s call into
+# the game reloader, but with an explicit destination.
+WARP_MODE_START = 0
+WARP_MODE_STAGE = 1
+
+# AP_WARP_REQUEST buffer layout (little-endian, 20 bytes total):
+#   +0  magic[4]             "WR\x00\x01"
+#   +4  pending      (u8)    1 = new request for Rust to process, Rust sets to 0 when done
+#   +5  mode         (u8)    WARP_MODE_START or WARP_MODE_STAGE
+#   +6  layer        (u8)    target layer for WARP_MODE_STAGE; 0xFF = unspecified (-> 0)
+#   +7  _pad         (u8)
+#   +8  stage_name   (8s)    ASCII stage code, null-padded (e.g. b"F000\0\0\0\0"); WARP_MODE_STAGE only
+#   +16 response_ready (u8) Rust sets to 1 once response_code is valid
+#   +17 response_code (u8)  0 = ok, 1 = failed (null pointers / invalid mode)
+#   +18 _pad         (2 bytes)
+AP_WARP_REQUEST_STRUCT = struct.Struct("<4sBBBB8sBB2x")
+AP_WARP_REQUEST_SIZE = AP_WARP_REQUEST_STRUCT.size  # 20 bytes
+assert AP_WARP_REQUEST_SIZE == 20, AP_WARP_REQUEST_SIZE
+
 # File Manager structure (cheat table shows FA at +5AEAD44)
 # NOTE: The cheat table offset 0x5AEAD44 points directly to FA (SaveFile), not to the start of FileMgr
 # FileMgr has: all_save_files (8), save_tails (8), then FA embedded at +0x10
@@ -570,6 +593,26 @@ STAGE_NAMES = {
     "B400": "Demise's Realm",
 }
 
+# Reverse lookup (friendly name, lowercased -> stage code) for /warp.
+STAGE_NAME_TO_CODE = {name.lower(): code for code, name in STAGE_NAMES.items()}
+
+
+def _resolve_stage_code(text: str) -> Optional[str]:
+    """Resolve /warp's stage argument to a stage code.
+
+    Accepts either a stage code directly (case-insensitive, e.g. "f000" or
+    "F103_1") or a friendly name from STAGE_NAMES (case-insensitive, e.g.
+    "skyloft" or "Lanayru Mining Facility").
+    """
+    text = text.strip()
+    if not text:
+        return None
+    lower = text.lower()
+    for code in STAGE_NAMES:
+        if code.lower() == lower:
+            return code
+    return STAGE_NAME_TO_CODE.get(lower)
+
 
 # Keep old name for backward compatibility
 class RyujinxMemoryError(Exception):
@@ -604,6 +647,7 @@ class EmulatorMemoryReader:
         "AP_CHEAT_FLAGS":     bytes([0x43, 0x46, 0x00, 0x01]),  # "CF\x00\x01"
         "AP_SPAWN_REQUEST":   bytes([0x53, 0x41, 0x00, 0x01]),  # "SA\x00\x01"
         "AP_FLAG_REQUEST":    bytes([0x46, 0x4C, 0x00, 0x01]),  # "FL\x00\x01"
+        "AP_WARP_REQUEST":    bytes([0x57, 0x52, 0x00, 0x01]),  # "WR\x00\x01"
     }
 
     # --- Connection health thresholds ---
@@ -1576,6 +1620,81 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         else:
             logger.info(f"{flag_type} {flag_id} (0x{flag_id:X}){scene_text} unset -> {result}")
 
+    async def _cmd_warp(self, *args: str):
+        """Warp to a stage, or warp to start (as if Fi warped you).
+
+        Usage: /warp start
+               /warp <stage name or stage id> [layer]
+        Examples:
+          /warp start                        - warp to start, like Fi's in-game warp
+          /warp Skyloft                      - warp to Skyloft (layer 0)
+          /warp F000                         - same, using the raw stage id
+          /warp F000 28                      - warp to F000 layer 28 (the title screen)
+          /warp Lanayru Mining Facility       - multi-word names work too
+          /warp Lanayru Mining Facility 3    - ...with a layer on the end
+        """
+        if not isinstance(self.ctx, SSHDContext):
+            logger.warning("Not connected to SSHD context")
+            return
+
+        if not args:
+            logger.info("Usage: /warp start")
+            logger.info("       /warp <stage name or stage id> [layer]")
+            return
+
+        if args[0].lower() == "start":
+            if len(args) > 1:
+                logger.warning("/warp start doesn't take a layer argument, ignoring it")
+            result = await self.ctx.request_warp_operation(WARP_MODE_START)
+            target_desc = "start"
+        else:
+            # Stage names can be multiple words (e.g. "Lanayru Mining Facility"),
+            # and the command framework splits on whitespace before we ever see
+            # it, so reassemble it here. If there's more than one token and the
+            # last one parses as a number, treat it as the optional layer.
+            tokens = list(args)
+            layer_str = ""
+            if len(tokens) > 1:
+                try:
+                    int(tokens[-1], 0)
+                    layer_str = tokens.pop()
+                except ValueError:
+                    pass
+            target = " ".join(tokens)
+
+            stage_code = _resolve_stage_code(target)
+            if stage_code is None:
+                logger.warning(
+                    f"Unknown stage '{target}'. Use a stage id (e.g. F000) or a name "
+                    f"from the in-game map (e.g. Skyloft, Lanayru Mining Facility)."
+                )
+                return
+
+            layer = 0
+            if layer_str:
+                layer = int(layer_str, 0)  # already validated above
+                if not (0 <= layer <= 255):
+                    logger.warning(f"Layer {layer} out of range (0-255).")
+                    return
+
+            result = await self.ctx.request_warp_operation(WARP_MODE_STAGE, stage_code, layer)
+            target_desc = stage_code + (f" layer {layer}" if layer_str else "")
+
+        if result is None:
+            logger.warning(
+                "Warp request failed or timed out. Ensure the emulator is connected "
+                "and AP_WARP_REQUEST is available (may require an updated game patch)."
+            )
+            return
+
+        if result == 0:
+            if target_desc == "start":
+                logger.info("Warping to start...")
+            else:
+                logger.info(f"Warping to {target_desc}...")
+        else:
+            logger.warning("Warp request was rejected by the game (invalid state or destination).")
+
     def _cmd_go_mode(self):
         """Show seed-specific completion item requirements and whether you currently have them."""
         if not isinstance(self.ctx, SSHDContext):
@@ -1763,6 +1882,7 @@ class SSHDContext(CommonContext):
         self._ap_cheat_flags_offset: Optional[int] = None  # Memory offset of AP_CHEAT_FLAGS
         self._ap_spawn_request_offset: Optional[int] = None  # Memory offset of AP_SPAWN_REQUEST
         self._ap_flag_request_offset: Optional[int] = None   # Memory offset of AP_FLAG_REQUEST
+        self._ap_warp_request_offset: Optional[int] = None   # Memory offset of AP_WARP_REQUEST
         self._actor_id_map: Dict[str, int] = self._load_actorid_map()
         self._ap_item_info_written: bool = False  # Whether we've written the info table
         self._ap_item_info_last_refresh: float = 0.0  # Last time we refreshed the count field
@@ -4655,6 +4775,76 @@ class SSHDContext(CommonContext):
             await asyncio.sleep(0.02)
 
         logger.debug(f"Flag request timed out: {flag_type} {operation} {flag_id}")
+        return None
+
+    async def request_warp_operation(
+        self,
+        mode: int,
+        stage_code: str = "",
+        layer: int = 0xFF,
+        timeout: float = 1.0,
+    ) -> Optional[int]:
+        """Ask the Rust side to warp: either a Fi-style warp-to-start
+        (WARP_MODE_START), or a direct warp to an explicit stage/layer
+        (WARP_MODE_STAGE).
+
+        Returns the response_code on success (0 = ok, 1 = failed), or None
+        if the emulator isn't connected, the buffer couldn't be found, or
+        Rust didn't respond within *timeout* seconds.
+        """
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return None
+
+        if mode not in (WARP_MODE_START, WARP_MODE_STAGE):
+            return None
+
+        if self._ap_warp_request_offset is None:
+            self._ap_warp_request_offset = self._scan_for_buffer(
+                bytes([0x57, 0x52, 0x00, 0x01]), "AP_WARP_REQUEST"
+            )
+
+        if self._ap_warp_request_offset is None:
+            return None
+
+        try:
+            request_addr = self.memory.base_address + self._ap_warp_request_offset
+
+            stage_name_bytes = stage_code.encode("ascii", errors="replace")[:8].ljust(8, b"\x00")
+
+            payload = AP_WARP_REQUEST_STRUCT.pack(
+                bytes([0x57, 0x52, 0x00, 0x01]),  # magic
+                1,                                  # pending = 1 (new request)
+                mode,
+                layer & 0xFF,
+                0,                                   # _pad
+                stage_name_bytes,
+                0,                                   # response_ready = 0 (clear any stale result)
+                0,                                   # response_code
+            )
+            self.memory.pm.write_bytes(request_addr, payload, len(payload))
+        except Exception as e:
+            logger.debug(f"Could not write warp request: {e}")
+            err_str = str(e)
+            if "998" in err_str or "noaccess" in err_str.lower() or "access" in err_str.lower():
+                self._ap_warp_request_offset = None
+            return None
+
+        # Poll for Rust to flip response_ready. Rust processes one request
+        # per main-loop tick, so this should resolve within a frame or two.
+        deadline = time.time() + timeout
+        response_ready_addr = request_addr + 16
+        response_code_addr = request_addr + 17
+        while time.time() < deadline:
+            try:
+                ready = self.memory.pm.read_bytes(response_ready_addr, 1)
+                if ready and ready[0] == 1:
+                    code = self.memory.pm.read_bytes(response_code_addr, 1)
+                    return code[0] if code else None
+            except Exception:
+                pass
+            await asyncio.sleep(0.02)
+
+        logger.debug(f"Warp request timed out: mode={mode} stage={stage_code} layer={layer}")
         return None
 
     def _update_ap_check_stats(self):

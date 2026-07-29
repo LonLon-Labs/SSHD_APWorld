@@ -2,6 +2,7 @@
 #![allow(non_snake_case)]
 #![allow(unused)]
 
+use crate::entrance;
 use crate::flag;
 use crate::traps;
 use core::ffi::c_char;
@@ -74,6 +75,55 @@ pub static mut AP_FLAG_REQUEST: ApFlagRequest = ApFlagRequest {
     _pad1:          0,
     response_value: 0,
 };
+
+// ─── AP_WARP_REQUEST ───────────────────────────────────────────────────
+// Backs the /warp command. Python locates this struct by scanning for
+// magic bytes "WR\x00\x01". This layout must stay in sync with
+// AP_WARP_REQUEST_STRUCT in SSHDClient.py.
+//
+// Layout (packed, little-endian, 20 bytes total):
+//   +0  magic [u8; 4]        — "WR\x00\x01"
+//   +4  pending bool         — 1 = new request for us to process; we clear
+//                              it back to 0 as soon as we pick it up
+//   +5  mode u8              — 0 = warp to start (Fi warp), 1 = warp to
+//                              an explicit stage
+//   +6  layer u8             — target layer for mode=1; 0xFF = unspecified
+//                              (treated as 0). Unused for mode=0.
+//   +7  _pad0 u8
+//   +8  stage_name [u8; 8]   — ASCII stage code, null-padded (e.g.
+//                              "F000\0\0\0\0"). Unused for mode=0.
+//   +16 response_ready bool  — we set this to 1 once response_code is valid
+//   +17 response_code u8     — 0 = ok, 1 = failed (null pointers / invalid
+// mode)   +18 _pad1 [u8; 2]
+#[repr(C, packed(1))]
+pub struct ApWarpRequest {
+    pub magic:          [u8; 4],
+    pub pending:        bool,
+    pub mode:           u8,
+    pub layer:          u8,
+    pub _pad0:          u8,
+    pub stage_name:     [u8; 8],
+    pub response_ready: bool,
+    pub response_code:  u8,
+    pub _pad1:          [u8; 2],
+}
+assert_eq_size!([u8; 20], ApWarpRequest);
+
+#[no_mangle]
+pub static mut AP_WARP_REQUEST: ApWarpRequest = ApWarpRequest {
+    magic:          [0x57, 0x52, 0x00, 0x01], // "WR\x00\x01"
+    pending:        false,
+    mode:           0,
+    layer:          0xFF,
+    _pad0:          0,
+    stage_name:     [0u8; 8],
+    response_ready: false,
+    response_code:  0,
+    _pad1:          [0u8; 2],
+};
+
+const WARP_MODE_START: u8 = 0;
+const WARP_MODE_STAGE: u8 = 1;
 
 // Flag type discriminants — must match FLAG_TYPES in SSHDClient.py
 const FLAG_TYPE_STORYFLAG: u8 = 0;
@@ -250,5 +300,34 @@ fn handle_dungeonflag(operation: u8, flag_id: u16, scene_index: u16) -> u32 {
             flag::check_global_dungeonflag(scene, flag_id) as u32
         },
         _ => 0,
+    }
+}
+
+/// Processes at most one AP_WARP_REQUEST per call (one-shot, same pattern
+/// as the spawn/flag request handlers).
+pub fn handle_warp_request() {
+    unsafe {
+        if !AP_WARP_REQUEST.pending {
+            return;
+        }
+        // Clear first so this is one-shot even if we return early below.
+        AP_WARP_REQUEST.pending = false;
+        AP_WARP_REQUEST.response_ready = false;
+
+        let ok = match AP_WARP_REQUEST.mode {
+            WARP_MODE_START => entrance::warp_to_start(),
+            WARP_MODE_STAGE => {
+                let layer = if AP_WARP_REQUEST.layer == 0xFF {
+                    0
+                } else {
+                    AP_WARP_REQUEST.layer
+                };
+                entrance::warp_to_stage(AP_WARP_REQUEST.stage_name, layer)
+            },
+            _ => false,
+        };
+
+        AP_WARP_REQUEST.response_code = if ok { 0 } else { 1 };
+        AP_WARP_REQUEST.response_ready = true;
     }
 }
