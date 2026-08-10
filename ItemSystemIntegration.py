@@ -194,6 +194,8 @@ class GameItemSystem:
         # delivery verification delay for subsequent items.
         self._buffer_verified: bool = False
 
+        self._forced_dungeon_keys: dict = {}
+
         # FlagMgr pointer-chase state.
         # After discovering the committed flag data location once, we cache
         # the host offset so _ensure_itemflag_set can write there directly.
@@ -446,6 +448,36 @@ class GameItemSystem:
         if not self.memory.connected:
             logger.error("Cannot give item: not connected to game")
             return False
+
+        # Intercept real per-dungeon Small Keys (200-206) when that dungeon
+        # is already under a forced Key Ring / Skeleton Key count. The
+        # native buffer-path pickup increments dungeonflags directly and
+        # will desync the forced 4/5 value — so instead of letting it
+        # through, just re-assert the forced value and report delivered.
+        forced_scene_idx = self._SMALL_KEY_ITEM_ID_TO_SCENE.get(item_id)
+        if forced_scene_idx is not None and forced_scene_idx in self._forced_dungeon_keys:
+            forced_value = self._forced_dungeon_keys[forced_scene_idx]
+            self._write_dungeon_key_count(
+                forced_scene_idx, forced_value, self._current_dungeon_key_scene_idx()
+            )
+            logger.info(
+                f"[DungeonKeys] Suppressed real Small Key (item_id {item_id}) — "
+                f"scene {forced_scene_idx} is forced to {forced_value}"
+            )
+            self.last_delivery_mode = "direct_flag"
+            return True
+
+        # Key Rings (220-226) / Skeleton Key (227) register their forced
+        # dungeon-key count HERE, unconditionally — NOT only as a fallback
+        # when the buffer path fails. These items have real OARC models and
+        # normally deliver successfully via the buffer path (native game
+        # code), so _ensure_dungeon_keys_set would otherwise never run and
+        # _forced_dungeon_keys would stay empty forever, silently disabling
+        # the Small Key suppression above. Registering it here guarantees
+        # the tracking dict is populated the moment the item is granted,
+        # regardless of which delivery path actually shows the pickup.
+        if 220 <= item_id <= 227:
+            self._ensure_dungeon_keys_set(item_id)
 
         self.last_delivery_mode = "none"
         
@@ -1248,6 +1280,60 @@ class GameItemSystem:
 
         return confirmed
 
+    # Real per-dungeon Small Key game item IDs -> scene_idx. Matches the
+    # DUNGEON_KEY_INFO order used in _ensure_dungeon_keys_set (id - 200 is
+    # the index). Used to intercept and suppress real Small Key delivery
+    # while that dungeon is under a forced Key Ring / Skeleton Key count —
+    # the game's own native pickup code increments dungeonflags directly
+    # via the buffer path, which our reapply loop can never reliably win a
+    # race against.
+    _SMALL_KEY_ITEM_ID_TO_SCENE = {
+        200: 11,  # Skyview Temple
+        201: 17,  # Lanayru Mining Facility
+        202: 12,  # Ancient Cistern
+        203: 15,  # Fire Sanctuary
+        204: 18,  # Sandship
+        205: 20,  # Sky Keep
+        206: 9,   # Lanayru Caves
+    }
+
+    # Stage name -> dungeon-key scene_idx (matches DUNGEON_KEY_INFO order
+    # used in _ensure_dungeon_keys_set). Used to scope the STATIC write to
+    # only the dungeon the player is currently standing in, since
+    # STATIC_DUNGEON_FLAGS holds only the current scene's data.
+    _DUNGEON_KEY_STAGE_TO_SCENE = {
+        b"D100":   11,  # Skyview Temple
+        b"D101":   12,  # Ancient Cistern
+        b"D201":   15,  # Fire Sanctuary
+        b"D201_1": 15,  # Fire Sanctuary (inner)
+        b"D300":   17,  # Lanayru Mining Facility
+        b"D300_1": 17,  # Lanayru Mining Facility (back)
+        b"D301":   18,  # Sandship
+        b"D301_1": 18,  # Sandship (escape)
+        b"D003_0": 20,  # Sky Keep (Courage Room)
+        b"D003_1": 20,  # Sky Keep (Earth Temple Room)
+        b"D003_2": 20,  # Sky Keep (Power Room)
+        b"D003_3": 20,  # Sky Keep (Wisdom Room)
+        b"D003_4": 20,  # Sky Keep (Lanayru Mining Facility Room)
+        b"D003_5": 20,  # Sky Keep (Skyview Temple Room)
+        b"D003_6": 20,  # Sky Keep (Dreadfuse Room)
+        b"D003_7": 20,  # Sky Keep (Entrance Room)
+        b"D003_8": 20,  # Sky Keep (Triforce Room)
+        b"F303":   9,   # Lanayru Caves
+    }
+
+    def _current_dungeon_key_scene_idx(self) -> Optional[int]:
+        """Return the dungeon-key scene_idx for the currently loaded stage,
+        or None if not in a dungeon that has a Key Ring / Skeleton Key."""
+        try:
+            stage_raw = self.memory.read_bytes(GameOffsets.CURRENT_STAGE_NAME, 8)
+            if not stage_raw:
+                return None
+            stage = stage_raw.split(b"\x00", 1)[0]
+            return self._DUNGEON_KEY_STAGE_TO_SCENE.get(stage)
+        except Exception:
+            return None
+
     def _ensure_dungeon_keys_set(self, item_id: int) -> bool:
         """Direct-write fallback for Key Rings (220-226) and Skeleton Key (227).
 
@@ -1283,31 +1369,62 @@ class GameItemSystem:
 
         confirmed = False
         for scene_idx, max_keys in targets:
-            key_bits = (max_keys << 4) | max_keys
-            # FA dungeonflags[scene_idx][1]
-            fa_offset = FA_DUNGEON_FLAGS_OFFSET + scene_idx * 16 + 1 * 2
-            # STATIC dungeonflags[1] (only meaningful if player is in that dungeon,
-            # but writing it unconditionally is safe — it will be overwritten on
-            # the next scene load if wrong)
-            static_offset = STATIC_DUNGEON_FLAGS + 1 * 2  # slot [1] of current scene
+            # High-water mark: never let a later, lower-value item (e.g. a
+            # Key Ring arriving after the Skeleton Key) downgrade a dungeon
+            # that's already been forced higher.
+            forced = max(max_keys, self._forced_dungeon_keys.get(scene_idx, 0))
+            self._forced_dungeon_keys[scene_idx] = forced
 
-            try:
-                self.memory.write_short(fa_offset, key_bits)
+            if self._write_dungeon_key_count(scene_idx, forced, self._current_dungeon_key_scene_idx()):
                 confirmed = True
                 logger.info(
-                    f"[DungeonKeys] Set scene {scene_idx} FA.dungeonflags[1] = "
-                    f"0x{key_bits:04x} (max={max_keys}) for item_id {item_id}"
+                    f"[DungeonKeys] Forced scene {scene_idx} keys to {forced} "
+                    f"(requested {max_keys} for item_id {item_id})"
                 )
-            except Exception as exc:
-                logger.warning(f"[DungeonKeys] Failed to write FA dungeon flags for scene {scene_idx}: {exc}")
-
-            # Also write to STATIC (best-effort; only correct if currently in that dungeon)
-            try:
-                self.memory.write_short(static_offset, key_bits)
-            except Exception:
-                pass
 
         return confirmed
+
+    def _write_dungeon_key_count(self, scene_idx: int, max_keys: int, current_scene_idx: Optional[int] = None) -> bool:
+        """Write max_keys to a dungeon's key counter.
+
+        FA is a per-scene array (FA base + 0xA64, [[u16;8];26]) so it's
+        always safe to write regardless of where the player currently is.
+        STATIC_DUNGEON_FLAGS is a SINGLE address that only ever holds the
+        *currently loaded* dungeon's data — writing it for a dungeon the
+        player isn't in would stomp whichever dungeon actually is loaded.
+        So the STATIC write only happens when scene_idx == current_scene_idx.
+        """
+        FA_DUNGEON_FLAGS_OFFSET = 0x5AEAD54 + 0xA64  # absolute host offset
+        STATIC_DUNGEON_FLAGS    = 0x182E128           # absolute host offset
+
+        key_bits = (max_keys << 4) | max_keys
+        fa_offset = FA_DUNGEON_FLAGS_OFFSET + scene_idx * 16 + 1 * 2
+
+        wrote = False
+        try:
+            self.memory.write_short(fa_offset, key_bits)
+            wrote = True
+        except Exception as exc:
+            logger.warning(f"[DungeonKeys] Failed to write FA dungeon flags for scene {scene_idx}: {exc}")
+
+        if current_scene_idx is not None and scene_idx == current_scene_idx:
+            static_offset = STATIC_DUNGEON_FLAGS + 1 * 2  # slot [1] of current scene
+            try:
+                self.memory.write_short(static_offset, key_bits)
+            except Exception as exc:
+                logger.warning(f"[DungeonKeys] Failed to write STATIC dungeon flags for scene {scene_idx}: {exc}")
+
+        return wrote
+
+    def reapply_forced_dungeon_keys(self) -> None:
+        """Re-assert every forced dungeon key count. Call on every poll tick."""
+        if not self._forced_dungeon_keys:
+            return
+        if not self.memory or not self.memory.connected:
+            return
+        current_scene_idx = self._current_dungeon_key_scene_idx()
+        for scene_idx, max_keys in self._forced_dungeon_keys.items():
+            self._write_dungeon_key_count(scene_idx, max_keys, current_scene_idx)
 
     def _clear_itemflag(self, item_id: int) -> bool:
         """Clear (unset) the itemflag for the given item in all flag copies.

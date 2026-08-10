@@ -1738,8 +1738,6 @@ class SSHDWorld(World):
                 "Lanayru Caves Small Key":             "Lanayru Caves Key Ring",
             }
             if sk_mode == "key_rings":
-                # Remove all individual small keys; add exactly one Key Ring per dungeon
-                # that had at least one small key in the sshd-rando pool.
                 for sk_name in ALL_SMALL_KEY_NAMES:
                     if ap_pool_counts.get(sk_name, 0) > 0:
                         ap_pool_counts[sk_name] = 0
@@ -1747,7 +1745,6 @@ class SSHDWorld(World):
                         ap_pool_counts[ring_name] = 1
                 print("[__init__.py] Key Rings mode: replaced small keys with per-dungeon key rings")
             elif sk_mode == "skeleton_key":
-                # Remove all individual small keys; add exactly one Skeleton Key total.
                 total_removed = 0
                 for sk_name in ALL_SMALL_KEY_NAMES:
                     if ap_pool_counts.get(sk_name, 0) > 0:
@@ -1755,6 +1752,19 @@ class SSHDWorld(World):
                 if total_removed > 0:
                     ap_pool_counts["Skeleton Key"] = 1
                     print(f"[__init__.py] Skeleton Key mode: replaced {total_removed} small keys with 1 Skeleton Key")
+            elif sk_mode == "all_keys":
+                # Add both a per-dungeon Key Ring and a global Skeleton Key
+                total_removed = 0
+                for sk_name in ALL_SMALL_KEY_NAMES:
+                    count = ap_pool_counts.get(sk_name, 0)
+                    if count > 0:
+                        total_removed += count
+                        ap_pool_counts[sk_name] = 0
+                        ring_name = DUNGEON_TO_KEY_RING[sk_name]
+                        ap_pool_counts[ring_name] = 1
+                if total_removed > 0:
+                    ap_pool_counts["Skeleton Key"] = 1
+                print(f"[__init__.py] All-keys mode: replaced {total_removed} small keys with key rings + 1 Skeleton Key")
             
             # Add all placed items directly to the AP pool.
             # No subtraction needed — sshd-rando already removed starting items
@@ -2710,7 +2720,18 @@ class SSHDWorld(World):
                 key_ring_items["Lanayru Caves"] = lc_rings
 
             total_kr = sum(len(v) for v in key_ring_items.values())
-            if total_kr > 0:
+
+            # Respect the underlying Small Key Shuffle preference: "anywhere"
+            # means these can go anywhere in the ENTIRE multiworld, not just
+            # this player's own game. Release them to the general item pool
+            # so AP's standard fill places them across all players' worlds.
+            if self.options.small_key_shuffle.current_key == "anywhere":
+                for items in key_ring_items.values():
+                    self.multiworld.itempool.extend(items)
+                if total_kr > 0:
+                    print(f"[__init__.py] pre_fill: Releasing {total_kr} key rings to the "
+                          f"general pool (small_key_shuffle=anywhere, can appear in any game)")
+            elif total_kr > 0:
                 print(f"[__init__.py] pre_fill: Placing {total_kr} key rings (tier-0 in own dungeon)")
                 for dungeon, items in key_ring_items.items():
                     if not items:
@@ -2759,6 +2780,14 @@ class SSHDWorld(World):
         # any key-gated area to avoid soft-locks.
         if small_key_mode in ("skeleton_key", "all_keys"):
             sk_items = _collect_items_from_pool(["Skeleton Key"])
+
+            # Same "anywhere" release logic as Key Rings above.
+            if sk_items and self.options.small_key_shuffle.current_key == "anywhere":
+                self.multiworld.itempool.extend(sk_items)
+                print(f"[__init__.py] pre_fill: Releasing Skeleton Key to the general pool "
+                      f"(small_key_shuffle=anywhere, can appear in any game)")
+                sk_items = []
+
             if sk_items:
                 # Collect all key-gated regions across all dungeons (tier > 0)
                 all_gated_regions: set[str] = set()
@@ -4011,9 +4040,14 @@ class SSHDWorld(World):
         
         # Keys & Maps
         key_mode_map = {0: "vanilla", 1: "own_dungeon", 2: "any_dungeon", 3: "own_region", 4: "overworld", 5: "anywhere", 6: "removed"}
-        # key_rings (7) and skeleton_key (8) both keep doors locked; pass own_dungeon to sshd-rando
-        small_key_value = self.options.small_key_shuffle.value
-        settings_dict["small_keys"] = key_mode_map.get(small_key_value, "own_dungeon")
+        # AP's SmallKeyShuffle option only exposes 5 of the backend's 7 choices
+        # (no own_dungeon / any_dungeon) and its value indices do NOT line up with
+        # the backend's numbering — reusing key_mode_map here sent the wrong mode
+        # for every value except vanilla. Map by name instead, since the AP option's
+        # string names match the backend's option names exactly.
+        settings_dict["small_keys"] = self.options.small_key_shuffle.current_key
+        settings_dict["key_rings_in_pool"] = "on" if self.options.key_rings_in_pool.value else "off"
+        settings_dict["skeleton_key_in_pool"] = "on" if self.options.skeleton_key_in_pool.value else "off"
         settings_dict["boss_keys"] = key_mode_map[self.options.boss_key_shuffle.value]
         
         map_mode_map = {0: "vanilla", 1: "own_dungeon_restricted", 2: "own_dungeon_unrestricted", 3: "any_dungeon", 4: "own_region", 5: "overworld", 6: "anywhere"}
@@ -4245,10 +4279,10 @@ class SSHDWorld(World):
         # Dungeon Settings
         settings_dict["dungeons_include_sky_keep"] = "on" if self.options.dungeons_include_sky_keep.value else "off"
         settings_dict["empty_unrequired_dungeons"] = "on" if self.options.empty_unrequired_dungeons.value else "off"
-        
+
         lanayru_caves_map = {0: "vanilla", 1: "overworld", 2: "anywhere", 3: "removed"}
         # When key_rings or skeleton_key mode is active, keep Lanayru Caves doors locked
-        if small_key_value in (7, 8):  # key_rings or skeleton_key
+        if self.options.key_rings_in_pool.value or self.options.skeleton_key_in_pool.value:
             settings_dict["lanayru_caves_keys"] = "vanilla"
         else:
             settings_dict["lanayru_caves_keys"] = lanayru_caves_map[self.options.lanayru_caves_keys.value]

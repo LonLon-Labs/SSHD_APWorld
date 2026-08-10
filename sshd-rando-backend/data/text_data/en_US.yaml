@@ -141,25 +141,25 @@
   standard: "You got the <s<Sky Keep>> Map!"
 
 - name: Item 220 Text
-  standard: "You got the <g<Skyview Temple>> Key Ring!\nAll <r<small-key doors>> in this dungeon are now unlocked."
+  standard: "You got the <g<Skyview Temple>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
 - name: Item 221 Text
-  standard: "You got the <y<Lanayru Mining Facility>>\nKey Ring!\nAll <r<small-key doors>> in this dungeon are now unlocked."
+  standard: "You got the <y<Lanayru Mining Facility>>\nKey Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
 - name: Item 222 Text
-  standard: "You got the <b<Ancient Cistern>> Key Ring!\nAll <r<small-key doors>> in this dungeon are now unlocked."
+  standard: "You got the <b<Ancient Cistern>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
 - name: Item 223 Text
-  standard: "You got the <r<Fire Sanctuary>> Key Ring!\nAll <r<small-key doors>> in this dungeon are now unlocked."
+  standard: "You got the <r<Fire Sanctuary>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
 - name: Item 224 Text
-  standard: "You got the <y+<Sandship>> Key Ring!\nAll <r<small-key doors>> in this dungeon are now unlocked."
+  standard: "You got the <y+<Sandship>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
 - name: Item 225 Text
-  standard: "You got the <s<Sky Keep>> Key Ring!\nAll <r<small-key doors>> in this dungeon are now unlocked."
+  standard: "You got the <s<Sky Keep>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
 - name: Item 226 Text
-  standard: "You got the <ye<Lanayru Caves>> Key Ring!\nAll <r<small-key doors>> in this dungeon are now unlocked."
+  standard: "You got the <ye<Lanayru Caves>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
 - name: Item 227 Text
   standard: "You got the <y<Skeleton Key>>!\nAll <r<small-key doors>> in every dungeon\nare now unlocked."

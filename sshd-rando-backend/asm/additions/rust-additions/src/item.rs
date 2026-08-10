@@ -1762,10 +1762,26 @@ pub extern "C" fn resolve_progressive_item_models(
                 return c"GetPurseE".as_ptr();
             },
             220..=226 => {
-                return c"KeyRing".as_ptr();
+                // OARC name is "KeyRing" (matches KeyRing.arc), but the MDL0
+                // model stored inside that BRRES is named "GetKeySmallNormal"
+                // (same as the vanilla small key), not "KeyRing". Only the
+                // arc_or_model==1 (oarc name) lookup should get "KeyRing";
+                // the arc_or_model==2 (model name) lookup needs the real
+                // internal model name or the engine can't find it inside
+                // 3DModels(NW4R) and falls back incorrectly.
+                if arc_or_model == 1 {
+                    return c"KeyRing".as_ptr();
+                }
+                return c"GetKeySmallNormal".as_ptr();
             },
             227 => {
-                return c"SkeletonKey".as_ptr();
+                // Same situation as KeyRing above: OARC is "SkeletonKey"
+                // (matches SkeletonKey.arc), but the MDL0 inside it is also
+                // named "GetKeySmallNormal", not "SkeletonKey".
+                if arc_or_model == 1 {
+                    return c"SkeletonKey".as_ptr();
+                }
+                return c"GetKeySmallNormal".as_ptr();
             },
             _ => {
                 return model_name;
@@ -1898,10 +1914,8 @@ pub extern "C" fn get_item_model_name_ptr(
 pub extern "C" fn change_model_scale(item_actor: *mut dAcItem, world_matrix: *mut math::Matrix) {
     unsafe {
         let mut scale = match (*item_actor).final_determined_itemid {
-            214 => 0.5f32,     // Tadtone
-            215 => 0.3f32,     // Scrapper
-            220..=226 => 0.5f32, // Key Rings
-            227 => 0.014f32,   // Skeleton Key
+            214 => 0.5f32, // Tadtone
+            215 => 0.3f32, // Scrapper
             _ => 1.0f32,
         };
 
