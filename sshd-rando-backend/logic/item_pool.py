@@ -38,12 +38,49 @@ def generate_item_pool(world: "World") -> None:
     if world.setting("open_earth_temple") == "open":
         item_pool = [item for item in item_pool if item != KEY_PIECE]
 
-    if world.setting("small_keys") == "removed":
+    small_keys_raw = world.setting("small_keys").value()
+
+    if small_keys_raw == "removed":
         item_pool = [
             item
             for item in item_pool
             if not item.endswith(SMALL_KEY) or item == LC_SMALL_KEY
         ]
+
+    key_rings_on = world.setting("key_rings_in_pool") == "on"
+    skeleton_on = world.setting("skeleton_key_in_pool") == "on"
+    additive_all_keys = key_rings_on and skeleton_on and small_keys_raw in (
+        "own_region",
+        "overworld",
+        "anywhere",
+        "removed",
+    )
+
+    small_key_to_ring = {
+        SVT_SMALL_KEY: SVT_KEY_RING,
+        LMF_SMALL_KEY: LMF_KEY_RING,
+        AC_SMALL_KEY: AC_KEY_RING,
+        FS_SMALL_KEY: FS_KEY_RING,
+        SSH_SMALL_KEY: SSH_KEY_RING,
+        SK_SMALL_KEY: SK_KEY_RING,
+        LC_SMALL_KEY: LC_KEY_RING,
+    }
+
+    if additive_all_keys:
+        for small_key_name, ring_name in small_key_to_ring.items():
+            if small_key_name in item_pool or small_keys_raw == "removed":
+                item_pool.append(ring_name)
+        item_pool.append(SKELETON_KEY)
+    elif skeleton_on:
+        item_pool = [item for item in item_pool if not item.endswith(SMALL_KEY)]
+        item_pool.append(SKELETON_KEY)
+    elif key_rings_on:
+        for small_key_name, ring_name in small_key_to_ring.items():
+            if small_key_name in item_pool:
+                item_pool = [item for item in item_pool if item != small_key_name]
+                item_pool.append(ring_name)
+            elif small_keys_raw == "removed":
+                item_pool.append(ring_name)
 
     if world.setting("lanayru_caves_keys") == "removed":
         item_pool = [item for item in item_pool if item != LC_SMALL_KEY]

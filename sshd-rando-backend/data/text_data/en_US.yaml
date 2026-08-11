@@ -140,6 +140,30 @@
 - name: Item 213 Text
   standard: "You got the <s<Sky Keep>> Map!"
 
+- name: Item 220 Text
+  standard: "You got the <g<Skyview Temple>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
+
+- name: Item 221 Text
+  standard: "You got the <y<Lanayru Mining Facility>>\nKey Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
+
+- name: Item 222 Text
+  standard: "You got the <b<Ancient Cistern>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
+
+- name: Item 223 Text
+  standard: "You got the <r<Fire Sanctuary>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
+
+- name: Item 224 Text
+  standard: "You got the <y+<Sandship>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
+
+- name: Item 225 Text
+  standard: "You got the <s<Sky Keep>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
+
+- name: Item 226 Text
+  standard: "You got the <ye<Lanayru Caves>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
+
+- name: Item 227 Text
+  standard: "You got the <y<Skeleton Key>>!\nAll <r<small-key doors>> in every dungeon\nare now unlocked."
+
 - name: Can't buy Pouch text
   standard: "You need an <y<Adventure Pouch>> to buy\nthis!"
 
@@ -1241,6 +1265,54 @@
   standard: Lanayru Caves Small Key
   pretty: the <Lanayru Caves Small Key>
   cryptic: a <r<key to the sea>>
+  plurality: Singular
+
+- name: Skyview Temple Key Ring
+  standard: Skyview Temple Key Ring
+  pretty: the <Skyview Temple Key Ring>
+  cryptic: a <r<glowing mushroom key ring>>
+  plurality: Singular
+
+- name: Lanayru Mining Facility Key Ring
+  standard: Lanayru Mining Facility Key Ring
+  pretty: the <Lanayru Mining Facility Key Ring>
+  cryptic: an <r<electric key ring>>
+  plurality: Singular
+
+- name: Ancient Cistern Key Ring
+  standard: Ancient Cistern Key Ring
+  pretty: the <Ancient Cistern Key Ring>
+  cryptic: a <r<wet key ring>>
+  plurality: Singular
+
+- name: Fire Sanctuary Key Ring
+  standard: Fire Sanctuary Key Ring
+  pretty: the <Fire Sanctuary Key Ring>
+  cryptic: a <r<flaming key ring>>
+  plurality: Singular
+
+- name: Sandship Key Ring
+  standard: Sandship Key Ring
+  pretty: the <Sandship Key Ring>
+  cryptic: a <r<time-travelling key ring>>
+  plurality: Singular
+
+- name: Sky Keep Key Ring
+  standard: Sky Keep Key Ring
+  pretty: the <Sky Keep Key Ring>
+  cryptic: a <r<sacred key ring>>
+  plurality: Singular
+
+- name: Lanayru Caves Key Ring
+  standard: Lanayru Caves Key Ring
+  pretty: the <Lanayru Caves Key Ring>
+  cryptic: a <r<ring key to the sea>>
+  plurality: Singular
+
+- name: Skeleton Key
+  standard: Skeleton Key
+  pretty: the <Skeleton Key>
+  cryptic: a <r<master key>>
   plurality: Singular
 
 - name: Skyview Temple Map

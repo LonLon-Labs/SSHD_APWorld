@@ -237,3 +237,42 @@ def patch_archipelago_item_oarc(romfs_output_path: Path, assets_path: Path, mode
         cache_arc_path = CACHE_OARC_PATH / cache_name
         write_bytes_create_dirs(cache_arc_path, decompressed)
         print(f"  ✓ Custom {cache_name} placed in cache: {cache_arc_path}")
+
+
+def patch_key_item_oarcs(assets_path: Path):
+    """
+    Place the KeyRing and SkeletonKey OARC models into the cache/oarc folder
+    so the stage patching pipeline picks them up for use in item get animations.
+
+    The assets folder contains:
+      - KeyRing.arc.LZ
+      - SkeletonKey.arc.LZ
+
+    Both OARCs are always loaded unconditionally so they are available
+    regardless of which key-ring/skeleton-key mode the player uses.
+    """
+    try:
+        from sslib.utils import write_bytes_create_dirs
+        from filepathconstants import CACHE_OARC_PATH
+        import nlzss11
+    except ImportError as e:
+        print(f"Warning: sshd-rando not available, skipping key item OARC patch (import error: {e})")
+        return
+
+    # (source asset filename, cache target)
+    arcs_to_load = [
+        ("KeyRing.arc.LZ", "KeyRing.arc"),
+        ("SkeletonKey.arc.LZ", "SkeletonKey.arc"),
+    ]
+
+    for primary_filename, cache_name in arcs_to_load:
+        oarc_data = _load_oarc_asset(primary_filename, assets_path)
+
+        if oarc_data is None:
+            print(f"Warning: {primary_filename} not found in assets, skipping key item model")
+            continue
+
+        decompressed = nlzss11.decompress(oarc_data)
+        cache_arc_path = CACHE_OARC_PATH / cache_name
+        write_bytes_create_dirs(cache_arc_path, decompressed)
+        print(f"  ✓ Custom {cache_name} placed in cache: {cache_arc_path}")

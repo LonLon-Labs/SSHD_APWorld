@@ -44,7 +44,7 @@ from .Items import ITEM_TABLE
 from .Locations import LOCATION_TABLE
 from .SSHD_Options import SSHDOptions, sshd_option_groups
 from .Rules import set_rules, set_completion_condition
-from .rando.ArcPatcher import patch_archipelago_logo, patch_archipelago_item_oarc
+from .rando.ArcPatcher import patch_archipelago_logo, patch_archipelago_item_oarc, patch_key_item_oarcs
 from .SSHDRWrapper import generate_sshd_rando_mod, extract_location_item_mapping, extract_custom_flag_mapping
 
 try:
@@ -440,7 +440,9 @@ class SSHDWorld(World):
         "tadtone_shuffle": ("tadtone_shuffle", "toggle", None),
         "gossip_stone_treasure_shuffle": ("gossip_stone_treasure_shuffle", "toggle", None),
         # Keys & Maps
-        "small_keys": ("small_key_shuffle", "choice", {"vanilla": 0, "own_dungeon": 1, "any_dungeon": 2, "own_region": 3, "overworld": 4, "anywhere": 5, "removed": 6}),
+        "small_keys": ("small_key_shuffle", "choice", {"vanilla": 0, "own_region": 1, "overworld": 2, "anywhere": 3, "removed": 4}),
+        "key_rings_in_pool": ("key_rings_in_pool", "toggle", None),
+        "skeleton_key_in_pool": ("skeleton_key_in_pool", "toggle", None),
         "boss_keys": ("boss_key_shuffle", "choice", {"vanilla": 0, "own_dungeon": 1, "any_dungeon": 2, "own_region": 3, "overworld": 4, "anywhere": 5, "removed": 6}),
         "map_mode": ("map_shuffle", "choice", {"vanilla": 0, "own_dungeon_restricted": 1, "own_dungeon_unrestricted": 2, "any_dungeon": 3, "own_region": 4, "overworld": 5, "anywhere": 6}),
         # Entrances
@@ -716,6 +718,20 @@ class SSHDWorld(World):
             if normalized is not None:
                 fallback[key] = normalized
         return fallback
+
+    def _effective_small_key_mode(self) -> str:
+        """Resolve small-key behavior from Small Keys + Key Rings + Skeleton Key options."""
+        if (
+            self.options.key_rings_in_pool.value
+            and self.options.skeleton_key_in_pool.value
+            and self.options.small_key_shuffle.current_key in ("own_region", "overworld", "anywhere", "removed")
+        ):
+            return "all_keys"
+        if self.options.skeleton_key_in_pool.value:
+            return "skeleton_key"
+        if self.options.key_rings_in_pool.value:
+            return "key_rings"
+        return self.options.small_key_shuffle.current_key
     
     def create_regions(self) -> None:
         """
@@ -1480,6 +1496,7 @@ class SSHDWorld(World):
             key_mode_map = {
                 0: "vanilla", 1: "own_dungeon", 2: "any_dungeon",
                 3: "own_region", 4: "overworld", 5: "anywhere", 6: "removed",
+                # 7 (key_rings) and 8 (skeleton_key) keep doors locked → own_dungeon for sshd-rando
             }
             s['boss_keys'] = key_mode_map.get(
                 self.options.boss_key_shuffle.value, 'own_dungeon')
@@ -1702,6 +1719,52 @@ class SSHDWorld(World):
             if self.options.require_tim.value:
                 ap_pool_counts["Tim The Tumbleweed"] += 1
             ap_pool_counts["Tumbleweed"] = 0
+
+            # Key Rings mode: replace all dungeon-specific small keys with one Key Ring per dungeon.
+            # Skeleton Key mode: replace ALL small keys (all dungeons) with a single Skeleton Key.
+            sk_mode = self._effective_small_key_mode()  # e.g. "key_rings", "skeleton_key"
+            ALL_SMALL_KEY_NAMES = [
+                "Skyview Temple Small Key", "Lanayru Mining Facility Small Key",
+                "Ancient Cistern Small Key", "Fire Sanctuary Small Key",
+                "Sandship Small Key", "Sky Keep Small Key", "Lanayru Caves Small Key",
+            ]
+            DUNGEON_TO_KEY_RING = {
+                "Skyview Temple Small Key":            "Skyview Temple Key Ring",
+                "Lanayru Mining Facility Small Key":   "Lanayru Mining Facility Key Ring",
+                "Ancient Cistern Small Key":           "Ancient Cistern Key Ring",
+                "Fire Sanctuary Small Key":            "Fire Sanctuary Key Ring",
+                "Sandship Small Key":                  "Sandship Key Ring",
+                "Sky Keep Small Key":                  "Sky Keep Key Ring",
+                "Lanayru Caves Small Key":             "Lanayru Caves Key Ring",
+            }
+            if sk_mode == "key_rings":
+                for sk_name in ALL_SMALL_KEY_NAMES:
+                    if ap_pool_counts.get(sk_name, 0) > 0:
+                        ap_pool_counts[sk_name] = 0
+                        ring_name = DUNGEON_TO_KEY_RING[sk_name]
+                        ap_pool_counts[ring_name] = 1
+                print("[__init__.py] Key Rings mode: replaced small keys with per-dungeon key rings")
+            elif sk_mode == "skeleton_key":
+                total_removed = 0
+                for sk_name in ALL_SMALL_KEY_NAMES:
+                    if ap_pool_counts.get(sk_name, 0) > 0:
+                        total_removed += ap_pool_counts.pop(sk_name, 0)
+                if total_removed > 0:
+                    ap_pool_counts["Skeleton Key"] = 1
+                    print(f"[__init__.py] Skeleton Key mode: replaced {total_removed} small keys with 1 Skeleton Key")
+            elif sk_mode == "all_keys":
+                # Add both a per-dungeon Key Ring and a global Skeleton Key
+                total_removed = 0
+                for sk_name in ALL_SMALL_KEY_NAMES:
+                    count = ap_pool_counts.get(sk_name, 0)
+                    if count > 0:
+                        total_removed += count
+                        ap_pool_counts[sk_name] = 0
+                        ring_name = DUNGEON_TO_KEY_RING[sk_name]
+                        ap_pool_counts[ring_name] = 1
+                if total_removed > 0:
+                    ap_pool_counts["Skeleton Key"] = 1
+                print(f"[__init__.py] All-keys mode: replaced {total_removed} small keys with key rings + 1 Skeleton Key")
             
             # Add all placed items directly to the AP pool.
             # No subtraction needed — sshd-rando already removed starting items
@@ -1758,6 +1821,8 @@ class SSHDWorld(World):
                 "Sandship Small Key": 2,
                 "Fire Sanctuary Small Key": 3,
                 "Lanayru Caves Small Key": 2,
+                # Key rings/skeleton key are not in the standard fallback pool
+                # (they are added dynamically if small_key_shuffle == key_rings/skeleton_key)
                 "Heart Medal": 2,
                 "Rupee Medal": 2,
                 "Heart Piece": 24,
@@ -1809,6 +1874,43 @@ class SSHDWorld(World):
                     starting_count = starting_items.get(name, 0)
                     if starting_count == 0:
                         item_pool.append(self.create_item(name))
+
+            # In the fallback path, apply key_rings / skeleton_key conversion
+            _fallback_sk_mode = self._effective_small_key_mode()
+            ALL_SMALL_KEY_NAMES_FB = {
+                "Skyview Temple Small Key":          "Skyview Temple Key Ring",
+                "Lanayru Mining Facility Small Key": "Lanayru Mining Facility Key Ring",
+                "Ancient Cistern Small Key":         "Ancient Cistern Key Ring",
+                "Fire Sanctuary Small Key":          "Fire Sanctuary Key Ring",
+                "Sandship Small Key":                "Sandship Key Ring",
+                "Sky Keep Small Key":                "Sky Keep Key Ring",
+                "Lanayru Caves Small Key":           "Lanayru Caves Key Ring",
+            }
+            if _fallback_sk_mode == "key_rings":
+                converted_pool = []
+                rings_added: set[str] = set()
+                for item in item_pool:
+                    if item.name in ALL_SMALL_KEY_NAMES_FB:
+                        ring = ALL_SMALL_KEY_NAMES_FB[item.name]
+                        if ring not in rings_added:
+                            converted_pool.append(self.create_item(ring))
+                            rings_added.add(ring)
+                        # else: drop the extra; key ring already added
+                    else:
+                        converted_pool.append(item)
+                item_pool = converted_pool
+            elif _fallback_sk_mode == "skeleton_key":
+                sk_added = False
+                converted_pool = []
+                for item in item_pool:
+                    if item.name in ALL_SMALL_KEY_NAMES_FB:
+                        if not sk_added:
+                            converted_pool.append(self.create_item("Skeleton Key"))
+                            sk_added = True
+                        # else: drop remaining small keys
+                    else:
+                        converted_pool.append(item)
+                item_pool = converted_pool
         
         # Fill remaining slots with weighted junk filler items.
         # NOTE: In the hardcoded fallback path, chest-unsafe items are excluded
@@ -1892,40 +1994,47 @@ class SSHDWorld(World):
 
     # ── Dungeon item pre-fill constants ──────────────────────────────────
     
-    # Maps each dungeon to its small key name(s), boss key name, and map name.
+    # Maps each dungeon to its small key name(s), boss key name, map name, and key ring name.
     DUNGEON_ITEM_NAMES: dict[str, dict[str, list[str]]] = {
         "Skyview Temple": {
             "small_keys": ["Skyview Temple Small Key"],
+            "key_rings": ["Skyview Temple Key Ring"],
             "boss_keys": ["Skyview Temple Boss Key"],
             "maps": ["Skyview Temple Map"],
         },
         "Earth Temple": {
             "small_keys": [],
+            "key_rings": [],
             "boss_keys": ["Earth Temple Boss Key"],
             "maps": ["Earth Temple Map"],
         },
         "Lanayru Mining Facility": {
             "small_keys": ["Lanayru Mining Facility Small Key"],
+            "key_rings": ["Lanayru Mining Facility Key Ring"],
             "boss_keys": ["Lanayru Mining Facility Boss Key"],
             "maps": ["Lanayru Mining Facility Map"],
         },
         "Ancient Cistern": {
             "small_keys": ["Ancient Cistern Small Key"],
+            "key_rings": ["Ancient Cistern Key Ring"],
             "boss_keys": ["Ancient Cistern Boss Key"],
             "maps": ["Ancient Cistern Map"],
         },
         "Fire Sanctuary": {
             "small_keys": ["Fire Sanctuary Small Key"],
+            "key_rings": ["Fire Sanctuary Key Ring"],
             "boss_keys": ["Fire Sanctuary Boss Key"],
             "maps": ["Fire Sanctuary Map"],
         },
         "Sandship": {
             "small_keys": ["Sandship Small Key"],
+            "key_rings": ["Sandship Key Ring"],
             "boss_keys": ["Sandship Boss Key"],
             "maps": ["Sandship Map"],
         },
         "Sky Keep": {
             "small_keys": ["Sky Keep Small Key"],
+            "key_rings": ["Sky Keep Key Ring"],
             "boss_keys": [],
             "maps": ["Sky Keep Map"],
         },
@@ -2124,7 +2233,7 @@ class SSHDWorld(World):
         # fill_restrictive is no longer used — direct placement handles all
         # dungeon-restricted items since sshd-rando verified completability.
         
-        small_key_mode = self.options.small_key_shuffle.current_key   # e.g. "own_dungeon"
+        small_key_mode = self._effective_small_key_mode()   # e.g. "own_region"
         boss_key_mode = self.options.boss_key_shuffle.current_key     # e.g. "own_dungeon" 
         map_mode = self.options.map_shuffle.current_key               # e.g. "own_dungeon_restricted"
         triforce_mode = self.options.triforce_shuffle.current_key     # e.g. "anywhere"
@@ -2357,6 +2466,7 @@ class SSHDWorld(World):
             for dungeon in target_dungeons:
                 dungeon_info = self.DUNGEON_ITEM_NAMES.get(dungeon, {})
                 dungeon_item_names.update(dungeon_info.get("small_keys", []))
+                dungeon_item_names.update(dungeon_info.get("key_rings", []))
                 dungeon_item_names.update(dungeon_info.get("boss_keys", []))
 
             demoted_count = 0
@@ -2584,7 +2694,7 @@ class SSHDWorld(World):
                 print("[__init__.py] pre_fill: Skipping end-of-dungeon progression placement (dungeon_goal_requirement is enabled)")
         
         # ── Small Keys ───────────────────────────────────────────────────
-        if small_key_mode not in ("anywhere", "removed"):
+        if small_key_mode not in ("anywhere", "removed", "key_rings", "skeleton_key", "all_keys"):
             small_key_items: dict[str, list] = {}
             for dungeon, info in self.DUNGEON_ITEM_NAMES.items():
                 items = _collect_items_from_pool(info["small_keys"])
@@ -2594,6 +2704,126 @@ class SSHDWorld(World):
             total_sk = sum(len(v) for v in small_key_items.values())
             print(f"[__init__.py] pre_fill: Placing {total_sk} small keys with mode={small_key_mode}")
             _place_restricted_items("small_keys", small_key_mode, small_key_items)
+
+        # ── Key Rings ────────────────────────────────────────────────────
+        # Each key ring counts as all small keys for its dungeon.
+        # Place it in tier-0 (no key doors required) within the dungeon.
+        if small_key_mode in ("key_rings", "all_keys"):
+            key_ring_items: dict[str, list] = {}
+            for dungeon, info in self.DUNGEON_ITEM_NAMES.items():
+                items = _collect_items_from_pool(info.get("key_rings", []))
+                if items:
+                    key_ring_items[dungeon] = items
+            # Also handle Lanayru Caves Key Ring
+            lc_rings = _collect_items_from_pool(["Lanayru Caves Key Ring"])
+            if lc_rings:
+                key_ring_items["Lanayru Caves"] = lc_rings
+
+            total_kr = sum(len(v) for v in key_ring_items.values())
+
+            # Respect the underlying Small Key Shuffle preference: "anywhere"
+            # means these can go anywhere in the ENTIRE multiworld, not just
+            # this player's own game. Release them to the general item pool
+            # so AP's standard fill places them across all players' worlds.
+            if self.options.small_key_shuffle.current_key == "anywhere":
+                for items in key_ring_items.values():
+                    self.multiworld.itempool.extend(items)
+                if total_kr > 0:
+                    print(f"[__init__.py] pre_fill: Releasing {total_kr} key rings to the "
+                          f"general pool (small_key_shuffle=anywhere, can appear in any game)")
+            elif total_kr > 0:
+                print(f"[__init__.py] pre_fill: Placing {total_kr} key rings (tier-0 in own dungeon)")
+                for dungeon, items in key_ring_items.items():
+                    if not items:
+                        continue
+                    valid_locations = _get_valid_locations_for_mode("own_dungeon", dungeon)
+                    if not valid_locations:
+                        # Lanayru Caves may not match dungeon names exactly; try region match
+                        valid_locations = [
+                            loc for loc in self.multiworld.get_locations(self.player)
+                            if loc.address is not None and loc.item is None
+                            and LOCATION_TABLE.get(loc.name) is not None
+                            and LOCATION_TABLE[loc.name].region in (
+                                "Lanayru Caves", "Lanayru Caves Past Locked Door"
+                            )
+                        ] if dungeon == "Lanayru Caves" else []
+                    if not valid_locations:
+                        print(f"[__init__.py] WARNING: No valid locations for key ring in {dungeon}. "
+                              f"Adding to general pool.")
+                        self.multiworld.itempool.extend(items)
+                        continue
+
+                    # Restrict to tier-0: locations NOT behind any key door in this dungeon
+                    key_gates = self._KEY_GATED_REGIONS.get(dungeon, {})
+                    tier0_locs = [
+                        loc for loc in valid_locations
+                        if key_gates.get(loc.parent_region.name if loc.parent_region else "", 0) == 0
+                    ]
+                    placement_pool = tier0_locs if tier0_locs else valid_locations
+                    self.random.shuffle(placement_pool)
+
+                    placed = 0
+                    while items and placement_pool:
+                        item = items.pop(0)
+                        loc = placement_pool.pop(0)
+                        loc.place_locked_item(item)
+                        placed += 1
+
+                    if placed:
+                        print(f"[__init__.py] Placed {placed} key ring(s) in {dungeon} (tier-0)")
+                    if items:
+                        print(f"[__init__.py] WARNING: excess key ring for {dungeon}, adding to pool")
+                        self.multiworld.itempool.extend(items)
+
+        # ── Skeleton Key ─────────────────────────────────────────────────
+        # One global item that unlocks all key doors. Must be placed before
+        # any key-gated area to avoid soft-locks.
+        if small_key_mode in ("skeleton_key", "all_keys"):
+            sk_items = _collect_items_from_pool(["Skeleton Key"])
+
+            # Same "anywhere" release logic as Key Rings above.
+            if sk_items and self.options.small_key_shuffle.current_key == "anywhere":
+                self.multiworld.itempool.extend(sk_items)
+                print(f"[__init__.py] pre_fill: Releasing Skeleton Key to the general pool "
+                      f"(small_key_shuffle=anywhere, can appear in any game)")
+                sk_items = []
+
+            if sk_items:
+                # Collect all key-gated regions across all dungeons (tier > 0)
+                all_gated_regions: set[str] = set()
+                for dungeon_gates in self._KEY_GATED_REGIONS.values():
+                    all_gated_regions.update(dungeon_gates.keys())
+                # Also gate Lanayru Caves past-locked-door region
+                all_gated_regions.add("Lanayru Caves Past Locked Door")
+
+                # Valid: any non-event location that is NOT in a key-gated region
+                valid_locations = [
+                    loc for loc in self.multiworld.get_locations(self.player)
+                    if loc.address is not None and loc.item is None
+                    and (loc.parent_region is None or loc.parent_region.name not in all_gated_regions)
+                ]
+                if not valid_locations:
+                    print("[__init__.py] WARNING: No tier-0 locations for Skeleton Key. "
+                          "Returning to general pool.")
+                    self.multiworld.itempool.extend(sk_items)
+                else:
+                    self.random.shuffle(valid_locations)
+                    placed = 0
+                    while sk_items and valid_locations:
+                        item = sk_items.pop(0)
+                        loc = valid_locations.pop(0)
+                        loc.place_locked_item(item)
+                        placed += 1
+                    if placed:
+                        print(f"[__init__.py] Placed Skeleton Key in a tier-0 location")
+                    if sk_items:
+                        self.multiworld.itempool.extend(sk_items)
+
+        # ── Lanayru Caves Keys (separate setting) — skip when key_rings/skeleton_key active
+        lanayru_caves_mode = self.options.lanayru_caves_keys.current_key
+        # key_rings and skeleton_key modes override lanayru_caves_keys
+        if small_key_mode in ("key_rings", "skeleton_key"):
+            lanayru_caves_mode = "removed"  # already handled above, skip here
         
         # ── Boss Keys (logic-aware placement) ─────────────────────────
         if boss_key_mode not in ("anywhere", "removed"):
@@ -2678,7 +2908,7 @@ class SSHDWorld(World):
                 _place_restricted_items("maps", map_mode, map_items)
         
         # ── Lanayru Caves Keys (separate setting) ───────────────────────
-        lanayru_caves_mode = self.options.lanayru_caves_keys.current_key
+        # Note: lanayru_caves_mode was set above (overridden to "removed" for key_rings/skeleton_key)
         if lanayru_caves_mode not in ("anywhere", "removed"):
             lc_items = _collect_items_from_pool(["Lanayru Caves Small Key"])
             if lc_items:
@@ -3424,6 +3654,9 @@ class SSHDWorld(World):
                 assets_path = Path(__file__).parent / "assets"
                 model_setting = ap_settings.get("archipelago_item_model", "archipelago_logo")
                 patch_archipelago_item_oarc(None, assets_path, model_setting)
+                # Always load Key Ring and Skeleton Key OARCs so the models are available
+                # in any stage, regardless of whether these modes are active.
+                patch_key_item_oarcs(assets_path)
                 # Serialize patch generation: sshd-rando uses module-level global
                 # state (text_table) that is not thread-safe. Archipelago runs
                 # generate_output in parallel threads, so we must hold a lock
@@ -3807,7 +4040,14 @@ class SSHDWorld(World):
         
         # Keys & Maps
         key_mode_map = {0: "vanilla", 1: "own_dungeon", 2: "any_dungeon", 3: "own_region", 4: "overworld", 5: "anywhere", 6: "removed"}
-        settings_dict["small_keys"] = key_mode_map[self.options.small_key_shuffle.value]
+        # AP's SmallKeyShuffle option only exposes 5 of the backend's 7 choices
+        # (no own_dungeon / any_dungeon) and its value indices do NOT line up with
+        # the backend's numbering — reusing key_mode_map here sent the wrong mode
+        # for every value except vanilla. Map by name instead, since the AP option's
+        # string names match the backend's option names exactly.
+        settings_dict["small_keys"] = self.options.small_key_shuffle.current_key
+        settings_dict["key_rings_in_pool"] = "on" if self.options.key_rings_in_pool.value else "off"
+        settings_dict["skeleton_key_in_pool"] = "on" if self.options.skeleton_key_in_pool.value else "off"
         settings_dict["boss_keys"] = key_mode_map[self.options.boss_key_shuffle.value]
         
         map_mode_map = {0: "vanilla", 1: "own_dungeon_restricted", 2: "own_dungeon_unrestricted", 3: "any_dungeon", 4: "own_region", 5: "overworld", 6: "anywhere"}
@@ -4039,9 +4279,13 @@ class SSHDWorld(World):
         # Dungeon Settings
         settings_dict["dungeons_include_sky_keep"] = "on" if self.options.dungeons_include_sky_keep.value else "off"
         settings_dict["empty_unrequired_dungeons"] = "on" if self.options.empty_unrequired_dungeons.value else "off"
-        
+
         lanayru_caves_map = {0: "vanilla", 1: "overworld", 2: "anywhere", 3: "removed"}
-        settings_dict["lanayru_caves_keys"] = lanayru_caves_map[self.options.lanayru_caves_keys.value]
+        # When key_rings or skeleton_key mode is active, keep Lanayru Caves doors locked
+        if self.options.key_rings_in_pool.value or self.options.skeleton_key_in_pool.value:
+            settings_dict["lanayru_caves_keys"] = "vanilla"
+        else:
+            settings_dict["lanayru_caves_keys"] = lanayru_caves_map[self.options.lanayru_caves_keys.value]
         
         # Hints (disabled - Archipelago uses its own)
         settings_dict["path_hints"] = "0"

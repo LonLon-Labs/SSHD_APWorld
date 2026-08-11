@@ -266,12 +266,6 @@ def place_own_dungeon_items(world: World, worlds: list[World]):
     for dungeon in world.dungeons.values():
         own_dungeon_items: list[Item] = []
 
-        if world.setting("small_keys") == "own_dungeon":
-            small_key = dungeon.small_key
-            if small_key is not None:
-                own_dungeon_items.extend([small_key] * world.item_pool[small_key])
-                world.item_pool[small_key] = 0
-
         if world.setting("boss_keys") == "own_dungeon":
             boss_key = dungeon.boss_key
             if boss_key is not None:
@@ -411,12 +405,6 @@ def place_any_dungeon_items(world: World, worlds: list[World]):
         any_dungeon_items.clear()
         any_dungeon_locations.clear()
         for dungeon in dungeons:
-            if world.setting("small_keys") == "any_dungeon":
-                small_key = dungeon.small_key
-                if small_key is not None:
-                    any_dungeon_items.extend([small_key] * world.item_pool[small_key])
-                    world.item_pool[small_key] = 0
-
             if world.setting("boss_keys") == "any_dungeon":
                 boss_key = dungeon.boss_key
                 if boss_key is not None:

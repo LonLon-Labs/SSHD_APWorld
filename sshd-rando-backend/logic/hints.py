@@ -503,7 +503,7 @@ def generate_item_hint_locations(world: World, hint_locations: list) -> None:
             and not location.is_hinted
             and not (
                 location.current_item.is_dungeon_small_key
-                and world.setting("small_keys").is_any_of("own_dungeon", "own_region")
+                and world.setting("small_keys") == "own_region"
             )
             and not (
                 location.current_item.is_boss_key

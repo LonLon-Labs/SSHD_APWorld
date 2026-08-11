@@ -348,6 +348,15 @@ def generate_patches(
 
     # ---- Apply patches (requires ROM) ----
     print("[Patcher] Applying ROM patches (this reads from your ROM extract)...")
+
+    # Load key ring and skeleton key OARCs into cache before patching
+    try:
+        from rando.ArcPatcher import patch_key_item_oarcs
+        assets_dir_kr = _CURRENT_DIR / "assets"
+        patch_key_item_oarcs(assets_dir_kr)
+    except Exception as _kr_e:
+        print(f"[Patcher] Warning: Could not load key item OARCs: {_kr_e}")
+
     load_text_data()
     handler = AllPatchHandler(world)
     handler.do_all_patches()

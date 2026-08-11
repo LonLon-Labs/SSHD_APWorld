@@ -655,20 +655,28 @@ SCRAPPER = "Scrapper"
 # 219
 
 # 220
+SVT_KEY_RING = "Skyview Temple Key Ring"
 
 # 221
+LMF_KEY_RING = "Lanayru Mining Facility Key Ring"
 
 # 222
+AC_KEY_RING = "Ancient Cistern Key Ring"
 
 # 223
+FS_KEY_RING = "Fire Sanctuary Key Ring"
 
 # 224
+SSH_KEY_RING = "Sandship Key Ring"
 
 # 225
+SK_KEY_RING = "Sky Keep Key Ring"
 
 # 226
+LC_KEY_RING = "Lanayru Caves Key Ring"
 
 # 227
+SKELETON_KEY = "Skeleton Key"
 
 # 228
 

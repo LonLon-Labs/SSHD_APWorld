@@ -1769,6 +1769,14 @@ class SSHDContext(CommonContext):
         
         # Initialize Archipelago item system (buffer-based with animations)
         self.game_item_system = None
+        # True once _resync_dungeon_key_forcing() has rebuilt
+        # game_item_system._forced_dungeon_keys from already-owned Key
+        # Ring / Skeleton Key items. That dict is in-memory-only state
+        # that resets on every client restart, while the save file (and
+        # the player's item history) persists the grant — without this
+        # resync, real Small Keys would bypass the suppression after any
+        # reconnect even though the dungeon is still supposed to be forced.
+        self._dungeon_keys_resynced: bool = False
         
         # Progressive item counters
         self.progressive_counts = {
@@ -2748,6 +2756,7 @@ class SSHDContext(CommonContext):
 
             # Request persisted delivery index from AP DataStorage
             self._datastorage_loaded = False
+            self._dungeon_keys_resynced = False
             self._pending_received_items.clear()
             if self.item_queue:
                 logger.info(
@@ -3391,6 +3400,27 @@ class SSHDContext(CommonContext):
                 logger.error(f"Error in cheat loop: {e}")
                 await asyncio.sleep(0.5)  # Back off on error
     
+    def _resync_dungeon_key_forcing(self):
+        """Rebuild game_item_system._forced_dungeon_keys from items the
+        player already owns. _forced_dungeon_keys is in-memory-only state
+        that resets on every client restart/reconnect, while the save file
+        (FA.dungeonflags) and the player's AP item history persist the
+        actual grant. Without this, a player who already owns a Key Ring
+        or Skeleton Key would lose real-Small-Key suppression the moment
+        the client restarted, even though their dungeon is still forced.
+        """
+        if not self.game_item_system or self._dungeon_keys_resynced:
+            return
+        if not self.items_received:
+            return
+        for network_item in self.items_received:
+            item_code = getattr(network_item, "item", None)
+            game_id = self._item_code_to_game_id(item_code)
+            if game_id is not None and 220 <= game_id <= 227:
+                self.game_item_system._ensure_dungeon_keys_set(game_id)
+        self._dungeon_keys_resynced = True
+        logger.debug("[DungeonKeys] Resynced forced dungeon key state from items_received")
+
     async def update_game_state(self):
         """
         Read game state from memory and check for location completions.
@@ -3452,7 +3482,23 @@ class SSHDContext(CommonContext):
                         "continuing update loop to avoid item-delivery stall"
                     )
                     self._logged_healthcap_offset_bypass = True
-            
+
+            # Re-assert any forced Key Ring / Skeleton Key dungeon-key counts
+            # every tick so neither a stray native Small Key pickup nor a
+            # scene reload can knock a dungeon's count off its forced value.
+            # Create game_item_system eagerly (harmless — constructor does no
+            # memory I/O) so the resync below can run as soon as items_received
+            # is populated, without waiting for the first real item delivery.
+            if self.game_item_system is None and GameItemSystem is not None:
+                self.game_item_system = GameItemSystem(self.memory)
+
+            if self.game_item_system is not None:
+                self._resync_dungeon_key_forcing()
+                try:
+                    self.game_item_system.reapply_forced_dungeon_keys()
+                except Exception as exc:
+                    logger.debug(f"[DungeonKeys] reapply_forced_dungeon_keys failed: {exc}")
+
             # The game sets NEXT_STAGE before tearing down ROOM_MGR and
             # other scene structures, whereas CURRENT_STAGE only changes
             # once loading is underway.  Monitoring NEXT_STAGE lets us

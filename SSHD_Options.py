@@ -250,16 +250,24 @@ class GossipStoneTreasureShuffle(Toggle):
 
 class SmallKeyShuffle(Choice):
     """Where small keys can appear."""
-    display_name = "Small Key Shuffle"
+    display_name = "Small Keys In The Pool"
     option_vanilla = 0
-    option_own_dungeon = 1
-    option_any_dungeon = 2
-    option_own_region = 3
-    option_overworld = 4
-    option_anywhere = 5
-    option_removed = 6
-    alias_keysy = 6  # Backward compatibility
+    option_own_region = 1
+    option_overworld = 2
+    option_anywhere = 3
+    option_removed = 4
+    alias_keysy = 4  # Backward compatibility
     default = 1
+
+
+class KeyRingsInPool(Toggle):
+    """Replace dungeon small keys with one key ring per dungeon."""
+    display_name = "Key Rings In The Pool"
+
+
+class SkeletonKeyInPool(Toggle):
+    """Replace all dungeon small keys with one skeleton key."""
+    display_name = "Skeleton Key In The Pool"
 
 class BossKeyShuffle(Choice):
     """Where boss keys can appear."""
@@ -1811,6 +1819,8 @@ class SSHDOptions(PerGameCommonOptions):
     tadtone_shuffle: TadtoneShuffle
     gossip_stone_treasure_shuffle: GossipStoneTreasureShuffle
     small_key_shuffle: SmallKeyShuffle
+    key_rings_in_pool: KeyRingsInPool
+    skeleton_key_in_pool: SkeletonKeyInPool
     boss_key_shuffle: BossKeyShuffle
     map_shuffle: MapShuffle
     randomize_entrances: RandomizeEntrances
@@ -2042,6 +2052,8 @@ sshd_option_groups = [
         TadtoneShuffle,
         GossipStoneTreasureShuffle,
         SmallKeyShuffle,
+        KeyRingsInPool,
+        SkeletonKeyInPool,
         BossKeyShuffle,
         MapShuffle,
     ]),

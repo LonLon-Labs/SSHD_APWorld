@@ -318,13 +318,35 @@
     - "off": "When Chest Type Matches Contents is not off, Small Keys will appear in big blue chests."
     - "on": "When Chest Type Matches Contents is not off, Small Keys will appear in fancy chests."
 
+- name: key_rings_in_pool
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Key Rings In The Pool
+  pretty_options:
+    - "No"
+    - "Yes"
+  options:
+    - "off": "Do not add dungeon Key Ring items to the item pool."
+    - "on": "Replace each dungeon's small keys with a single Key Ring for that dungeon."
+
+- name: skeleton_key_in_pool
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Skeleton Key In The Pool
+  pretty_options:
+    - "No"
+    - "Yes"
+  options:
+    - "off": "Do not add the Skeleton Key to the item pool."
+    - "on": "Replace all dungeon small keys with a single Skeleton Key."
+
 - name: path_hints
   default_option: 3
-  pretty_name: Path Hints
+  pretty_name: Number of Path Hints
   pretty_options:
     - 0-7
   options:
-    - 0-7: "Select the number of path hints you would like to generate."
+    - 0-7: "How many path hints to place. Path hints tell you a location has an item required to beat one of your goals."
 
 - name: path_hints_on_fi
   default_option: "off"
@@ -334,7 +356,7 @@
     - "On"
   options:
     - "off": "Path hints will not be placed on Fi."
-    - "on": "Path hints will be placed on Fi and can be seen by calling Fi and asking her for hints. If path hints are also on placed on gossip stones, then the hints will be split evenly between the two options."
+    - "on": "Path hints can be placed on Fi."
 
 - name: path_hints_on_gossip_stones
   default_option: "on"
@@ -342,6 +364,9 @@
   pretty_options:
     - "Off"
     - "On"
+  options:
+    - "off": "Path hints will not be placed on Gossip Stones."
+    - "on": "Path hints can be placed on Gossip Stones."
   options:
     - "off": "Path hints will not be placed on gossip stones."
     - "on": "Path hints will be placed on gossip stones and can be seen by talking to them. If path hints are also on placed on Fi, then the hints will be split evenly between the two options."
