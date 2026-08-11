@@ -1408,6 +1408,81 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         else:
             logger.warning("Not connected to SSHD context")
 
+    async def _cmd_flush_item_datastorage(self):
+        """Reset the persisted item-delivery index and re-check which items
+        are still owed, without re-giving items you already have.
+
+        Use this if you see a log line like:
+            [DataStorage] Restored delivery count: 134 for <YourName>
+        and items have stopped arriving even though checks are still being
+        made — this usually means the delivery index stored on the AP
+        server got ahead of what was actually delivered in-game (e.g. after
+        a crash or a save that didn't take), so the client is silently
+        skipping items it thinks it already gave you.
+
+        This clears the delivery index and pending-unsafe-item keys in AP
+        DataStorage, then asks the server to resend every item you've ever
+        received. Each item is checked against your actual save data
+        (item flags / progressive tier counts) before being re-queued, so
+        items already in your save are skipped and only genuinely missing
+        items are delivered.
+        """
+        if not isinstance(self.ctx, SSHDContext):
+            logger.warning("Not connected to SSHD context")
+            return
+        ctx = self.ctx
+        if not ctx.auth:
+            logger.warning("Not connected/authenticated to an Archipelago server yet")
+            return
+
+        ds_key = ctx._get_datastorage_key()
+        unsafe_key = ctx._get_pending_unsafe_items_datastorage_key()
+        if not ds_key or not unsafe_key:
+            logger.warning("Cannot determine DataStorage keys (not authenticated yet)")
+            return
+
+        logger.info(
+            f"[FlushDataStorage] Resetting delivery index (was {ctx.delivered_item_count}) "
+            "and re-checking which items are actually missing..."
+        )
+
+        # Reset local delivery bookkeeping. The full resync below will
+        # rebuild the queue and progressive counters from scratch, then
+        # reconcile them against actual save memory.
+        ctx.delivered_item_count = 0
+        ctx._pending_unsafe_items.clear()
+        ctx._pending_unsafe_item_indexes.clear()
+        ctx._unsafe_items_count = 0
+        ctx.item_queue.clear()
+        for key in ctx.progressive_counts:
+            ctx.progressive_counts[key] = 0
+        ctx._flush_pending_reconcile = True
+
+        # Wipe the persisted DataStorage keys so a future reconnect can't
+        # restore the stale count/unsafe list.
+        await ctx.send_msgs([
+            {
+                "cmd": "Set", "key": ds_key, "default": 0, "want_reply": False,
+                "operations": [{"operation": "replace", "value": 0}],
+            },
+            {
+                "cmd": "Set", "key": unsafe_key, "default": [], "want_reply": False,
+                "operations": [{"operation": "replace", "value": []}],
+            },
+        ])
+
+        # Ask the server to resend every item ever received (full resync,
+        # index 0). This is handled in _process_received_items, which will
+        # call _reconcile_item_queue_against_save_memory() once it's done
+        # since _flush_pending_reconcile is set.
+        await ctx.send_msgs([{"cmd": "Sync"}])
+
+        logger.info(
+            "[FlushDataStorage] Requested a full item re-sync from the server. "
+            "Items already reflected in your save will be skipped; anything "
+            "still missing will be delivered shortly."
+        )
+
     def _cmd_rescan(self):
         """Rescan for emulator, base address, and all magic signatures."""
         if not isinstance(self.ctx, SSHDContext):
@@ -1839,6 +1914,7 @@ class SSHDContext(CommonContext):
         self._datastorage_request_id: int = 0  # Monotonic token for connect-time DataStorage requests
         self._skip_sword_sync: bool = False  # True while unsafe items are being re-delivered
         self._recover_unsafe_items_on_reconnect: bool = False  # Set after a real game-process disconnect
+        self._flush_pending_reconcile: bool = False  # Set by /flush_item_datastorage; consumed on next full resync
         self.connection_time: float = 0.0   # When we connected (to avoid false death on startup)
         self.slot_options: Dict[str, Any] = {}  # Player options from slot data
         self.killed_by_deathlink: bool = False  # Flag to prevent sending death when killed by death link
@@ -2506,6 +2582,86 @@ class SSHDContext(CommonContext):
                 "is_start_inventory": is_start_inventory,
             })
             existing_queue_indexes.add(item_global_index)
+
+        # If this full resync was triggered by /flush_item_datastorage,
+        # reconcile the freshly rebuilt queue against actual save memory so
+        # we don't hand out items the player already has.
+        if start_index == 0 and self._flush_pending_reconcile:
+            self._flush_pending_reconcile = False
+            self._reconcile_item_queue_against_save_memory()
+
+    def _reconcile_item_queue_against_save_memory(self):
+        """Drop queued items that are already reflected in the game's save data.
+
+        Used after /flush_item_datastorage forces a full item re-sync from
+        index 0. Without this, every item ever received would be re-queued
+        for delivery, including ones the player already legitimately has —
+        this checks actual save state (progressive counts / item flags) and
+        only keeps items that still need to be delivered.
+        """
+        if not self.item_queue:
+            return
+
+        kept_items: list[dict] = []
+        reconciled = 0
+        # delivered_item_count only acts as an index cutoff (see
+        # _process_received_items), so we can only safely advance it for a
+        # *contiguous* leading run of reconciled items. Items reconciled
+        # after a gap are still dropped from the queue (so they aren't
+        # redelivered this session) but don't advance the persisted cutoff.
+        advancing_prefix = True
+
+        for item_data in self.item_queue:
+            item_name = item_data.get("name")
+            idx_raw = item_data.get("index")
+            try:
+                idx = int(idx_raw) if idx_raw is not None else -1
+            except Exception:
+                idx = -1
+
+            already_have = False
+            if item_data.get("is_start_inventory", False):
+                already_have = True
+            elif item_name in self.progressive_counts:
+                actual_count = self._read_current_progressive_count_from_memory(item_name)
+                expected_count = self._count_progressive_items_received_up_to(item_name, idx + 1)
+                if actual_count is not None and idx >= 0 and actual_count >= expected_count:
+                    already_have = True
+                if item_name in ("Progressive Sword", "Progressive Beetle") and actual_count is not None:
+                    self.progressive_counts[item_name] = max(self.progressive_counts[item_name], actual_count)
+            else:
+                game_id = self._item_code_to_game_id(item_data.get("id"))
+                if game_id is not None:
+                    flag_set = self._is_itemflag_set_in_save(game_id)
+                    if idx >= 0 and flag_set is True:
+                        already_have = True
+
+            if already_have:
+                reconciled += 1
+                if advancing_prefix:
+                    self.delivered_item_count = max(self.delivered_item_count, idx + 1) if idx >= 0 else self.delivered_item_count
+                logger.info(
+                    f"[FlushDataStorage] Skipping {item_name} (index {idx}) — already present in save"
+                )
+                continue
+
+            advancing_prefix = False
+            kept_items.append(item_data)
+
+        if reconciled:
+            self.item_queue = kept_items
+            self._persist_delivery_index()
+            logger.info(
+                f"[FlushDataStorage] Reconciled {reconciled} item(s) already present in save "
+                f"({len(kept_items)} item(s) remain queued for delivery); "
+                f"delivery index is now {self.delivered_item_count}"
+            )
+        else:
+            logger.info(
+                f"[FlushDataStorage] No items already present in save were found; "
+                f"{len(kept_items)} item(s) queued for delivery"
+            )
+        self.update_tracker_state()
 
     def update_tracker_state(self):
         """Update the tracker bridge with current state for autotracking."""
