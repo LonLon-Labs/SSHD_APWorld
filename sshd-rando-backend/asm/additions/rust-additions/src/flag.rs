@@ -471,6 +471,15 @@ pub extern "C" fn set_global_dungeonflag(sceneindex: u16, flag: u16) {
 }
 
 #[no_mangle]
+pub extern "C" fn unset_global_dungeonflag(sceneindex: u16, flag: u16) {
+    let upper_flag = (flag & 0xF0) >> 4;
+    let lower_flag = flag & 0x0F;
+    unsafe {
+        (*FILE_MGR).FA.dungeonflags[sceneindex as usize][upper_flag as usize] &= !(1 << lower_flag);
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn check_global_dungeonflag(sceneindex: u16, flag: u16) -> u16 {
     let upper_flag = (flag & 0xF0) >> 4;
     let lower_flag = flag & 0x0F;
@@ -490,6 +499,17 @@ pub extern "C" fn check_global_dungeonflag(sceneindex: u16, flag: u16) -> u16 {
 pub fn set_itemflag_raw(flag_id: u16) {
     unsafe {
         ((*(*ITEMFLAG_MGR).funcs).set_flag)(ITEMFLAG_MGR, flag_id);
+    }
+}
+
+/// Unset an itemflag by raw numeric ID (bypasses the ITEMFLAGS enum).
+/// Used by the /flag command so arbitrary ids work without needing every
+/// possible id to have a named ITEMFLAGS variant (ITEMFLAGS has large
+/// numeric gaps between variants, so transmuting an unlisted id into it
+/// would be undefined behavior).
+pub fn unset_itemflag_raw(flag_id: u16) {
+    unsafe {
+        ((*(*ITEMFLAG_MGR).funcs).unset_flag)(ITEMFLAG_MGR, flag_id);
     }
 }
 
@@ -516,6 +536,15 @@ pub extern "C" fn set_itemflag_or_counter_to_value(flag: ITEMFLAGS, value: u16) 
     }
 }
 
+/// Set an itemflag or counter to a specific value by raw numeric ID
+/// (bypasses the ITEMFLAGS enum). Used by the /flag command to set counter
+/// itemflags (e.g. DEKU_SEED_COUNTER = 0x1ED) to an arbitrary amount.
+pub fn set_itemflag_or_counter_to_value_raw(flag_id: u16, value: u16) {
+    unsafe {
+        ((*(*ITEMFLAG_MGR).funcs).set_flag_or_counter_to_value)(ITEMFLAG_MGR, flag_id, value);
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn unset_itemflag(flag: ITEMFLAGS) {
     unsafe {
@@ -527,6 +556,14 @@ pub extern "C" fn unset_itemflag(flag: ITEMFLAGS) {
 pub extern "C" fn check_itemflag(flag: ITEMFLAGS) -> u32 {
     unsafe {
         return ((*(*ITEMFLAG_MGR).funcs).get_flag_or_counter)(ITEMFLAG_MGR, flag as u16);
+    }
+}
+
+/// Get an itemflag or counter's current value by raw numeric ID (bypasses
+/// the ITEMFLAGS enum). Used by the /flag command.
+pub fn check_itemflag_raw(flag_id: u16) -> u32 {
+    unsafe {
+        return ((*(*ITEMFLAG_MGR).funcs).get_flag_or_counter)(ITEMFLAG_MGR, flag_id);
     }
 }
 

@@ -821,13 +821,12 @@ class RandomizeLoftwing(Choice):
     Controls whether storyflag 27 (Loftwing unlocked) is set at game start.
     Off: Do not start with Loftwing unlocked.
     On: Start with Loftwing unlocked.
-    Random: Randomly choose Off or On during seed generation.
+    Default: Randomly choose Off or On during seed generation.
     """
     display_name = "Start with Loftwing"
     option_off = 0
     option_on = 1
-    option_random = 2
-    default = 1
+    default = "random"
 
 
 class NaturalNightConnections(DefaultOnToggle):

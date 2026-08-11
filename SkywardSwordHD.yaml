@@ -675,12 +675,12 @@ Skyward Sword HD:
   # true: You will be able to call your loftwing and fly in The Sky at night
   allow_flying_at_night: false
 
-  # Start with Loftwing
+  # Randomize Loftwing
   # Controls whether storyflag 27 (Loftwing unlocked) is set at game start.
-  # off: Do not start with Loftwing unlocked
-  # on: Start with Loftwing unlocked (default)
+  # off: Start with Loftwing unlocked (default)
+  # on: Do not start with the Loftwing unlocked
   # random: Randomly choose off/on during seed generation
-  randomize_loftwing: on
+  randomize_loftwing: off
   
   # Require Natural Night Connections
   # false: You may be required to sleep to night and travel anywhere in the world to access nighttime-only checks, including flying at night

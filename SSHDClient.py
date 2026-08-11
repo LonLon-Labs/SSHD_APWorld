@@ -18,42 +18,6 @@ import time
 from pathlib import Path
 from typing import Optional, Set, Dict, Any
 
-# Add parent directory to path to find Archipelago modules when running as exe
-if getattr(sys, 'frozen', False):
-    # Running as compiled exe
-    bundle_dir = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    # Add Archipelago install directory to path (cross-platform)
-    try:
-        from platform_utils import get_archipelago_dir
-        archipelago_dir = str(get_archipelago_dir())
-    except ImportError:
-        # Fallback if platform_utils not available
-        if sys.platform == "win32":
-            archipelago_dir = os.path.join(os.environ.get('PROGRAMDATA', 'C:\\ProgramData'), 'Archipelago')
-        elif sys.platform == "linux":
-            archipelago_dir = os.path.expanduser("~/.local/share/Archipelago")
-        else:  # macOS and other
-            archipelago_dir = os.path.expanduser("~/Library/Application Support/Archipelago")
-    if os.path.exists(archipelago_dir):
-        sys.path.insert(0, archipelago_dir)
-else:
-    # Running as script - add current directory to find bundled modules
-    bundle_dir = os.path.dirname(os.path.abspath(__file__))
-    # Add current directory first (for bundled core files in .apworld)
-    sys.path.insert(0, bundle_dir)
-    # Also try Archipelago folder if available
-    archipelago_parent = os.path.dirname(bundle_dir)
-    archipelago_dir = os.path.join(archipelago_parent, 'Archipelago')
-    if os.path.exists(archipelago_dir):
-        sys.path.insert(0, archipelago_dir)
-
-# Disable ModuleUpdate (prevents unnecessary dependency checks)
-class DummyModuleUpdate:
-    @staticmethod
-    def update(*args, **kwargs):
-        pass
-sys.modules['ModuleUpdate'] = DummyModuleUpdate()
-
 
 def _configure_kivy_windows_input() -> None:
     """Use stable Windows input providers for Kivy in launcher context."""
@@ -80,84 +44,31 @@ def _configure_kivy_windows_input() -> None:
 _configure_kivy_windows_input()
 
 import psutil
-from process_memory import ProcessMemory, ProcessMemoryError
+from .process_memory import ProcessMemory, ProcessMemoryError
 
 # Import Archipelago core modules via absolute imports only.
 # CommonClient and NetUtils are never inside the sshd package, so relative
 # imports (from .CommonClient) always fail with ModuleNotFoundError and
 # pollute Python's exception __context__ chain, causing unrelated worlds
 # (e.g. dk64) to show the sshd error in their own failure tracebacks.
-try:
-    from CommonClient import CommonContext, server_loop, gui_enabled, \
-        ClientCommandProcessor, logger, get_base_parser
-    from NetUtils import ClientStatus
-except ImportError as e:
-    if getattr(sys, 'frozen', False):
-        # Standalone exe: show a user-facing message then exit.
-        print(f"ERROR: Cannot import Archipelago modules. Make sure Archipelago is installed.")
-        print(f"Import error: {e}")
-        print(f"\nTo fix this:")
-        print(f"1. Install Archipelago from https://github.com/ArchipelagoMW/Archipelago/releases")
-        print(f"2. Or run this script from within the Archipelago folder")
-        try:
-            if getattr(sys.stdin, 'isatty', lambda: False)():
-                input("Press Enter to exit...")
-        except (EOFError, RuntimeError, OSError):
-            pass
-        sys.exit(1)
-    else:
-        # apworld / script context: re-raise so the host handles it cleanly
-        # instead of calling sys.exit() which would kill the entire process.
-        raise
+from CommonClient import CommonContext, server_loop, gui_enabled, \
+    ClientCommandProcessor, logger, get_base_parser
+from NetUtils import ClientStatus
 
-# Import tracker bridge
-try:
-    from .TrackerBridge import TrackerBridge
-    print(f"[Import] Successfully imported TrackerBridge from package")
-except ImportError:
-    try:
-        from TrackerBridge import TrackerBridge
-        print(f"[Import] Successfully imported TrackerBridge from standalone")
-    except ImportError as e:
-        print(f"[Import] TrackerBridge not available: {e}")
-        TrackerBridge = None
+from .TrackerBridge import TrackerBridge
+from .Locations import LOCATION_TABLE
+from .Items import ITEM_TABLE
 
-# Import location table for proper location IDs
-try:
-    from .Locations import LOCATION_TABLE
-except ImportError:
-    try:
-        from Locations import LOCATION_TABLE
-    except ImportError:
-        LOCATION_TABLE = {}
-
-# Import item table for item code lookup
-try:
-    from .Items import ITEM_TABLE
-except ImportError:
-    try:
-        from Items import ITEM_TABLE
-    except ImportError:
-        ITEM_TABLE = {}
-
-# Import hint system
 try:
     from .Hints import HintSystem
 except ImportError:
-    try:
-        from Hints import HintSystem
-    except ImportError:
-        HintSystem = None
+    HintSystem = None
 
-# Import Archipelago item system integration
 try:
     from .ItemSystemIntegration import GameItemSystem
 except ImportError:
-    try:
-        from ItemSystemIntegration import GameItemSystem
-    except ImportError:
-        GameItemSystem = None
-        logger.warning("ItemSystemIntegration not found - falling back to direct memory writes")
+    GameItemSystem = None
+    logger.warning("ItemSystemIntegration not found - falling back to direct memory writes")
 
 
 # Beedle's Airshop detection constants
@@ -220,6 +131,74 @@ OFFSET_TEMP_FLAGS_STATIC = 0x182DF10    # Static temp flags (8 bytes)
 OFFSET_ZONE_FLAGS_STATIC = 0x182DF18    # Static zone flags (504 bytes)
 OFFSET_ITEM_FLAGS_STATIC = 0x182E170    # Static item flags (128 bytes)
 OFFSET_DUNGEON_FLAGS_STATIC = 0x182E128 # Static dungeon flags (16 bytes)
+
+# --- /flag command protocol ---------------------------------------------
+# The /flag command does NOT poke bitfields directly from Python. Story/item
+# flag IDs above a certain point are actually multi-bit *counters* (e.g.
+# ITEMFLAGS::DEKU_SEED_COUNTER = 0x1ED), and only the game's own FlagMgr code
+# (rust-additions/src/flag.rs) knows which IDs are single-bit flags vs.
+# counters. So instead we hand the request off to the Rust side via the
+# AP_FLAG_REQUEST buffer (see commands.rs) and let it call the real
+# set_flag / unset_flag / set_flag_or_counter_to_value / get_flag_or_counter
+# FlagMgr functions, which already do the right thing for both cases.
+FLAG_TYPE_STORYFLAG = 0
+FLAG_TYPE_SCENEFLAG = 1
+FLAG_TYPE_ITEMFLAG = 2
+FLAG_TYPE_DUNGEONFLAG = 3
+FLAG_TYPES = {
+    "storyflag":   FLAG_TYPE_STORYFLAG,
+    "sceneflag":   FLAG_TYPE_SCENEFLAG,
+    "itemflag":    FLAG_TYPE_ITEMFLAG,
+    "dungeonflag": FLAG_TYPE_DUNGEONFLAG,
+}
+
+FLAG_OP_GET = 0
+FLAG_OP_SET = 1
+FLAG_OP_UNSET = 2
+FLAG_OPS = {
+    "get":   FLAG_OP_GET,
+    "set":   FLAG_OP_SET,
+    "unset": FLAG_OP_UNSET,
+}
+
+# AP_FLAG_REQUEST buffer layout (little-endian, 20 bytes total):
+#   +0  magic[4]           "FL\x00\x01"
+#   +4  pending    (u8)    1 = new request for Rust to process, Rust sets to 0 when done
+#   +5  flag_type  (u8)    FLAG_TYPE_* above
+#   +6  operation  (u8)    FLAG_OP_* above
+#   +7  _pad       (u8)
+#   +8  flag_id    (u16)   ITEMFLAGS/storyflag id, etc.
+#   +10 value      (u16)   value to set (0/1 for boolean flags, N for counters)
+#   +12 scene_index(u16)   sceneflag/dungeonflag only; 0xFFFF = current/local scene
+#   +14 response_ready (u8) Rust sets to 1 once response_value is valid
+#   +15 _pad       (u8)
+#   +16 response_value (u32) result of get, or the flag's new value after set/unset
+AP_FLAG_REQUEST_STRUCT = struct.Struct("<4sBBBBHHHBBI")
+AP_FLAG_REQUEST_SIZE = AP_FLAG_REQUEST_STRUCT.size  # 20 bytes
+assert AP_FLAG_REQUEST_SIZE == 20, AP_FLAG_REQUEST_SIZE
+
+# --- /warp command protocol ---------------------------------------------
+# "/warp start" reuses the game's own Fi-warp path (entrance::warp_to_start,
+# which reads the same WARP_TO_START_INFO the vanilla checkpoint system
+# already keeps up to date). "/warp <stage> [layer]" instead calls a new
+# entrance::warp_to_stage() that mirrors reload_current_stage()'s call into
+# the game reloader, but with an explicit destination.
+WARP_MODE_START = 0
+WARP_MODE_STAGE = 1
+
+# AP_WARP_REQUEST buffer layout (little-endian, 20 bytes total):
+#   +0  magic[4]             "WR\x00\x01"
+#   +4  pending      (u8)    1 = new request for Rust to process, Rust sets to 0 when done
+#   +5  mode         (u8)    WARP_MODE_START or WARP_MODE_STAGE
+#   +6  layer        (u8)    target layer for WARP_MODE_STAGE; 0xFF = unspecified (-> 0)
+#   +7  _pad         (u8)
+#   +8  stage_name   (8s)    ASCII stage code, null-padded (e.g. b"F000\0\0\0\0"); WARP_MODE_STAGE only
+#   +16 response_ready (u8) Rust sets to 1 once response_code is valid
+#   +17 response_code (u8)  0 = ok, 1 = failed (null pointers / invalid mode)
+#   +18 _pad         (2 bytes)
+AP_WARP_REQUEST_STRUCT = struct.Struct("<4sBBBB8sBB2x")
+AP_WARP_REQUEST_SIZE = AP_WARP_REQUEST_STRUCT.size  # 20 bytes
+assert AP_WARP_REQUEST_SIZE == 20, AP_WARP_REQUEST_SIZE
 
 # File Manager structure (cheat table shows FA at +5AEAD44)
 # NOTE: The cheat table offset 0x5AEAD44 points directly to FA (SaveFile), not to the start of FileMgr
@@ -614,6 +593,26 @@ STAGE_NAMES = {
     "B400": "Demise's Realm",
 }
 
+# Reverse lookup (friendly name, lowercased -> stage code) for /warp.
+STAGE_NAME_TO_CODE = {name.lower(): code for code, name in STAGE_NAMES.items()}
+
+
+def _resolve_stage_code(text: str) -> Optional[str]:
+    """Resolve /warp's stage argument to a stage code.
+
+    Accepts either a stage code directly (case-insensitive, e.g. "f000" or
+    "F103_1") or a friendly name from STAGE_NAMES (case-insensitive, e.g.
+    "skyloft" or "Lanayru Mining Facility").
+    """
+    text = text.strip()
+    if not text:
+        return None
+    lower = text.lower()
+    for code in STAGE_NAMES:
+        if code.lower() == lower:
+            return code
+    return STAGE_NAME_TO_CODE.get(lower)
+
 
 # Keep old name for backward compatibility
 class RyujinxMemoryError(Exception):
@@ -647,6 +646,8 @@ class EmulatorMemoryReader:
         "AP_ITEM_BUFFER":     bytes([0x41, 0x50, 0x00, 0x01]),  # "AP\x00\x01"
         "AP_CHEAT_FLAGS":     bytes([0x43, 0x46, 0x00, 0x01]),  # "CF\x00\x01"
         "AP_SPAWN_REQUEST":   bytes([0x53, 0x41, 0x00, 0x01]),  # "SA\x00\x01"
+        "AP_FLAG_REQUEST":    bytes([0x46, 0x4C, 0x00, 0x01]),  # "FL\x00\x01"
+        "AP_WARP_REQUEST":    bytes([0x57, 0x52, 0x00, 0x01]),  # "WR\x00\x01"
     }
 
     # --- Connection health thresholds ---
@@ -1407,6 +1408,14 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         else:
             logger.warning("Not connected to SSHD context")
 
+    def _cmd_rescan(self):
+        """Rescan for emulator, base address, and all magic signatures."""
+        if not isinstance(self.ctx, SSHDContext):
+            logger.warning("Not connected to SSHD context")
+            return
+        logger.info("Starting rescan...")
+        asyncio.ensure_future(self.ctx.rescan())
+
     def _cmd_cheats(self):
         """Show the status of all cheats (enabled/disabled)."""
         if not isinstance(self.ctx, SSHDContext):
@@ -1540,6 +1549,159 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
     def _cmd_spawn_demise(self):
         """Compatibility alias for /spawn_actor B_LASTBOSS 0xFFFFFFC0 BLasBos."""
         self._cmd_spawn_actor("B_LASTBOSS", "0xFFFFFFC0", "BLasBos")
+
+    async def _cmd_flag(self, flag_type: str = "", operation: str = "", flag_id_str: str = "", extra_str: str = ""):
+        """Get, set, or unset a story/scene/item/dungeon flag.
+
+        Usage: /flag <storyflag|sceneflag|itemflag|dungeonflag> <get|set|unset> <id> [value_or_scene]
+        For storyflag/itemflag, the optional 4th argument is a VALUE — use this
+        to set counter flags (e.g. ITEMFLAGS::DEKU_SEED_COUNTER = 0x1ED) to a
+        specific amount instead of just flipping a boolean bit.
+        For sceneflag/dungeonflag, the optional 4th argument is a SCENE INDEX;
+        if omitted, the current scene is used.
+        Examples:
+          /flag storyflag get 27          - check the Loftwing-gotten flag
+          /flag storyflag set 27          - give the Loftwing-gotten flag
+          /flag storyflag unset 27        - remove the Loftwing-gotten flag
+          /flag itemflag set 0x1ED 99     - set Deku Seed counter to 99
+          /flag itemflag set 0x8D         - set a bug-caught flag (boolean)
+          /flag sceneflag get 5           - check local sceneflag 5 in this room
+          /flag dungeonflag get 3 12      - check dungeonflag 3 in scene 12
+        """
+        if not isinstance(self.ctx, SSHDContext):
+            logger.warning("Not connected to SSHD context")
+            return
+
+        flag_type = flag_type.strip().lower()
+        operation = operation.strip().lower()
+
+        if not flag_type or not operation or not flag_id_str:
+            logger.info("Usage: /flag <storyflag|sceneflag|itemflag|dungeonflag> <get|set|unset> <id> [value_or_scene]")
+            logger.info("Types: " + ", ".join(FLAG_TYPES.keys()))
+            logger.info("Ops:   " + ", ".join(FLAG_OPS.keys()))
+            return
+
+        if flag_type not in FLAG_TYPES:
+            logger.warning(f"Unknown flag type '{flag_type}'. Available: {', '.join(FLAG_TYPES.keys())}")
+            return
+
+        if operation not in FLAG_OPS:
+            logger.warning(f"Unknown operation '{operation}'. Available: {', '.join(FLAG_OPS.keys())}")
+            return
+
+        try:
+            flag_id = int(flag_id_str, 0)
+        except ValueError:
+            logger.warning(f"Invalid flag id '{flag_id_str}'. Use decimal or 0x-prefixed hex.")
+            return
+
+        value = 1 if operation == "set" else 0
+        scene_index = 0xFFFF  # current/local scene by default
+
+        if extra_str:
+            try:
+                extra_val = int(extra_str, 0)
+            except ValueError:
+                logger.warning(f"Invalid value/scene '{extra_str}'. Use decimal or 0x-prefixed hex.")
+                return
+            if flag_type in ("storyflag", "itemflag"):
+                value = extra_val
+            else:
+                scene_index = extra_val
+
+        result = await self.ctx.request_flag_operation(
+            flag_type, operation, flag_id, value=value, scene_index=scene_index,
+        )
+
+        if result is None:
+            logger.warning(
+                "Flag request failed or timed out. Ensure the emulator is connected "
+                "and AP_FLAG_REQUEST is available (may require an updated game patch)."
+            )
+            return
+
+        scene_text = "" if scene_index == 0xFFFF else f" (scene {scene_index})"
+        if operation == "get":
+            logger.info(f"{flag_type} {flag_id} (0x{flag_id:X}){scene_text} = {result}")
+        elif operation == "set":
+            logger.info(f"{flag_type} {flag_id} (0x{flag_id:X}){scene_text} set -> {result}")
+        else:
+            logger.info(f"{flag_type} {flag_id} (0x{flag_id:X}){scene_text} unset -> {result}")
+
+    async def _cmd_warp(self, *args: str):
+        """Warp to a stage, or warp to start (as if Fi warped you).
+
+        Usage: /warp start
+               /warp <stage name or stage id> [layer]
+        Examples:
+          /warp start                        - warp to start, like Fi's in-game warp
+          /warp Skyloft                      - warp to Skyloft (layer 0)
+          /warp F000                         - same, using the raw stage id
+          /warp F000 28                      - warp to F000 layer 28 (the title screen)
+          /warp Lanayru Mining Facility       - multi-word names work too
+          /warp Lanayru Mining Facility 3    - ...with a layer on the end
+        """
+        if not isinstance(self.ctx, SSHDContext):
+            logger.warning("Not connected to SSHD context")
+            return
+
+        if not args:
+            logger.info("Usage: /warp start")
+            logger.info("       /warp <stage name or stage id> [layer]")
+            return
+
+        if args[0].lower() == "start":
+            if len(args) > 1:
+                logger.warning("/warp start doesn't take a layer argument, ignoring it")
+            result = await self.ctx.request_warp_operation(WARP_MODE_START)
+            target_desc = "start"
+        else:
+            # Stage names can be multiple words (e.g. "Lanayru Mining Facility"),
+            # and the command framework splits on whitespace before we ever see
+            # it, so reassemble it here. If there's more than one token and the
+            # last one parses as a number, treat it as the optional layer.
+            tokens = list(args)
+            layer_str = ""
+            if len(tokens) > 1:
+                try:
+                    int(tokens[-1], 0)
+                    layer_str = tokens.pop()
+                except ValueError:
+                    pass
+            target = " ".join(tokens)
+
+            stage_code = _resolve_stage_code(target)
+            if stage_code is None:
+                logger.warning(
+                    f"Unknown stage '{target}'. Use a stage id (e.g. F000) or a name "
+                    f"from the in-game map (e.g. Skyloft, Lanayru Mining Facility)."
+                )
+                return
+
+            layer = 0
+            if layer_str:
+                layer = int(layer_str, 0)  # already validated above
+                if not (0 <= layer <= 255):
+                    logger.warning(f"Layer {layer} out of range (0-255).")
+                    return
+
+            result = await self.ctx.request_warp_operation(WARP_MODE_STAGE, stage_code, layer)
+            target_desc = stage_code + (f" layer {layer}" if layer_str else "")
+
+        if result is None:
+            logger.warning(
+                "Warp request failed or timed out. Ensure the emulator is connected "
+                "and AP_WARP_REQUEST is available (may require an updated game patch)."
+            )
+            return
+
+        if result == 0:
+            if target_desc == "start":
+                logger.info("Warping to start...")
+            else:
+                logger.info(f"Warping to {target_desc}...")
+        else:
+            logger.warning("Warp request was rejected by the game (invalid state or destination).")
 
     def _cmd_go_mode(self):
         """Show seed-specific completion item requirements and whether you currently have them."""
@@ -1735,6 +1897,8 @@ class SSHDContext(CommonContext):
         self._ap_check_stats_offset: Optional[int] = None  # Memory offset of AP_CHECK_STATS
         self._ap_cheat_flags_offset: Optional[int] = None  # Memory offset of AP_CHEAT_FLAGS
         self._ap_spawn_request_offset: Optional[int] = None  # Memory offset of AP_SPAWN_REQUEST
+        self._ap_flag_request_offset: Optional[int] = None   # Memory offset of AP_FLAG_REQUEST
+        self._ap_warp_request_offset: Optional[int] = None   # Memory offset of AP_WARP_REQUEST
         self._actor_id_map: Dict[str, int] = self._load_actorid_map()
         self._ap_item_info_written: bool = False  # Whether we've written the info table
         self._ap_item_info_last_refresh: float = 0.0  # Last time we refreshed the count field
@@ -1797,17 +1961,12 @@ class SSHDContext(CommonContext):
         script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
         candidates.append(script_dir / yaml_name)
 
-        # 2-3. Archipelago install directory
+        # 2-3. Archipelago base user path
         try:
-            from platform_utils import get_archipelago_dir
-            ap_dir = Path(str(get_archipelago_dir()))
+            from Utils import user_path
+            ap_dir = Path(user_path())
         except Exception:
-            if sys.platform == "win32":
-                ap_dir = Path(os.environ.get('PROGRAMDATA', 'C:\\ProgramData')) / 'Archipelago'
-            elif sys.platform == "linux":
-                ap_dir = Path.home() / '.local' / 'share' / 'Archipelago'
-            else:
-                ap_dir = Path.home() / 'Library' / 'Application Support' / 'Archipelago'
+            ap_dir = script_dir
         candidates.append(ap_dir / 'Players' / yaml_name)
         candidates.append(ap_dir / yaml_name)
 
@@ -2163,6 +2322,61 @@ class SSHDContext(CommonContext):
             deduped.append(item_data)
 
         return deduped, dropped
+
+    def _dedupe_item_queue_by_index(self) -> int:
+        """Deduplicate queued AP items by index, preserving first occurrence."""
+        deduped_queue: list[dict] = []
+        seen_indexes: set[int] = set()
+        dropped = 0
+
+        for item_data in self.item_queue:
+            idx_raw = item_data.get("index")
+            if idx_raw is None:
+                deduped_queue.append(item_data)
+                continue
+            try:
+                idx = int(idx_raw)
+            except Exception:
+                deduped_queue.append(item_data)
+                continue
+
+            if idx in seen_indexes:
+                dropped += 1
+                continue
+            seen_indexes.add(idx)
+            deduped_queue.append(item_data)
+
+        if dropped:
+            self.item_queue = deduped_queue
+        return dropped
+
+    def _drop_stale_queued_items_by_delivery_count(self) -> int:
+        """Drop queued AP items that are already covered by delivered_item_count."""
+        if self.delivered_item_count <= 0 or not self.item_queue:
+            return 0
+
+        filtered_queue: list[dict] = []
+        dropped = 0
+        for item_data in self.item_queue:
+            idx_raw = item_data.get("index")
+            if idx_raw is None:
+                filtered_queue.append(item_data)
+                continue
+            try:
+                idx = int(idx_raw)
+            except Exception:
+                filtered_queue.append(item_data)
+                continue
+
+            if idx < self.delivered_item_count:
+                dropped += 1
+                continue
+
+            filtered_queue.append(item_data)
+
+        if dropped:
+            self.item_queue = filtered_queue
+        return dropped
 
     async def _datastorage_timeout_guard(self, request_id: int):
         """Unblock item processing if Retrieved never arrives (e.g. old server).
@@ -2585,6 +2799,19 @@ class SSHDContext(CommonContext):
                 else:
                     logger.info("[DataStorage] No stored delivery count (first connect or new slot)")
 
+            dropped_stale_queue = self._drop_stale_queued_items_by_delivery_count()
+            if dropped_stale_queue:
+                logger.warning(
+                    f"[Recovery] Dropped {dropped_stale_queue} stale queued item(s) "
+                    f"already covered by delivery_count={self.delivered_item_count}"
+                )
+
+            dropped_dupe_queue = self._dedupe_item_queue_by_index()
+            if dropped_dupe_queue:
+                logger.warning(
+                    f"[Recovery] Deduped {dropped_dupe_queue} duplicate queued item(s) by AP index"
+                )
+
             if unsafe_key and unsafe_key in args.get("keys", {}):
                 stored_unsafe = args["keys"][unsafe_key] or []
                 restored_items = [dict(item_data) for item_data in stored_unsafe]
@@ -2714,6 +2941,11 @@ class SSHDContext(CommonContext):
                     self._skip_sword_sync = True
                     logger.info(f"[DataStorage] Restored {len(self._pending_unsafe_items)} unsafe item(s) for recovery")
                     self.item_queue = [dict(item_data) for item_data in self._pending_unsafe_items] + self.item_queue
+                    dropped_dupe_queue = self._dedupe_item_queue_by_index()
+                    if dropped_dupe_queue:
+                        logger.warning(
+                            f"[Recovery] Deduped {dropped_dupe_queue} queued item(s) after unsafe replay merge"
+                        )
                 else:
                     self._pending_unsafe_item_indexes.clear()
                     self._skip_sword_sync = False
@@ -4376,6 +4608,109 @@ class SSHDContext(CommonContext):
         except Exception:
             pass  # Non-critical; next refresh will retry
 
+    async def rescan(self):
+        """
+        Force a full rescan of the emulator connection, base address,
+        and all magic signature buffers (AP_ITEM_INFO_TABLE, AP_CHECK_STATS,
+        AP_CHEAT_FLAGS, AP_SPAWN_REQUEST, AP_FLAG_REQUEST, AP_WARP_REQUEST).
+        Resets all cached state that depends on the base address.
+        """
+        logger.info("[Rescan] Invalidating current base address and caches...")
+
+        # Invalidate base and clear prescan results in the memory reader
+        self.memory.invalidate_base()
+
+        # Clear context caches that are derived from memory offsets
+        self._ap_item_info_offset = None
+        self._ap_check_stats_offset = None
+        self._ap_cheat_flags_offset = None
+        self._ap_spawn_request_offset = None
+        self._ap_flag_request_offset = None
+        self._ap_warp_request_offset = None
+        self._ap_item_info_written = False
+        self.beetle_patch_applied = False
+        self.default_forward_speed = None
+
+        # Reset scene transition tracking
+        self._last_next_stage = None
+        self._last_next_stage_change_at = 0.0
+
+        # Reset bird-statue HD-progression enforcement
+        self._bird_statue_snapshot = None
+        self._bird_statue_enforcement_log.clear()
+        self._visited_regions.clear()
+
+        # Reset custom flag monitoring (so it re-initialises on next poll)
+        self.previous_custom_flags.clear()
+        self._initializing_flags = True
+        if hasattr(self, '_flag_already_set_logged'):
+            self._flag_already_set_logged.clear()
+
+        # Reset goddess chest monitoring
+        if hasattr(self, '_goddess_flags_initializing'):
+            self._goddess_flags_initializing = True
+        self.previous_goddess_chest_flags.clear()
+        if hasattr(self, '_prev_fa_tbox_snapshot'):
+            self._prev_fa_tbox_snapshot = None
+            self._prev_static_tbox_snapshot = None
+
+        # Reset Beedle shop monitoring
+        if hasattr(self, '_beedle_flags_initializing'):
+            self._beedle_flags_initializing = True
+        if hasattr(self, '_prev_beedle_flags'):
+            self._prev_beedle_flags.clear()
+        if hasattr(self, '_beedle_dynamic_map'):
+            self._beedle_dynamic_map.clear()
+        if hasattr(self, '_shop_entry_snapshots'):
+            self._shop_entry_snapshots.clear()
+        if hasattr(self, '_fa_storyflag_snapshot'):
+            self._fa_storyflag_snapshot = None
+        if hasattr(self, '_static_storyflag_snapshot'):
+            self._static_storyflag_snapshot = None
+
+        # Reset health / stamina tracking so we don't get false DeathLink/BreathLink
+        self.last_hearts = None
+        self.last_stamina = None
+        self.killed_by_deathlink = False
+        self.exhausted_by_breathlink = False
+
+        # Reset debug flag for address logging
+        if hasattr(self, '_logged_addresses'):
+            del self._logged_addresses
+
+        # Ensure we are connected to the emulator process
+        if not self.memory.connected:
+            logger.info("[Rescan] Reconnecting to emulator...")
+            if not self.memory.connect():
+                logger.error("[Rescan] Failed to reconnect to emulator")
+                return
+            logger.info("[Rescan] Reconnected to emulator")
+
+        # Perform the fresh base-address scan (this also re‑populates prescan_results)
+        logger.info("[Rescan] Scanning for SSHD base address and magic buffers...")
+        if not await self.memory.find_base_address():
+            logger.error("[Rescan] Failed to find SSHD base address")
+            return
+
+        # Reset connection time to avoid false death detection after rescan
+        self.connection_time = time.time()
+
+        # Re‑write AP item info table now that we have a new base and magic buffers
+        self._write_ap_item_info_table()
+
+        # If there were pending unsafe items, re‑deliver them after the rescan
+        if self._pending_unsafe_items:
+            recovered = [dict(item) for item in self._pending_unsafe_items]
+            self.item_queue = recovered + self.item_queue
+            self._pending_unsafe_items.clear()
+            self._pending_unsafe_item_indexes.clear()
+            self._unsafe_items_count = 0
+            self._skip_sword_sync = False
+            self._clear_pending_unsafe_items_datastorage()
+            logger.info(f"[Rescan] Re‑queued {len(recovered)} unsafe items for delivery")
+
+        logger.info("[Rescan] Rescan completed successfully")
+
     def _write_cheat_flags(self):
         """
         Sync cheat enable flags to the AP_CHEAT_FLAGS Rust static in the NSO.
@@ -4515,6 +4850,159 @@ class SSHDContext(CommonContext):
             if "998" in err_str or "noaccess" in err_str.lower() or "access" in err_str.lower():
                 self._ap_spawn_request_offset = None
             return False
+
+    async def request_flag_operation(
+        self,
+        flag_type: str,
+        operation: str,
+        flag_id: int,
+        value: int = 0,
+        scene_index: int = 0xFFFF,
+        timeout: float = 1.0,
+    ) -> Optional[int]:
+        """Ask the Rust side to get/set/unset a story/scene/item/dungeon flag.
+
+        This intentionally does NOT poke the flag bits directly from Python.
+        Some flag IDs (e.g. ITEMFLAGS::DEKU_SEED_COUNTER = 0x1ED) are actually
+        multi-bit counters rather than single-bit booleans, and only the
+        game's own FlagMgr code knows which is which. Rust owns that logic
+        (see commands.rs / flag.rs), so we just hand off the request here and
+        wait a moment for it to be processed.
+
+        Returns the resulting flag/counter value on success (for `get`, the
+        current value; for `set`/`unset`, the new value as confirmed by
+        Rust), or None if the emulator isn't connected, the buffer couldn't
+        be found, or Rust didn't respond within *timeout* seconds.
+        """
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return None
+
+        if flag_type not in FLAG_TYPES:
+            return None
+        if operation not in FLAG_OPS:
+            return None
+
+        if self._ap_flag_request_offset is None:
+            self._ap_flag_request_offset = self._scan_for_buffer(
+                bytes([0x46, 0x4C, 0x00, 0x01]), "AP_FLAG_REQUEST"
+            )
+
+        if self._ap_flag_request_offset is None:
+            return None
+
+        try:
+            request_addr = self.memory.base_address + self._ap_flag_request_offset
+
+            payload = AP_FLAG_REQUEST_STRUCT.pack(
+                bytes([0x46, 0x4C, 0x00, 0x01]),   # magic
+                1,                                  # pending = 1 (new request)
+                FLAG_TYPES[flag_type],
+                FLAG_OPS[operation],
+                0,                                   # _pad
+                flag_id & 0xFFFF,
+                value & 0xFFFF,
+                scene_index & 0xFFFF,
+                0,                                   # response_ready = 0 (clear any stale result)
+                0,                                   # _pad
+                0,                                   # response_value
+            )
+            self.memory.pm.write_bytes(request_addr, payload, len(payload))
+        except Exception as e:
+            logger.debug(f"Could not write flag request: {e}")
+            err_str = str(e)
+            if "998" in err_str or "noaccess" in err_str.lower() or "access" in err_str.lower():
+                self._ap_flag_request_offset = None
+            return None
+
+        # Poll for Rust to flip response_ready. Rust processes one request
+        # per main-loop tick, so this should resolve within a frame or two.
+        deadline = time.time() + timeout
+        response_ready_addr = request_addr + 14
+        response_value_addr = request_addr + 16
+        while time.time() < deadline:
+            try:
+                ready = self.memory.pm.read_bytes(response_ready_addr, 1)
+                if ready and ready[0] == 1:
+                    raw = self.memory.pm.read_bytes(response_value_addr, 4)
+                    if raw:
+                        return struct.unpack("<I", raw)[0]
+                    return None
+            except Exception:
+                pass
+            await asyncio.sleep(0.02)
+
+        logger.debug(f"Flag request timed out: {flag_type} {operation} {flag_id}")
+        return None
+
+    async def request_warp_operation(
+        self,
+        mode: int,
+        stage_code: str = "",
+        layer: int = 0xFF,
+        timeout: float = 1.0,
+    ) -> Optional[int]:
+        """Ask the Rust side to warp: either a Fi-style warp-to-start
+        (WARP_MODE_START), or a direct warp to an explicit stage/layer
+        (WARP_MODE_STAGE).
+
+        Returns the response_code on success (0 = ok, 1 = failed), or None
+        if the emulator isn't connected, the buffer couldn't be found, or
+        Rust didn't respond within *timeout* seconds.
+        """
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return None
+
+        if mode not in (WARP_MODE_START, WARP_MODE_STAGE):
+            return None
+
+        if self._ap_warp_request_offset is None:
+            self._ap_warp_request_offset = self._scan_for_buffer(
+                bytes([0x57, 0x52, 0x00, 0x01]), "AP_WARP_REQUEST"
+            )
+
+        if self._ap_warp_request_offset is None:
+            return None
+
+        try:
+            request_addr = self.memory.base_address + self._ap_warp_request_offset
+
+            stage_name_bytes = stage_code.encode("ascii", errors="replace")[:8].ljust(8, b"\x00")
+
+            payload = AP_WARP_REQUEST_STRUCT.pack(
+                bytes([0x57, 0x52, 0x00, 0x01]),  # magic
+                1,                                  # pending = 1 (new request)
+                mode,
+                layer & 0xFF,
+                0,                                   # _pad
+                stage_name_bytes,
+                0,                                   # response_ready = 0 (clear any stale result)
+                0,                                   # response_code
+            )
+            self.memory.pm.write_bytes(request_addr, payload, len(payload))
+        except Exception as e:
+            logger.debug(f"Could not write warp request: {e}")
+            err_str = str(e)
+            if "998" in err_str or "noaccess" in err_str.lower() or "access" in err_str.lower():
+                self._ap_warp_request_offset = None
+            return None
+
+        # Poll for Rust to flip response_ready. Rust processes one request
+        # per main-loop tick, so this should resolve within a frame or two.
+        deadline = time.time() + timeout
+        response_ready_addr = request_addr + 16
+        response_code_addr = request_addr + 17
+        while time.time() < deadline:
+            try:
+                ready = self.memory.pm.read_bytes(response_ready_addr, 1)
+                if ready and ready[0] == 1:
+                    code = self.memory.pm.read_bytes(response_code_addr, 1)
+                    return code[0] if code else None
+            except Exception:
+                pass
+            await asyncio.sleep(0.02)
+
+        logger.debug(f"Warp request timed out: mode={mode} stage={stage_code} layer={layer}")
+        return None
 
     def _update_ap_check_stats(self):
         """
@@ -5950,159 +6438,95 @@ class SSHDContext(CommonContext):
 
 def install_patch(patch_file_path: str) -> tuple[bool, dict]:
     """
-    Extract and install .apsshd patch to emulator mod directory.
-    
-    Returns (success: bool, location_to_item: dict).
+    Install bundled romfs/exefs data from an .apsshd file to detected emulator mod directories.
+
+    Returns ``(success, location_to_item_map)``.
     """
-    import zipfile
-    import json
-    from pathlib import Path
     import shutil
-    
-    print(f"\n{'='*60}")
-    print(f"Installing SSHD Archipelago Patch")
-    print(f"{'='*60}")
+    import zipfile
+
+    print(f"\n{'=' * 60}")
+    print("Installing SSHD Archipelago Patch")
+    print(f"{'=' * 60}")
     print(f"Patch file: {patch_file_path}")
-    
+
     patch_path = Path(patch_file_path)
-    if not patch_path.exists():
+    if not patch_path.is_file():
         print(f"ERROR: Patch file not found: {patch_file_path}")
         return False, {}
-    
+
     try:
-        # Extract patch file
-        print(f"\nExtracting patch file...")
-        with zipfile.ZipFile(patch_path, 'r') as zip_file:
-            # Read manifest
+        with zipfile.ZipFile(patch_path, "r") as zip_file:
+            file_list = zip_file.namelist()
             manifest = json.loads(zip_file.read("manifest.json"))
             print(f"  Game: {manifest.get('game')}")
             print(f"  Player: {manifest.get('player')}")
             print(f"  Seed: {manifest.get('seed')}")
-            
-            # Load patch data with location-to-item mapping
+
             location_to_item = {}
-            if 'patch_data.json' in zip_file.namelist():
+            if "patch_data.json" in file_list:
                 patch_data = json.loads(zip_file.read("patch_data.json"))
-                location_to_item = patch_data.get('locations', {})
+                location_to_item = patch_data.get("locations", {})
                 print(f"\n  Loaded {len(location_to_item)} location-to-item mappings")
-            
-            # Check if romfs/exefs exist
-            file_list = zip_file.namelist()
-            has_romfs = any(f.startswith('romfs/') for f in file_list)
-            has_exefs = any(f.startswith('exefs/') for f in file_list)
-            
-            print(f"\nPatch contents:")
-            print(f"  - manifest.json: YES")
-            print(f"  - patch_data.json: YES")
+
+            has_romfs = any(name.startswith("romfs/") for name in file_list)
+            has_exefs = any(name.startswith("exefs/") for name in file_list)
+
+            print("\nPatch contents:")
+            print("  - manifest.json: YES")
+            print(f"  - patch_data.json: {'YES' if 'patch_data.json' in file_list else 'NO'}")
             print(f"  - romfs/: {'YES' if has_romfs else 'NO'}")
             print(f"  - exefs/: {'YES' if has_exefs else 'NO'}")
-            
+
             if not has_romfs and not has_exefs:
-                has_patcher_data = 'patcher_data.json' in file_list
-                if has_patcher_data:
-                    print(f"\nThis .apsshd does not contain ROM patches (lightweight patch file).")
-                    print(f"Use the standalone patcher to generate patches from your own ROM:")
-                    print(f"    ArchipelagoSSHDPatcher.exe \"{patch_file_path}\"")
-                    print(f"\nOr double-click the .apsshd file in Archipelago to auto-patch.")
-                else:
-                    print(f"\nWARNING: No game mod files found in patch!")
-                    print(f"This patch only contains item/location data.")
-                    print(f"You may need to apply the base randomizer mod manually.")
-                return False, {}
-            
-            # Find ALL emulator mod directories and install to each
-            emulator_mod_dirs = []
+                print("\nThis .apsshd does not contain full ROM patches (romfs/exefs).")
+                print("Use SSHDPatcher to generate/install emulator mod files from patcher_data.json.")
+                return False, location_to_item
+
             try:
-                from platform_utils import find_all_emulator_mod_dirs
+                from .platform_utils import find_all_emulator_mod_dirs
                 emulator_mod_dirs = find_all_emulator_mod_dirs()
-            except ImportError:
-                pass
+            except Exception:
+                emulator_mod_dirs = []
 
             if not emulator_mod_dirs:
-                # Fallback: try common paths for all supported emulators
-                game_id = "01002da013484000"
-                fallback_paths = []
-                if sys.platform == "win32":
-                    appdata = Path(os.environ.get('APPDATA', ''))
-                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
-                        fallback_paths.append(appdata / emu / "sdcard" / "atmosphere" / "contents" / game_id)
-                        fallback_paths.append(appdata / emu / "load" / game_id)
-                elif sys.platform == "linux":
-                    for emu_dir, emu_base in [(".config/Ryujinx", "sdcard/atmosphere/contents"),
-                                               (".local/share/yuzu", "load"),
-                                               (".local/share/suyu", "load"),
-                                               (".local/share/sudachi", "load"),
-                                               (".local/share/eden", "load")]:
-                        fallback_paths.append(Path.home() / emu_dir / emu_base / game_id)
-                else:  # macOS
-                    app_support = Path.home() / "Library" / "Application Support"
-                    for emu in ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]:
-                        fallback_paths.append(app_support / emu / "sdcard" / "atmosphere" / "contents" / game_id)
-                        fallback_paths.append(app_support / emu / "load" / game_id)
-
-                for path in fallback_paths:
-                    if path.parent.exists():
-                        emulator_mod_dirs.append(path)
-            
-            if emulator_mod_dirs:
-                print(f"\nFound {len(emulator_mod_dirs)} emulator mod director{'y' if len(emulator_mod_dirs) == 1 else 'ies'}:")
-                
-                for emulator_mod_dir in emulator_mod_dirs:
-                    emulator_mod_dir.mkdir(parents=True, exist_ok=True)
-                    mod_install_dir = emulator_mod_dir / "Archipelago"
-                    
-                    print(f"  Installing to: {mod_install_dir}")
-                    
-                    # Remove existing mod if present
-                    if mod_install_dir.exists():
-                        shutil.rmtree(mod_install_dir)
-                    
-                    # Extract romfs and exefs
-                    mod_install_dir.mkdir(parents=True, exist_ok=True)
-                    
-                    for file_name in file_list:
-                        if file_name.startswith('romfs/') or file_name.startswith('exefs/'):
-                            target_path = mod_install_dir / file_name
-                            target_path.parent.mkdir(parents=True, exist_ok=True)
-                            
-                            with zip_file.open(file_name) as source:
-                                with open(target_path, 'wb') as target:
-                                    target.write(source.read())
-                
-                print(f"\n✓ Patch installed to {len(emulator_mod_dirs)} emulator(s)!")
-                print(f"\nNext steps:")
-                print(f"  1. Launch Skyward Sword HD in your emulator")
-                print(f"  2. The LayeredFS mod will be automatically applied")
-                print(f"  3. Connect to the Archipelago server")
-                return True, location_to_item
-            else:
-                # No emulator found - extract to temp for manual install
-                print(f"\nWARNING: No supported emulator installation found automatically.")
-                print(f"Extracting patch files for manual installation...")
-                
-                # Extract to a folder next to the patch file
+                print("\nWARNING: No supported emulator installation found automatically.")
+                print("Extracting patch files for manual installation...")
                 extract_dir = patch_path.parent / f"{patch_path.stem}_extracted"
                 if extract_dir.exists():
                     shutil.rmtree(extract_dir)
                 extract_dir.mkdir(parents=True, exist_ok=True)
-                
                 zip_file.extractall(extract_dir)
-                
-                print(f"\nExtracted to: {extract_dir}")
-                print(f"\nManual installation:")
-                print(f"  1. Copy the romfs/ and exefs/ folders to your emulator's mod directory")
-                print(f"     (e.g. Ryujinx: sdcard/atmosphere/contents/01002da013484000/Archipelago/)")
-                print(f"     (e.g. yuzu: load/01002da013484000/Archipelago/)")
-                print(f"  2. Launch Skyward Sword HD in your emulator")
-                print(f"  3. The LayeredFS mod will be automatically applied")
+                print(f"Extracted to: {extract_dir}")
+                print("Copy romfs/ and exefs/ to your emulator mod folder under Archipelago/.")
                 return False, location_to_item
-                
-    except Exception as e:
-        print(f"\nERROR: Failed to install patch: {e}")
+
+            print(f"\nFound {len(emulator_mod_dirs)} emulator mod director{'y' if len(emulator_mod_dirs) == 1 else 'ies'}:")
+            for emulator_mod_dir in emulator_mod_dirs:
+                emulator_mod_dir.mkdir(parents=True, exist_ok=True)
+                mod_install_dir = emulator_mod_dir / "Archipelago"
+                print(f"  Installing to: {mod_install_dir}")
+
+                if mod_install_dir.exists():
+                    shutil.rmtree(mod_install_dir)
+                mod_install_dir.mkdir(parents=True, exist_ok=True)
+
+                for file_name in file_list:
+                    if not (file_name.startswith("romfs/") or file_name.startswith("exefs/")):
+                        continue
+                    target_path = mod_install_dir / file_name
+                    target_path.parent.mkdir(parents=True, exist_ok=True)
+                    with zip_file.open(file_name) as source, open(target_path, "wb") as target:
+                        target.write(source.read())
+
+            print(f"\nPatch installed to {len(emulator_mod_dirs)} emulator(s).")
+            print("Launch Skyward Sword HD in your emulator, then connect the AP client.")
+            return True, location_to_item
+    except Exception as exc:
+        print(f"\nERROR: Failed to install patch: {exc}")
         import traceback
         traceback.print_exc()
         return False, {}
-
 
 async def main(args=None):
     """
@@ -6118,27 +6542,7 @@ async def main(args=None):
     print(f"Arguments: {args}")
     
     parser = get_base_parser(description="Skyward Sword HD Client for Archipelago.")
-    parser.add_argument('diff_file', default="", type=str, nargs="?",
-                        help='Path to an Archipelago Binary Patch file (.apsshd)')
     parsed_args = parser.parse_args(args)
-    
-    # Install patch if provided and get location mapping
-    location_to_item = {}
-    if parsed_args.diff_file:
-        patch_file = parsed_args.diff_file
-        print(f"\nPatch file provided: {patch_file}")
-        if patch_file.endswith('.apsshd'):
-            success, location_to_item = install_patch(patch_file)
-            if not success:
-                print("ERROR: Failed to install patch")
-                return
-            print(f"\n" + "="*60)
-            print(f"Continuing to launch client...")
-            print(f"="*60 + "\n")
-        else:
-            print(f"WARNING: Expected .apsshd file, got {patch_file}")
-    
-    print(f"Parsed arguments: {parsed_args}")
     
     # Enable GUI when available (Archipelago launcher has all GUI dependencies)
     use_gui = gui_enabled
@@ -6148,7 +6552,6 @@ async def main(args=None):
     
     # Create context (requires event loop to already be running)
     ctx = SSHDContext(parsed_args.connect, parsed_args.password)
-    ctx.location_to_item = location_to_item  # Set mapping loaded from patch
     
     ctx.server_task = asyncio.create_task(server_loop(ctx), name="ServerLoop")
     

@@ -1,26 +1,26 @@
 - name: The Sky
   hint_region: Sky
   exits:
-    Faron Pillar: Emerald_Tablet and Sailcloth
-    Eldin Pillar: Ruby_Tablet and Sailcloth
-    Lanayru Pillar: Amber_Tablet and Sailcloth
+    Faron Pillar: Loftwing and Emerald_Tablet and Sailcloth
+    Eldin Pillar: Loftwing and Ruby_Tablet and Sailcloth
+    Lanayru Pillar: Loftwing and Amber_Tablet and Sailcloth
     # You can fly low enough to land on the islands without taking damage or needing the sailcloth.
-    Bamboo Island: Nothing
-    Island near Bamboo Island: Nothing
-    Beedle's Island: Nothing
-    Northeast Island: Nothing
-    Lumpy Pumpkin Exterior: Nothing
-    Island Closest to Faron Pillar: Nothing
+    Bamboo Island: Loftwing
+    Island near Bamboo Island: Loftwing
+    Beedle's Island: Loftwing
+    Northeast Island: Loftwing
+    Lumpy Pumpkin Exterior: Loftwing
+    Island Closest to Faron Pillar: Loftwing
     # Even flying right up to the sky entrance requires taking some fall damage.
     # It is not possible to dive into the side entrance.
-    Volcanic Island: Can_Survive_Short_Fall
-    Orielle's Island: Nothing
-    Fun Fun Island: Nothing
-    Triple Island: Nothing
-    Inside the Thunderhead: (Goddesss_Harp and Ballad_of_the_Goddess and can_access(Central Skyloft)) or open_thunderhead == on
-    Upper Skyloft: Sailcloth
-    Central Skyloft: Sailcloth
-    Skyloft Village: Sailcloth
+    Volcanic Island: Loftwing and Can_Survive_Short_Fall
+    Orielle's Island: Loftwing
+    Fun Fun Island: Loftwing
+    Triple Island: Loftwing
+    Inside the Thunderhead: Loftwing and ((Goddesss_Harp and Ballad_of_the_Goddess and can_access(Central Skyloft)) or open_thunderhead == on)
+    Upper Skyloft: Loftwing and Sailcloth
+    Central Skyloft: Loftwing and Sailcloth
+    Skyloft Village: Loftwing and Sailcloth
   locations:
     The Sky - Form a Swirrell Ring above Volcanic Island: Nothing # Collect the swirrell and then land somewhere else, carefully.
     The Sky - Form a Swirrell Ring above Lumpy Pumpkin: Nothing # Collect the swirrell and then land somewhere else, carefully.

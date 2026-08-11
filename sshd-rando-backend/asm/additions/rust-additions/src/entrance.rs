@@ -273,47 +273,33 @@ pub fn reload_current_stage() {
 
         item::reset_ap_item_receive_batch();
 
-        if &CURRENT_STAGE_NAME[..5] == b"F000\0" {
-            // Stage names are stored as 8 bytes in globals, while the vanilla
-            // trigger API takes a pointer to a 7-byte stage name buffer.
-            let stage_name_ptr = (&mut CURRENT_STAGE_NAME as *mut [u8; 8]).cast::<[u8; 7]>();
+        // Only skip autosave when we are on F000 layer 28.
+        let is_f000 = &CURRENT_STAGE_NAME[..5] == b"F000\0";
+        let should_autosave = !(is_f000 && CURRENT_LAYER == 28);
 
-            GameReloader__triggerEntrance(
-                GAME_RELOADER_PTR,
-                stage_name_ptr,
-                CURRENT_ROOM.into(),
-                CURRENT_LAYER.into(),
-                CURRENT_ENTRANCE.into(),
-                CURRENT_NIGHT.into(),
-                CURRENT_TRIAL.into(),
-                0,
-                0xF,
-                0,
-                0xFF,
-            );
-        } else {
+        if should_autosave {
             // Mark this transition as an autosave-triggering reload.
             (*FILE_MGR).FA.is_auto_save = 1;
             (*GAME_RELOADER_PTR).is_reloading = 1;
-
-            // Stage names are stored as 8 bytes in globals, while the vanilla
-            // trigger API takes a pointer to a 7-byte stage name buffer.
-            let stage_name_ptr = (&mut CURRENT_STAGE_NAME as *mut [u8; 8]).cast::<[u8; 7]>();
-
-            GameReloader__triggerEntrance(
-                GAME_RELOADER_PTR,
-                stage_name_ptr,
-                CURRENT_ROOM.into(),
-                CURRENT_LAYER.into(),
-                CURRENT_ENTRANCE.into(),
-                CURRENT_NIGHT.into(),
-                CURRENT_TRIAL.into(),
-                0,
-                0xF,
-                0,
-                0xFF,
-            );
         }
+
+        // Stage names are stored as 8 bytes in globals, while the vanilla
+        // trigger API takes a pointer to a 7-byte stage name buffer.
+        let stage_name_ptr = (&mut CURRENT_STAGE_NAME as *mut [u8; 8]).cast::<[u8; 7]>();
+
+        GameReloader__triggerEntrance(
+            GAME_RELOADER_PTR,
+            stage_name_ptr,
+            CURRENT_ROOM.into(),
+            CURRENT_LAYER.into(),
+            CURRENT_ENTRANCE.into(),
+            CURRENT_NIGHT.into(),
+            CURRENT_TRIAL.into(),
+            0,
+            0xF,
+            0,
+            0xFF,
+        );
     }
 }
 
@@ -361,6 +347,66 @@ pub extern "C" fn warp_to_start() -> bool {
         // Just to be extra safe (fixes some issues with Fi warp)
         handle_er_cases();
         return true;
+    }
+}
+
+/// Warp directly to an arbitrary stage/layer. Backs the Python client's
+/// `/warp <stage> [layer]` (anything other than `/warp start`, which reuses
+/// warp_to_start() above — the same path Fi's in-game warp uses).
+///
+/// Mirrors reload_current_stage()'s call into GameReloader__triggerEntrance,
+/// but targets an explicit destination instead of the CURRENT_* globals.
+/// Room and entrance are always 0 and night is always "day" — the Python
+/// client's /warp only exposes stage + layer, matching how /spawn_actor etc.
+/// keep their surface simple. (This is also why `/warp F000 28` warps you to
+/// the title screen and probably crashes the game — layer 28 isn't a real
+/// gameplay layer, it's exactly what you asked for.)
+pub fn warp_to_stage(mut stage_name: [u8; 8], layer: u8) -> bool {
+    unsafe {
+        if GAME_RELOADER_PTR.is_null() || FILE_MGR.is_null() {
+            return false;
+        }
+
+        item::reset_ap_item_receive_batch();
+
+        // Same autosave-skip rule as reload_current_stage(): don't trigger
+        // an autosave landing on the title screen (F000 layer 28).
+        let is_f000 = &stage_name[..5] == b"F000\0";
+        let should_autosave = !(is_f000 && layer == 28);
+        if should_autosave {
+            (*FILE_MGR).FA.is_auto_save = 1;
+            (*GAME_RELOADER_PTR).is_reloading = 1;
+        }
+
+        // Same silent-realm trial detection handle_er_cases() uses for
+        // NEXT_TRIAL, so warping straight into a Silent Realm stage doesn't
+        // leave the trial state stale.
+        let forced_trial: u32 = if stage_name[0] == b'S' || &stage_name[..7] == b"D003_8\0" {
+            1
+        } else {
+            0
+        };
+
+        // Stage names are stored as 8 bytes, while the vanilla trigger API
+        // takes a pointer to a 7-byte stage name buffer (same trick
+        // reload_current_stage() uses on CURRENT_STAGE_NAME).
+        let stage_name_ptr = (&mut stage_name as *mut [u8; 8]).cast::<[u8; 7]>();
+
+        GameReloader__triggerEntrance(
+            GAME_RELOADER_PTR,
+            stage_name_ptr,
+            0, // room
+            layer.into(),
+            0, // entrance
+            0, // forced_night — always day; /warp doesn't expose night
+            forced_trial,
+            0,    // transition_type
+            0xF,  // transition_fade_frames
+            0,    // unk10
+            0xFF, // unk11
+        );
+
+        true
     }
 }
 
