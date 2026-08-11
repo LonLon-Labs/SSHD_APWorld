@@ -818,7 +818,8 @@ class RandomizeLoftwing(Choice):
     display_name = "Randomize Loftwing"
     option_off = 0
     option_on = 1
-    option_random = 2
+    option_randomized = 2          # Renamed to avoid "random"
+    alias_random = option_randomized  # Users can still type "random"
     default = 1
 
 
