@@ -15,6 +15,7 @@ import re
 import struct
 import sys
 import time
+from BaseClasses import ItemClassification as IC
 from pathlib import Path
 from typing import Optional, Set, Dict, Any
 
@@ -1928,6 +1929,30 @@ class SSHDContext(CommonContext):
         self._SCENE_TRANSITION_COOLDOWN_SECS: float = 3.0
         self._last_next_stage: Optional[str] = None  # For early transition detection via NEXT_STAGE
         self._last_next_stage_change_at: float = 0.0
+
+        self._REPEATABLE_ITEM_NAME_SUBSTRINGS = ("Small Key", "Key Piece", "Gratitude Crystal")
+        # Items that share one running counter in the game's FlagMgr rather than
+        # a per-copy itemflag bit or a per-dungeon count. counter_flag_id is the
+        # ITEMFLAGS::*_COUNTER id to read via request_flag_operation; value is
+        # how much one copy of this item contributes to that running total.
+        self._COUNTER_TRACKED_ITEM_GROUPS = {
+            "Gratitude Crystal": {"counter_flag_id": 0x1F6, "value": 1},
+            "Gratitude Crystal Pack": {"counter_flag_id": 0x1F6, "value": 5},
+            "Key Piece": {"counter_flag_id": 0x1F9, "value": 1},
+        }
+
+        # Small Key item name -> FA.dungeonflags scene_idx.
+        # Mirrors _SMALL_KEY_ITEM_ID_TO_SCENE / DUNGEON_KEY_INFO in
+        # ItemSystemIntegration.py (see the Key Rings / Skeleton Key commit).
+        self._SMALL_KEY_ITEM_NAME_TO_SCENE = {
+            "Skyview Temple Small Key": 11,
+            "Lanayru Mining Facility Small Key": 17,
+            "Ancient Cistern Small Key": 12,
+            "Fire Sanctuary Small Key": 15,
+            "Sandship Small Key": 18,
+            "Sky Keep Small Key": 20,
+            "Lanayru Caves Small Key": 9,
+        }
         
         # BreathLink state tracking
         self.last_breath_link: float = 0.0      # For BreathLink echo prevention
@@ -2590,6 +2615,34 @@ class SSHDContext(CommonContext):
             self._flush_pending_reconcile = False
             self._reconcile_item_queue_against_save_memory()
 
+    def _item_is_flag_reconcilable(self, item_name: str) -> bool:
+        """Whether a single FA itemflag bit can be trusted as proof this
+        specific item was already delivered.
+
+        The FA itemflag table only records "has this item TYPE ever been
+        seen" — a single bit, not a count. That's a safe proxy for items
+        that appear at most once in the entire pool (Clawshots, a given
+        dungeon's Boss Key, etc.): if the flag is set, the one-and-only
+        copy must already be owned. It is NOT safe for anything that can
+        appear more than once with the same underlying game id — currency,
+        ammo, and other `filler` items obviously (getting a rupee doesn't
+        mean every rupee in the pool is "already owned"), but also a
+        handful of `progression`/`useful` items that legitimately repeat,
+        like per-dungeon Small Keys or Gratitude Crystals. Using the flag
+        for those would treat every copy after the first as already
+        delivered and silently drop it from the queue.
+        """
+        if not item_name:
+            return False
+        entry = ITEM_TABLE.get(item_name)
+        if entry is None:
+            return False
+        if entry.classification in (IC.filler, IC.trap):
+            return False
+        if any(s in item_name for s in self._REPEATABLE_ITEM_NAME_SUBSTRINGS):
+            return False
+        return True
+
     def _reconcile_item_queue_against_save_memory(self):
         """Drop queued items that are already reflected in the game's save data.
 
@@ -2629,7 +2682,13 @@ class SSHDContext(CommonContext):
                     already_have = True
                 if item_name in ("Progressive Sword", "Progressive Beetle") and actual_count is not None:
                     self.progressive_counts[item_name] = max(self.progressive_counts[item_name], actual_count)
-            else:
+            elif item_name in self._SMALL_KEY_ITEM_NAME_TO_SCENE:
+                actual_count = self._read_current_small_key_count_from_memory(item_name)
+                expected_count = self._count_progressive_items_received_up_to(item_name, idx + 1)
+                if actual_count is not None and idx >= 0 and actual_count >= expected_count:
+                    already_have = True
+            elif self._item_is_flag_reconcilable(item_name):
+                # Only check the flag if the item is unique (not repeatable)
                 game_id = self._item_code_to_game_id(item_data.get("id"))
                 if game_id is not None:
                     flag_set = self._is_itemflag_set_in_save(game_id)
@@ -2662,6 +2721,98 @@ class SSHDContext(CommonContext):
                 f"{len(kept_items)} item(s) queued for delivery"
             )
         self.update_tracker_state()
+
+        if any(
+            item_data.get("name") in self._COUNTER_TRACKED_ITEM_GROUPS
+            for item_data in self.item_queue
+        ):
+            asyncio.create_task(self._reconcile_counter_tracked_items_after_flush())
+
+    async def _reconcile_counter_tracked_items_after_flush(self):
+        """Drop Gratitude Crystal / Key Piece entries already covered by the
+        game's own running counter, following up after
+        _reconcile_item_queue_against_save_memory (which can't do this
+        itself — reading these counters requires the async Rust flag RPC,
+        since they're multi-bit counters, not single itemflag bits).
+        """
+        # Group by the underlying counter (Gratitude Crystal and Gratitude
+        # Crystal Pack both feed CRYSTAL_PACK_COUNTER at different weights).
+        counter_ids = {g["counter_flag_id"] for g in self._COUNTER_TRACKED_ITEM_GROUPS.values()}
+        actual_counts: dict[int, int] = {}
+        for flag_id in counter_ids:
+            value = await self.request_flag_operation("itemflag", "get", flag_id)
+            if value is not None:
+                actual_counts[flag_id] = value
+
+        if not actual_counts:
+            logger.debug("[FlushDataStorage] Could not read counter-tracked item totals; leaving queue as-is")
+            return
+
+        kept_items: list[dict] = []
+        reconciled = 0
+        running_totals: dict[int, int] = {flag_id: 0 for flag_id in counter_ids}
+
+        for item_data in self.item_queue:
+            item_name = item_data.get("name")
+            group = self._COUNTER_TRACKED_ITEM_GROUPS.get(item_name)
+            if not group:
+                kept_items.append(item_data)
+                continue
+
+            flag_id = group["counter_flag_id"]
+            weight = group["value"]
+            actual_count = actual_counts.get(flag_id)
+            # running_totals tracks the expected cumulative total *if* every
+            # queued copy seen so far were kept; we only commit to it below
+            # once we know whether this copy is covered.
+            prospective_total = running_totals[flag_id] + weight
+
+            if actual_count is not None and prospective_total <= actual_count:
+                running_totals[flag_id] = prospective_total
+                reconciled += 1
+                logger.info(
+                    f"[FlushDataStorage] Skipping {item_name} (index {item_data.get('index')}) — "
+                    f"already covered by save counter ({prospective_total}/{actual_count})"
+                )
+                continue
+
+            kept_items.append(item_data)
+
+        if reconciled:
+            self.item_queue = kept_items
+            logger.info(
+                f"[FlushDataStorage] Reconciled {reconciled} counter-tracked item(s) "
+                f"({len(kept_items)} item(s) remain queued for delivery)"
+            )
+            self.update_tracker_state()
+        else:
+            logger.debug("[FlushDataStorage] No counter-tracked items were already covered by save")
+
+    def _is_itemflag_set_in_save_with_grace(
+        self, game_id: int, attempts: int = 4, delay_seconds: float = 0.5
+    ) -> bool | None:
+        """Poll an itemflag a few times before giving up.
+
+        A buffer-delivered item is handed to the game's own loop, which sets
+        the persistent itemflag itself once it finishes processing the pickup
+        (its get-animation/jingle sequence) — that can take longer than an
+        instant, especially under load. A single point-in-time read right
+        after reconnecting can catch that window and wrongly conclude the
+        item was never delivered, triggering a duplicate give. Polling for a
+        couple of seconds gives an in-flight delivery a chance to land before
+        we decide to redeliver.
+
+        This briefly blocks the event loop (up to attempts * delay_seconds),
+        which is only acceptable because it only runs during reconnect
+        recovery for a handful of "unsafe" items, not on a hot path.
+        """
+        for attempt in range(max(1, attempts)):
+            flag_set = self._is_itemflag_set_in_save(game_id)
+            if flag_set:
+                return True
+            if attempt < attempts - 1:
+                time.sleep(delay_seconds)
+        return flag_set
 
     def update_tracker_state(self):
         """Update the tracker bridge with current state for autotracking."""
@@ -3041,10 +3192,16 @@ class SSHDContext(CommonContext):
                     else:
                         # If the item's persistent flag is already set in save,
                         # treat this pending replay as stale and mark it safe.
-                        game_id = self._item_code_to_game_id(item_data.get("id"))
+                        # Only trust the flag for items that can't repeat in
+                        # the pool (see _item_is_flag_reconcilable) — a shared
+                        # flag like Gratitude Crystal's would otherwise read
+                        # as "already have" for every copy after the first
+                        # and silently drop the rest.
                         flag_set = None
-                        if game_id is not None:
-                            flag_set = self._is_itemflag_set_in_save(game_id)
+                        if self._item_is_flag_reconcilable(item_name):
+                            game_id = self._item_code_to_game_id(item_data.get("id"))
+                            if game_id is not None:
+                                flag_set = self._is_itemflag_set_in_save_with_grace(game_id)
                         if item_index >= 0 and flag_set is True:
                             reconciled_count += 1
                             reconciled_non_progressive_count += 1
@@ -5357,6 +5514,29 @@ class SSHDContext(CommonContext):
                 else:
                     break
             return count
+        except Exception:
+            return None
+
+    def _read_current_small_key_count_from_memory(self, item_name: str) -> int | None:
+        """Read the current per-dungeon Small Key count from FA.dungeonflags.
+
+        FA.dungeonflags is [[u16;8];26]; slot [1] of each scene's 8-u16
+        block packs the key count as (obtained << 4) | current. Key
+        Rings / Skeleton Key write both nibbles to their forced max, so
+        this also correctly reports "already satisfied" once one of
+        those is owned instead of the individual keys.
+        """
+        scene_idx = self._SMALL_KEY_ITEM_NAME_TO_SCENE.get(item_name)
+        if scene_idx is None:
+            return None
+        try:
+            if not self.memory.connected or not self.memory.base_address:
+                return None
+            offset = OFFSET_SAVEFILE_A + OFFSET_FA_DUNGEONFLAGS + scene_idx * 16 + 1 * 2
+            raw = self.memory.read_short(offset)
+            if raw is None:
+                return None
+            return raw & 0xF  # lower nibble = current key count
         except Exception:
             return None
 

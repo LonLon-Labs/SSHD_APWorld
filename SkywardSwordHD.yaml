@@ -195,26 +195,8 @@ Skyward Sword HD:
 
 
 
-  # YOU HAVE TWO OPTIONS TO CONFIGURE YOUR RANDOMIZER SETTINGS:
-
-
   # ========================================
-  # CONFIGURATION METHOD ONE: USING config.yaml
-  # This is the recommended method. It is the most user-friendly and will be compatible with all versions of the randomizer.
-  # ========================================
-  # Configure all of your settings in the vanilla Skyward Sword HD Randomizer application (only change the settings, do not generate).
-  # When you're done, there should be a config.yaml file in the randomizer folder. Copy its path into the field below and the settings will be imported from that file.
-  # Example: C:\\Users\\awesome_user\\Downloads\\Skyward_Sword_HD_Randomizer_v2.2_windows\\config.yaml
-  config_yaml_path: ""
-
-
-
-  # ====================================================================================
-
-
-
-  # ========================================
-  # CONFIGURATION METHOD TWO: MANUAL SETTINGS
+  # RANDOMIZER SETTINGS
   # ========================================
   
   

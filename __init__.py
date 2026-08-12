@@ -3378,12 +3378,20 @@ class SSHDWorld(World):
             user_extract_path = self.options.extract_path.value
             has_valid_extract = False
             if user_extract_path:
-                _ep = Path(user_extract_path)
-                if (_ep / "romfs").exists() and (_ep / "exefs").exists():
-                    has_valid_extract = True
-                    print(f"[__init__.py] Valid extract path detected: {user_extract_path}")
-                else:
-                    print(f"[__init__.py] WARNING: extract_path is set but romfs/exefs not found at: {user_extract_path}")
+                try:
+                    _ep = Path(user_extract_path)
+                    if (_ep / "romfs").exists() and (_ep / "exefs").exists():
+                        has_valid_extract = True
+                        print(f"[__init__.py] Valid extract path detected: {user_extract_path}")
+                    else:
+                        print(f"[__init__.py] WARNING: extract_path is set but romfs/exefs not found at: {user_extract_path}")
+                except (OSError, ValueError) as e:
+                    # extract_path was unusable as a filesystem path (too long,
+                    # contains characters the OS rejects, etc). Treat it the same
+                    # as "not provided" so generation still succeeds with a
+                    # skeleton (patcher_data-only) patch instead of crashing.
+                    _preview = user_extract_path if len(user_extract_path) <= 80 else user_extract_path[:80] + "..."
+                    print(f"[__init__.py] WARNING: extract_path is not a usable path ({e!r}); ignoring it: {_preview!r}")
             
             if SSHD_RANDO_AVAILABLE:
                 try:
@@ -3787,193 +3795,13 @@ class SSHDWorld(World):
             traceback.print_exc()
             return None, None
     
-    def _load_config_yaml(self) -> dict:
-        """
-        Load settings from config.yaml file.
-        
-        Returns:
-            dict: Settings loaded from config.yaml, or empty dict if file not found
-        """
-        import yaml
-        from pathlib import Path
-        
-        # Get config path from options
-        config_path_str = self.options.config_yaml_path.value
-        if not config_path_str:
-            # No config path specified, return empty dict to use Archipelago options
-            return {}
-        
-        config_path = Path(config_path_str)
-        
-        if not config_path.exists():
-            print(f"[__init__.py] Warning: config.yaml not found at {config_path}")
-            return {}
-        
-        try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config_data = yaml.safe_load(f)
-            
-            if not config_data:
-                print(f"[__init__.py] Warning: config.yaml is empty")
-                return {}
-            
-            # Extract World 1 settings (the config has a "World 1" key)
-            world_settings = config_data.get('World 1', {})
-            
-            # Also include top-level settings like seed, generate_spoiler_log, etc.
-            result = {}
-            
-            # Copy top-level settings
-            for key in ['seed', 'generate_spoiler_log', 'use_plandomizer', 'plandomizer_file']:
-                if key in config_data:
-                    result[key] = config_data[key]
-            
-            # Merge world settings
-            result.update(world_settings)
-            
-            print(f"[__init__.py] Loaded {len(result)} settings from config.yaml")
-            return result
-            
-        except Exception as e:
-            print(f"[__init__.py] Error loading config.yaml: {e}")
-            import traceback
-            traceback.print_exc()
-            return {}
-    
     def _collect_archipelago_settings(self) -> dict:
         """
         Collect Archipelago options as a dictionary for sshd-rando wrapper.
         
-        First tries to load from config.yaml if config_yaml_path option is set.
-        If that file exists and contains valid settings, uses those.
-        Otherwise falls back to Archipelago options.
-        
         Maps Archipelago option values to sshd-rando setting names and values.
         """
-        # Try loading from config.yaml first
-        config_settings = self._load_config_yaml()
-        
-        if config_settings:
-            print("[__init__.py] Using settings from config.yaml")
-            # Convert the config settings to the format expected by sshd-rando
-            # Most settings are already in the correct format (string values like "on"/"off")
-            # Just need to ensure proper types
-            settings_dict = {}
-            
-            # Copy all settings from config
-            for key, value in config_settings.items():
-                if key in ['seed', 'generate_spoiler_log', 'use_plandomizer', 'plandomizer_file']:
-                    # These are top-level settings, handle separately if needed
-                    continue
-                
-                # Convert values to strings if they aren't already
-                if isinstance(value, bool):
-                    settings_dict[key] = "on" if value else "off"
-                elif isinstance(value, (int, float)):
-                    settings_dict[key] = str(value)
-                elif isinstance(value, str):
-                    # Keep strings as-is (including "random", "on", "off", etc.)
-                    settings_dict[key] = value
-                elif isinstance(value, list):
-                    settings_dict[key] = value
-                elif value is None:
-                    # Skip None values
-                    continue
-                else:
-                    settings_dict[key] = str(value)
-            
-            # Handle extract_path if not in config
-            if 'extract_path' not in settings_dict:
-                settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())
-            
-            # OVERRIDE settings that would break Archipelago functionality
-            # These must be set regardless of what's in config.yaml
-            print("[__init__.py] Applying Archipelago-required setting overrides...")
-            
-            # Set skip_demise / skip_g3 / skip_horde based on the goal option.
-            # The goal determines which endgame bosses must be fought; the rest
-            # are skipped so the game transitions directly to the ending.
-            goal_value = self.options.goal.value
-            if goal_value == 0:  # defeat_demise — full endgame
-                settings_dict["skip_demise"] = "off"
-                # skip_horde and skip_g3 stay as-is from config (user can still skip them)
-            elif goal_value == 1:  # defeat_ghirahim3 — skip Demise, force Horde + G3 on
-                settings_dict["skip_demise"] = "on"
-                settings_dict["skip_g3"] = "off"
-                # skip_horde stays as-is (user can still skip it — goal only requires G3)
-            else:  # defeat_horde (2) — skip Demise + G3, force Horde on
-                settings_dict["skip_demise"] = "on"
-                settings_dict["skip_g3"] = "on"
-                settings_dict["skip_horde"] = "off"
-            
-            # Hints are disabled - Archipelago uses its own hint system
-            settings_dict["path_hints"] = "0"
-            settings_dict["barren_hints"] = "0"
-            settings_dict["location_hints"] = "0"
-            settings_dict["item_hints"] = "0"
-            settings_dict["song_hints"] = "off"
-            settings_dict["impa_sot_hint"] = "off"
-            
-            # Ensure hints on Fi/Gossip Stones are off (Archipelago handles hints)
-            settings_dict["path_hints_on_fi"] = "off"
-            settings_dict["path_hints_on_gossip_stones"] = "off"
-            settings_dict["barren_hints_on_fi"] = "off"
-            settings_dict["barren_hints_on_gossip_stones"] = "off"
-            settings_dict["location_hints_on_fi"] = "off"
-            settings_dict["location_hints_on_gossip_stones"] = "off"
-            settings_dict["item_hints_on_fi"] = "off"
-            settings_dict["item_hints_on_gossip_stones"] = "off"
-            
-            # Spawn hearts must be on for Archipelago
-            settings_dict["spawn_hearts"] = "on"
-            
-            # CRITICAL: Progressive items MUST be enabled for Archipelago
-            # Archipelago's item system expects progressive items (Progressive Beetle, Progressive Sword, etc.)
-            # Non-progressive items would break the item pool and cause mismatches
-            settings_dict["progressive_items"] = "on"
-
-            settings_dict["require_triforce_pieces"] = "on" if self.options.require_triforce_pieces.value else "off"
-            settings_dict["required_triforce_pieces"] = str(self.options.required_triforce_pieces.value)
-            settings_dict["require_dungeons"] = "on" if self.options.dungeon_goal_requirement.value else "off"
-            settings_dict["required_dungeon_count"] = str(self.options.required_dungeon_count.value)
-            # When dungeon_goal_requirement is on, tell the rando backend required_dungeons=0
-            # so it does not lock any progression items behind dungeon completion.
-            if self.options.dungeon_goal_requirement.value:
-                settings_dict["required_dungeons"] = "0"
-            # If config.yaml does not specify this toggle, keep it synchronized
-            # with the AP option so required_dungeons=7 works as expected.
-            if "dungeons_include_sky_keep" not in settings_dict:
-                settings_dict["dungeons_include_sky_keep"] = "on" if self.options.dungeons_include_sky_keep.value else "off"
-            settings_dict["require_greg"] = "on" if self.options.require_greg.value else "off"
-            settings_dict["require_tim"] = "on" if self.options.require_tim.value else "off"
-            settings_dict["require_all_progression_items"] = "on" if self.options.require_all_progression_items.value else "off"
-            # Keep Demise count synchronized with AP options unless config.yaml explicitly provides it.
-            if "demise_count" not in settings_dict:
-                settings_dict["demise_count"] = str(self.options.demise_count.value)
-            
-            # NOTE: Starting inventory settings (starting_sword, random_starting_tablet_count,
-            # starting_hearts, random_starting_item_count, random_starting_statues, etc.)
-            # are loaded from config.yaml above and are NOT overridden here.
-            # When a user provides config_yaml_path, the config.yaml is authoritative
-            # for gameplay settings. Users should set these values in their config.yaml
-            # (e.g. random_starting_tablet_count: '0') rather than in the AP YAML.
-            
-            # Debug: log the starting inventory settings that came from config.yaml
-            _tablet_val = settings_dict.get("random_starting_tablet_count", "NOT SET")
-            _sword_val = settings_dict.get("starting_sword", "NOT SET")
-            _hearts_val = settings_dict.get("starting_hearts", "NOT SET")
-            print(f"[__init__.py] Config.yaml starting settings: tablets={_tablet_val!r}, sword={_sword_val!r}, hearts={_hearts_val!r}")
-            
-            print("[__init__.py] Applied overrides: goal-based skip settings, all hints disabled, spawn_hearts=on, progressive_items=on")
-            
-            # AP-only settings that don't exist in config.yaml — always read from AP options
-            item_model_map = {0: "letter", 1: "archipelago_logo", 2: "unofficial_archipelago_logo"}
-            settings_dict["archipelago_item_model"] = item_model_map.get(self.options.archipelago_item_model.value, "archipelago_logo")
-            
-            return settings_dict
-        
-        # Fall back to Archipelago options if config.yaml doesn't exist or is empty
-        print("[__init__.py] Using Archipelago options (config.yaml not found or empty)")
+        print("[__init__.py] Using Archipelago options")
         settings_dict = {}
         
         # Logic Settings
@@ -3999,7 +3827,7 @@ class SSHDWorld(World):
         settings_dict["require_all_progression_items"] = "on" if self.options.require_all_progression_items.value else "off"
         settings_dict["demise_count"] = str(self.options.demise_count.value)
         
-        # Set skip settings based on goal (same logic as the config.yaml path above)
+        # Set skip settings based on goal
         goal_value = self.options.goal.value
         if goal_value == 0:  # defeat_demise
             settings_dict["skip_demise"] = "off"
