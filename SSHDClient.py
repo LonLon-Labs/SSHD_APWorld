@@ -2293,9 +2293,21 @@ class SSHDContext(CommonContext):
             def _boss_storyflag_is_set(flag_id: int) -> bool:
                 word_idx = flag_id // 16
                 bit_idx = flag_id % 16
-                addr = OFFSET_BOSS_KILL_FLAGS + word_idx * 2
-                val = self.memory.read_short(addr)
-                return val is not None and bool(val & (1 << bit_idx))
+                mask = 1 << bit_idx
+            
+                # Read from the save file (committed copy)
+                fa_addr = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS + word_idx * 2
+                fa_val = self.memory.read_short(fa_addr)
+                if fa_val is not None and (fa_val & mask):
+                    return True
+            
+                # Read from the runtime static copy
+                static_addr = OFFSET_STORY_FLAGS_STATIC + word_idx * 2
+                static_val = self.memory.read_short(static_addr)
+                if static_val is not None and (static_val & mask):
+                    return True
+            
+                return False
 
             bosses_needed = max(0, min(required_dungeons, len(dungeon_boss_flags)))
             bosses_have = sum(
