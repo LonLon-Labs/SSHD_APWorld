@@ -222,6 +222,8 @@ OFFSET_STATIC_TBOXFLAGS = 0x182E118   # STATIC_TBOXFLAGS (current-scene tbox fla
 OFFSET_FA_TEMPFLAGS = 0x50F4           # Temp flags (CT shows at base+5AF3E48-5AEAD54)
 OFFSET_FA_ZONEFLAGS = 0x50FC           # Zone flags (CT shows at base+5AF3E50-5AEAD54)
 
+OFFSET_BOSS_KILL_FLAGS = 0x1398550  # fix-boss-doors.asm buffer, base-relative
+
 # Player structure offsets (relative to OFFSET_PLAYER)
 # All offsets verified against Rust struct definitions in:
 #   player.rs  (dPlayer),  actor.rs (dAcOBasemembers / dAcBasemembers),
@@ -2291,14 +2293,9 @@ class SSHDContext(CommonContext):
             def _boss_storyflag_is_set(flag_id: int) -> bool:
                 word_idx = flag_id // 16
                 bit_idx = flag_id % 16
-                fa_offset = (OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
-                             + word_idx * 2)
-                static_offset = OFFSET_STORY_FLAGS_STATIC + word_idx * 2
-                fa_val = self.memory.read_short(fa_offset)
-                static_val = self.memory.read_short(static_offset)
-                fa_set = fa_val is not None and bool(fa_val & (1 << bit_idx))
-                static_set = static_val is not None and bool(static_val & (1 << bit_idx))
-                return fa_set or static_set
+                addr = OFFSET_BOSS_KILL_FLAGS + word_idx * 2
+                val = self.memory.read_short(addr)
+                return val is not None and bool(val & (1 << bit_idx))
 
             bosses_needed = max(0, min(required_dungeons, len(dungeon_boss_flags)))
             bosses_have = sum(
