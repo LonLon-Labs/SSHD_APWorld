@@ -101,7 +101,7 @@ AP_ITEM_OARC_NAMES: frozenset[str] = frozenset({
 # pressure; the extra ~80 OARCs cause a PANIC on SSystem::mDvd.
 # Per-item OARCs from add_arcn_for_check are still applied so randomised
 # check pickups display the correct model.
-_SKIP_AP_OARC_STAGES: frozenset[str] = frozenset({"F402"})
+_SKIP_AP_OARC_STAGES: frozenset[str] = frozenset({"B400", "F402", "F404", "F405", "F407"})
 
 
 def patch_tbox(
