@@ -2263,7 +2263,11 @@ class SSHDContext(CommonContext):
         song_parts_have = sum(owned.get(item_name, 0) for item_name in song_part_names)
         add_requirement("Song of the Hero Parts", song_parts_have, 4)
 
-        # Optional dungeon requirement (any N boss keys), if boss keys exist.
+        # Optional dungeon requirement (any N dungeon bosses defeated).
+        # NOTE: this counts actual boss-kill storyflags (from fix-boss-doors.asm),
+        # not boss key possession — a key can be received via the multiworld
+        # item pool long before the dungeon is ever entered, so key count is
+        # not a reliable stand-in for "beat the boss."
         boss_key_shuffle = int(self.slot_data.get("option_boss_key_shuffle", 1))
         if self._slot_option_enabled("dungeon_goal_requirement") and boss_key_shuffle != 6:
             try:
@@ -2271,17 +2275,41 @@ class SSHDContext(CommonContext):
             except (TypeError, ValueError):
                 required_dungeons = 2
 
-            boss_keys = [
-                "Skyview Temple Boss Key",
-                "Earth Temple Boss Key",
-                "Lanayru Mining Facility Boss Key",
-                "Ancient Cistern Boss Key",
-                "Sandship Boss Key",
-                "Fire Sanctuary Boss Key",
-            ]
-            boss_keys_needed = max(0, min(required_dungeons, len(boss_keys)))
-            boss_keys_have = sum(owned.get(item_name, 0) for item_name in boss_keys)
-            add_requirement(f"Any Boss Keys ({', '.join(boss_keys)})", boss_keys_have, boss_keys_needed)
+            # Boss-kill storyflags, from fix-boss-doors.asm (offset 0x7101398550).
+            # Distinct from storyflags 900/901 ("Beaten Ancient Cistern" /
+            # "Beaten Fire Sanctuary"), which mark full dungeon-clear, not
+            # the boss kill itself.
+            dungeon_boss_flags = {
+                "Skyview Temple": 0x53,               # Ghirahim 1
+                "Earth Temple": 0x7,                  # Scaldera
+                "Lanayru Mining Facility": 0x32C,     # Moldarach
+                "Ancient Cistern": 0x288,              # Koloktos
+                "Fire Sanctuary": 0x54,                # Ghirahim 2
+                "Sandship": 0x3A5,                     # Tentalus
+            }
+
+            def _boss_storyflag_is_set(flag_id: int) -> bool:
+                word_idx = flag_id // 16
+                bit_idx = flag_id % 16
+                fa_offset = (OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
+                             + word_idx * 2)
+                static_offset = OFFSET_STORY_FLAGS_STATIC + word_idx * 2
+                fa_val = self.memory.read_short(fa_offset)
+                static_val = self.memory.read_short(static_offset)
+                fa_set = fa_val is not None and bool(fa_val & (1 << bit_idx))
+                static_set = static_val is not None and bool(static_val & (1 << bit_idx))
+                return fa_set or static_set
+
+            bosses_needed = max(0, min(required_dungeons, len(dungeon_boss_flags)))
+            bosses_have = sum(
+                1 for flag_id in dungeon_boss_flags.values()
+                if _boss_storyflag_is_set(flag_id)
+            )
+            add_requirement(
+                f"Dungeon Bosses Defeated ({', '.join(dungeon_boss_flags.keys())})",
+                bosses_have,
+                bosses_needed,
+            )
 
         # Optional Triforce requirement.
         if self._slot_option_enabled("require_triforce_pieces"):
