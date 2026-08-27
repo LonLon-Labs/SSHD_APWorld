@@ -22,11 +22,11 @@
     Central Skyloft: Loftwing and Sailcloth
     Skyloft Village: Loftwing and Sailcloth
   locations:
-    The Sky - Form a Swirrell Ring above Volcanic Island: Nothing # Collect the swirrell and then land somewhere else, carefully.
-    The Sky - Form a Swirrell Ring above Lumpy Pumpkin: Nothing # Collect the swirrell and then land somewhere else, carefully.
-    The Sky - Form a Swirrell Ring above Bamboo Island: Nothing # Collect the swirrell and then land somewhere else, carefully.
-    The Sky - Chest in Breakable Boulder near Lumpy Pumpkin: Spiral_Charge
-    The Sky - Chest in Breakable Boulder near Fun Fun Island: Spiral_Charge
+    The Sky - Form a Swirrell Ring above Volcanic Island: Loftwing # Collect the swirrell and then land somewhere else, carefully.
+    The Sky - Form a Swirrell Ring above Lumpy Pumpkin: Loftwing # Collect the swirrell and then land somewhere else, carefully.
+    The Sky - Form a Swirrell Ring above Bamboo Island: Loftwing # Collect the swirrell and then land somewhere else, carefully.
+    The Sky - Chest in Breakable Boulder near Lumpy Pumpkin: Loftwing and Spiral_Charge
+    The Sky - Chest in Breakable Boulder near Fun Fun Island: Loftwing and Spiral_Charge
 
 - name: Faron Pillar
   hint_region: None
