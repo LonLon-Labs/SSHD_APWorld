@@ -1208,20 +1208,22 @@ class EmulatorMemoryReader:
                     logging.debug(f"[PRESCAN] {mname}: no hits")
 
             # ------------------------------------------------------------------
-            # Post-scan validation: ALL three magic buffers must be found.
-            # If any are missing, the base address is likely a stale copy or
-            # the game hasn't finished initialising its Rust statics yet.
-            # Returning False triggers a rescan on the next attempt.
+            # Post-scan validation: At minimum AP_CHECK_STATS and
+            # AP_ITEM_INFO_TABLE must be present (they are cross-derived so one
+            # usually implies the other).  The remaining buffers are not
+            # strictly required for initial connection and may be discovered
+            # later or derived on demand.
             # ------------------------------------------------------------------
-            missing_buffers = [name for name, addrs in magic_hits.items() if not addrs]
-            if missing_buffers:
+            required_buffers = ["AP_CHECK_STATS", "AP_ITEM_INFO_TABLE"]
+            missing_required = [name for name in required_buffers if not magic_hits.get(name)]
+            if missing_required:
                 print(
-                    f"[FAIL] Base 0x{best_base:X} (8/8) but missing magic buffers: "
-                    f"{', '.join(missing_buffers)}"
+                    f"[FAIL] Base 0x{best_base:X} (8/8) but missing required magic buffers: "
+                    f"{', '.join(missing_required)}"
                 )
                 logger.error(
                     f"Base address 0x{best_base:X} scored 8/8 but could not find "
-                    f"all required magic buffers ({', '.join(missing_buffers)} missing). "
+                    f"required magic buffers ({', '.join(missing_required)} missing). "
                     f"Game may still be loading. Will retry."
                 )
                 self.base_address = None
