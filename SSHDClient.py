@@ -818,9 +818,10 @@ class EmulatorMemoryReader:
                 logger.debug(f"Scan successful - base address: 0x{self.base_address:X}")
                 try:
                     import struct as _struct  # noqa
-                    # EQUIPPED_SWORD is at base+0x1671c6c (confirmed across multiple sessions)
-                    eqsw_addr = self.base_address + 0x1671c6c
-                    self._eqsw_addr = self.base_address + 0x1675c6c  # keep old monitoring addr too
+                    # EQUIPPED_SWORD offset updated for newer emulator versions
+                    # (Ryujinx 1.3.x / Canary): base+0x1675c6c (confirmed); older 0x1671c6c kept for fallback.
+                    eqsw_addr = self.base_address + 0x1675c6c
+                    self._eqsw_addr_fallback = self.base_address + 0x1671c6c
 
                     # Read current EQUIPPED_SWORD to log it (6 = no sword, 0 = Practice Sword)
                     try:
