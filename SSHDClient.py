@@ -238,7 +238,7 @@ OFFSET_STATIC_TBOXFLAGS = 0x182E118   # STATIC_TBOXFLAGS (current-scene tbox fla
 OFFSET_FA_TEMPFLAGS = 0x50F4           # Temp flags (CT shows at base+5AF3E48-5AEAD54)
 OFFSET_FA_ZONEFLAGS = 0x50FC           # Zone flags (CT shows at base+5AF3E50-5AEAD54)
 
-OFFSET_BOSS_KILL_FLAGS = 0x1398550  # fix-boss-doors.asm buffer, base-relative
+OFFSET_BOSS_KILL_FLAGS = 0x1394550  # fix-boss-doors.asm buffer, base-relative
 
 # Player structure offsets (relative to OFFSET_PLAYER)
 # All offsets verified against Rust struct definitions in:
@@ -1913,9 +1913,9 @@ class SSHDContext(CommonContext):
         # Source: sshd-rando/constants/itemconstants.py ITEM_STORYFLAGS
         self._PROGRESSIVE_STORY_FLAGS = {
             "Progressive Mitts":     [904, 905],
-            "Progressive Beetle":    [912, 913, 942, 943],
+            "Progressive Beetle":    [912, 913, 955, 956],
             "Progressive Wallet":    [915, 916, 917, 918],
-            "Progressive Bow":       [944, 945, 946],
+            "Progressive Bow":       [954, 945, 946],
             "Progressive Slingshot": [947, 948],
             "Progressive Bug Net":   [949, 950],
             "Progressive Pouch":     [30, 932, 932, 932, 932],
@@ -2020,6 +2020,15 @@ class SSHDContext(CommonContext):
         self._ap_cheat_flags_offset: Optional[int] = None  # Memory offset of AP_CHEAT_FLAGS
         self._ap_spawn_request_offset: Optional[int] = None  # Memory offset of AP_SPAWN_REQUEST
         self._ap_flag_request_offset: Optional[int] = None   # Memory offset of AP_FLAG_REQUEST
+        # AP_FLAG_REQUEST is a single fixed-size shared buffer with no
+        # request-id/echo verification - if two callers write concurrently,
+        # one can read back the other's response and misattribute it to the
+        # wrong flag_id (e.g. a Beedle purchase poll racing against
+        # _reconcile_counter_tracked_items_after_flush's itemflag reads,
+        # which runs as an independent asyncio task). This lock serializes
+        # every caller of request_flag_operation so only one request is ever
+        # in flight against the buffer at a time.
+        self._flag_request_lock: asyncio.Lock = asyncio.Lock()
         self._ap_warp_request_offset: Optional[int] = None   # Memory offset of AP_WARP_REQUEST
         self._actor_id_map: Dict[str, int] = self._load_actorid_map()
         self._ap_item_info_written: bool = False  # Whether we've written the info table
@@ -5253,56 +5262,60 @@ class SSHDContext(CommonContext):
         if operation not in FLAG_OPS:
             return None
 
-        if self._ap_flag_request_offset is None:
-            self._ap_flag_request_offset = self._scan_for_buffer(
-                bytes([0x46, 0x4C, 0x00, 0x01]), "AP_FLAG_REQUEST"
-            )
+        # Serialize access to the shared AP_FLAG_REQUEST buffer: it has no
+        # request-id/echo verification, so if two callers (e.g. this and a
+        # concurrently-running asyncio task) write to it at the same time,
+        # one can read back the other's response and misattribute it to the
+        # wrong flag_id.
+        async with self._flag_request_lock:
+            if self._ap_flag_request_offset is None:
+                self._ap_flag_request_offset = self._scan_for_buffer(
+                    bytes([0x46, 0x4C, 0x00, 0x01]), "AP_FLAG_REQUEST"
+                )
 
-        if self._ap_flag_request_offset is None:
-            return None
+            if self._ap_flag_request_offset is None:
+                return None
 
-        try:
-            request_addr = self.memory.base_address + self._ap_flag_request_offset
-
-            payload = AP_FLAG_REQUEST_STRUCT.pack(
-                bytes([0x46, 0x4C, 0x00, 0x01]),   # magic
-                1,                                  # pending = 1 (new request)
-                FLAG_TYPES[flag_type],
-                FLAG_OPS[operation],
-                0,                                   # _pad
-                flag_id & 0xFFFF,
-                value & 0xFFFF,
-                scene_index & 0xFFFF,
-                0,                                   # response_ready = 0 (clear any stale result)
-                0,                                   # _pad
-                0,                                   # response_value
-            )
-            self.memory.pm.write_bytes(request_addr, payload, len(payload))
-        except Exception as e:
-            logger.debug(f"Could not write flag request: {e}")
-            err_str = str(e)
-            if "998" in err_str or "noaccess" in err_str.lower() or "access" in err_str.lower():
-                self._ap_flag_request_offset = None
-            return None
-
-        # Poll for Rust to flip response_ready. Rust processes one request
-        # per main-loop tick, so this should resolve within a frame or two.
-        deadline = time.time() + timeout
-        response_ready_addr = request_addr + 14
-        response_value_addr = request_addr + 16
-        while time.time() < deadline:
             try:
-                ready = self.memory.pm.read_bytes(response_ready_addr, 1)
-                if ready and ready[0] == 1:
-                    raw = self.memory.pm.read_bytes(response_value_addr, 4)
-                    if raw:
-                        return struct.unpack("<I", raw)[0]
-                    return None
-            except Exception:
-                pass
-            await asyncio.sleep(0.02)
+                request_addr = self.memory.base_address + self._ap_flag_request_offset
 
-        logger.debug(f"Flag request timed out: {flag_type} {operation} {flag_id}")
+                payload = AP_FLAG_REQUEST_STRUCT.pack(
+                    bytes([0x46, 0x4C, 0x00, 0x01]),   # magic
+                    1,                                  # pending = 1 (new request)
+                    FLAG_TYPES[flag_type],
+                    FLAG_OPS[operation],
+                    0,                                   # _pad
+                    flag_id & 0xFFFF,
+                    value & 0xFFFF,
+                    scene_index & 0xFFFF,
+                    0,                                   # response_ready = 0 (clear any stale result)
+                    0,                                   # _pad
+                    0,                                   # response_value
+                )
+                self.memory.pm.write_bytes(request_addr, payload, len(payload))
+            except Exception as e:
+                logger.debug(f"Could not write flag request: {e}")
+                err_str = str(e)
+                if "998" in err_str or "noaccess" in err_str.lower() or "access" in err_str.lower():
+                    self._ap_flag_request_offset = None
+                return None
+
+            deadline = time.time() + timeout
+            response_ready_addr = request_addr + 14
+            response_value_addr = request_addr + 16
+            while time.time() < deadline:
+                try:
+                    ready = self.memory.pm.read_bytes(response_ready_addr, 1)
+                    if ready and ready[0] == 1:
+                        raw = self.memory.pm.read_bytes(response_value_addr, 4)
+                        if raw:
+                            return struct.unpack("<I", raw)[0]
+                        return None
+                except Exception:
+                    pass
+                await asyncio.sleep(0.02)
+
+            logger.debug(f"Flag request timed out: {flag_type} {operation} {flag_id}")
         return None
 
     async def request_warp_operation(
