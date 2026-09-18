@@ -177,6 +177,22 @@ pub extern "C" fn handle_er_cases() {
             flag::set_global_sceneflag(7, 113);
         }
 
+        // The Boko Base Gossip Stone shortcut (F202 -> F200 entrance 5, added
+        // in stagepatches.yaml as a bare SCEN warp) bypasses the vanilla
+        // escape sequence entirely. If the player leaves through it while
+        // still "caught" by the bokoblins, storyflags 160-167 (the per-item
+        // Boko Base restrictions, ending with 167 = Swordless) never get
+        // cleared by anything else, so their gear stays permanently
+        // unusable. Entrance 5 into F200 is unique to this custom stone, so
+        // it's safe to force-clear the restriction flags here unconditionally.
+        // NOTE: 168 (Boko Base Item Map from Plats) is a permanent unlock and
+        // must NOT be cleared here.
+        if &NEXT_STAGE_NAME[..5] == b"F200\0" && NEXT_ENTRANCE == 5 {
+            for flag in 160..=167 {
+                flag::unset_storyflag(flag);
+            }
+        }
+
         // If we're about to enter a stage that should have the silent realm effect
         // set it. Otherwise unset it
         if NEXT_STAGE_NAME[0] == b'S' || &NEXT_STAGE_NAME[..7] == b"D003_8\0" {
