@@ -1649,20 +1649,22 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
     async def _cmd_flag(self, flag_type: str = "", operation: str = "", flag_id_str: str = "", extra_str: str = ""):
         """Get, set, or unset a story/scene/item/dungeon flag.
 
-        Usage: /flag <storyflag|sceneflag|itemflag|dungeonflag> <get|set|unset> <id> [value_or_scene]
+        Usage: /flag <storyflag|sceneflag|itemflag|dungeonflag> <get|set|unset> <id|all> [value_or_scene]
         For storyflag/itemflag, the optional 4th argument is a VALUE — use this
         to set counter flags (e.g. ITEMFLAGS::DEKU_SEED_COUNTER = 0x1ED) to a
         specific amount instead of just flipping a boolean bit.
         For sceneflag/dungeonflag, the optional 4th argument is a SCENE INDEX;
         if omitted, the current scene is used.
         Examples:
-          /flag storyflag get 27          - check the Loftwing-gotten flag
-          /flag storyflag set 27          - give the Loftwing-gotten flag
-          /flag storyflag unset 27        - remove the Loftwing-gotten flag
-          /flag itemflag set 0x1ED 99     - set Deku Seed counter to 99
-          /flag itemflag set 0x8D         - set a bug-caught flag (boolean)
-          /flag sceneflag get 5           - check local sceneflag 5 in this room
-          /flag dungeonflag get 3 12      - check dungeonflag 3 in scene 12
+        /flag storyflag set all                 - set all storyflags to 1
+        /flag storyflag set all 0               - set all storyflags to 0
+        /flag storyflag get 27                  - check the Loftwing-gotten flag
+        /flag storyflag set 27                  - give the Loftwing-gotten flag
+        /flag storyflag unset 27                - remove the Loftwing-gotten flag
+        /flag itemflag set 0x1ED 99             - set Deku Seed counter to 99
+        /flag itemflag set 0x8D                 - set a bug-caught flag (boolean)
+        /flag sceneflag get 5                   - check local sceneflag 5 in this room
+        /flag dungeonflag get 3 12              - check dungeonflag 3 in scene 12
         """
         if not isinstance(self.ctx, SSHDContext):
             logger.warning("Not connected to SSHD context")
@@ -1685,6 +1687,20 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
             logger.warning(f"Unknown operation '{operation}'. Available: {', '.join(FLAG_OPS.keys())}")
             return
 
+        # --- Handle "all" keyword ---
+        if flag_id_str.lower() == "all":
+            # Parse optional value (default depends on operation)
+            value = 1 if operation == "set" else 0
+            if extra_str:
+                try:
+                    value = int(extra_str, 0)
+                except ValueError:
+                    logger.warning(f"Invalid value '{extra_str}'. Use decimal or 0x-prefixed hex.")
+                    return
+            await self.ctx._set_all_flags(flag_type, operation, value)
+            return
+
+        # --- Normal single flag operation ---
         try:
             flag_id = int(flag_id_str, 0)
         except ValueError:
@@ -5387,6 +5403,70 @@ class SSHDContext(CommonContext):
 
         logger.debug(f"Warp request timed out: mode={mode} stage={stage_code} layer={layer}")
         return None
+
+    async def _set_all_flags(self, flag_type: str, operation: str, value: int):
+        """Set or unset all flags of the given type to a specific value.
+
+        This is a helper for the '/flag <type> <op> all [value]' command.
+        It iterates over every flag ID (and scene for scene/dungeon flags)
+        and sends a request to the Rust side for each.
+
+        WARNING: Setting all flags indiscriminately can break game progression.
+        Use with extreme caution.
+        """
+        if not self.memory.connected or not self.memory.base_address:
+            logger.warning("Cannot set all flags: emulator not connected.")
+            return
+
+        if flag_type not in FLAG_TYPES:
+            logger.warning(f"Unknown flag type '{flag_type}'")
+            return
+        if operation not in FLAG_OPS:
+            logger.warning(f"Unknown operation '{operation}'")
+            return
+
+        # Define ranges
+        if flag_type == "storyflag":
+            # Storyflags: 0..2047 (128 u16 words × 16 bits)
+            total = 2048
+            logger.info(f"Setting {total} storyflags to {value}...")
+            for flag_id in range(total):
+                await self.request_flag_operation(flag_type, operation, flag_id, value=value)
+                if flag_id % 100 == 0:
+                    logger.debug(f"  storyflag progress: {flag_id}/{total}")
+            logger.info(f"Finished setting all storyflags to {value}.")
+
+        elif flag_type == "itemflag":
+            # Itemflags: 0..1023 (64 u16 words × 16 bits)
+            total = 1024
+            logger.info(f"Setting {total} itemflags to {value}...")
+            for flag_id in range(total):
+                await self.request_flag_operation(flag_type, operation, flag_id, value=value)
+                if flag_id % 100 == 0:
+                    logger.debug(f"  itemflag progress: {flag_id}/{total}")
+            logger.info(f"Finished setting all itemflags to {value}.")
+
+        elif flag_type in ("sceneflag", "dungeonflag"):
+            # Scene/dungeon flags: 26 scenes × 128 flags (0..127 per scene)
+            scenes = 26
+            flags_per_scene = 128
+            total = scenes * flags_per_scene
+            logger.info(f"Setting all {flag_type}s ({total} flags across {scenes} scenes) to {value}...")
+            for scene_idx in range(scenes):
+                for flag_id in range(flags_per_scene):
+                    await self.request_flag_operation(
+                        flag_type, operation, flag_id,
+                        value=value,
+                        scene_index=scene_idx
+                    )
+                # Progress per scene
+                processed = (scene_idx + 1) * flags_per_scene
+                if (scene_idx + 1) % 5 == 0 or scene_idx == scenes - 1:
+                    logger.debug(f"  {flag_type} progress: {processed}/{total} (scene {scene_idx+1}/{scenes})")
+            logger.info(f"Finished setting all {flag_type}s to {value}.")
+
+        else:
+            logger.warning(f"Unsupported flag type for 'all': {flag_type}")
 
     def _update_ap_check_stats(self):
         """
