@@ -85,6 +85,22 @@ BEEDLE_PURCHASE_STORYFLAGS = {
     "105_39": 1961,  "105_40": 1962,                     # Rando-added flows
 }
 
+# Vanilla sold_out storyflags, keyed by SHOP_ITEMS index. Confirmed working
+# via memory testing on 2026-08-29 (matches shopconstants.SOLD_OUT_STORYFLAGS
+# in the sshd-rando-backend folder).
+SOLD_OUT_STORYFLAGS = {
+    20: 942,  # 300R pouch
+    21: 943,  # 600R pouch
+    22: 944,  # 1200R pouch
+    26: 814,  # 800R
+    23: 813,  # 1600R
+    24: 937,  # 100R1
+    28: 938,  # 100R2
+    29: 939,  # 100R3
+    25: 940,  # 50R
+    27: 941,  # 1000R
+}
+
 SHOP_INDEX_TO_LOCATION = {
     20: "Beedle's Airshop - 300 Rupee Item",
     21: "Beedle's Airshop - 600 Rupee Item",
@@ -5018,12 +5034,6 @@ class SSHDContext(CommonContext):
             self._prev_beedle_flags.clear()
         if hasattr(self, '_beedle_dynamic_map'):
             self._beedle_dynamic_map.clear()
-        if hasattr(self, '_shop_entry_snapshots'):
-            self._shop_entry_snapshots.clear()
-        if hasattr(self, '_fa_storyflag_snapshot'):
-            self._fa_storyflag_snapshot = None
-        if hasattr(self, '_static_storyflag_snapshot'):
-            self._static_storyflag_snapshot = None
 
         # Reset health / stamina tracking so we don't get false DeathLink/BreathLink
         self.last_hearts = None
@@ -6237,187 +6247,103 @@ class SSHDContext(CommonContext):
 
     async def check_beedle_shop_storyflags(self):
         """
-        Detect Beedle's Airshop purchases by monitoring multiple signal sources:
-        
-        1. MSBF-injected storyflags (1950-1962) - set_storyflag commands injected
-           into 105-Terry.msbf purchase flows at build time, after the start node.
-        2. Vanilla sold_out storyflags from SHOP_ITEMS[N]+0x52 (813-944) - set by
-           the Rust ASM hooks if they fire.
-        3. SHOP_ITEMS entry byte-level diffs - detects any field change in entries.
-        
-        Storyflags: stored as [u16; 128]. Storyflag N -> word[N//16] bit (N%16).
+        Detect Beedle's Airshop purchases via the vanilla sold_out storyflags
+        (SOLD_OUT_STORYFLAGS, confirmed working by testing on 2026-08-29).
+
+        These flag IDs can't be read reliably by poking the FA/STATIC
+        storyflag byte arrays directly from Python - some flag IDs are
+        multi-bit counters, and only the game's own FlagMgr code
+        (rust-additions/src/flag.rs) knows which are plain booleans vs.
+        counters (see request_flag_operation()'s docstring; this is the
+        same mechanism the "/flag storyflag get" debug command uses, which
+        is how the 0->1 transition on purchase was confirmed in testing).
+        So this asks the Rust side for each flag's value instead of
+        computing an offset ourselves.
+
+        Each request is a real round-trip into the game (about a frame),
+        so to avoid stalling the 10 Hz update_game_state() loop for the
+        rest of the game, we only actually poll Rust:
+          - once on the very first call, regardless of stage (to recover
+            already-purchased items, e.g. after a reconnect), and
+          - afterwards, only while the player is in Beedle's Airshop
+            (stage F002r), throttled to once per second.
         """
-        if not self.memory.connected or not self.memory.base_address:
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
             return
-        
+
         # ── One-time initialisation ──────────────────────────────────
         if not hasattr(self, '_prev_beedle_flags'):
             self._prev_beedle_flags = {}
             self._beedle_flags_initializing = True
-            self._fa_storyflag_snapshot = None
-            self._static_storyflag_snapshot = None
-            self._beedle_dynamic_map = {}           # storyflag -> location_name
-            self._shop_entry_snapshots = {}         # idx -> bytes (0x54 per entry)
-            
-            abs_fa = self.memory.base_address + OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
-            abs_static = self.memory.base_address + OFFSET_STORY_FLAGS_STATIC
-            logger.debug(f"[Beedle] FA Storyflags : 0x{abs_fa:X}")
-            logger.debug(f"[Beedle] STATIC Storyflags: 0x{abs_static:X}")
-            logger.debug(f"[Beedle] (base=0x{self.memory.base_address:X})")
-            
-            # ---- Build storyflag -> location mapping from SHOP_ITEMS ----
-            logger.debug("[Beedle] Reading SHOP_ITEMS for Beedle items (indices 20-29)...")
-            try:
-                for idx in range(20, 30):
-                    location = SHOP_INDEX_TO_LOCATION.get(idx)
-                    if not location:
-                        continue
-                    
-                    # Read sold_out_storyflag (+0x52)
-                    sf_offset = OFFSET_SHOP_ITEMS + idx * SHOP_ITEM_SIZE + SHOP_ITEM_SOLD_OUT_SF_FIELD
-                    sf_data = self.memory.read_bytes(sf_offset, 2)
-                    sold_out_sf = int.from_bytes(sf_data, 'little') if sf_data and len(sf_data) == 2 else 0
-                    
-                    # Read event_entrypoint (+0x10)
-                    ep_offset = OFFSET_SHOP_ITEMS + idx * SHOP_ITEM_SIZE + SHOP_ITEM_EVENT_EP_FIELD
-                    ep_data = self.memory.read_bytes(ep_offset, 2)
-                    ep_val = int.from_bytes(ep_data, 'little') if ep_data and len(ep_data) == 2 else 0
-                    
-                    # Convert entrypoint to FEN1 name and look up MSBF-injected storyflag
-                    ep_str = str(ep_val)
-                    fen1_name = f"{ep_str[:3]}_{ep_str[3:]}" if len(ep_str) >= 4 else None
-                    msbf_sf = BEEDLE_PURCHASE_STORYFLAGS.get(fen1_name) if fen1_name else None
-                    
-                    # Map BOTH storyflag sources to this location
-                    if sold_out_sf > 0 and sold_out_sf != 0xFFFF:
-                        self._beedle_dynamic_map[sold_out_sf] = location
-                    if msbf_sf:
-                        self._beedle_dynamic_map[msbf_sf] = location
-                    
-                    logger.debug(f"[Beedle] SHOP_ITEMS[{idx}] ep={ep_val} fen1={fen1_name} "
-                                f"msbf_sf={msbf_sf} sold_out_sf={sold_out_sf} -> {location}")
-                    
-                    # Read full entry for byte-level diffing
-                    entry_offset = OFFSET_SHOP_ITEMS + idx * SHOP_ITEM_SIZE
-                    entry_data = self.memory.read_bytes(entry_offset, SHOP_ITEM_SIZE)
-                    if entry_data and len(entry_data) == SHOP_ITEM_SIZE:
-                        self._shop_entry_snapshots[idx] = entry_data
-                
-                logger.debug(f"[Beedle] Dynamic mapping built: {len(self._beedle_dynamic_map)} storyflags")
-                for sf, loc in sorted(self._beedle_dynamic_map.items()):
-                    logger.debug(f"[Beedle]   sf{sf} -> {loc}")
-                    
-            except Exception as e:
-                logger.warning(f"[Beedle] Failed to build dynamic mapping: {e}")
-                import traceback; traceback.print_exc()
-        
-        # ── Read storyflag arrays ────────────────────────────────────
-        fa_storyflags_offset = OFFSET_SAVEFILE_A + OFFSET_FA_STORYFLAGS
-        fa_raw = self.memory.read_bytes(fa_storyflags_offset, 256)
-        static_raw = self.memory.read_bytes(OFFSET_STORY_FLAGS_STATIC, 256)
-        
-        # ── Diagnostic: log ANY FA storyflag changes ─────────────────
-        if fa_raw and len(fa_raw) == 256:
-            if self._fa_storyflag_snapshot is not None:
-                for i in range(128):
-                    old_val = int.from_bytes(self._fa_storyflag_snapshot[i*2:i*2+2], 'little')
-                    new_val = int.from_bytes(fa_raw[i*2:i*2+2], 'little')
-                    if old_val != new_val:
-                        diff = old_val ^ new_val
-                        changed_bits = []
-                        for b in range(16):
-                            if diff & (1 << b):
-                                sf_num = i * 16 + b
-                                was = (old_val >> b) & 1
-                                now = (new_val >> b) & 1
-                                changed_bits.append(f"sf{sf_num}:{was}->{now}")
-                        logger.debug(f"[BeedleScan] FA storyflag u16[{i}] changed: "
-                                    f"0x{old_val:04X}->0x{new_val:04X}  ({', '.join(changed_bits)})")
-            self._fa_storyflag_snapshot = fa_raw
-        
-        # ── Diagnostic: log ANY STATIC storyflag changes ─────────────
-        if static_raw and len(static_raw) == 256:
-            if self._static_storyflag_snapshot is not None:
-                for i in range(128):
-                    old_val = int.from_bytes(self._static_storyflag_snapshot[i*2:i*2+2], 'little')
-                    new_val = int.from_bytes(static_raw[i*2:i*2+2], 'little')
-                    if old_val != new_val:
-                        diff = old_val ^ new_val
-                        changed_bits = []
-                        for b in range(16):
-                            if diff & (1 << b):
-                                sf_num = i * 16 + b
-                                was = (old_val >> b) & 1
-                                now = (new_val >> b) & 1
-                                changed_bits.append(f"sf{sf_num}:{was}->{now}")
-                        logger.debug(f"[BeedleScan] STATIC storyflag u16[{i}] changed: "
-                                    f"0x{old_val:04X}->0x{new_val:04X}  ({', '.join(changed_bits)})")
-            self._static_storyflag_snapshot = static_raw
-        
-        # ── Diagnostic: SHOP_ITEMS byte-level diff ───────────────────
-        for idx in range(20, 30):
-            entry_offset = OFFSET_SHOP_ITEMS + idx * SHOP_ITEM_SIZE
-            entry_data = self.memory.read_bytes(entry_offset, SHOP_ITEM_SIZE)
-            if entry_data and len(entry_data) == SHOP_ITEM_SIZE:
-                old_data = self._shop_entry_snapshots.get(idx)
-                if old_data and old_data != entry_data:
-                    # Find changed bytes
-                    changes = []
-                    for off in range(SHOP_ITEM_SIZE):
-                        if old_data[off] != entry_data[off]:
-                            changes.append(f"+0x{off:02X}:0x{old_data[off]:02X}->0x{entry_data[off]:02X}")
-                    location = SHOP_INDEX_TO_LOCATION.get(idx, "?")
-                    logger.debug(f"[BeedleShopItem] SHOP_ITEMS[{idx}] ({location}) bytes changed: {', '.join(changes)}")
-                self._shop_entry_snapshots[idx] = entry_data
-        
+            self._last_beedle_poll_time = 0.0
+
+        # storyflag -> location_name, built from the confirmed-working
+        # SOLD_OUT_STORYFLAGS table (see SHOP_INDEX_TO_LOCATION for the
+        # shop-index -> AP location mapping). Rebuilt whenever empty (e.g.
+        # after check_beedle_shop_storyflags's reset handler clears it on
+        # file load) since it's cheap, static data - no memory reads needed.
+        if not getattr(self, '_beedle_dynamic_map', None):
+            self._beedle_dynamic_map = {
+                storyflag: SHOP_INDEX_TO_LOCATION[idx]
+                for idx, storyflag in SOLD_OUT_STORYFLAGS.items()
+                if idx in SHOP_INDEX_TO_LOCATION
+            }
+            logger.debug(f"[Beedle] Storyflag mapping built: {len(self._beedle_dynamic_map)} storyflags")
+            for sf, loc in sorted(self._beedle_dynamic_map.items()):
+                logger.debug(f"[Beedle]   sf{sf} -> {loc}")
+
+        # ── Throttle: only pay for AP_FLAG_REQUEST round-trips when it ──
+        # ── matters (first call, or while actually in the shop) ─────────
+        now = time.time()
+        in_shop = self.current_stage == "F002r"
+        if not self._beedle_flags_initializing:
+            if not in_shop:
+                return
+            if now - self._last_beedle_poll_time < 1.0:
+                return
+        self._last_beedle_poll_time = now
+
+
         # ── Check mapped storyflags for purchases ────────────────────
-        for storyflag_num, location_name in self._beedle_dynamic_map.items():
+        for storyflag_num, location_name in list(self._beedle_dynamic_map.items()):
             if location_name not in LOCATION_TABLE:
                 continue
             location_code = LOCATION_TABLE[location_name].code
             if location_code in self.checked_locations:
                 continue
-            
-            u16_index = storyflag_num // 16
-            bit_offset = storyflag_num % 16
-            
+
             try:
-                flag_state = 0
-                source = "?"
-                if fa_raw and len(fa_raw) == 256:
-                    u16_val = int.from_bytes(fa_raw[u16_index*2:u16_index*2+2], 'little')
-                    flag_state = (u16_val >> bit_offset) & 1
-                    source = "FA"
-                
-                if flag_state == 0 and static_raw and len(static_raw) == 256:
-                    u16_val = int.from_bytes(static_raw[u16_index*2:u16_index*2+2], 'little')
-                    flag_state = (u16_val >> bit_offset) & 1
-                    source = "STATIC"
-                
-                prev_state = self._prev_beedle_flags.get(storyflag_num, 0)
-                
-                if self._beedle_flags_initializing:
-                    self._prev_beedle_flags[storyflag_num] = flag_state
-                    if flag_state == 1:
-                        if location_code not in self.checked_locations:
-                            self.checked_locations.add(location_code)
-                            logger.debug(f"[BeedleInit] Recovering: {location_name} (sf{storyflag_num}, {source})")
-                elif flag_state == 1 and prev_state == 0:
-                    self.checked_locations.add(location_code)
-                    logger.debug(f"[Beedle] Location checked: {location_name} (sf{storyflag_num}, detected in {source})")
-                    # Trigger sword/beetle upgrade if this is a local progressive item.
-                    if self._location_has_own_sword(location_code):
-                        self._update_sword_storyflags()
-                    elif location_code in self.beetle_location_codes:
-                        self._update_beetle_storyflags()
-                    self.update_tracker_state()
-                    self._prev_beedle_flags[storyflag_num] = flag_state
-                else:
-                    self._prev_beedle_flags[storyflag_num] = flag_state
-                    
+                flag_value = await self.request_flag_operation(
+                    "storyflag", "get", storyflag_num, timeout=0.3
+                )
             except Exception as e:
-                logger.debug(f"Error reading Beedle storyflag {storyflag_num}: {e}")
-        
+                logger.debug(f"Error querying Beedle storyflag {storyflag_num}: {e}")
+                continue
+
+            if flag_value is None:
+                continue
+
+            flag_state = 1 if flag_value else 0
+            prev_state = self._prev_beedle_flags.get(storyflag_num, 0)
+
+            if self._beedle_flags_initializing:
+                self._prev_beedle_flags[storyflag_num] = flag_state
+                if flag_state == 1 and location_code not in self.sent_locations:
+                    self.checked_locations.add(location_code)
+                    logger.debug(f"[BeedleInit] Recovering: {location_name} (sf{storyflag_num})")
+            elif flag_state == 1 and prev_state == 0:
+                self.checked_locations.add(location_code)
+                logger.debug(f"[Beedle] Location checked: {location_name} (sf{storyflag_num})")
+                # Trigger sword/beetle upgrade if this is a local progressive item.
+                if self._location_has_own_sword(location_code):
+                    self._update_sword_storyflags()
+                elif location_code in self.beetle_location_codes:
+                    self._update_beetle_storyflags()
+                self.update_tracker_state()
+                self._prev_beedle_flags[storyflag_num] = flag_state
+            else:
+                self._prev_beedle_flags[storyflag_num] = flag_state
+
         # Clear initialization flag after first complete poll
         if self._beedle_flags_initializing:
             self._beedle_flags_initializing = False

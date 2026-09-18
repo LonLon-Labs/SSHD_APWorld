@@ -118,29 +118,6 @@ SOLD_OUT_STORYFLAGS = {
     27: 941,  # 1000R
 }
 
-# Storyflags injected into 105-Terry.msbf purchase flows for AP client detection.
-# The vanilla storyflag-setting code was replaced by rando ASM, and the replacement
-# (handle_shop_traps) never fires for Beedle because the MSBF event system handles
-# the entire purchase flow through dAcShopSample base class, bypassing subclass vtable.
-# Fix: inject set_storyflag commands directly into each MSBF purchase flow at build time.
-# The AP client reads SHOP_ITEMS[N].event_entrypoint from memory, converts to a FEN1
-# name, and looks up the corresponding storyflag to detect purchases dynamically.
-BEEDLE_PURCHASE_STORYFLAGS = {
-    "105_05": 1950,   # Pouch purchase flow 1
-    "105_08": 1951,   # Pouch purchase flow 2
-    "105_09": 1952,   # Pouch purchase flow 3
-    "105_31": 1953,   # Non-pouch purchase flow 1
-    "105_32": 1954,   # Non-pouch purchase flow 2
-    "105_33": 1955,   # Non-pouch purchase flow 3
-    "105_34": 1956,   # Non-pouch purchase flow 4
-    "105_35": 1957,   # Non-pouch purchase flow 5
-    "105_36": 1958,   # Non-pouch purchase flow 6
-    "105_37": 1959,   # Non-pouch purchase flow 7
-    "105_38": 1960,   # Non-pouch purchase flow 8
-    "105_39": 1961,   # Rando-added: Second 100R Item
-    "105_40": 1962,   # Rando-added: Third 100R Item
-}
-
 # Shop index to AP location name (for client-side mapping)
 SHOP_INDEX_TO_LOCATION = {
     20: "Beedle's Airshop - 300 Rupee Item",

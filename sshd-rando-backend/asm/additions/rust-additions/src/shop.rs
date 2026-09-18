@@ -6,6 +6,7 @@ use crate::actor;
 use crate::debug;
 use crate::flag;
 use crate::item;
+use crate::item::LAST_AP_ITEM_FLAG_ID;
 
 use core::arch::asm;
 use core::ffi::{c_char, c_void};
@@ -230,6 +231,9 @@ pub extern "C" fn set_shop_display_height() -> f32 {
                     display_height_offset = -23.0f32;
                 }
             },
+            flag::ITEMFLAGS::ARCHIPELAGO_ITEM => {
+                display_height_offset = -40.0f32;
+            },
             _ => {},
         }
 
@@ -286,6 +290,19 @@ pub extern "C" fn handle_shop_traps() {
         let sf = (*shop_item).sold_out_storyflag;
         if sf != 0 && sf != 0xFFFF {
             flag::set_storyflag(sf);
+
+            // Pre-set LAST_AP_ITEM_FLAG_ID so that if this slot holds another
+            // player's item (itemid 216), the item-get textbox (cmd 81) can
+            // look up and display the real item/player name instead of the
+            // generic "Archipelago Item for another player" text.
+            //
+            // Beedle shop items are identified by sold_out_storyflag rather
+            // than a normal AP custom_flag (real custom_flag values only use
+            // bits 0-9), so bit 15 is set here to namespace these entries and
+            // guarantee they can never collide with a real custom_flag_id
+            // written for a non-shop location. __init__.py encodes Beedle
+            // ap_item_info entries with the matching 0x8000 | storyflag key.
+            core::ptr::write_volatile(core::ptr::addr_of_mut!(LAST_AP_ITEM_FLAG_ID), 0x8000 | sf);
         }
     }
 }

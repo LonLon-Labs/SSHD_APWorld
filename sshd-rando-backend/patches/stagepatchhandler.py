@@ -1147,11 +1147,26 @@ class StagePatchHandler:
                 # This guarantees Archipelago network items always have their
                 # models available regardless of whether the room has local
                 # randomized check patches.
+                #
+                # IMPORTANT: the room's in-game ARCN slot table has a limited
+                # capacity (see _SKIP_AP_OARC_STAGES above - exceeding it can
+                # even crash on some stages). Building the final list from a
+                # Python set and converting back with list() gives a
+                # hash-randomized order that varies between generations, so
+                # if a room's total OARC count ever exceeds that capacity,
+                # WHICH oarcs get silently dropped becomes non-deterministic -
+                # this is why the Archipelago Item model sometimes displayed
+                # correctly and sometimes fell back to the default icon.
+                # Sorting keeps the result stable across runs, and puts
+                # ArchipelagoItem / ArchipelagoItem2 (both starting with 'A')
+                # near the front of the list, ahead of the many vanilla
+                # "Get..." oarc names, so they're the last to be dropped if
+                # a room's OARC count ever does exceed the engine's limit.
                 if stage_name not in _SKIP_AP_OARC_STAGES:
                     l0 = room_bzs["LAY "]["l0"]
                     l0_arcn = set(l0.get("ARCN", []))
                     l0_arcn |= AP_ITEM_OARC_NAMES
-                    l0["ARCN"] = list(l0_arcn)
+                    l0["ARCN"] = sorted(l0_arcn)
 
                 nextid = get_highest_object_id(bzs=room_bzs) + 1
 

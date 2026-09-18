@@ -3036,15 +3036,14 @@ class SSHDWorld(World):
                       f"{excluded_count} locations - filler/trap only")
 
         # ── Beedle's Airshop item restrictions ──────────────────────────────
-        # The client cannot detect purchases of items belonging to other
-        # players (which become "Archipelago Item" ID 216 in the ROM).
-        # When beedle_shop_shuffle is NOT vanilla (i.e. Beedle locations
-        # exist in the AP world), restrict what can be placed there:
-        #   - "randomized": only this player's own items (blocks cross-world)
-        #   - "junk_only":  only this player's own filler/junk items
+        # When beedle_shop_shuffle is "junk_only", restrict those locations to
+        # this player's own filler/junk items (a game-design choice, not a
+        # technical limitation). "randomized" now allows any item, including
+        # other players' items — purchase detection reads the flag through
+        # the game's own FlagMgr code (request_flag_operation/AP_FLAG_REQUEST),
+        # so cross-world items are detected correctly.
         beedle_shop_val = self.options.beedle_shop_shuffle.value  # 0=vanilla, 1=junk_only, 2=randomized
         if beedle_shop_val != 0:  # Not vanilla — Beedle locations exist
-            player = self.player
             beedle_count = 0
             for region in self.multiworld.regions:
                 if region.player != self.player:
@@ -3052,9 +3051,6 @@ class SSHDWorld(World):
                 for location in region.locations:
                     loc_data = LOCATION_TABLE.get(location.name)
                     if loc_data and "Beedle's Airshop" in loc_data.types:
-                        # Block cross-world items (they become undetectable "Archipelago Item" in ROM)
-                        location.item_rule = lambda item, p=player: item.player == p
-                        
                         if beedle_shop_val == 1:  # junk_only
                             # Only allow filler/junk items — no progression or useful
                             location.progress_type = LocationProgressType.EXCLUDED
@@ -3064,8 +3060,8 @@ class SSHDWorld(World):
             mode_name = "junk_only" if beedle_shop_val == 1 else "randomized"
             if beedle_count:
                 print(f"[__init__.py] Applied Beedle restrictions ({mode_name}): "
-                      f"{beedle_count} locations — own-player items only"
-                      + (", junk/filler only" if beedle_shop_val == 1 else ""))
+                      f"{beedle_count} locations"
+                      + (" — junk/filler only" if beedle_shop_val == 1 else " — any item allowed"))
         
         # ── Bug/Material chest restriction ──────────────────────────────────
         # Bugs and materials crash the game when placed in chests.
@@ -3235,6 +3231,27 @@ class SSHDWorld(World):
         # Build AP item info for cross-world items (item 216 locations)
         # Maps custom_flag_id -> {"item": item_name, "player": player_name}
         # This lets the client tell the game what item name and player name to display
+        #
+        # Beedle's Airshop locations are identified in-game by their vanilla
+        # sold_out_storyflag rather than a normal AP custom_flag (they never
+        # get one - see the shop-restrictions comment above), so they get a
+        # separate flag_id namespace here: bit 15 set, storyflag in the low
+        # bits. Real custom_flag_ids only ever use bits 0-9, so this can
+        # never collide. shop.rs's handle_shop_traps() writes
+        # LAST_AP_ITEM_FLAG_ID with the same 0x8000 | storyflag encoding at
+        # purchase time.
+        BEEDLE_SOLD_OUT_STORYFLAGS = {
+            "Beedle's Airshop - 300 Rupee Item": 942,
+            "Beedle's Airshop - 600 Rupee Item": 943,
+            "Beedle's Airshop - 1200 Rupee Item": 944,
+            "Beedle's Airshop - 800 Rupee Item": 814,
+            "Beedle's Airshop - 1600 Rupee Item": 813,
+            "Beedle's Airshop - First 100 Rupee Item": 937,
+            "Beedle's Airshop - Second 100 Rupee Item": 938,
+            "Beedle's Airshop - Third 100 Rupee Item": 939,
+            "Beedle's Airshop - 50 Rupee Item": 940,
+            "Beedle's Airshop - 1000 Rupee Item": 941,
+        }
         ap_item_info = {}
         for location in self.multiworld.get_locations(self.player):
             if location.address is not None and location.item:
@@ -3242,10 +3259,16 @@ class SSHDWorld(World):
                 from .Items import ITEM_TABLE
                 is_own_item = (location.item.name in ITEM_TABLE and location.item.player == self.player)
                 if not is_own_item:
-                    # Find the custom_flag_id for this location
+                    # Find the flag_id for this location: a custom_flag_id for
+                    # ordinary locations, or the namespaced storyflag encoding
+                    # for Beedle's Airshop locations.
                     loc_code = location.address
+                    flag_id = None
                     if loc_code in location_to_custom_flag:
                         flag_id = location_to_custom_flag[loc_code]
+                    elif location.name in BEEDLE_SOLD_OUT_STORYFLAGS:
+                        flag_id = 0x8000 | BEEDLE_SOLD_OUT_STORYFLAGS[location.name]
+                    if flag_id is not None:
                         player_name = self.multiworld.get_player_name(location.item.player)
                         ap_item_info[flag_id] = {
                             "item": location.item.name,

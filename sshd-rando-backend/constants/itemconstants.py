@@ -497,9 +497,9 @@ ITEM_STORYFLAGS = {
         911,  # True Master Sword
     ],
     PROGRESSIVE_MITTS: [904, 905],  # Digging Mitts, Mogma Mitts
-    PROGRESSIVE_BEETLE: [912, 913, 942, 943],  # Beetle, Heetle, Queetle, Teetle
+    PROGRESSIVE_BEETLE: [912, 913, 955, 956],  # Beetle, Heetle, Queetle, Teetle
     PROGRESSIVE_WALLET: [915, 916, 917, 918],  # Medium, Big, Giant, Tycoon
-    PROGRESSIVE_BOW: [944, 945, 946],  # Bow, Iron, Sacred
+    PROGRESSIVE_BOW: [954, 945, 946],  # Bow, Iron, Sacred
     PROGRESSIVE_SLINGSHOT: [947, 948],  # Slingshot, Scatershot
     PROGRESSIVE_BUG_NET: [949, 950],  # Bug Net, Big Bug Net
     PROGRESSIVE_POUCH: [30, 932, 932, 932, 932],  # Adventure Pouch, Pouch Expansion * 4
