@@ -1396,6 +1396,7 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         "beetle":          "cheat_infinite_beetle",
         "loftwing":        "cheat_infinite_loftwing",
         "no_electric_stun": "cheat_no_electric_stun",
+        "no_enemy_damage": "cheat_no_enemy_damage",
     }
     
     def __init__(self, ctx: CommonContext):
@@ -1511,7 +1512,8 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         """Toggle a cheat on/off, or set hovercraft sustain velocity.
         Usage: /cheat <name>  OR  /cheat hovercraft <velocity>
         Names: health, stamina, ammo, bugs, materials, shield,
-               skyward_strike, rupees, moon_jump, hovercraft, beetle, loftwing
+               skyward_strike, rupees, moon_jump, hovercraft, beetle, loftwing,
+               no_electric_stun, no_enemy_damage
         Example: /cheat hovercraft 2.5  (slow rise; 1.85 = stable hover)"""
         if not isinstance(self.ctx, SSHDContext):
             logger.warning("Not connected to SSHD context")
@@ -1977,6 +1979,7 @@ class SSHDContext(CommonContext):
         self.cheat_infinite_beetle: bool = False
         self.cheat_infinite_loftwing: bool = False
         self.cheat_no_electric_stun: bool = False
+        self.cheat_no_enemy_damage: bool = False
         self.cheat_speed_multiplier: float = 1.0  # 1.0 = normal
         self.default_forward_speed: Optional[float] = None  # Cached normal speed
         self.beetle_patch_applied: bool = False  # Track if beetle code patch was written
@@ -2127,6 +2130,7 @@ class SSHDContext(CommonContext):
         self.cheat_infinite_beetle          = bool(game_section.get('cheat_infinite_beetle', False))
         self.cheat_infinite_loftwing        = bool(game_section.get('cheat_infinite_loftwing', False))
         self.cheat_no_electric_stun         = bool(game_section.get('cheat_no_electric_stun', False))
+        self.cheat_no_enemy_damage          = bool(game_section.get('cheat_no_enemy_damage', False))
         self.beetle_patch_applied = False
 
         speed_raw = game_section.get('cheat_speed_multiplier', 10)
@@ -2147,6 +2151,7 @@ class SSHDContext(CommonContext):
         if self.cheat_infinite_beetle:          active.append("Infinite Beetle")
         if self.cheat_infinite_loftwing:        active.append("Infinite Loftwing")
         if self.cheat_no_electric_stun:         active.append("No Electric Stun")
+        if self.cheat_no_enemy_damage:          active.append("No Enemy Damage")
         if self.cheat_speed_multiplier != 1.0:  active.append(f"Speed x{self.cheat_speed_multiplier:.1f}")
         if active:
             logger.info(f"Cheats loaded from YAML: {', '.join(active)}")
@@ -3050,6 +3055,7 @@ class SSHDContext(CommonContext):
             self.cheat_infinite_beetle = bool(slot_data.get("option_cheat_infinite_beetle", 0))
             self.cheat_infinite_loftwing = bool(slot_data.get("option_cheat_infinite_loftwing", 0))
             self.cheat_no_electric_stun = bool(slot_data.get("option_cheat_no_electric_stun", 0))
+            self.cheat_no_enemy_damage = bool(slot_data.get("option_cheat_no_enemy_damage", 0))
             self.beetle_patch_applied = False  # Reset so patch is re-applied on reconnect
             # Speed multiplier: stored as integer x10 (10=1.0x, 20=2.0x, etc.)
             speed_raw = slot_data.get("option_cheat_speed_multiplier", 10)
@@ -3069,6 +3075,7 @@ class SSHDContext(CommonContext):
             if self.cheat_infinite_beetle: active_cheats.append("Infinite Beetle")
             if self.cheat_infinite_loftwing: active_cheats.append("Infinite Loftwing")
             if self.cheat_no_electric_stun: active_cheats.append("No Electric Stun")
+            if self.cheat_no_enemy_damage: active_cheats.append("No Enemy Damage")
             if self.cheat_speed_multiplier != 1.0: active_cheats.append(f"Speed x{self.cheat_speed_multiplier:.1f}")
             if active_cheats:
                 logger.info(f"Cheats enabled: {', '.join(active_cheats)}")
@@ -5072,6 +5079,7 @@ class SSHDContext(CommonContext):
           offset 5: hovercraft (u8 bool)
           offset 6: _pad [u8; 2]
           offset 8: hover_vel_y_bits (u32, f32 bits) — lower-clamp for vel_y
+          offset 28: no_enemy_damage (u8 bool) — blocks enemy damage + knockback
                 Spawn requests now use AP_SPAWN_REQUEST (magic "SA\\x00\\x01").
         """
         if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
@@ -5095,6 +5103,9 @@ class SSHDContext(CommonContext):
             # +8: hover_vel_y as f32 bits (4 bytes)
             vel_bits = struct.pack('<f', self.cheat_hovercraft_vel_y)
             self.memory.pm.write_bytes(flags_addr + 8, vel_bits, 4)
+            # +28: no_enemy_damage (u8 bool)
+            no_enemy_damage_byte = bytes([1 if self.cheat_no_enemy_damage else 0])
+            self.memory.pm.write_bytes(flags_addr + 28, no_enemy_damage_byte, 1)
         except Exception as e:
             logger.debug(f"Could not write cheat flags: {e}")
             # If the write failed with an access violation (ERROR_NOACCESS / 998)

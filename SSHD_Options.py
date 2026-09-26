@@ -1742,6 +1742,16 @@ class CheatNoElectricStun(Toggle):
     display_name = "No Electric Stun"
 
 
+class CheatNoEnemyDamage(Toggle):
+    """
+    When enabled, enemies can no longer damage or knock back Link.
+    The hit reaction (stagger, knockback, and health loss) is cancelled
+    outright as soon as it starts, rather than simply refilling health
+    afterward like Infinite Health does.
+    """
+    display_name = "No Enemy Damage"
+
+
 class CheatSpeedMultiplier(Range):
     """
     Multiplies Link's forward movement speed.
@@ -2004,6 +2014,7 @@ class SSHDOptions(PerGameCommonOptions):
     cheat_infinite_beetle: CheatInfiniteBeetle
     cheat_infinite_loftwing: CheatInfiniteLoftwing
     cheat_no_electric_stun: CheatNoElectricStun
+    cheat_no_enemy_damage: CheatNoEnemyDamage
     cheat_speed_multiplier: CheatSpeedMultiplier
     
     # Archipelago
@@ -2230,6 +2241,7 @@ sshd_option_groups = [
         CheatInfiniteBeetle,
         CheatInfiniteLoftwing,
         CheatNoElectricStun,
+        CheatNoEnemyDamage,
         CheatSpeedMultiplier,
     ], start_collapsed=True),
     OptionGroup("Archipelago", [

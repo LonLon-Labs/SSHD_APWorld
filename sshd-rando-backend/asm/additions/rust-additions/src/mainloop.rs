@@ -117,6 +117,7 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     cheats::handle_infinite_rupees();
     cheats::handle_infinite_loftwing();
     cheats::handle_no_electric_stun();
+    cheats::handle_no_enemy_damage();
     cheats::handle_speed_multiplier();
 
     // Commands from client

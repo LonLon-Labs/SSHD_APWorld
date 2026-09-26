@@ -43,6 +43,8 @@ extern "C" {
 //   +22  spawn_demise_request bool     — one-shot trigger from /sapwn_demise
 //   +23  _pad2                [u8; 1]
 //   +24  speed_multiplier_bits u32     — f32 bits; 0 or 0x3F800000 = disabled
+//   +28  no_enemy_damage      bool     — blocks enemy damage + knockback
+// reactions
 
 #[repr(C, packed(1))]
 pub struct ApCheatFlags {
@@ -64,8 +66,9 @@ pub struct ApCheatFlags {
     pub spawn_demise_request:    bool,    // +22 one-shot manual spawn trigger
     pub _pad2:                   [u8; 1], // +23 alignment
     pub speed_multiplier_bits:   u32,     // +24 f32 bits; 0 or 0x3F800000 = disabled
+    pub no_enemy_damage:         bool,    // +28 blocks enemy damage + knockback
 }
-assert_eq_size!([u8; 28], ApCheatFlags);
+assert_eq_size!([u8; 29], ApCheatFlags);
 
 #[no_mangle]
 pub static mut AP_CHEAT_FLAGS: ApCheatFlags = ApCheatFlags {
@@ -87,6 +90,7 @@ pub static mut AP_CHEAT_FLAGS: ApCheatFlags = ApCheatFlags {
     spawn_demise_request:    false,
     _pad2:                   [0u8; 1],
     speed_multiplier_bits:   0u32,
+    no_enemy_damage:         false,
 };
 
 // Python locates this struct by scanning for magic bytes "SA\x00\x01".
@@ -141,6 +145,13 @@ static mut PREV_X_HELD: bool = false;
 // continuous blur at 60 Hz.  At 60 Hz, interval=6 → 10 steps/sec.
 static mut TURN_FRAME: u8 = 0;
 const TURN_INTERVAL: u8 = 6;
+
+// Health value captured every frame the player is NOT in an enemy hit/
+// knockback reaction.  When no_enemy_damage is enabled and the player then
+// enters one of those reaction states, this cached value is written back so
+// the single hit that triggered the reaction is undone regardless of how
+// much damage it dealt.
+static mut PRE_HIT_HEALTH: u16 = 0;
 
 // ─── Public API
 // ──────────────────────────────────────────────────────────────
@@ -625,6 +636,81 @@ pub fn handle_no_electric_stun() {
             || action == player::PLAYER_ACTIONS::ELECTRICUTED_MAYBE
         {
             (*PLAYER_PTR).current_action = player::PLAYER_ACTIONS::HIT_BY_ENEMY;
+        }
+    }
+}
+
+/// Removes the player's ability to be damaged or knocked back by enemies.
+///
+/// Unlike infinite_health (which simply keeps health topped up every frame),
+/// this targets the enemy hit-reaction states directly so the player is
+/// never stunned, thrown backward, or forced through the stagger/recover
+/// animation in the first place - it cancels the reaction outright rather
+/// than just healing afterward.
+///
+/// dPlayer.current_action (player.rs PLAYER_ACTIONS) walks through
+/// HIT_BY_ENEMY -> SMALL_DAMAGE or KNOCK_BACK -> RECOVER when an enemy
+/// connects.  Whenever we see one of those states we:
+///   1. Snap current_action back to IDLE so the hit animation/hitstun ends
+///      immediately.
+///   2. Zero the horizontal knockback velocity applied by the hit (velocity
+///      lives in obj_base_members, inherited from actor::dAcOBasemembers).
+///      Vertical velocity is left alone so gravity/jumping still behaves.
+///   3. Restore health to the last value seen before the hit, since the damage
+///      was already applied to FILE_MGR.FA.current_health (savefile.rs) by the
+///      time current_action changes.
+///   4. Clear damage_cooldown so there's no lingering post-hit invincibility
+///      flash from a hit that effectively never happened.
+pub fn handle_no_enemy_damage() {
+    unsafe {
+        if !AP_CHEAT_FLAGS.no_enemy_damage {
+            return;
+        }
+
+        if PLAYER_PTR.is_null() || FILE_MGR.is_null() {
+            return;
+        }
+
+        // Primary fix: keep the invincibility-frame timer maxed out so the
+        // game's own hit-detection never lets a new hit land in the first
+        // place. u16::MAX frames is ~18 minutes at 60Hz; we re-saturate every
+        // frame anyway so it never actually counts down while this is on.
+        (*PLAYER_PTR).damage_cooldown = u16::MAX;
+        (*PLAYER_PTR).shock_effect_timer = 0;
+
+        let action = (*PLAYER_PTR).current_action;
+        let in_enemy_hit_reaction = action == player::PLAYER_ACTIONS::HIT_BY_ENEMY
+            || action == player::PLAYER_ACTIONS::SMALL_DAMAGE
+            || action == player::PLAYER_ACTIONS::KNOCK_BACK
+            || action == player::PLAYER_ACTIONS::DAMAGE_ELECTRIC
+            || action == player::PLAYER_ACTIONS::ELECTRICUTED_MAYBE
+            || action == player::PLAYER_ACTIONS::RECOVER;
+
+        if !in_enemy_hit_reaction {
+            PRE_HIT_HEALTH = (*FILE_MGR).FA.current_health;
+            return;
+        }
+
+        // Fallback: cancel the hit reaction outright if one still got
+        // through (damage_cooldown wasn't saturated yet).
+        (*PLAYER_PTR).current_action = player::PLAYER_ACTIONS::IDLE;
+
+        // Zero the knockback push. Leave vertical velocity untouched so
+        // falling/jumping physics are unaffected.
+        (*PLAYER_PTR).obj_base_members.velocity.x = 0.0;
+        (*PLAYER_PTR).obj_base_members.velocity.z = 0.0;
+
+        // Add small kick off to exit shock animations, otherwise the player can get
+        // stuck in a loop of being shocked and unable to move.
+        if action == player::PLAYER_ACTIONS::DAMAGE_ELECTRIC
+            || action == player::PLAYER_ACTIONS::ELECTRICUTED_MAYBE
+        {
+            (*PLAYER_PTR).obj_base_members.velocity.y = 105.0;
+        }
+
+        // Undo whatever health the hit took.
+        if PRE_HIT_HEALTH > 0 {
+            (*FILE_MGR).FA.current_health = PRE_HIT_HEALTH;
         }
     }
 }
