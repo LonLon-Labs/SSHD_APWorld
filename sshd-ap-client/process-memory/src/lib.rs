@@ -826,8 +826,258 @@ pub mod windows {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// macOS backend
+// ─────────────────────────────────────────────────────────────────────────
+
+/// Uses the Mach VM APIs (`task_for_pid` + `mach_vm_*`). Note that macOS
+/// only hands out a task port for another process if the caller is root,
+/// or the target is debuggable (`get-task-allow`) and the caller is an
+/// authorized developer-tools process. In practice: run the client with
+/// `sudo`. Emulators shipped with the hardened runtime and without
+/// `get-task-allow` may still refuse, even for root, if SIP applies.
+#[cfg(target_os = "macos")]
+pub mod macos {
+    use super::*;
+    use std::os::raw::c_int;
+    use std::process::Command;
+
+    type MachPort = u32;
+    type KernReturn = i32;
+
+    const VM_REGION_BASIC_INFO_64: c_int = 9;
+    /// `sizeof(vm_region_basic_info_data_64_t) / sizeof(int)`
+    const VM_REGION_BASIC_INFO_COUNT_64: u32 = 9;
+    const VM_PROT_READ: i32 = 1;
+    const VM_PROT_WRITE: i32 = 2;
+    const VM_PROT_EXECUTE: i32 = 4;
+
+    const MIN_SCAN_REGION_SIZE: usize = 1024 * 1024; // 1 MiB, matches Linux/Windows
+
+    extern "C" {
+        static mach_task_self_: MachPort;
+
+        fn task_for_pid(target_tport: MachPort, pid: c_int, t: *mut MachPort) -> KernReturn;
+        fn mach_port_deallocate(task: MachPort, name: MachPort) -> KernReturn;
+        fn mach_vm_region(
+            target_task: MachPort,
+            address: *mut u64,
+            size: *mut u64,
+            flavor: c_int,
+            info: *mut i32,
+            info_cnt: *mut u32,
+            object_name: *mut MachPort,
+        ) -> KernReturn;
+        fn mach_vm_read_overwrite(
+            target_task: MachPort,
+            address: u64,
+            size: u64,
+            data: u64,
+            out_size: *mut u64,
+        ) -> KernReturn;
+        fn mach_vm_write(
+            target_task: MachPort,
+            address: u64,
+            data: usize,
+            data_cnt: u32,
+        ) -> KernReturn;
+    }
+
+    pub struct MacOsProcessMemory {
+        task: MachPort,
+    }
+
+    impl MacOsProcessMemory {
+        pub fn attach(pid: i32) -> MemResult<Self> {
+            let mut task: MachPort = 0;
+            let kr = unsafe { task_for_pid(mach_task_self_, pid, &mut task) };
+            if kr != 0 {
+                return Err(match kr {
+                    // KERN_FAILURE (5) is what task_for_pid returns when
+                    // the security policy refuses; KERN_INVALID_ARGUMENT (4)
+                    // when the pid doesn't exist.
+                    4 => MemError::ProcessNotFound,
+                    5 => MemError::PermissionDenied(format!(
+                        "task_for_pid({pid}) was refused. Run this client with sudo. If that \
+                         still fails, the emulator's hardened runtime / SIP is blocking task \
+                         access."
+                    )),
+                    _ => MemError::Io(io::Error::new(
+                        io::ErrorKind::Other,
+                        format!("task_for_pid({pid}) failed with kern_return {kr}"),
+                    )),
+                });
+            }
+            Ok(MacOsProcessMemory { task })
+        }
+
+        /// Regions worth scanning: readable and at least `MIN_SCAN_REGION_SIZE`.
+        pub fn enumerate_scannable_regions(&mut self) -> MemResult<Vec<MemoryRegion>> {
+            Ok(self
+                .enumerate_regions()?
+                .into_iter()
+                .filter(|r| r.is_readable() && r.size >= MIN_SCAN_REGION_SIZE)
+                .collect())
+        }
+    }
+
+    impl Drop for MacOsProcessMemory {
+        fn drop(&mut self) {
+            unsafe {
+                mach_port_deallocate(mach_task_self_, self.task);
+            }
+        }
+    }
+
+    impl ProcessMemory for MacOsProcessMemory {
+        fn read_bytes(&mut self, address: usize, size: usize) -> MemResult<Vec<u8>> {
+            let mut buf = vec![0u8; size];
+            let mut out: u64 = 0;
+            let kr = unsafe {
+                mach_vm_read_overwrite(
+                    self.task,
+                    address as u64,
+                    size as u64,
+                    buf.as_mut_ptr() as u64,
+                    &mut out,
+                )
+            };
+            if kr != 0 || out as usize != size {
+                return Err(MemError::ShortRead {
+                    addr:     address,
+                    expected: size,
+                    got:      if kr == 0 { out as usize } else { 0 },
+                });
+            }
+            Ok(buf)
+        }
+
+        fn write_bytes(&mut self, address: usize, data: &[u8]) -> MemResult<()> {
+            let kr = unsafe {
+                mach_vm_write(self.task, address as u64, data.as_ptr() as usize, data.len() as u32)
+            };
+            if kr != 0 {
+                return Err(MemError::ShortWrite {
+                    addr:     address,
+                    expected: data.len(),
+                    wrote:    0,
+                });
+            }
+            Ok(())
+        }
+
+        fn enumerate_regions(&mut self) -> MemResult<Vec<MemoryRegion>> {
+            let mut regions = Vec::new();
+            let mut address: u64 = 0;
+            loop {
+                let mut size: u64 = 0;
+                let mut info = [0i32; 12];
+                let mut count: u32 = VM_REGION_BASIC_INFO_COUNT_64;
+                let mut object_name: MachPort = 0;
+                let kr = unsafe {
+                    mach_vm_region(
+                        self.task,
+                        &mut address,
+                        &mut size,
+                        VM_REGION_BASIC_INFO_64,
+                        info.as_mut_ptr(),
+                        &mut count,
+                        &mut object_name,
+                    )
+                };
+                if kr != 0 || size == 0 {
+                    break; // KERN_INVALID_ADDRESS once past the last region
+                }
+                let prot = info[0]; // vm_region_basic_info_64.protection
+                let mut perms = String::new();
+                perms.push(if prot & VM_PROT_READ != 0 { 'r' } else { '-' });
+                perms.push(if prot & VM_PROT_WRITE != 0 { 'w' } else { '-' });
+                perms.push(if prot & VM_PROT_EXECUTE != 0 { 'x' } else { '-' });
+                perms.push('p');
+                regions.push(MemoryRegion {
+                    base: address as usize,
+                    size: size as usize,
+                    perms,
+                    pathname: String::new(),
+                    rss: -1,
+                });
+                address = match address.checked_add(size) {
+                    Some(a) => a,
+                    None => break,
+                };
+            }
+            Ok(regions)
+        }
+
+        /// Override: scan only large readable regions, like the other backends.
+        fn pattern_scan(&mut self, pattern: &[u8]) -> MemResult<Vec<usize>> {
+            const CHUNK: usize = 4 * 1024 * 1024;
+            let mut results = Vec::new();
+            for region in self.enumerate_scannable_regions()? {
+                let mut pos = region.base;
+                let end = region.base + region.size;
+                while pos < end {
+                    let to_read = CHUNK.min(end - pos);
+                    let data = match self.read_bytes(pos, to_read) {
+                        Ok(d) => d,
+                        Err(_) => {
+                            pos += to_read;
+                            continue;
+                        },
+                    };
+                    let mut offset = 0usize;
+                    while let Some(idx) = find_subslice(&data[offset..], pattern) {
+                        let abs_idx = offset + idx;
+                        results.push(pos + abs_idx);
+                        offset = abs_idx + 1;
+                        if offset >= data.len() {
+                            break;
+                        }
+                    }
+                    if to_read == CHUNK {
+                        pos += to_read - pattern.len() + 1;
+                    } else {
+                        pos += to_read;
+                    }
+                }
+            }
+            Ok(results)
+        }
+    }
+
+    /// Find a running process by executable name (case-insensitive,
+    /// basename of the `ps` command path).
+    pub fn find_process_by_names(names: &[&str]) -> Option<i32> {
+        find_processes_by_names(names).first().map(|p| p.0)
+    }
+
+    /// Every matching process (pid + executable name). Uses `ps` rather
+    /// than libproc so there's no extra FFI surface to get wrong.
+    pub fn find_processes_by_names(names: &[&str]) -> Vec<(i32, String)> {
+        let mut found = Vec::new();
+        let Ok(output) = Command::new("ps").args(["-axo", "pid=,comm="]).output() else {
+            return found;
+        };
+        let text = String::from_utf8_lossy(&output.stdout);
+        for line in text.lines() {
+            let line = line.trim_start();
+            let Some((pid_s, comm)) = line.split_once(char::is_whitespace) else { continue };
+            let Ok(pid) = pid_s.parse::<i32>() else { continue };
+            let comm = comm.trim();
+            let exe = comm.rsplit('/').next().unwrap_or(comm);
+            if names.iter().any(|n| exe.eq_ignore_ascii_case(n)) {
+                found.push((pid, exe.to_string()));
+            }
+        }
+        found
+    }
+}
+
 #[cfg(target_os = "linux")]
 pub use linux::{find_process_by_names, find_processes_by_names, LinuxProcessMemory};
+
+#[cfg(target_os = "macos")]
+pub use macos::{find_process_by_names, find_processes_by_names, MacOsProcessMemory};
 
 #[cfg(target_os = "windows")]
 pub use windows::{find_process_by_names, find_processes_by_names, WindowsProcessMemory};

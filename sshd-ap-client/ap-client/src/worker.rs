@@ -99,6 +99,8 @@ use process_memory::{ProcessMemory, SUPPORTED_EMULATOR_NAMES};
 
 #[cfg(target_os = "linux")]
 use process_memory::linux::{find_processes_by_names, LinuxProcessMemory as Backend};
+#[cfg(target_os = "macos")]
+use process_memory::macos::{find_processes_by_names, MacOsProcessMemory as Backend};
 #[cfg(target_os = "windows")]
 use process_memory::windows::{find_processes_by_names, WindowsProcessMemory as Backend};
 
