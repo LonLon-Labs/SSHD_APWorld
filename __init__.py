@@ -90,7 +90,7 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
     temp_deps_path = Path(SSHD_RANDO_TEMP_DIR) / "_bundled_deps"
     
     # Extract sshd-rando-backend AND _bundled_deps from the zip
-    _EXTRACT_PREFIXES = ('sshd/sshd-rando-backend/', 'sshd/_bundled_deps/')
+    _EXTRACT_PREFIXES = ('sshd/sshd-rando-backend/', 'sshd/_bundled_deps/', 'sshd/_bundled_bin/')
     with zipfile.ZipFile(apworld_path, 'r') as zip_file:
         for file_info in zip_file.filelist:
             if not any(file_info.filename.startswith(p) for p in _EXTRACT_PREFIXES):
@@ -98,7 +98,7 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
             # Remove 'sshd/' prefix to get relative path
             relative_path = file_info.filename[5:]  # Remove 'sshd/'
             # Skip bare directory entries
-            if relative_path.rstrip('/') in ('sshd-rando-backend', '_bundled_deps'):
+            if relative_path.rstrip('/') in ('sshd-rando-backend', '_bundled_deps', '_bundled_bin'):
                 continue
             
             target_path = Path(SSHD_RANDO_TEMP_DIR) / relative_path
@@ -111,6 +111,16 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
                 with zip_file.open(file_info.filename) as source:
                     with open(target_path, 'wb') as target:
                         target.write(source.read())
+                # Preserve the executable bit for bundled Rust client
+                # binaries on POSIX — zipfile.extract() doesn't restore
+                # permission bits on its own, and without +x a Linux/macOS
+                # binary would fail to launch even though it's present.
+                if relative_path.startswith('_bundled_bin/') and sys.platform != "win32":
+                    try:
+                        current_mode = os.stat(target_path).st_mode
+                        os.chmod(target_path, current_mode | 0o111)
+                    except OSError:
+                        pass
     
     # Add sshd-rando-backend at highest priority.
     sys.path.insert(0, str(temp_backend_path))
@@ -135,6 +145,7 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
     importlib.invalidate_caches()
 
     SSHD_RANDO_AVAILABLE = True
+    RUST_CLIENT_BIN_DIR = Path(SSHD_RANDO_TEMP_DIR) / "_bundled_bin"
     
     # Register cleanup function to delete temp directory on exit
     def cleanup_temp_dir():
@@ -143,11 +154,15 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
     atexit.register(cleanup_temp_dir)
     
 elif SSHD_RANDO_PATH.exists():
-    # Running from filesystem
+    # Running from filesystem (dev mode) — look for a locally-built Rust
+    # client under sshd-ap-client/dist/ (see build_ap_client.py) rather
+    # than anything extracted from a zip.
     sys.path.insert(0, str(SSHD_RANDO_PATH))
     SSHD_RANDO_AVAILABLE = True
+    RUST_CLIENT_BIN_DIR = Path(__file__).parent / "sshd-ap-client" / "dist"
 else:
     SSHD_RANDO_AVAILABLE = False
+    RUST_CLIENT_BIN_DIR = None
 
 # Version information
 AP_VERSION = [0, 6, 5]
@@ -252,6 +267,115 @@ components.append(
     )
 )
 icon_paths["Skyward Sword HD"] = "ap:worlds.sshd/assets/icon.png"
+
+
+def _rust_platform_tag() -> str:
+    """Matches the tag convention build_ap_client.py uses when staging a
+    binary, so this always looks in the right dist/<tag>/ subdirectory."""
+    import platform as _platform
+    system = _platform.system().lower()
+    machine = _platform.machine().lower()
+    if system == "windows":
+        return "win_amd64"
+    if system == "linux":
+        return "manylinux2014_x86_64"
+    if system == "darwin":
+        return "macosx_11_0_arm64" if machine in ("arm64", "aarch64") else "macosx_10_9_x86_64"
+    return f"{system}_{machine}"
+
+
+def _find_rust_client_binary():
+    """Locates the bundled Rust client binary for the current platform, if
+    one was built and bundled (see build_ap_client.py / build_apworld.py).
+    Returns None if not available — callers should fall back to the Python
+    client in that case."""
+    if RUST_CLIENT_BIN_DIR is None or not RUST_CLIENT_BIN_DIR.exists():
+        return None
+    binary_name = "ap-client.exe" if sys.platform == "win32" else "ap-client"
+    candidate = RUST_CLIENT_BIN_DIR / _rust_platform_tag() / binary_name
+    return candidate if candidate.exists() else None
+
+
+def _run_rust_client_process(*args: str) -> None:
+    """Launches the bundled Rust client binary as a subprocess, translating
+    Archipelago's standard client args into what it expects.
+
+    NOTE: on Linux/macOS, a launcher-spawned process typically has no
+    visible terminal, so the Rust client's interactive "Enter slot name:"
+    prompt (when no slot name is supplied) won't be visible. This works
+    cleanly on Windows (a console is auto-allocated for a console-subsystem
+    child process) but is a known gap elsewhere until this launches with an
+    explicit terminal emulator per-platform, or the Rust client grows a way
+    to take the slot name as a flag from a generated connection file.
+    """
+    client_args = list(args) if args else []
+
+    # Patch-only mode (.apsshd) isn't something the Rust client does yet —
+    # fall back to the Python installer for that specific case.
+    patch_file = next((a for a in client_args if isinstance(a, str) and a.lower().endswith(".apsshd")), None)
+    if patch_file:
+        print("[SSHD Launcher] .apsshd patch install isn't implemented in the Rust client yet;")
+        print("[SSHD Launcher] falling back to the Python client for patch installation.")
+        _run_client_process(*args)
+        return
+
+    binary = _find_rust_client_binary()
+    if binary is None:
+        print("[SSHD Launcher] No Rust client binary bundled for this platform;")
+        print("[SSHD Launcher] falling back to the Python client.")
+        _run_client_process(*args)
+        return
+
+    # Archipelago typically passes a bare "server:port" positional arg (from
+    # a .archipelago connection file or the launcher's "Connect" dialog).
+    # Translate that into the Rust client's --connect flag; slot
+    # name/password aren't provided this way today, so the Rust client
+    # prompts for the slot name interactively in its own console window.
+    connect_arg = next((a for a in client_args if isinstance(a, str) and not a.lower().endswith(".apsshd")), None)
+    cmd = [str(binary)]
+    if connect_arg:
+        cmd += ["--connect", connect_arg]
+
+    print(f"[SSHD Launcher] Launching Rust client: {' '.join(cmd)}")
+    try:
+        popen_kwargs = {}
+        if sys.platform == "win32":
+            # Guarantee a dedicated console window rather than relying on
+            # Windows' default console-allocation heuristics.
+            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+        subprocess.Popen(cmd, **popen_kwargs)
+    except OSError as e:
+        print(f"[SSHD Launcher] Failed to launch Rust client ({e}); falling back to the Python client.")
+        _run_client_process(*args)
+
+
+def run_rust_client(*args: str) -> None:
+    """
+    Launch the experimental Rust SSHD client, if one was bundled for this
+    platform. See sshd-ap-client/README.md for what it does and doesn't
+    support yet — this is NOT a full replacement for the Python client (no
+    UI, missing several location-check mechanisms, hints, shop logic).
+    """
+    print(f"Running SSHD Rust Client (experimental) with args: {args}")
+    try:
+        launch_subprocess(_run_rust_client_process, name="SSHDRustClient", args=tuple(args))
+    except Exception:
+        _run_rust_client_process(*args)
+
+
+# Register the experimental Rust client launcher as a SEPARATE entry so the
+# existing, more feature-complete Python client stays the default. Falls
+# back to the Python client automatically if no Rust binary was bundled for
+# this platform (see _run_rust_client_process).
+components.append(
+    Component(
+        "Skyward Sword HD Client (Rust, experimental)",
+        func=run_rust_client,
+        component_type=Type.CLIENT,
+        file_identifier=SuffixIdentifier(".apsshd"),
+        icon="Skyward Sword HD"
+    )
+)
 
 
 class SSHDWeb(WebWorld):
@@ -3264,10 +3388,16 @@ class SSHDWorld(World):
                     # for Beedle's Airshop locations.
                     loc_code = location.address
                     flag_id = None
-                    if loc_code in location_to_custom_flag:
-                        flag_id = location_to_custom_flag[loc_code]
-                    elif location.name in BEEDLE_SOLD_OUT_STORYFLAGS:
+                    # NOTE: Beedle must be checked FIRST. _build_custom_flag_mapping()
+                    # assigns a custom flag to ALL locations (Beedle included), so
+                    # testing location_to_custom_flag first always matched and the
+                    # 0x8000|storyflag branch was unreachable -- the game (shop.rs
+                    # handle_shop_traps) looks Beedle items up by 0x8000|storyflag,
+                    # so they never found their entry.
+                    if location.name in BEEDLE_SOLD_OUT_STORYFLAGS:
                         flag_id = 0x8000 | BEEDLE_SOLD_OUT_STORYFLAGS[location.name]
+                    elif loc_code in location_to_custom_flag:
+                        flag_id = location_to_custom_flag[loc_code]
                     if flag_id is not None:
                         player_name = self.multiworld.get_player_name(location.item.player)
                         ap_item_info[flag_id] = {

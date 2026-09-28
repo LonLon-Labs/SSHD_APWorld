@@ -396,7 +396,7 @@ unsafe fn set_help_page_3d_args(help_number: u32) {
 /// Set the string args for page 0x3A (Archipelago check statistics).
 /// Reads from AP_CHECK_STATS buffer written by the Python client.
 unsafe fn set_help_page_stats_args(help_number: u32) {
-    let stats = &item::AP_CHECK_STATS;
+    let stats = &crate::ipc::AP_IPC_ROOT.check_stats;
     let nc = stats.normal_checked as u32;
     let nt = stats.normal_total as u32;
     let ac = stats.ap_checked as u32;

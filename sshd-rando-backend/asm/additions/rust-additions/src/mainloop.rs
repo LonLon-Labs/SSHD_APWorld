@@ -92,6 +92,10 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
 
     color::handle_colors();
 
+    // Archipelago - Refresh IPC-exposed addresses (sceneflags/dungeonflags)
+    // for the external client's batch location-check polling.
+    item::refresh_ipc_addresses();
+
     // Archipelago - Check for items to give from the buffer
     item::archipelago_check_item_buffer();
 
@@ -119,6 +123,10 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     cheats::handle_no_electric_stun();
     cheats::handle_no_enemy_damage();
     cheats::handle_speed_multiplier();
+
+    // DeathLink / BreathLink receives from the client (runs after the
+    // cheats above so a kill isn't undone by infinite health that frame).
+    cheats::handle_link_requests();
 
     // Commands from client
     cheats::handle_spawn_demise_request();

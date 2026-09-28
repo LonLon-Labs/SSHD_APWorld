@@ -14,7 +14,14 @@ import importlib.util
 import subprocess
 import tempfile
 import re
+import stat
 from pathlib import Path
+
+try:
+    from build_ap_client import build_ap_client, DIST_DIR as RUST_CLIENT_DIST_DIR
+except ImportError:
+    build_ap_client = None
+    RUST_CLIENT_DIST_DIR = None
 
 
 # Third-party Python packages to bundle into the apworld.
@@ -219,6 +226,46 @@ def build_apworld():
                     rel = full.relative_to(staging_dir)
                     arcname = Path("sshd") / "_bundled_deps" / str(rel).replace("\\", "/")
                     apworld.write(full, arcname)
+                    print(f"  Added: {arcname}")
+                    file_count += 1
+
+        # ------------------------------------------------------------------
+        # Bundle the Rust client (sshd-ap-client), if available.
+        #
+        # This only bundles binaries for whatever platform(s) have already
+        # been built into sshd-ap-client/dist/<platform_tag>/ — unlike the
+        # Python wheels above, we do NOT download/cross-compile for every
+        # platform here. Run build_ap_client.py (or let this call it below)
+        # on each platform you want to support, ideally from CI.
+        #
+        # Best-effort: if cargo isn't installed or the build fails,
+        # build_ap_client() prints a warning and returns None, and we just
+        # skip bundling it — the .apworld still builds fine with the
+        # Python client only.
+        # ------------------------------------------------------------------
+        if build_ap_client is not None:
+            print("Building Rust client (sshd-ap-client)...")
+            build_ap_client()
+            print()
+
+        if RUST_CLIENT_DIST_DIR is not None and RUST_CLIENT_DIST_DIR.exists():
+            print("Bundling Rust client binaries...")
+            for platform_dir in sorted(RUST_CLIENT_DIST_DIR.iterdir()):
+                if not platform_dir.is_dir():
+                    continue
+                for binary_file in platform_dir.iterdir():
+                    if not binary_file.is_file():
+                        continue
+                    arcname = Path("sshd") / "_bundled_bin" / platform_dir.name / binary_file.name
+                    apworld.write(binary_file, arcname)
+                    # zipfile.write() normally captures the source file's
+                    # permission bits automatically, but we set them
+                    # explicitly here too so the exec bit survives even if
+                    # this ever runs somewhere that behaves differently
+                    # (e.g. bundling a binary built on another machine).
+                    if not binary_file.name.endswith(".exe"):
+                        info = apworld.getinfo(str(arcname).replace("\\", "/"))
+                        info.external_attr = (stat.S_IFREG | 0o755) << 16
                     print(f"  Added: {arcname}")
                     file_count += 1
     

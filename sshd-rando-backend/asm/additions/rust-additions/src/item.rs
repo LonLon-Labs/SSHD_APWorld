@@ -116,6 +116,7 @@ extern "C" {
     static SCENEFLAG_MGR: *mut flag::SceneflagMgr;
 
     static mut STATIC_DUNGEONFLAGS: [u16; 8];
+    static mut STATIC_TBOXFLAGS: [u8; 4];
     static mut CURRENT_STAGE_NAME: [u8; 8];
     static mut CURRENT_LAYER: u8;
 
@@ -2157,7 +2158,7 @@ pub extern "C" fn setup_gossip_stone_item_params(
 // Byte 0: Item ID (0 = empty slot)
 // Byte 1: Flags (0x01 = show animation, 0x02 = play jingle)
 // Bytes 2-3: Reserved
-const ARCHIPELAGO_BUFFER_SIZE: usize = 1024;
+pub const ARCHIPELAGO_BUFFER_SIZE: usize = 1024;
 
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
@@ -2175,6 +2176,12 @@ const fn build_archipelago_item_buffer() -> [ArchipelagoItemSlot; ARCHIPELAGO_BU
         _reserved: [0, 0],
     }; ARCHIPELAGO_BUFFER_SIZE];
 
+    // Slot 0 is never used as a real item slot (loops below start at index 1).
+    // This used to double as a magic signature for an external per-buffer
+    // scan; that scan no longer happens (see ipc.rs — the whole IPC surface
+    // is now found via ONE scan for AP_IPC_ROOT.magic), but the sentinel
+    // value is left in place since it's harmless and avoids touching this
+    // const-eval'd buffer any further than necessary.
     buffer[0] = ArchipelagoItemSlot {
         item_id:   0x41,
         flags:     0x50,
@@ -2184,14 +2191,11 @@ const fn build_archipelago_item_buffer() -> [ArchipelagoItemSlot; ARCHIPELAGO_BU
     buffer
 }
 
-// Static buffer for Archipelago item queue
-// This will be written to by the Python client and read by the game
-// Magic signature at the start: "AP" in ASCII (0x4150), followed by version
-// 0x0001 This allows Python to find the real buffer by searching for this
-// signature Format: [magic_high, magic_low, version_high, version_low,
-// ...actual slots...]
-#[no_mangle]
-pub static mut ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] =
+// Initial value for the item queue. The live instance of this buffer now
+// lives at AP_IPC_ROOT.item_buffer (see ipc.rs) instead of a standalone
+// static, so the external client only needs ONE scan (for AP_IPC_ROOT's
+// magic) to find every mailbox, this one included.
+pub const EMPTY_ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] =
     build_archipelago_item_buffer();
 
 #[inline(always)]
@@ -2402,7 +2406,7 @@ pub extern "C" fn archipelago_check_item_buffer() {
             // Use volatile read because Python writes to this buffer via
             // cross-process WriteProcessMemory.  Without volatile the
             // compiler could hoist or elide loads across frames.
-            let slot_ptr = ARCHIPELAGO_ITEM_BUFFER.as_mut_ptr().add(i);
+            let slot_ptr = crate::ipc::AP_IPC_ROOT.item_buffer.as_mut_ptr().add(i);
             let item_id_val = core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).item_id));
 
             // Skip empty slots
@@ -2636,10 +2640,12 @@ unsafe fn ap_set_dungeon_item_flags(itemid: u16) {
     }
 }
 
-// Get the address of the Archipelago buffer for the Python client
+// Get the address of the Archipelago buffer. Kept for any in-game callers;
+// the external client no longer needs this — it reaches the buffer via
+// AP_IPC_ROOT.item_buffer (see ipc.rs) after one scan for AP_IPC_ROOT.magic.
 #[no_mangle]
 pub extern "C" fn get_archipelago_buffer_address() -> *mut ArchipelagoItemSlot {
-    unsafe { ARCHIPELAGO_ITEM_BUFFER.as_mut_ptr() }
+    unsafe { crate::ipc::AP_IPC_ROOT.item_buffer.as_mut_ptr() }
 }
 
 // ============================================================================
@@ -2649,7 +2655,8 @@ pub extern "C" fn get_archipelago_buffer_address() -> *mut ArchipelagoItemSlot {
 
 #[repr(C, packed(1))]
 pub struct ApCheckStats {
-    pub magic:          [u8; 4], // "CS\x00\x01" — signature for Python to find
+    pub magic:          [u8; 4], /* legacy per-struct signature; kept for layout compat only —
+                                  * discovery is now via AP_IPC_ROOT.magic (see ipc.rs) */
     pub normal_checked: u16,
     pub normal_total:   u16,
     pub ap_checked:     u16,
@@ -2657,14 +2664,9 @@ pub struct ApCheckStats {
 }
 assert_eq_size!([u8; 12], ApCheckStats);
 
-#[no_mangle]
-pub static mut AP_CHECK_STATS: ApCheckStats = ApCheckStats {
-    magic:          [0x43, 0x53, 0x00, 0x01], // "CS\x00\x01"
-    normal_checked: 0,
-    normal_total:   0,
-    ap_checked:     0,
-    ap_total:       0,
-};
+// The live instance of this struct now lives at AP_IPC_ROOT.check_stats
+// (see ipc.rs) instead of a standalone static. Written by the Python
+// client, read by lyt.rs via `crate::ipc::AP_IPC_ROOT.check_stats`.
 
 // ============================================================================
 // Archipelago Item Info Table (for item 216 textbox — item name + player name)
@@ -2683,7 +2685,7 @@ pub struct ApItemInfoEntry {
 }
 assert_eq_size!([u8; 98], ApItemInfoEntry);
 
-const EMPTY_AP_ENTRY: ApItemInfoEntry = ApItemInfoEntry {
+pub const EMPTY_AP_ENTRY: ApItemInfoEntry = ApItemInfoEntry {
     flag_id:     0xFFFF,
     item_name:   [0u16; 32],
     player_name: [0u16; 16],
@@ -2691,20 +2693,18 @@ const EMPTY_AP_ENTRY: ApItemInfoEntry = ApItemInfoEntry {
 
 #[repr(C, packed(1))]
 pub struct ApItemInfoTable {
-    pub magic:   [u8; 4], // "IT\x00\x01"
-    pub count:   u16,     // number of valid entries
+    pub magic:   [u8; 4], /* legacy per-struct signature; kept for layout compat only —
+                           * discovery is now via AP_IPC_ROOT.magic (see ipc.rs) */
+    pub count:   u16, // number of valid entries
     pub _pad:    u16,
     pub entries: [ApItemInfoEntry; AP_ITEM_TABLE_MAX],
 }
 assert_eq_size!([u8; 8 + 98 * 512], ApItemInfoTable);
 
-#[no_mangle]
-pub static mut AP_ITEM_INFO_TABLE: ApItemInfoTable = ApItemInfoTable {
-    magic:   [0x49, 0x54, 0x00, 0x01], // "IT\x00\x01"
-    count:   0,
-    _pad:    0,
-    entries: [EMPTY_AP_ENTRY; AP_ITEM_TABLE_MAX],
-};
+// The live instance of this struct now lives at AP_IPC_ROOT.item_info_table
+// (see ipc.rs) instead of a standalone static. Written once by the Python
+// client on connect, read by event.rs via
+// `crate::ipc::AP_IPC_ROOT.item_info_table`.
 
 // Tracks which item-216 location was most recently picked up.
 // Set in setup_traps() (stateWait*GetDemoUpdate, BEFORE the event fires) and
@@ -2714,6 +2714,92 @@ pub static mut AP_ITEM_INFO_TABLE: ApItemInfoTable = ApItemInfoTable {
 // cmd 81 already cleared it.
 #[no_mangle]
 pub static mut LAST_AP_ITEM_FLAG_ID: u16 = 0xFFFF;
+
+/// Refreshes `AP_IPC_ROOT.sceneflags` / `.dungeonflags` / `.tboxflags` /
+/// `.static_tboxflags` / `.current_scene_index` / `.current_stage_name`
+/// with live BY-VALUE COPIES (not addresses -- see ipc.rs's field docs
+/// for why) of the save file's sceneflags/dungeonflags/tboxflags arrays,
+/// the in-RAM STATIC_TBOXFLAGS working copy, the current scene index, and
+/// the current stage code. Called once per frame from `mainloop.rs` so
+/// the external client can batch-read these arrays directly out of
+/// AP_IPC_ROOT's own memory (which it already reads/writes reliably for
+/// item_buffer/check_stats/etc.) instead of issuing one flag_request
+/// round trip per flag.
+#[no_mangle]
+pub extern "C" fn refresh_ipc_addresses() {
+    unsafe {
+        if !FILE_MGR.is_null() {
+            let scene_ptr = core::ptr::addr_of!((*FILE_MGR).FA.sceneflags) as *const [u8; 416];
+            crate::ipc::AP_IPC_ROOT.sceneflags = core::ptr::read_unaligned(scene_ptr);
+
+            let dungeon_ptr = core::ptr::addr_of!((*FILE_MGR).FA.dungeonflags) as *const [u8; 416];
+            crate::ipc::AP_IPC_ROOT.dungeonflags = core::ptr::read_unaligned(dungeon_ptr);
+
+            let tbox_ptr = core::ptr::addr_of!((*FILE_MGR).FA.tboxflags) as *const [u8; 104];
+            crate::ipc::AP_IPC_ROOT.tboxflags = core::ptr::read_unaligned(tbox_ptr);
+        }
+
+        // STATIC_TBOXFLAGS doesn't depend on FILE_MGR (it's a fixed .bss
+        // symbol, always valid once the binary is loaded), so this copy
+        // isn't gated on the FILE_MGR null-check above.
+        crate::ipc::AP_IPC_ROOT.static_tboxflags = STATIC_TBOXFLAGS;
+
+        // SCENEFLAG_MGR can be null very early (before a save file/scene
+        // is loaded) even when FILE_MGR is already set up, so guard it
+        // separately rather than assuming FILE_MGR non-null implies it.
+        crate::ipc::AP_IPC_ROOT.current_scene_index = if SCENEFLAG_MGR.is_null() {
+            0xFFFF
+        } else {
+            (*SCENEFLAG_MGR).sceneindex
+        };
+
+        // Mirror the current stage code by value so the client can gate
+        // stage-specific polling (e.g. Beedle's Airshop purchase
+        // detection) on the player's actual location, the same way the
+        // old Python client's `current_stage` did.
+        crate::ipc::AP_IPC_ROOT.current_stage_name =
+            core::ptr::read_volatile(core::ptr::addr_of!(CURRENT_STAGE_NAME));
+
+        // Mirror the player's health and stamina by value so the client can
+        // detect deaths / stamina exhaustion for DeathLink / BreathLink.
+        // Health comes from the save file; stamina comes from the live
+        // player struct, using the same per-stage offset overrides as
+        // `cheats::handle_infinite_stamina`.
+        let save_loaded = !FILE_MGR.is_null();
+        let player_valid = !PLAYER_PTR.is_null();
+
+        let (current_health, health_capacity) = if save_loaded {
+            (
+                core::ptr::read_unaligned(core::ptr::addr_of!((*FILE_MGR).FA.current_health)),
+                core::ptr::read_unaligned(core::ptr::addr_of!((*FILE_MGR).FA.health_capacity)),
+            )
+        } else {
+            (0u16, 0u16)
+        };
+
+        let stamina = if player_valid {
+            let stage = &CURRENT_STAGE_NAME[..5];
+            let stamina_ptr: *const u32 = if stage == b"F103\0" {
+                (PLAYER_PTR as *const u8).offset(-0x7FA8isize) as *const u32
+            } else if stage == b"B301\0" {
+                (PLAYER_PTR as *const u8).add(0x5CD8) as *const u32
+            } else {
+                core::ptr::addr_of!((*PLAYER_PTR).stamina_amount)
+            };
+            core::ptr::read_unaligned(stamina_ptr)
+        } else {
+            0u32
+        };
+
+        crate::ipc::AP_IPC_ROOT.player_vitals = crate::ipc::ApPlayerVitals {
+            current_health,
+            health_capacity,
+            stamina,
+            save_loaded: save_loaded as u8,
+            player_valid: player_valid as u8,
+        };
+    }
+}
 
 /// Look up the table index for a given custom_flag_id.
 /// Returns the index into AP_ITEM_INFO_TABLE.entries, or usize::MAX if not
@@ -2725,7 +2811,7 @@ pub static mut LAST_AP_ITEM_FLAG_ID: u16 = 0xFFFF;
 /// values from the initial zeroed static.
 pub fn lookup_ap_item_index(flag_id: u16) -> usize {
     unsafe {
-        let count_ptr = core::ptr::addr_of!(AP_ITEM_INFO_TABLE.count);
+        let count_ptr = core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.item_info_table.count);
         let count = core::ptr::read_volatile(count_ptr) as usize;
         let limit = if count < AP_ITEM_TABLE_MAX {
             count
@@ -2733,7 +2819,8 @@ pub fn lookup_ap_item_index(flag_id: u16) -> usize {
             AP_ITEM_TABLE_MAX
         };
         for i in 0..limit {
-            let flag_ptr = core::ptr::addr_of!(AP_ITEM_INFO_TABLE.entries[i].flag_id);
+            let flag_ptr =
+                core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.item_info_table.entries[i].flag_id);
             if core::ptr::read_volatile(flag_ptr) == flag_id {
                 return i;
             }

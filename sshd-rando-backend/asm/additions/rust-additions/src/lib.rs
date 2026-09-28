@@ -24,6 +24,7 @@ mod event;
 mod fix;
 mod flag;
 mod input;
+mod ipc;
 mod item;
 mod lyt;
 mod mainloop;

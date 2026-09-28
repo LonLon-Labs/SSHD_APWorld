@@ -20,6 +20,8 @@ cache/
 SSHD_Archipelago_Release.zip
 sshd-rando-backend/asm/additions/rust-additions/target/
 custom_worlds/
+sshd-ap-client/dist/
+sshd-ap-client/target/
 
 # PyInstaller spec files (auto-generated)
 *.spec
@@ -58,6 +60,7 @@ check*
 convert_png_to_tpl.py
 compare*
 extract_sword_models.py
+install_latest_patch.py
 ArchipelagoItem.arc.arc.LZ.bak
 # Might add these patcher scripts in the future, but for now they don't do much
 assets/patch_custom_model.py

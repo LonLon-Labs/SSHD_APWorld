@@ -61,20 +61,10 @@ pub struct ApFlagRequest {
 }
 assert_eq_size!([u8; 20], ApFlagRequest);
 
-#[no_mangle]
-pub static mut AP_FLAG_REQUEST: ApFlagRequest = ApFlagRequest {
-    magic:          [0x46, 0x4C, 0x00, 0x01], // "FL\x00\x01"
-    pending:        false,
-    flag_type:      0,
-    operation:      0,
-    _pad0:          0,
-    flag_id:        0,
-    value:          0,
-    scene_index:    0xFFFF,
-    response_ready: false,
-    _pad1:          0,
-    response_value: 0,
-};
+// The live instance of this struct now lives at AP_IPC_ROOT.flag_request
+// (see ipc.rs) instead of a standalone static, so the external client
+// only needs ONE scan (for AP_IPC_ROOT.magic) to find every mailbox,
+// this one included.
 
 // ─── AP_WARP_REQUEST ───────────────────────────────────────────────────
 // Backs the /warp command. Python locates this struct by scanning for
@@ -109,18 +99,9 @@ pub struct ApWarpRequest {
 }
 assert_eq_size!([u8; 20], ApWarpRequest);
 
-#[no_mangle]
-pub static mut AP_WARP_REQUEST: ApWarpRequest = ApWarpRequest {
-    magic:          [0x57, 0x52, 0x00, 0x01], // "WR\x00\x01"
-    pending:        false,
-    mode:           0,
-    layer:          0xFF,
-    _pad0:          0,
-    stage_name:     [0u8; 8],
-    response_ready: false,
-    response_code:  0,
-    _pad1:          [0u8; 2],
-};
+// The live instance of this struct now lives at AP_IPC_ROOT.warp_request
+// (see ipc.rs) instead of a standalone static, for the same reason as
+// AP_FLAG_REQUEST above.
 
 const WARP_MODE_START: u8 = 0;
 const WARP_MODE_STAGE: u8 = 1;
@@ -163,18 +144,19 @@ extern "C" {
 /// as the spawn-request handlers above).
 pub fn handle_flag_request() {
     unsafe {
-        if !AP_FLAG_REQUEST.pending {
+        let req = core::ptr::addr_of_mut!(crate::ipc::AP_IPC_ROOT.flag_request);
+        if !(*req).pending {
             return;
         }
         // Clear first so this is one-shot even if we return early below.
-        AP_FLAG_REQUEST.pending = false;
-        AP_FLAG_REQUEST.response_ready = false;
+        (*req).pending = false;
+        (*req).response_ready = false;
 
-        let flag_type = AP_FLAG_REQUEST.flag_type;
-        let operation = AP_FLAG_REQUEST.operation;
-        let flag_id = AP_FLAG_REQUEST.flag_id;
-        let value = AP_FLAG_REQUEST.value;
-        let scene_index = AP_FLAG_REQUEST.scene_index;
+        let flag_type = (*req).flag_type;
+        let operation = (*req).operation;
+        let flag_id = (*req).flag_id;
+        let value = (*req).value;
+        let scene_index = (*req).scene_index;
 
         let result: u32 = match flag_type {
             FLAG_TYPE_STORYFLAG => handle_storyflag(operation, flag_id, value),
@@ -184,8 +166,8 @@ pub fn handle_flag_request() {
             _ => 0,
         };
 
-        AP_FLAG_REQUEST.response_value = result;
-        AP_FLAG_REQUEST.response_ready = true;
+        (*req).response_value = result;
+        (*req).response_ready = true;
     }
 }
 
@@ -307,27 +289,28 @@ fn handle_dungeonflag(operation: u8, flag_id: u16, scene_index: u16) -> u32 {
 /// as the spawn/flag request handlers).
 pub fn handle_warp_request() {
     unsafe {
-        if !AP_WARP_REQUEST.pending {
+        let req = core::ptr::addr_of_mut!(crate::ipc::AP_IPC_ROOT.warp_request);
+        if !(*req).pending {
             return;
         }
         // Clear first so this is one-shot even if we return early below.
-        AP_WARP_REQUEST.pending = false;
-        AP_WARP_REQUEST.response_ready = false;
+        (*req).pending = false;
+        (*req).response_ready = false;
 
-        let ok = match AP_WARP_REQUEST.mode {
+        let ok = match (*req).mode {
             WARP_MODE_START => entrance::warp_to_start(),
             WARP_MODE_STAGE => {
-                let layer = if AP_WARP_REQUEST.layer == 0xFF {
+                let layer = if (*req).layer == 0xFF {
                     0
                 } else {
-                    AP_WARP_REQUEST.layer
+                    (*req).layer
                 };
-                entrance::warp_to_stage(AP_WARP_REQUEST.stage_name, layer)
+                entrance::warp_to_stage((*req).stage_name, layer)
             },
             _ => false,
         };
 
-        AP_WARP_REQUEST.response_code = if ok { 0 } else { 1 };
-        AP_WARP_REQUEST.response_ready = true;
+        (*req).response_code = if ok { 0 } else { 1 };
+        (*req).response_ready = true;
     }
 }
