@@ -243,9 +243,15 @@ def build_apworld():
         # skip bundling it — the .apworld still builds fine with the
         # Python client only.
         # ------------------------------------------------------------------
-        if build_ap_client is not None:
+        # CI prebuilds every platform's binary in a matrix and drops them
+        # into sshd-ap-client/dist/, so it sets SSHD_SKIP_RUST_BUILD to
+        # avoid rebuilding (and overwriting) the host platform's binary.
+        if build_ap_client is not None and not os.environ.get("SSHD_SKIP_RUST_BUILD"):
             print("Building Rust client (sshd-ap-client)...")
             build_ap_client()
+            print()
+        elif os.environ.get("SSHD_SKIP_RUST_BUILD"):
+            print("SSHD_SKIP_RUST_BUILD set - using prebuilt Rust client binaries.")
             print()
 
         if RUST_CLIENT_DIST_DIR is not None and RUST_CLIENT_DIST_DIR.exists():

@@ -431,7 +431,14 @@ pub mod linux {
     /// and the `/proc/<pid>/exe` basename), returning the first PID found
     /// among `SUPPORTED_EMULATOR_NAMES`-style candidates.
     pub fn find_process_by_names(names: &[&str]) -> Option<i32> {
-        let entries = fs::read_dir("/proc").ok()?;
+        find_processes_by_names(names).first().map(|p| p.0)
+    }
+
+    /// Like `find_process_by_names`, but returns EVERY matching process
+    /// (pid + comm name) so callers can try each one.
+    pub fn find_processes_by_names(names: &[&str]) -> Vec<(i32, String)> {
+        let mut found = Vec::new();
+        let Ok(entries) = fs::read_dir("/proc") else { return found };
         for entry in entries.flatten() {
             let file_name = entry.file_name();
             let Some(pid_str) = file_name.to_str() else { continue };
@@ -441,11 +448,11 @@ pub mod linux {
             if let Ok(comm) = fs::read_to_string(&comm_path) {
                 let comm = comm.trim();
                 if names.iter().any(|n| comm.eq_ignore_ascii_case(n)) {
-                    return Some(pid);
+                    found.push((pid, comm.to_string()));
                 }
             }
         }
-        None
+        found
     }
 }
 
@@ -478,15 +485,33 @@ pub mod windows {
 
     impl WindowsProcessMemory {
         pub fn attach(pid: u32) -> MemResult<Self> {
+            // Best-effort, once per run: lets an elevated client open processes
+            // owned by other users / higher-integrity contexts.
+            static DEBUG_PRIV: std::sync::Once = std::sync::Once::new();
+            DEBUG_PRIV.call_once(enable_debug_privilege);
+
             let access = PROCESS_QUERY_INFORMATION
                 | PROCESS_VM_READ
                 | PROCESS_VM_WRITE
                 | PROCESS_VM_OPERATION;
             let handle = unsafe { OpenProcess(access, 0, pid) };
             if handle == 0 {
-                return Err(MemError::PermissionDenied(format!(
-                    "OpenProcess failed for pid {pid} (try running as Administrator)"
-                )));
+                // Must be read immediately, before any other Win32 call.
+                let err = io::Error::last_os_error();
+                return Err(match err.raw_os_error() {
+                    Some(5) => MemError::PermissionDenied(format!(
+                        "OpenProcess on pid {pid} was denied (Windows error 5, ACCESS_DENIED). \
+                         If running as Administrator doesn't help, security software or an \
+                         anti-cheat driver may be blocking memory access to the emulator, or \
+                         the emulator is running as a different user / in a sandbox."
+                    )),
+                    // ERROR_INVALID_PARAMETER: the pid no longer exists.
+                    Some(87) => MemError::ProcessNotFound,
+                    _ => MemError::Io(io::Error::new(
+                        err.kind(),
+                        format!("OpenProcess on pid {pid} failed: {err}"),
+                    )),
+                });
             }
             Ok(WindowsProcessMemory { handle })
         }
@@ -497,6 +522,41 @@ pub mod windows {
             unsafe {
                 CloseHandle(self.handle);
             }
+        }
+    }
+
+    /// Enables `SeDebugPrivilege` on this process's token, if we hold it
+    /// (elevated administrators do, but it's disabled by default). Silent
+    /// no-op on failure -- `attach` reports the real error if access is
+    /// still denied.
+    fn enable_debug_privilege() {
+        use windows_sys::Win32::Security::{
+            AdjustTokenPrivileges, LookupPrivilegeValueW, LUID_AND_ATTRIBUTES,
+            SE_PRIVILEGE_ENABLED, TOKEN_ADJUST_PRIVILEGES, TOKEN_PRIVILEGES,
+        };
+        use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
+        unsafe {
+            let mut token: HANDLE = 0;
+            if OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &mut token) == 0 {
+                return;
+            }
+            let name: Vec<u16> = "SeDebugPrivilege\0".encode_utf16().collect();
+            let mut luid = std::mem::zeroed();
+            if LookupPrivilegeValueW(std::ptr::null(), name.as_ptr(), &mut luid) != 0 {
+                let tp = TOKEN_PRIVILEGES {
+                    PrivilegeCount: 1,
+                    Privileges: [LUID_AND_ATTRIBUTES { Luid: luid, Attributes: SE_PRIVILEGE_ENABLED }],
+                };
+                AdjustTokenPrivileges(
+                    token,
+                    0,
+                    &tp,
+                    0,
+                    std::ptr::null_mut(),
+                    std::ptr::null_mut(),
+                );
+            }
+            CloseHandle(token);
         }
     }
 
@@ -729,15 +789,22 @@ pub mod windows {
     /// Find a running process by (case-insensitive, extension-optional)
     /// image name, e.g. "Ryujinx" matches "Ryujinx.exe".
     pub fn find_process_by_names(names: &[&str]) -> Option<u32> {
+        find_processes_by_names(names).first().map(|p| p.0)
+    }
+
+    /// Like `find_process_by_names`, but returns EVERY matching process
+    /// (pid + exe name), so callers can try each one instead of committing
+    /// to whichever happens to be listed first.
+    pub fn find_processes_by_names(names: &[&str]) -> Vec<(u32, String)> {
         unsafe {
             let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
             if snapshot == 0 || snapshot == -1i32 as isize as HANDLE {
-                return None;
+                return Vec::new();
             }
             let mut entry: PROCESSENTRY32W = std::mem::zeroed();
             entry.dwSize = std::mem::size_of::<PROCESSENTRY32W>() as u32;
 
-            let mut found = None;
+            let mut found: Vec<(u32, String)> = Vec::new();
             if Process32FirstW(snapshot, &mut entry) != 0 {
                 loop {
                     let len = entry.szExeFile.iter().position(|&c| c == 0).unwrap_or(0);
@@ -746,8 +813,7 @@ pub mod windows {
                         .to_string();
                     let stem = exe_name.strip_suffix(".exe").unwrap_or(&exe_name);
                     if names.iter().any(|n| stem.eq_ignore_ascii_case(n)) {
-                        found = Some(entry.th32ProcessID);
-                        break;
+                        found.push((entry.th32ProcessID, exe_name.clone()));
                     }
                     if Process32NextW(snapshot, &mut entry) == 0 {
                         break;
@@ -761,10 +827,10 @@ pub mod windows {
 }
 
 #[cfg(target_os = "linux")]
-pub use linux::{find_process_by_names, LinuxProcessMemory};
+pub use linux::{find_process_by_names, find_processes_by_names, LinuxProcessMemory};
 
 #[cfg(target_os = "windows")]
-pub use windows::{find_process_by_names, WindowsProcessMemory};
+pub use windows::{find_process_by_names, find_processes_by_names, WindowsProcessMemory};
 
 #[cfg(test)]
 mod tests {

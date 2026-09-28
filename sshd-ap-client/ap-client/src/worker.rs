@@ -98,9 +98,9 @@ use iced::Subscription;
 use process_memory::{ProcessMemory, SUPPORTED_EMULATOR_NAMES};
 
 #[cfg(target_os = "linux")]
-use process_memory::linux::{find_process_by_names, LinuxProcessMemory as Backend};
+use process_memory::linux::{find_processes_by_names, LinuxProcessMemory as Backend};
 #[cfg(target_os = "windows")]
-use process_memory::windows::{find_process_by_names, WindowsProcessMemory as Backend};
+use process_memory::windows::{find_processes_by_names, WindowsProcessMemory as Backend};
 
 use crate::actorid;
 use crate::beedle_shop::BeedleShopPoller;
@@ -288,6 +288,12 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
     // Prevents re-logging "still searching" every ~16ms tick; reset
     // whenever the search outcome changes.
     let mut emulator_search_logged = false;
+    // Emulator discovery is throttled (a process snapshot + full memory scan
+    // per candidate is far too heavy to repeat every ~16ms tick), and the
+    // last problem summary is remembered so a CHANGED failure reason is
+    // still logged instead of only ever the first one.
+    let mut last_discovery: Option<Instant> = None;
+    let mut last_search_msg = String::new();
 
     // Archipelago side: `None` until a `Connect` (button or command)
     // arrives; `ap_connected` only flips true once `Event::Connected`
@@ -368,14 +374,29 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
         }
 
         // ── Emulator discovery (always running, independent of AP) ───
-        if emulator.is_none() {
-            if let Some(pid) = find_process_by_names(SUPPORTED_EMULATOR_NAMES) {
-                match Backend::attach(pid as _) {
+        if emulator.is_none()
+            && last_discovery.map_or(true, |t| t.elapsed() >= Duration::from_secs(2))
+        {
+            last_discovery = Some(Instant::now());
+            if !emulator_search_logged {
+                last_search_msg.clear();
+            }
+            // Try EVERY matching process, not just the first one listed: a
+            // launcher/updater/leftover with a matching name, or an emulator
+            // instance without the mod loaded, shouldn't block the right one.
+            let candidates = find_processes_by_names(SUPPORTED_EMULATOR_NAMES);
+            let mut problems: Vec<String> = Vec::new();
+            for (pid, proc_name) in &candidates {
+                match Backend::attach(*pid as _) {
                     Ok(mut mem) => {
-                        vlog!("Found emulator process (pid {pid}). Attaching...");
-                        vlog!(
-                            "Scanning for AP_IPC_ROOT (one scan, no NSO-header math, no per-mailbox magics)..."
-                        );
+                        // Only narrate the first attempt of a search; retries every
+                        // 2s would otherwise repeat this for as long as the mod isn't loaded.
+                        if !emulator_search_logged {
+                            vlog!("Found emulator process {proc_name} (pid {pid}). Attaching...");
+                            vlog!(
+                                "Scanning for AP_IPC_ROOT (one scan, no NSO-header math, no per-mailbox magics)..."
+                            );
+                        }
                         match mem.pattern_scan_unique(&AP_IPC_MAGIC) {
                             Ok(root_addr) => {
                                 vlog!("Found AP_IPC_ROOT at {root_addr:#x}");
@@ -404,29 +425,35 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                                 sync.delivery.game_lost();
                                 emulator = Some((mem, root_addr));
                                 emulator_search_logged = false;
+                                break;
                             },
-                            Err(e) => {
-                                if !emulator_search_logged {
-                                    vlog!(
-                                        "AP_IPC_ROOT not found yet ({e}) — is Skyward Sword HD running \
-                                         with the mod loaded?"
-                                    );
-                                    emulator_search_logged = true;
-                                }
-                            },
+                            Err(e) => problems.push(format!(
+                                "{proc_name} (pid {pid}): AP_IPC_ROOT not found yet ({e}) — is \
+                                 Skyward Sword HD running with the mod loaded?"
+                            )),
                         }
                     },
-                    Err(e) => {
-                        if !emulator_search_logged {
-                            vlog!("Found a supported emulator process but failed to attach: {e}");
-                            emulator_search_logged = true;
-                        }
-                    },
+                    Err(e) => problems.push(format!(
+                        "{proc_name} (pid {pid}): failed to attach: {e}"
+                    )),
                 }
-            } else if !emulator_search_logged {
-                vlog!(
-                    "No supported emulator found ({SUPPORTED_EMULATOR_NAMES:?}). Please start your emulator."
-                );
+            }
+            if emulator.is_none() {
+                let msg = if candidates.is_empty() {
+                    format!(
+                        "No supported emulator found ({SUPPORTED_EMULATOR_NAMES:?}). Please start your emulator."
+                    )
+                } else {
+                    format!(
+                        "Found {} supported emulator process(es) but couldn't use any:\n  {}",
+                        candidates.len(),
+                        problems.join("\n  ")
+                    )
+                };
+                if msg != last_search_msg {
+                    vlog!("{msg}");
+                    last_search_msg = msg;
+                }
                 emulator_search_logged = true;
             }
         } else if let Some((mem, root_addr)) = emulator.as_mut() {

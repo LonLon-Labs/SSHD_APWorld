@@ -18,9 +18,16 @@
 //! - Each item written to the buffer remembers which slot it went to. When
 //!   the game empties the slot, that item is *consumed* (in the game, but not
 //!   necessarily saved yet).
-//! - On a stage transition the game autosaves, so everything that was
-//!   consumed at least `SAFE_AGE` before the transition becomes safe and
-//!   `safe_index` advances + is persisted.
+//! - A stage load autosaves, so everything that was consumed at least
+//!   `SAFE_AGE` before the load began becomes safe and `safe_index` advances +
+//!   is persisted. A "stage load" is either a stage-name change OR Link
+//!   vanishing from the world for a moment and coming back. The second case is
+//!   what a same-stage reload (Left Stick + R + Y, which forces an autosave)
+//!   looks like: the stage name never changes, so those reloads used to be
+//!   missed and `safe_index` stayed stuck (e.g. at 47), which is why a restart
+//!   after a crash re-gave every item. The advance is only *confirmed* once
+//!   Link has been back in the world for `CONFIRM_DELAY`, so a crash in the
+//!   middle of a load never counts as saved.
 //! - If the save is unloaded (title screen / soft reset) or the emulator is
 //!   re-attached, unsaved items are gone from the game: delivery rewinds to
 //!   `safe_index` and any leftover buffer slots are cleared, so only the
@@ -47,9 +54,15 @@ use crate::locations::SlotData;
 
 /// Max items sitting in the game's buffer, unconsumed, at any moment.
 pub const MAX_IN_FLIGHT: usize = 8;
-/// An item consumed less than this long before a stage transition is not
-/// trusted to have made it into that transition's autosave.
-const SAFE_AGE: Duration = Duration::from_secs(5);
+/// An item consumed less than this long before a stage load began is not
+/// trusted to have made it into that load's autosave.
+const SAFE_AGE: Duration = Duration::from_secs(3);
+/// After a stage load, Link must be back in the world this long before the
+/// autosave is trusted (a crash mid-load must not count as saved).
+const CONFIRM_DELAY: Duration = Duration::from_secs(2);
+/// Link must be missing from the world at least this long for it to count as
+/// a stage load (filters out one-frame blips that are not a real load).
+const MIN_LOAD_GAP: Duration = Duration::from_millis(300);
 const LOAD_TIMEOUT: Duration = Duration::from_secs(15);
 const LOAD_RETRY: Duration = Duration::from_secs(3);
 const STALL_NOTICE: Duration = Duration::from_secs(10);
@@ -103,6 +116,16 @@ pub struct DeliveryTracker {
     /// Last NON-EMPTY stage name seen.
     last_stage: [u8; 8],
     last_save_loaded: bool,
+    /// Was Link present in the world (PLAYER_PTR non-null) last tick?
+    last_player_valid: bool,
+    /// When Link most recently disappeared from the world (a load in progress).
+    invalid_since: Option<Instant>,
+    /// Start of the earliest stage load whose autosave we haven't confirmed yet.
+    pending_load: Option<Instant>,
+    /// Since when Link has been continuously back in the world after that load.
+    stable_since: Option<Instant>,
+    /// One-shot message for the next tick (set when the game was lost).
+    notice: Option<String>,
     needs_buffer_clear: bool,
     last_progress: Instant,
     stall_logged: bool,
@@ -119,6 +142,11 @@ impl DeliveryTracker {
             prefix_history: VecDeque::new(),
             last_stage: [0; 8],
             last_save_loaded: false,
+            last_player_valid: false,
+            invalid_since: None,
+            pending_load: None,
+            stable_since: None,
+            notice: None,
             needs_buffer_clear: true,
             last_progress: Instant::now(),
             stall_logged: false,
@@ -225,6 +253,15 @@ impl DeliveryTracker {
     /// The game this tracker was watching is gone or replaced (emulator
     /// (re)attached): unsaved items are lost, so start over from the safe index.
     pub fn game_lost(&mut self) {
+        let unsaved = self.next_index.saturating_sub(self.safe_index);
+        if self.is_ready() && unsaved > 0 {
+            self.notice = Some(format!(
+                "[Delivery] The game went away with {unsaved} item(s) not confirmed in a save. Items 0..{} \
+                 are confirmed saved; delivery will resume from item #{} once the game is back and a save is loaded. \
+                 (If your autosave already had more than that, use /set_delivery_index <n> to skip ahead.)",
+                self.safe_index, self.safe_index
+            ));
+        }
         self.rewind();
     }
 
@@ -242,9 +279,39 @@ impl DeliveryTracker {
         self.prefix_history.clear();
         self.last_stage = [0; 8];
         self.last_save_loaded = false;
+        self.last_player_valid = false;
+        self.invalid_since = None;
+        self.pending_load = None;
+        self.stable_since = None;
         self.needs_buffer_clear = true;
         self.last_progress = Instant::now();
         self.stall_logged = false;
+    }
+
+    /// A stage load whose autosave is now trusted (Link has been back in the
+    /// world for `CONFIRM_DELAY`): everything consumed at least `SAFE_AGE`
+    /// before the load *began* is in the save.
+    fn confirm_load(&mut self, began: Instant, out: &mut Tick) {
+        self.pending_load = None;
+        self.stable_since = None;
+        let safe = self
+            .prefix_history
+            .iter()
+            .rev()
+            .find(|&&(t, _)| began.saturating_duration_since(t) >= SAFE_AGE)
+            .map(|&(_, p)| p);
+        if let Some(p) = safe {
+            if p > self.safe_index {
+                out.gui(format!("[Delivery] Stage (re)loaded and autosaved: items 0..{p} are now safe."));
+                self.safe_index = p;
+                out.persist = Some(p);
+            }
+        }
+        while self.prefix_history.len() > 1
+            && began.saturating_duration_since(self.prefix_history[1].0) >= SAFE_AGE
+        {
+            self.prefix_history.pop_front();
+        }
     }
 
     /// Advances delivery by one poll tick.
@@ -268,6 +335,10 @@ impl DeliveryTracker {
     ) -> Result<(), MemError> {
         let now = Instant::now();
         let buffer_addr = root_addr + offsets::ITEM_BUFFER;
+
+        if let Some(text) = self.notice.take() {
+            out.gui(text);
+        }
 
         let vitals_raw = mem.read_bytes(root_addr + offsets::PLAYER_VITALS, std::mem::size_of::<ApPlayerVitals>())?;
         let vitals: ApPlayerVitals = ap_ipc::bytes::read(&vitals_raw);
@@ -315,30 +386,53 @@ impl DeliveryTracker {
             self.prefix_history.push_back((now, prefix));
         }
 
-        // Stage transition => autosave => sufficiently old consumed items are safe.
+        // Stage load => autosave => sufficiently old consumed items are safe.
+        // A load shows up as (a) the stage name changing and/or (b) Link
+        // vanishing from the world for a moment and coming back. (b) is the
+        // ONLY signal a same-stage reload (Left Stick + R + Y) gives: the
+        // name stays the same, which is why those reloads used to be missed.
+        let player_valid = vitals.player_valid != 0;
         let stage_raw = mem.read_bytes(root_addr + offsets::CURRENT_STAGE_NAME, 8)?;
         let mut stage = [0u8; 8];
         stage.copy_from_slice(&stage_raw);
-        if stage[0] != 0 && stage != self.last_stage {
-            if self.last_stage[0] != 0 {
-                let safe = self
-                    .prefix_history
-                    .iter()
-                    .rev()
-                    .find(|&&(t, _)| now.duration_since(t) >= SAFE_AGE)
-                    .map(|&(_, p)| p);
-                if let Some(p) = safe {
-                    if p > self.safe_index {
-                        out.verbose(format!("[Delivery] Autosave on stage change: items 0..{p} are now safe."));
-                        self.safe_index = p;
-                        out.persist = Some(p);
+
+        let mut load_began: Option<Instant> = None;
+        if stage[0] != 0 && stage != self.last_stage && self.last_stage[0] != 0 {
+            load_began = Some(now);
+        }
+        if save_loaded {
+            if self.last_player_valid && !player_valid {
+                self.invalid_since.get_or_insert(now);
+            }
+            if player_valid {
+                if let Some(gone_at) = self.invalid_since.take() {
+                    if now.duration_since(gone_at) >= MIN_LOAD_GAP {
+                        load_began = Some(load_began.map_or(gone_at, |t| t.min(gone_at)));
                     }
                 }
-                while self.prefix_history.len() > 1 && now.duration_since(self.prefix_history[1].0) >= SAFE_AGE {
-                    self.prefix_history.pop_front();
-                }
             }
+        } else {
+            self.invalid_since = None;
+        }
+        if stage[0] != 0 {
             self.last_stage = stage;
+        }
+        self.last_player_valid = player_valid;
+
+        if let Some(began) = load_began {
+            // Keep the EARLIEST unconfirmed load: it is the conservative one.
+            self.pending_load = Some(self.pending_load.map_or(began, |t| t.min(began)));
+            self.stable_since = None;
+        }
+        if let Some(began) = self.pending_load {
+            if player_valid && save_loaded && stage[0] != 0 {
+                let since = *self.stable_since.get_or_insert(now);
+                if now.duration_since(since) >= CONFIRM_DELAY {
+                    self.confirm_load(began, out);
+                }
+            } else {
+                self.stable_since = None;
+            }
         }
 
         // Nothing is delivered while no save is loaded (it would be lost).
@@ -399,7 +493,7 @@ impl DeliveryTracker {
             let waiting = self.in_flight.len() + received.len().saturating_sub(self.next_index);
             out.gui(format!(
                 "[Delivery] {waiting} item(s) are waiting for the game (it hands out a limited batch per \
-                 stage). Walk through a door / change stage to receive more."
+                 stage). Walk through a door / change stage (or reload with Left Stick + R + Y) to receive more."
             ));
         }
         Ok(())

@@ -2349,10 +2349,32 @@ static mut AP_RECEIVED_ITEMS_THIS_BATCH: u32 = 0;
 
 const AP_RECEIVE_BATCH_LIMIT: u32 = 50;
 
+// Deferred batch reset for reload / warp.
+//
+// `entrance::reload_current_stage()` (Left Stick + R + Y) and `warp_to_stage()`
+// call `reset_ap_item_receive_batch()` at the moment the reload is TRIGGERED,
+// while the old scene is still alive and only starting to fade out. This used
+// to zero the batch counter immediately, so the very next frame the buffer
+// loop could spawn item actors (up to another 50, one per frame) into a scene
+// that was being torn down -- and a same-stage reload doesn't change
+// CURRENT_STAGE_NAME, so the stage-change cooldown below never kicked in
+// either. That is the crash on "stage stalled at 50 items, then reload".
+//
+// Now the reset only ARMS a pending flag. Delivery stays frozen until the
+// player has actually gone away (PLAYER_PTR null = old scene torn down) and
+// come back (new scene), then the normal cooldown + fresh batch apply. The
+// timeout is a safety net for a reload that never nulls the player.
+static mut AP_RELOAD_PENDING: bool = false;
+static mut AP_RELOAD_SAW_NO_PLAYER: bool = false;
+static mut AP_RELOAD_PENDING_FRAMES: u32 = 0;
+const AP_RELOAD_TIMEOUT_FRAMES: u32 = 600;
+
 #[no_mangle]
 pub extern "C" fn reset_ap_item_receive_batch() {
     unsafe {
-        AP_RECEIVED_ITEMS_THIS_BATCH = 0;
+        AP_RELOAD_PENDING = true;
+        AP_RELOAD_SAW_NO_PLAYER = false;
+        AP_RELOAD_PENDING_FRAMES = 0;
     }
 }
 
@@ -2372,6 +2394,24 @@ fn ap_stage_cooldown_active() -> bool {
             AP_STAGE_COOLDOWN = STAGE_COOLDOWN_FRAMES;
             AP_RECEIVED_ITEMS_THIS_BATCH = 0;
         }
+
+        // A reload / warp was triggered: hold everything until the old scene
+        // is gone and the new one has a player again (see the note above).
+        if AP_RELOAD_PENDING {
+            AP_RELOAD_PENDING_FRAMES += 1;
+            if PLAYER_PTR.is_null() {
+                AP_RELOAD_SAW_NO_PLAYER = true;
+                return true;
+            }
+            if !AP_RELOAD_SAW_NO_PLAYER && AP_RELOAD_PENDING_FRAMES < AP_RELOAD_TIMEOUT_FRAMES {
+                return true; // old scene still fading out
+            }
+            AP_RELOAD_PENDING = false;
+            AP_LAST_STAGE = cur;
+            AP_STAGE_COOLDOWN = STAGE_COOLDOWN_FRAMES;
+            AP_RECEIVED_ITEMS_THIS_BATCH = 0;
+        }
+
         if AP_STAGE_COOLDOWN > 0 {
             AP_STAGE_COOLDOWN -= 1;
             return true;
