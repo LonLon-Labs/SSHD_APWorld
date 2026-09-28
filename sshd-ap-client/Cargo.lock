@@ -95,6 +95,7 @@ dependencies = [
  "ap-ipc",
  "archipelago_rs",
  "iced",
+ "oneshot",
  "process-memory",
  "serde",
  "serde_json",

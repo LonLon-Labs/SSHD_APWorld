@@ -19,6 +19,7 @@ cache/
 *.zip
 SSHD_Archipelago_Release.zip
 sshd-rando-backend/asm/additions/rust-additions/target/
+sshd-rando-backend/asm/debug_build
 custom_worlds/
 sshd-ap-client/dist/
 sshd-ap-client/target/
@@ -59,6 +60,7 @@ scan_for_flags.py
 check*
 convert_png_to_tpl.py
 compare*
+sshd-rando-backend/asm/debug_link_rust_additions.py
 extract_sword_models.py
 install_latest_patch.py
 ArchipelagoItem.arc.arc.LZ.bak

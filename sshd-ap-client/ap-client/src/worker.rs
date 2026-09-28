@@ -110,6 +110,7 @@ use crate::go_mode;
 use crate::ipc_requests;
 use crate::stages;
 use crate::colors::{self, LogSpan};
+use crate::delivery::{self, DeliveryTracker};
 use crate::goddess_chests::GoddessChestPoller;
 use crate::item_info;
 use crate::items;
@@ -187,7 +188,8 @@ macro_rules! vlog {
 /// bundled so `start_connection` can reset it in one assignment instead
 /// of a growing parameter list.
 struct SyncState {
-    next_item_index:      usize,
+    /// Crash-safe item delivery position + in-flight tracking (see delivery.rs).
+    delivery:             DeliveryTracker,
     location_poller:      Option<CustomFlagPoller>,
     goddess_chest_poller: Option<GoddessChestPoller>,
     // Beedle's shop needs no slot_data (its 10-entry table is hardcoded),
@@ -236,7 +238,7 @@ struct SyncState {
 impl SyncState {
     fn new() -> Self {
         SyncState {
-            next_item_index:      0,
+            delivery:             DeliveryTracker::new(),
             location_poller:      None,
             goddess_chest_poller: None,
             beedle_poller:        BeedleShopPoller::new(),
@@ -398,6 +400,8 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                                         sync.item_info_verify_pending = true;
                                     }
                                 }
+                                // Fresh game process: anything not in its save is gone.
+                                sync.delivery.game_lost();
                                 emulator = Some((mem, root_addr));
                                 emulator_search_logged = false;
                             },
@@ -431,6 +435,7 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
             // to searching.
             if mem.read_bytes(*root_addr, 1).is_err() {
                 log!(&output, "WARNING: Lost connection to the emulator. Searching again...");
+                sync.delivery.game_lost();
                 emulator = None;
                 emulator_search_logged = false;
             }
@@ -542,6 +547,10 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                                      and AP item info will be applied as soon as it's found."
                                 );
                             }
+                        }
+                        // Load the stored "safe" delivery index; item delivery waits for it.
+                        if let Some(client) = conn.client_mut() {
+                            sync.delivery.begin(client);
                         }
                         if !want_tags.is_empty() {
                             for t in &want_tags {
@@ -723,59 +732,31 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                     }
                 }
 
-                // Item delivery.
-                if let Some(client) = conn.client() {
-                    let received_items = client.received_items();
-                    while sync.next_item_index < received_items.len() {
-                        let received = &received_items[sync.next_item_index];
-
-                        // Precollected / start-inventory items (location id
-                        // -2, Archipelago's well-known "Server" location)
-                        // are already baked into the save file by the
-                        // sshd-rando patches, so they must NOT be delivered
-                        // again via the item_buffer mailbox -- mirrors
-                        // SSHDClient.py's `is_start_inventory` check.
-                        if received.location().id() == -2 {
-                            vlog!(
-                                "[AP] Received item #{}: {} → start-inventory item, already in \
-                                 save file, skipping delivery",
-                                sync.next_item_index,
-                                received.item()
-                            );
-                            sync.next_item_index += 1;
-                            continue;
+                // Item delivery -- crash-safe, paced, resumable (see delivery.rs).
+                if let Some(client) = conn.client_mut() {
+                    if let Some(line) = sync.delivery.poll_load(client) {
+                        if line.gui {
+                            log!(&output, "{}", line.text);
+                        } else {
+                            vlog!("{}", line.text);
                         }
-
-                        let ap_code = received.item().id();
-                        match items::original_id_for_ap_code(ap_code) {
-                            Some(original_id) => match crate::write_item_to_buffer(mem, root_addr, original_id) {
-                                Ok(true) => {
-                                    vlog!(
-                                        "[AP] Received item #{}: {} → queued (game item id {original_id})",
-                                        sync.next_item_index,
-                                        received.item()
-                                    );
-                                    sync.next_item_index += 1;
-                                },
-                                Ok(false) => break, // buffer full — retry next tick
-                                Err(e) => {
-                                    vlog!(
-                                        "[AP] Received item #{}: {} → failed to write to item_buffer: {e}",
-                                        sync.next_item_index,
-                                        received.item()
-                                    );
-                                    break;
-                                },
-                            },
-                            None => {
-                                vlog!(
-                                    "[AP] Received item #{}: {} → event-only or unknown AP code {ap_code}, \
-                                     not deliverable via item_buffer",
-                                    sync.next_item_index,
-                                    received.item()
-                                );
-                                sync.next_item_index += 1;
-                            },
+                    }
+                }
+                let tick = match conn.client() {
+                    Some(client) => sync.delivery.tick(mem, root_addr, client.received_items()),
+                    None => delivery::Tick::default(),
+                };
+                for line in tick.logs {
+                    if line.gui {
+                        log!(&output, "{}", line.text);
+                    } else {
+                        vlog!("{}", line.text);
+                    }
+                }
+                if let Some(value) = tick.persist {
+                    if let Some(client) = conn.client_mut() {
+                        if let Err(e) = sync.delivery.persist(client, value) {
+                            log!(&output, "[Delivery] Failed to save delivery index {value}: {e}");
                         }
                     }
                 }
@@ -1038,6 +1019,7 @@ fn handle_command(
             return Some(WorkerInput::RescanEmulator);
         },
         "flush_item_datastorage" => cmd_flush_item_datastorage(&args, connection, ap_connected, sync, output),
+        "set_delivery_index" => cmd_set_delivery_index(&args, connection, ap_connected, sync, output),
         "cheats" => cmd_cheats(emulator, output),
         "cheat" => cmd_cheat(&args, emulator, output),
         "hints" => cmd_hints(sync, output),
@@ -1064,6 +1046,7 @@ fn cmd_help(output: &EventSink) {
         "/sshd — client status (emulator, server, checks)",
         "/rescan — re-scan for the emulator and AP_IPC_ROOT",
         "/flush_item_datastorage confirm — re-give every item you've ever received (local and remote)",
+        "/set_delivery_index <n> — declare items 0..n already in your save (re-give n onward); no arg shows status",
         "/cheats — show cheat status;  /cheat <name> — toggle;  /cheat hovercraft <velocity>",
         "/hints — hints seen this session",
         "/deathlink, /breathlink — toggle those tags",
@@ -1170,11 +1153,57 @@ fn cmd_flush_item_datastorage(
         log!(output, "Not connected/authenticated to an Archipelago server yet.");
         return;
     };
-    log!(output, "[FlushDataStorage] Resetting delivery index (was {}) and requesting a full item re-sync...", sync.next_item_index);
-    sync.next_item_index = 0;
+    log!(output, "[FlushDataStorage] Resetting delivery index (was {}) and requesting a full item re-sync...", sync.delivery.safe_index());
+    let value = sync.delivery.set_index(0);
+    if let Err(e) = sync.delivery.persist(client, value) {
+        log!(output, "[FlushDataStorage] Failed to save the reset delivery index: {e}");
+    }
     match client.sync() {
         Ok(()) => log!(output, "[FlushDataStorage] Re-sync requested; items will be re-queued shortly."),
         Err(e) => log!(output, "[FlushDataStorage] Failed to request re-sync: {e}"),
+    }
+}
+
+/// `/set_delivery_index [n]`: with no argument, shows item-delivery status.
+/// With `n`, declares that received items 0..n are already in your save and
+/// everything from item n on should be (re)delivered. Use it to correct the
+/// position if the client was restarted while the game kept running.
+fn cmd_set_delivery_index(
+    args: &[&str],
+    connection: &mut Option<Connection<SlotData>>,
+    ap_connected: bool,
+    sync: &mut SyncState,
+    output: &EventSink,
+) {
+    if !ap_connected {
+        log!(output, "Not connected/authenticated to an Archipelago server yet.");
+        return;
+    }
+    let Some(client) = connection.as_mut().and_then(|c| c.client_mut()) else {
+        log!(output, "Not connected/authenticated to an Archipelago server yet.");
+        return;
+    };
+    let total = client.received_items().len();
+    let Some(arg) = args.first() else {
+        log!(
+            output,
+            "Delivery: {} of {total} received item(s) safe in your save; next to deliver is #{}; {} in the game's buffer{}.",
+            sync.delivery.safe_index(),
+            sync.delivery.next_index(),
+            sync.delivery.in_flight_count(),
+            if sync.delivery.is_ready() { "" } else { " (still loading stored index)" }
+        );
+        log!(output, "Usage: /set_delivery_index <n> — items 0..n are already in your save; n onward get delivered.");
+        return;
+    };
+    let Some(n) = parse_int_auto(arg).filter(|n| *n >= 0 && (*n as usize) <= total) else {
+        log!(output, "WARNING: '{arg}' must be a number between 0 and {total}.");
+        return;
+    };
+    let value = sync.delivery.set_index(n as usize);
+    match sync.delivery.persist(client, value) {
+        Ok(()) => log!(output, "[Delivery] Delivery index set to {value}; items from #{value} on will be delivered."),
+        Err(e) => log!(output, "[Delivery] Failed to save delivery index: {e}"),
     }
 }
 

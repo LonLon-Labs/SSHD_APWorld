@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 ap-ipc = { path = "../ap-ipc" }
 archipelago_rs = "3.0.1"
+oneshot = "0.2"
 iced = "0.13"
 process-memory = { path = "../process-memory" }
 serde = { version = "1.0.229", features = ["derive"] }

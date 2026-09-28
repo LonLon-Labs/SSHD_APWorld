@@ -41,6 +41,7 @@ mod beedle_shop;
 mod boss_defeats;
 mod cheat_sync;
 mod colors;
+mod delivery;
 mod go_mode;
 mod goddess_chests;
 mod gui;
@@ -59,9 +60,10 @@ use std::time::Duration;
 use std::collections::HashSet;
 
 use ap_ipc::{offsets, ApIpcRoot, AP_IPC_MAGIC, AP_IPC_SUPPORTED_VERSION};
-use archipelago_rs::{Connection, ConnectionOptions, Error, Event};
+use archipelago_rs::{BounceOptions, Connection, ConnectionOptions, DeathLinkOptions, Error, Event};
 use beedle_shop::BeedleShopPoller;
 use goddess_chests::GoddessChestPoller;
+use links::{LinkMonitor, LinkSignal};
 use locations::{CustomFlagPoller, SlotData};
 use process_memory::{MemError, ProcessMemory, SUPPORTED_EMULATOR_NAMES};
 
@@ -303,6 +305,13 @@ fn run_headless(args: StartupArgs) {
     let mut reported_locations: HashSet<i64> = HashSet::new();
     let mut loop_tick: u64 = 0;
 
+    // DeathLink / BreathLink state, matching worker.rs: tags the slot asked
+    // for (plus any the player enabled some other way, which headless mode
+    // has no command bar to do, but keeping the set matches worker.rs's
+    // shape) and the health/stamina watcher.
+    let mut active_tags: HashSet<String> = HashSet::from(["AP".to_string()]);
+    let mut link_monitor = LinkMonitor::new();
+
     println!("Entering poll loop (Ctrl+C to quit)...");
     loop {
         // ── 1. Drain Archipelago server events ──────────────────────────
@@ -353,6 +362,72 @@ fn run_headless(args: StartupArgs) {
                                 println!("[AP] Wrote {count} AP item info entries for textbox display.");
                             },
                             Err(e) => eprintln!("[IPC] failed to write AP item info table: {e}"),
+                        }
+
+                        // Fresh connection: restart the link monitor's grace period.
+                        link_monitor = LinkMonitor::new();
+                        let mut want_tags: Vec<&'static str> = Vec::new();
+                        if slot_data.option_death_link != 0 {
+                            want_tags.push("DeathLink");
+                        }
+                        if slot_data.option_breath_link != 0 {
+                            want_tags.push("BreathLink");
+                        }
+                        if !want_tags.is_empty() {
+                            for t in &want_tags {
+                                active_tags.insert(t.to_string());
+                            }
+                        }
+                    }
+                    // update_connection needs `client_mut`, so this is a separate
+                    // borrow from the `client()` block above.
+                    if let Some(client) = connection.client_mut() {
+                        if active_tags.len() > 1 {
+                            match client.update_connection(None, Some(active_tags.iter().map(|t| t.as_str()))) {
+                                Ok(()) => println!("[AP] Enabled tags: {}", active_tags.iter().cloned().collect::<Vec<_>>().join(", ")),
+                                Err(e) => eprintln!("[AP] Failed to enable link tags: {e}"),
+                            }
+                        }
+                    }
+                },
+                Event::DeathLink { source, cause, .. } => {
+                    let alias = connection
+                        .client()
+                        .map(|c| c.this_player().alias().to_string())
+                        .unwrap_or_default();
+                    if active_tags.contains("DeathLink")
+                        && source != alias
+                        && source != slot_name
+                        && !link_monitor.death_sent_recently()
+                    {
+                        let why = cause.unwrap_or_else(|| format!("{source} died."));
+                        println!("[DeathLink] {why}");
+                        match links::request_kill(&mut mem, root_addr) {
+                            Ok(()) => link_monitor.note_kill_requested(),
+                            Err(e) => eprintln!("[DeathLink] failed to kill Link: {e}"),
+                        }
+                    }
+                },
+                Event::Bounce { tags, data, .. } => {
+                    let is_breath = tags
+                        .as_ref()
+                        .is_some_and(|t| t.iter().any(|x| x.as_str() == "BreathLink"));
+                    if is_breath && active_tags.contains("BreathLink") {
+                        let alias = connection
+                            .client()
+                            .map(|c| c.this_player().alias().to_string())
+                            .unwrap_or_default();
+                        let field = |k: &str| {
+                            data.as_ref().and_then(|d| d.get(k)).and_then(|v| v.as_str()).map(str::to_string)
+                        };
+                        let source = field("source").unwrap_or_else(|| "Someone".to_string());
+                        if source != alias && source != slot_name && !link_monitor.breath_sent_recently() {
+                            let why = field("cause").unwrap_or_else(|| format!("{source} ran out of breath."));
+                            println!("[BreathLink] {why}");
+                            match links::request_drain(&mut mem, root_addr) {
+                                Ok(()) => link_monitor.note_drain_requested(),
+                                Err(e) => eprintln!("[BreathLink] failed to drain stamina: {e}"),
+                            }
                         }
                     }
                 },
@@ -440,7 +515,60 @@ fn run_headless(args: StartupArgs) {
             }
         }
 
-        // ── 1c. Poll all four location-check mechanisms ──────────────────
+        // ── 1c. DeathLink / BreathLink SENDING ────────────────────────────
+        // Watches Link's health/stamina and sends one bounce per event; see
+        // links.rs for latching and echo suppression. Polled even with both
+        // tags off so the latches stay current.
+        match link_monitor.poll(&mut mem, root_addr) {
+            Ok(signals) => {
+                for signal in signals {
+                    let tag = match signal {
+                        LinkSignal::Death => "DeathLink",
+                        LinkSignal::Breath => "BreathLink",
+                    };
+                    if !active_tags.contains(tag) {
+                        continue;
+                    }
+                    let Some(client) = connection.client_mut() else { continue };
+                    let alias = client.this_player().alias().to_string();
+                    let place = links::stage_display_name(&link_monitor.stage_code);
+                    match signal {
+                        LinkSignal::Death => {
+                            let cause = format!("{alias} died in {place}.");
+                            match client.death_link(DeathLinkOptions::new().cause(cause.clone())) {
+                                Ok(()) => {
+                                    link_monitor.note_death_sent();
+                                    println!("[DeathLink] Sent: {cause}");
+                                },
+                                Err(e) => eprintln!("[DeathLink] send failed: {e}"),
+                            }
+                        },
+                        LinkSignal::Breath => {
+                            let cause = format!("{alias} ran out of breath in {place}.");
+                            let now = std::time::SystemTime::now()
+                                .duration_since(std::time::UNIX_EPOCH)
+                                .map(|d| d.as_secs_f64())
+                                .unwrap_or(0.0);
+                            let data = serde_json::json!({
+                                "time": now,
+                                "source": alias,
+                                "cause": cause,
+                            });
+                            match client.bounce(data, BounceOptions::new().tags(["BreathLink"])) {
+                                Ok(()) => {
+                                    link_monitor.note_breath_sent();
+                                    println!("[BreathLink] Sent: {cause}");
+                                },
+                                Err(e) => eprintln!("[BreathLink] send failed: {e}"),
+                            }
+                        },
+                    }
+                }
+            },
+            Err(e) => eprintln!("[IPC] link monitor poll failed: {e}"),
+        }
+
+        // ── 1d. Poll all four location-check mechanisms ──────────────────
         // Each returns AP location codes newly detected as checked; we
         // union them, filter anything already reported (belt-and-braces —
         // each poller already does this internally too), and report the
