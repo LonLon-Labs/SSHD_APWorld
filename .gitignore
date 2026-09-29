@@ -74,3 +74,8 @@ apworld_check/
 # Rando stuff
 Skyward Sword HD Randomizer/
 preferences.yaml
+
+
+# Git Worktree folders
+feature/
+fix/

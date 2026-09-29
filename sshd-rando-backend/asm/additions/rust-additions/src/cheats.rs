@@ -474,8 +474,7 @@ pub fn handle_no_enemy_damage() {
             || action == player::PLAYER_ACTIONS::SMALL_DAMAGE
             || action == player::PLAYER_ACTIONS::KNOCK_BACK
             || action == player::PLAYER_ACTIONS::DAMAGE_ELECTRIC
-            || action == player::PLAYER_ACTIONS::ELECTRICUTED_MAYBE
-            || action == player::PLAYER_ACTIONS::RECOVER;
+            || action == player::PLAYER_ACTIONS::ELECTRICUTED_MAYBE;
 
         if !in_enemy_hit_reaction {
             PRE_HIT_HEALTH = (*FILE_MGR).FA.current_health;
