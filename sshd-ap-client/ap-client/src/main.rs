@@ -618,6 +618,16 @@ fn run_headless(args: StartupArgs) {
 
         // ── 2. Periodic check-count status (~every 5s at 60 Hz) ──────────
         loop_tick = loop_tick.wrapping_add(1);
+        // Keep the in-game help menu's check counts current (~2x/second).
+        if loop_tick % 30 == 0 {
+            if let Some(client) = connection.client() {
+                let mut all_checked = reported_locations.clone();
+                all_checked.extend(client.checked_locations().map(|l| l.id()));
+                if let Err(e) = write_check_stats(&mut mem, root_addr, client.slot_data(), &all_checked) {
+                    eprintln!("[IPC] failed to write check stats: {e}");
+                }
+            }
+        }
         if loop_tick % 300 == 0 {
             if let Ok((checked, total)) = read_check_stats(&mut mem, root_addr) {
                 if total > 0 {
@@ -677,9 +687,62 @@ pub(crate) fn read_check_stats(mem: &mut impl ProcessMemory, root_addr: usize) -
     let addr = root_addr + offsets::CHECK_STATS;
     let raw = mem.read_bytes(addr, std::mem::size_of::<ap_ipc::ApCheckStats>())?;
     let stats: ap_ipc::ApCheckStats = ap_ipc::bytes::read(&raw);
-    let checked = stats.normal_checked;
-    let total = stats.normal_total;
-    Ok((checked, total))
+    // Copy out of the packed struct before doing arithmetic.
+    let (normal_checked, normal_total) = (stats.normal_checked, stats.normal_total);
+    let (ap_checked, ap_total) = (stats.ap_checked, stats.ap_total);
+    Ok((normal_checked.saturating_add(ap_checked), normal_total.saturating_add(ap_total)))
+}
+
+/// Port of `SSHDClient.py`'s `_update_ap_check_stats`: writes the location
+/// check counts into `AP_IPC_ROOT.check_stats` (after the 4-byte magic) so
+/// the game's in-game Help menu (see `lyt.rs` on the game side) can show them.
+/// The game only READS this mailbox; if the client never writes it, the help
+/// text shows 0/0 everywhere.
+///
+/// Layout written (little-endian u16 x4): normal_checked, normal_total,
+/// ap_checked, ap_total, where "ap" locations are those whose flag appears
+/// in `slot_data.ap_item_info` (cross-world items) and "normal" is the rest
+/// of `custom_flag_to_location`. `all_checked` should be the union of the
+/// server's checked locations and everything we've reported.
+///
+/// Returns `Ok(None)` (writing nothing) until slot_data has location data,
+/// else `Ok(Some((checked, total)))` over all counted locations.
+pub(crate) fn write_check_stats(
+    mem: &mut impl ProcessMemory,
+    root_addr: usize,
+    slot_data: &SlotData,
+    all_checked: &HashSet<i64>,
+) -> Result<Option<(u16, u16)>, MemError> {
+    if slot_data.custom_flag_to_location.is_empty() {
+        return Ok(None);
+    }
+
+    let total_locations = slot_data.custom_flag_to_location.len();
+    let ap_codes: HashSet<i64> = slot_data
+        .ap_item_info
+        .keys()
+        .filter_map(|flag_id| slot_data.custom_flag_to_location.get(flag_id).copied())
+        .collect();
+    let ap_total = ap_codes.len();
+    let normal_total = total_locations.saturating_sub(ap_total);
+
+    let ap_checked = ap_codes.iter().filter(|c| all_checked.contains(c)).count();
+    let total_checked = slot_data
+        .custom_flag_to_location
+        .values()
+        .filter(|c| all_checked.contains(c))
+        .count();
+    let normal_checked = total_checked.saturating_sub(ap_checked);
+
+    let clamp = |n: usize| n.min(u16::MAX as usize) as u16;
+    let mut data = Vec::with_capacity(8);
+    for v in [normal_checked, normal_total, ap_checked, ap_total] {
+        data.extend_from_slice(&clamp(v).to_le_bytes());
+    }
+    // +4 skips the magic, which belongs to the game.
+    mem.write_bytes(root_addr + offsets::CHECK_STATS + 4, &data)?;
+
+    Ok(Some((clamp(total_checked), clamp(total_locations))))
 }
 
 // Keeping the full `ApIpcRoot` type referenced here (via this size assert)

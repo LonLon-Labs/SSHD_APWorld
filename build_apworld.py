@@ -142,39 +142,66 @@ def build_apworld():
     # Files/folders to exclude
     exclude_patterns = [
         "__pycache__",
-        ".pyc",
+        "*.pyc",
+        "*.pyo",
+        "*.pyd",
         ".git",
+
         "build_apworld.py",
+
+        # Build/output directories
+        "sshd-rando-backend/asm/additions/rust-additions/target",
+        "sshd-rando-backend/asm/debug_build",
+
+        # Files not needed in the apworld
+        "assets/patch_custom_model.py",
+        "assets/patch_model_tools.py",
+        "assets/compress_arc.py",
     ]
-    
+
+    def should_exclude(rel_path: Path) -> bool:
+        """Return True if a file or directory should be excluded."""
+        rel_str = str(rel_path).replace("\\", "/")
+
+        for pattern in exclude_patterns:
+            pattern = pattern.replace("\\", "/").rstrip("/")
+
+            # Directory/path exclusion:
+            # Excludes the directory itself and everything underneath it.
+            if rel_str == pattern or rel_str.startswith(pattern + "/"):
+                return True
+
+            # Glob-style filename exclusion
+            if pattern.startswith("*."):
+                if rel_str.endswith(pattern[1:]):
+                    return True
+
+            # Simple filename exclusion
+            if "/" not in pattern and rel_path.name == pattern:
+                return True
+
+        return False
+
     def should_include(filepath: Path) -> bool:
         """Check if a file should be included in the .apworld."""
         rel_path = filepath.relative_to(source_dir)
         rel_str = str(rel_path).replace("\\", "/")
-        filename = filepath.name
-        
-        # Check if explicitly excluded (exact filename match to avoid false positives)
-        for pattern in exclude_patterns:
-            if pattern in ["__pycache__", ".pyc", ".git"]:
-                # Substring match for these
-                if pattern in rel_str:
-                    return False
-            else:
-                # Exact filename match for others
-                if filename == pattern:
-                    return False
-        
+
+        # Exclusions always take priority.
+        if should_exclude(rel_path):
+            return False
+
         # Check if matches include patterns
         for pattern in include_patterns:
+            pattern = pattern.replace("\\", "/")
+
             if pattern.endswith("/"):
-                # Directory pattern
                 if rel_str.startswith(pattern):
                     return True
             else:
-                # File pattern
                 if rel_str == pattern or rel_str.startswith(pattern + "/"):
                     return True
-        
+
         return False
     
     print(f"Building sshd.apworld...")

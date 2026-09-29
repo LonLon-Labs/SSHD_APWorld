@@ -235,6 +235,10 @@ struct SyncState {
     // Watches Link's health/stamina (via AP_IPC_ROOT.player_vitals) and
     // guards against echoing our own DeathLink/BreathLink back at us.
     link_monitor: LinkMonitor,
+    // Last time the check counts were written to `AP_IPC_ROOT.check_stats`
+    // (what the game's in-game help menu displays). Throttled since it
+    // clones/unions the checked-location sets.
+    check_stats_last_write: Option<Instant>,
 }
 
 impl SyncState {
@@ -252,6 +256,7 @@ impl SyncState {
             active_tags: HashSet::from(["AP".to_string()]),
             hints: Vec::new(),
             link_monitor: LinkMonitor::new(),
+            check_stats_last_write: None,
         }
     }
 }
@@ -884,8 +889,22 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                     }
                 }
 
-                if let Ok((checked, total)) = crate::read_check_stats(mem, root_addr) {
-                    send(&output, WorkerEvent::Stats { checked, total });
+                // Write the check counts the game's in-game help menu reads
+                // (port of SSHDClient.py's `_update_ap_check_stats`). The game
+                // only reads this mailbox, so without this it shows 0/0.
+                if sync.check_stats_last_write.map_or(true, |t| t.elapsed() >= Duration::from_millis(500)) {
+                    sync.check_stats_last_write = Some(Instant::now());
+                    if let Some(client) = conn.client() {
+                        let mut all_checked = reported_locations.clone();
+                        all_checked.extend(client.checked_locations().map(|l| l.id()));
+                        match crate::write_check_stats(mem, root_addr, client.slot_data(), &all_checked) {
+                            Ok(Some((checked, total))) => {
+                                send(&output, WorkerEvent::Stats { checked, total });
+                            },
+                            Ok(None) => {},
+                            Err(e) => vlog!("[IPC] failed to write check stats: {e}"),
+                        }
+                    }
                 }
             }
         }
