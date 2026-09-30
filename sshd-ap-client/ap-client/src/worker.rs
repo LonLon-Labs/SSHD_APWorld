@@ -1095,7 +1095,7 @@ fn cmd_help(output: &EventSink) {
         "/rescan — re-scan for the emulator and AP_IPC_ROOT",
         "/flush_item_datastorage confirm — re-give every item you've ever received (local and remote)",
         "/set_delivery_index <n> — declare items 0..n already in your save (re-give n onward); no arg shows status",
-        "/cheats — show cheat status;  /cheat <name> — toggle;  /cheat hovercraft <velocity>",
+        "/cheats — show cheat status;  /cheat <name> — toggle;  /cheat hovercraft <velocity>;  /cheat speed <multiplier|off>",
         "/hints — hints seen this session",
         "/deathlink, /breathlink — toggle those tags",
         "/spawn_actor <ACTORID name|id> [param1] [oarc], /spawn_demise — spawn an actor",
@@ -1277,7 +1277,11 @@ fn cmd_cheats(emulator: &mut Option<(Backend, usize)>, output: &EventSink) {
     let normal = if speed == 1.0 || speed == 0.0 { " (normal)" } else { "" };
     log!(output, "  {:<20} {:.1}x{}", "speed", speed, normal);
     log!(output, "  {:<20} {:.4}", "hovercraft velocity", f32::from_bits(hover_bits));
-    log!(output, "Use /cheat <name> to toggle. Names: {}", cheat_sync::TOGGLEABLE_CHEAT_NAMES.join(", "));
+    log!(
+        output,
+        "Use /cheat <name> to toggle, or /cheat speed <multiplier>. Names: {}, speed",
+        cheat_sync::TOGGLEABLE_CHEAT_NAMES.join(", ")
+    );
 }
 
 fn cmd_cheat(args: &[&str], emulator: &mut Option<(Backend, usize)>, output: &EventSink) {
@@ -1286,11 +1290,20 @@ fn cmd_cheat(args: &[&str], emulator: &mut Option<(Backend, usize)>, output: &Ev
     if name.is_empty() {
         log!(output, "Usage: /cheat <name>  — toggle a cheat on/off");
         log!(output, "       /cheat hovercraft <velocity>  — set sustain velocity (1.85 = stable hover)");
-        log!(output, "Available: {}", all_names.join(", "));
+        log!(output, "       /cheat speed <multiplier|off>  - set movement speed (1.0 = normal, e.g. /cheat speed 2.5)");
+        log!(output, "Available: {}, speed", all_names.join(", "));
         return;
     }
+
+    // /cheat speed <multiplier>: not a boolean toggle, so it's handled
+    // separately from TOGGLEABLE_CHEAT_NAMES (which /cheats also lists).
+    if name == "speed" {
+        cmd_cheat_speed(args.get(1).copied(), emulator, output);
+        return;
+    }
+
     if !cheat_sync::TOGGLEABLE_CHEAT_NAMES.contains(&name.as_str()) {
-        log!(output, "WARNING: Unknown cheat '{name}'. Available: {}", all_names.join(", "));
+        log!(output, "WARNING: Unknown cheat '{name}'. Available: {}, speed", all_names.join(", "));
         return;
     }
     let Some((mem, root_addr)) = require_emulator(emulator, output) else { return };
@@ -1321,6 +1334,52 @@ fn cmd_cheat(args: &[&str], emulator: &mut Option<(Backend, usize)>, output: &Ev
         Ok(Some(v)) => log!(output, "Cheat '{name}' is now {}", if v != 0 { "ON" } else { "OFF" }),
         Ok(None) => log!(output, "WARNING: Unknown cheat '{name}'."),
         Err(e) => log!(output, "Failed to toggle cheat '{name}': {e}"),
+    }
+}
+
+/// `/cheat speed [multiplier|off]`: with no argument, shows the current
+/// multiplier; otherwise sets it live (1.0 / `off` = normal). Only the
+/// multiplier's own 4 bytes are written, see `cheat_sync::set_speed_multiplier`.
+fn cmd_cheat_speed(arg: Option<&str>, emulator: &mut Option<(Backend, usize)>, output: &EventSink) {
+    let Some(arg) = arg else {
+        let Some((mem, root_addr)) = require_emulator(emulator, output) else { return };
+        match cheat_sync::read_cheat_flags(mem, root_addr) {
+            Ok(flags) => {
+                let bits = flags.speed_multiplier_bits; // copy out of the packed struct
+                let speed = f32::from_bits(bits);
+                let normal = if speed == 1.0 || speed == 0.0 { " (normal)" } else { "" };
+                log!(output, "Speed multiplier is {speed:.1}x{normal}.");
+            },
+            Err(e) => log!(output, "Couldn't read cheat flags: {e}"),
+        }
+        log!(output, "Usage: /cheat speed <multiplier|off>  (1.0 = normal, e.g. /cheat speed 2.5)");
+        return;
+    };
+
+    let multiplier = match cheat_sync::parse_speed_multiplier(arg) {
+        Ok(m) => m,
+        Err(msg) => {
+            log!(output, "WARNING: {msg}");
+            return;
+        },
+    };
+    let Some((mem, root_addr)) = require_emulator(emulator, output) else { return };
+    match cheat_sync::set_speed_multiplier(mem, root_addr, multiplier) {
+        Ok(()) => {
+            if multiplier == 1.0 {
+                log!(output, "Speed multiplier reset to normal (1.0x).");
+            } else {
+                log!(output, "Speed multiplier set to {multiplier:.1}x.");
+                if multiplier > cheat_sync::SPEED_COLLISION_WARN_ABOVE {
+                    log!(
+                        output,
+                        "WARNING: Above {:.1}x can cause collision issues.",
+                        cheat_sync::SPEED_COLLISION_WARN_ABOVE
+                    );
+                }
+            }
+        },
+        Err(e) => log!(output, "Failed to set speed multiplier: {e}"),
     }
 }
 

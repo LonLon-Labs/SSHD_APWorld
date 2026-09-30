@@ -213,9 +213,70 @@ pub fn set_hovercraft_velocity(
     mem.write_bytes(addr, &ap_ipc::bytes::write(&flags))
 }
 
+/// Highest multiplier `/cheat speed` accepts. The apworld's
+/// `cheat_speed_multiplier` option tops out at 5.0x (range 10-50, x10), so
+/// this leaves headroom for experimenting without allowing absurd values.
+pub const MAX_SPEED_MULTIPLIER: f32 = 10.0;
+
+/// Above this the apworld itself warns about collision problems.
+pub const SPEED_COLLISION_WARN_ABOVE: f32 = 3.0;
+
+/// Parses the argument to `/cheat speed <multiplier>`. Accepts a plain
+/// float (`2`, `2.5`) or `off`/`reset`/`normal` (all mean 1.0x). Returns a
+/// user-facing error message on bad input.
+pub fn parse_speed_multiplier(arg: &str) -> Result<f32, String> {
+    let t = arg.trim().trim_end_matches(['x', 'X']);
+    if matches!(t.to_lowercase().as_str(), "off" | "reset" | "normal") {
+        return Ok(1.0);
+    }
+    let value: f32 = t
+        .parse()
+        .map_err(|_| format!("Invalid speed '{arg}'. Use a number like 2 or 2.5, or 'off'."))?;
+    if !value.is_finite() || value < 0.1 || value > MAX_SPEED_MULTIPLIER {
+        return Err(format!("Speed must be between 0.1 and {MAX_SPEED_MULTIPLIER:.0} (1.0 = normal)."));
+    }
+    Ok(value)
+}
+
+/// Sets the live speed multiplier (`speed_multiplier_bits`). Writes ONLY
+/// those 4 bytes rather than read-modify-writing the whole struct, so it
+/// can't race with the game clearing a one-shot field like
+/// `spawn_demise_request`. 1.0 (bits 0x3F800000) means "disabled" on the
+/// game side, see `handle_speed_multiplier` in cheats.rs.
+pub fn set_speed_multiplier(
+    mem: &mut impl ProcessMemory,
+    root_addr: usize,
+    multiplier: f32,
+) -> Result<(), MemError> {
+    let addr = root_addr
+        + offsets::CHEAT_FLAGS
+        + std::mem::offset_of!(ap_ipc::ApCheatFlags, speed_multiplier_bits);
+    mem.write_bytes(addr, &multiplier.to_bits().to_le_bytes())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn speed_bits_offset_matches_game_side() {
+        // cheats.rs documents speed_multiplier_bits at +24 within ApCheatFlags.
+        assert_eq!(std::mem::offset_of!(ap_ipc::ApCheatFlags, speed_multiplier_bits), 24);
+    }
+
+    #[test]
+    fn parse_speed_multiplier_cases() {
+        assert_eq!(parse_speed_multiplier("2"), Ok(2.0));
+        assert_eq!(parse_speed_multiplier("2.5"), Ok(2.5));
+        assert_eq!(parse_speed_multiplier("3x"), Ok(3.0));
+        assert_eq!(parse_speed_multiplier("off"), Ok(1.0));
+        assert_eq!(parse_speed_multiplier("RESET"), Ok(1.0));
+        assert!(parse_speed_multiplier("0").is_err());
+        assert!(parse_speed_multiplier("-2").is_err());
+        assert!(parse_speed_multiplier("11").is_err());
+        assert!(parse_speed_multiplier("nan").is_err());
+        assert!(parse_speed_multiplier("fast").is_err());
+    }
 
     #[test]
     fn speed_multiplier_conversion_matches_python() {
