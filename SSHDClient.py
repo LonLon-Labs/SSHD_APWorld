@@ -2319,7 +2319,11 @@ class SSHDContext(CommonContext):
         boss_key_shuffle = int(self.slot_data.get("option_boss_key_shuffle", 1))
         if self._slot_option_enabled("dungeon_goal_requirement") and boss_key_shuffle != 6:
             try:
-                required_dungeons = int(self.slot_data.get("option_required_dungeon_count", 2))
+                # Goal count is its own option; fall back to the old shared value for older seeds.
+                required_dungeons = int(self.slot_data.get(
+                    "option_dungeon_goal_count",
+                    self.slot_data.get("option_required_dungeon_count", 2),
+                ))
             except (TypeError, ValueError):
                 required_dungeons = 2
 

@@ -230,6 +230,17 @@ Skyward Sword HD:
   # Lanayru Mining Facility is beaten when exiting to the Temple of Time
   # Other dungeons are beaten when the Goddess Crest is struck with a Skyward Strike
   required_dungeon_count: 2
+
+  # Choose exactly which dungeons are required (optional)
+  # If ANY of these are true, only the chosen dungeons are required and both
+  # required_dungeon_count and dungeons_include_sky_keep are ignored.
+  require_skyview_temple: false
+  require_earth_temple: false
+  require_lanayru_mining_facility: false
+  require_ancient_cistern: false
+  require_sandship: false
+  require_fire_sanctuary: false
+  require_sky_keep: false
   
   # Sword requirement to open the Gate of Time
   # Options: goddess_sword, goddess_longsword, goddess_white_sword, master_sword, true_master_sword
@@ -252,9 +263,9 @@ Skyward Sword HD:
   # When enabled, you must defeat the configured number of dungeons before the goal boss counts for victory
   dungeon_goal_requirement: false
   
-  # Number of dungeons to require when dungeon_goal_requirement is enabled (0-7)
-  # Note: Beating dungeon bosses is what counts as a "required dungeon"
-  required_dungeon_count: 0
+  # Number of dungeons to require when dungeon_goal_requirement is enabled (0-6)
+  # Independent of required_dungeon_count above. Fi will tell you this number.
+  dungeon_goal_count: 2
   
   # Require Greg (The Green Rupee)
   # When enabled, you must obtain Greg the Green Rupee before the goal boss counts for victory

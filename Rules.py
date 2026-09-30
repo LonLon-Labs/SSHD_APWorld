@@ -451,10 +451,10 @@ def _can_complete_game(state: CollectionState, world: "SSHDWorld") -> bool:
         boss_keys_setting = resolved.get('boss_keys', 'own_dungeon')
 
         if boss_keys_setting != 'removed':
-            # Use required_dungeon_count (AP goal count) not required_dungeons
-            # (which is set to 0 when require_dungeons is on).
+            # Use dungeon_goal_count (the AP goal count), not required_dungeons
+            # (the independent required-dungeon selection Fi lists).
             try:
-                required_dungeons = int(resolved.get('required_dungeon_count', '2'))
+                required_dungeons = int(resolved.get('dungeon_goal_count', '2'))
             except (ValueError, TypeError):
                 required_dungeons = 2
 
