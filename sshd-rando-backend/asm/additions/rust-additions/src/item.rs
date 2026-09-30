@@ -2812,6 +2812,11 @@ pub extern "C" fn refresh_ipc_addresses() {
             save_loaded: save_loaded as u8,
             player_valid: player_valid as u8,
         };
+
+        // Mirror the current/next stage-loading state (stage, room, layer,
+        // entrance, night, trial, fade frames, ...) for the client's
+        // `/stage_info` command.
+        crate::entrance::refresh_stage_info();
     }
 }
 

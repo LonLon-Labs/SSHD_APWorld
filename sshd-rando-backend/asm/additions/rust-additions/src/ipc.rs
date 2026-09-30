@@ -46,7 +46,7 @@ use static_assertions::assert_eq_size;
 /// a breaking change to `ApIpcRoot`'s layout so old/new clients don't
 /// silently misread each other).
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_VERSION: u16 = 8;
+pub const AP_IPC_VERSION: u16 = 9;
 
 /// Live BY-VALUE COPY of the player's health and stamina, refreshed every
 /// frame by `item::refresh_ipc_addresses()`. Lets the host client detect
@@ -82,6 +82,42 @@ pub struct ApLinkRequests {
     pub drain_stamina_request: u8,
 }
 assert_eq_size!([u8; 2], ApLinkRequests);
+
+/// Live BY-VALUE COPY of the current/next stage-loading state, refreshed
+/// every frame by `entrance::refresh_stage_info()` (called from
+/// `item::refresh_ipc_addresses()`). Backs the client's `/stage_info`.
+///
+/// - `stage_name` .. `respawn_type`: the CURRENT_* globals (+ RESPAWN_TYPE).
+/// - `next_*`: the NEXT_* globals (the pending/last requested transition).
+/// - `stage_mgr_valid`: 1 if STAGE_MGR is non-null.
+/// - `in_actually_trigger_entrance`:
+///   `dStageMgr.set_in_actually_trigger_entrance`.
+#[repr(C, packed(1))]
+pub struct ApStageInfo {
+    pub stage_name:                   [u8; 8],
+    pub stage_suffix:                 [u8; 4],
+    pub fade_frames:                  u16,
+    pub room:                         u8,
+    pub layer:                        u8,
+    pub entrance:                     u8,
+    pub night:                        u8,
+    pub trial:                        u8,
+    pub unk:                          u8,
+    pub layer_copy:                   u8,
+    pub respawn_type:                 u8,
+    pub next_stage_name:              [u8; 8],
+    pub next_stage_suffix:            [u8; 4],
+    pub next_fade_frames:             u16,
+    pub next_room:                    u8,
+    pub next_layer:                   u8,
+    pub next_entrance:                u8,
+    pub next_night:                   u8,
+    pub next_trial:                   u8,
+    pub next_unk:                     u8,
+    pub stage_mgr_valid:              u8,
+    pub in_actually_trigger_entrance: u8,
+}
+assert_eq_size!([u8; 44], ApStageInfo);
 
 #[repr(C, packed(1))]
 pub struct ApIpcRoot {
@@ -180,6 +216,10 @@ pub struct ApIpcRoot {
     // ── Python-write / Rust-read: one-shot DeathLink/BreathLink receive
     //    requests (see `ApLinkRequests`). Also appended at the end.
     pub link_requests: ApLinkRequests,
+
+    // ── Rust-write / client-read: live stage-loading state (see
+    //    `ApStageInfo`). Appended at the END. Added in IPC version 9.
+    pub stage_info: ApStageInfo,
 }
 
 #[no_mangle]
@@ -286,6 +326,31 @@ pub static mut AP_IPC_ROOT: ApIpcRoot = ApIpcRoot {
         kill_request:          0,
         drain_stamina_request: 0,
     },
+
+    stage_info: ApStageInfo {
+        stage_name:                   [0; 8],
+        stage_suffix:                 [0; 4],
+        fade_frames:                  0,
+        room:                         0,
+        layer:                        0,
+        entrance:                     0,
+        night:                        0,
+        trial:                        0,
+        unk:                          0,
+        layer_copy:                   0,
+        respawn_type:                 0,
+        next_stage_name:              [0; 8],
+        next_stage_suffix:            [0; 4],
+        next_fade_frames:             0,
+        next_room:                    0,
+        next_layer:                   0,
+        next_entrance:                0,
+        next_night:                   0,
+        next_trial:                   0,
+        next_unk:                     0,
+        stage_mgr_valid:              0,
+        in_actually_trigger_entrance: 0,
+    },
 };
 
 // Self-check: catches accidental layout drift at compile time. Update this
@@ -306,6 +371,7 @@ assert_eq_size!(
         + (4 * 1024)
         + (8 + 98 * 512)
         + 10
-        + 2],
+        + 2
+        + 44],
     ApIpcRoot
 );

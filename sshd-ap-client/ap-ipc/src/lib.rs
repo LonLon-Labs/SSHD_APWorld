@@ -18,7 +18,7 @@ use std::mem::size_of;
 
 /// 8-byte discovery marker the client scans for exactly once.
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_SUPPORTED_VERSION: u16 = 8;
+pub const AP_IPC_SUPPORTED_VERSION: u16 = 9;
 
 // ─── Sub-structs (mirror commands.rs / item.rs) ────────────────────────────
 
@@ -204,6 +204,37 @@ pub struct ApLinkRequests {
     pub drain_stamina_request: u8,
 }
 
+/// Live by-value copy of the current/next stage-loading state (IPC version
+/// 9+), refreshed every frame by the game. Mirrors `ApStageInfo` in ipc.rs.
+#[repr(C, packed)]
+#[derive(Copy, Clone, Debug, Default)]
+pub struct ApStageInfo {
+    pub stage_name:                   [u8; 8],
+    pub stage_suffix:                 [u8; 4],
+    pub fade_frames:                  u16,
+    pub room:                         u8,
+    pub layer:                        u8,
+    pub entrance:                     u8,
+    pub night:                        u8,
+    pub trial:                        u8,
+    pub unk:                          u8,
+    pub layer_copy:                   u8,
+    pub respawn_type:                 u8,
+    pub next_stage_name:              [u8; 8],
+    pub next_stage_suffix:            [u8; 4],
+    pub next_fade_frames:             u16,
+    pub next_room:                    u8,
+    pub next_layer:                   u8,
+    pub next_entrance:                u8,
+    pub next_night:                   u8,
+    pub next_trial:                   u8,
+    pub next_unk:                     u8,
+    /// 1 if the game's STAGE_MGR is non-null.
+    pub stage_mgr_valid:              u8,
+    /// `dStageMgr.set_in_actually_trigger_entrance`.
+    pub in_actually_trigger_entrance: u8,
+}
+
 #[repr(C, packed)]
 #[derive(Copy, Clone, Debug)]
 pub struct ApIpcRoot {
@@ -276,6 +307,9 @@ pub struct ApIpcRoot {
 
     // One-shot DeathLink/BreathLink receive requests (IPC version 8+).
     pub link_requests: ApLinkRequests,
+
+    // Live stage-loading state (IPC version 9+). Appended at the end.
+    pub stage_info: ApStageInfo,
 }
 
 impl Default for ApIpcRoot {
@@ -299,6 +333,7 @@ impl Default for ApIpcRoot {
             item_info_table: ApItemInfoTable::default(),
             player_vitals:   ApPlayerVitals::default(),
             link_requests:   ApLinkRequests::default(),
+            stage_info:      ApStageInfo::default(),
         }
     }
 }
@@ -327,7 +362,8 @@ pub mod offsets {
         ITEM_BUFFER + size_of::<[ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE]>();
     pub const PLAYER_VITALS: usize = ITEM_INFO_TABLE + size_of::<ApItemInfoTable>();
     pub const LINK_REQUESTS: usize = PLAYER_VITALS + size_of::<ApPlayerVitals>();
-    pub const TOTAL_SIZE: usize = LINK_REQUESTS + size_of::<ApLinkRequests>();
+    pub const STAGE_INFO: usize = LINK_REQUESTS + size_of::<ApLinkRequests>();
+    pub const TOTAL_SIZE: usize = STAGE_INFO + size_of::<ApStageInfo>();
 
     pub fn item_buffer_slot(index: usize) -> usize {
         ITEM_BUFFER + index * size_of::<ArchipelagoItemSlot>()
@@ -443,6 +479,7 @@ mod tests {
         assert_eq!(size_of::<ApItemInfoTable>(), 8 + 98 * 512);
         assert_eq!(size_of::<ApPlayerVitals>(), 10);
         assert_eq!(size_of::<ApLinkRequests>(), 2);
+        assert_eq!(size_of::<ApStageInfo>(), 44);
     }
 
     #[test]
@@ -464,7 +501,8 @@ mod tests {
         assert_eq!(offsets::ITEM_INFO_TABLE, 1095 + 4 * 1024);
         assert_eq!(offsets::PLAYER_VITALS, 1095 + 4 * 1024 + 8 + 98 * 512);
         assert_eq!(offsets::LINK_REQUESTS, 1095 + 4 * 1024 + 8 + 98 * 512 + 10);
-        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 512 + 10 + 2);
+        assert_eq!(offsets::STAGE_INFO, 1095 + 4 * 1024 + 8 + 98 * 512 + 10 + 2);
+        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 512 + 10 + 2 + 44);
         assert_eq!(size_of::<ApIpcRoot>(), offsets::TOTAL_SIZE);
     }
 

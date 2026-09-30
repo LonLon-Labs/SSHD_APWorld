@@ -1077,6 +1077,7 @@ fn handle_command(
         "spawn_demise" => cmd_spawn_demise(emulator, output),
         "flag" => cmd_flag(&args, emulator, output),
         "warp" => cmd_warp(&args, emulator, output),
+        "stage_info" => cmd_stage_info(emulator, output),
         "go_mode" => cmd_go_mode(connection, ap_connected, emulator, reported_locations, output),
         "received" => cmd_received(connection, ap_connected, output),
         "missing" => cmd_location_list(false, connection, ap_connected, output),
@@ -1101,6 +1102,7 @@ fn cmd_help(output: &EventSink) {
         "/spawn_actor <ACTORID name|id> [param1] [oarc], /spawn_demise — spawn an actor",
         "/flag <storyflag|sceneflag|itemflag|dungeonflag> <get|set|unset> <id|all> [value_or_scene]",
         "/warp start  |  /warp <stage name or id> [layer]",
+        "/stage_info — current stage, layer, room, entrance, night, trial, fade frames (and the pending next-stage values)",
         "/go_mode — victory requirements and whether you have them",
         "/received, /missing, /checked, /players — multiworld info",
     ] {
@@ -1696,6 +1698,85 @@ fn cmd_warp(args: &[&str], emulator: &mut Option<(Backend, usize)>, output: &Eve
              is running with the mod loaded."
         ),
     }
+}
+
+/// Reads a null-terminated ASCII field (stage names/suffixes) into a String.
+fn c_str(bytes: &[u8]) -> String {
+    let end = bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len());
+    String::from_utf8_lossy(&bytes[..end]).into_owned()
+}
+
+/// `/stage_info`: prints the game's current stage-loading state (from
+/// `AP_IPC_ROOT.stage_info`, refreshed every frame by the game from the
+/// CURRENT_*/NEXT_* globals and STAGE_MGR), plus the pending next-stage values.
+fn cmd_stage_info(emulator: &mut Option<(Backend, usize)>, output: &EventSink) {
+    let Some((mem, root_addr)) = require_emulator(emulator, output) else { return };
+    let raw = match mem.read_bytes(
+        root_addr + offsets::STAGE_INFO,
+        std::mem::size_of::<ap_ipc::ApStageInfo>(),
+    ) {
+        Ok(raw) => raw,
+        Err(e) => {
+            log!(output, "WARNING: Couldn't read stage info ({e}). Is the game running the matching mod version (IPC v{AP_IPC_SUPPORTED_VERSION})?");
+            return;
+        },
+    };
+    let info: ap_ipc::ApStageInfo = ap_ipc::bytes::read(&raw);
+
+    // Copy packed fields to locals before formatting (no references into
+    // packed structs).
+    let (stage_name, stage_suffix) = (info.stage_name, info.stage_suffix);
+    let (fade_frames, room, layer, entrance) = (info.fade_frames, info.room, info.layer, info.entrance);
+    let (night, trial, unk) = (info.night, info.trial, info.unk);
+    let (layer_copy, respawn_type) = (info.layer_copy, info.respawn_type);
+    let (next_stage_name, next_stage_suffix) = (info.next_stage_name, info.next_stage_suffix);
+    let (next_fade_frames, next_room, next_layer) = (info.next_fade_frames, info.next_room, info.next_layer);
+    let (next_entrance, next_night, next_trial, next_unk) =
+        (info.next_entrance, info.next_night, info.next_trial, info.next_unk);
+    let (stage_mgr_valid, in_trigger) = (info.stage_mgr_valid, info.in_actually_trigger_entrance);
+
+    let name = c_str(&stage_name);
+    if name.is_empty() {
+        log!(output, "No stage loaded yet.");
+        return;
+    }
+    let suffix = c_str(&stage_suffix);
+    let yes_no = |v: u8| if v != 0 { "Yes" } else { "No" };
+
+    log!(output, "=== Stage Info ===");
+    log!(output, "  Stage:        {name}");
+    if !suffix.is_empty() {
+        log!(output, "  Suffix:       {suffix}");
+    }
+    log!(output, "  Layer:        {layer}");
+    log!(output, "  Room:         {room}");
+    log!(output, "  Entrance:     {entrance}");
+    log!(output, "  Night:        {} ({night})", yes_no(night));
+    log!(output, "  Trial:        {} ({trial})", yes_no(trial));
+    log!(output, "  Fade Frames:  {fade_frames}");
+    log!(output, "  Layer (copy): {layer_copy}");
+    log!(output, "  Respawn Type: {respawn_type}");
+    log!(output, "  Unknown:      {unk}");
+
+    let next_name = c_str(&next_stage_name);
+    if !next_name.is_empty() {
+        let next_suffix = c_str(&next_stage_suffix);
+        let next_suffix = if next_suffix.is_empty() { String::new() } else { format!(" (suffix {next_suffix})") };
+        log!(output, "--- Next / last requested transition ---");
+        log!(
+            output,
+            "  {next_name}{next_suffix}: layer {next_layer}, room {next_room}, entrance {next_entrance}, \
+             night {}, trial {}, fade frames {next_fade_frames}, unknown {next_unk}",
+            yes_no(next_night),
+            yes_no(next_trial)
+        );
+    }
+    log!(
+        output,
+        "  Stage manager: {}, entrance trigger in progress: {}",
+        if stage_mgr_valid != 0 { "present" } else { "null" },
+        yes_no(in_trigger)
+    );
 }
 
 fn cmd_go_mode(

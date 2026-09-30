@@ -319,6 +319,53 @@ pub fn reload_current_stage() {
     }
 }
 
+/// Refreshes `AP_IPC_ROOT.stage_info` with a by-value copy of the current
+/// and next stage-loading state. Called once per frame from
+/// `item::refresh_ipc_addresses()`; backs the client's `/stage_info`.
+///
+/// `dStageMgr` is mostly opaque here (only `set_in_actually_trigger_entrance`
+/// is mapped), so the stage/room/layer/entrance/night/trial/fade values come
+/// from the CURRENT_*/NEXT_* globals that STAGE_MGR's reload path writes.
+/// STAGE_MGR itself contributes whether it exists and whether an entrance
+/// trigger is in progress.
+pub fn refresh_stage_info() {
+    use core::ptr::{addr_of, read_volatile};
+
+    unsafe {
+        let stage_mgr_valid = !STAGE_MGR.is_null();
+        let in_actually_trigger_entrance = if stage_mgr_valid {
+            read_volatile(addr_of!((*STAGE_MGR).set_in_actually_trigger_entrance))
+        } else {
+            0
+        };
+
+        crate::ipc::AP_IPC_ROOT.stage_info = crate::ipc::ApStageInfo {
+            stage_name: read_volatile(addr_of!(CURRENT_STAGE_NAME)),
+            stage_suffix: read_volatile(addr_of!(CURRENT_STAGE_SUFFIX)),
+            fade_frames: read_volatile(addr_of!(CURRENT_FADE_FRAMES)),
+            room: read_volatile(addr_of!(CURRENT_ROOM)),
+            layer: read_volatile(addr_of!(CURRENT_LAYER)),
+            entrance: read_volatile(addr_of!(CURRENT_ENTRANCE)),
+            night: read_volatile(addr_of!(CURRENT_NIGHT)),
+            trial: read_volatile(addr_of!(CURRENT_TRIAL)),
+            unk: read_volatile(addr_of!(CURRENT_UNK)),
+            layer_copy: read_volatile(addr_of!(CURRENT_LAYER_COPY)),
+            respawn_type: read_volatile(addr_of!(RESPAWN_TYPE)),
+            next_stage_name: read_volatile(addr_of!(NEXT_STAGE_NAME)),
+            next_stage_suffix: read_volatile(addr_of!(NEXT_STAGE_SUFFIX)),
+            next_fade_frames: read_volatile(addr_of!(NEXT_TRANSITION_FADE_FRAMES)),
+            next_room: read_volatile(addr_of!(NEXT_ROOM)),
+            next_layer: read_volatile(addr_of!(NEXT_LAYER)),
+            next_entrance: read_volatile(addr_of!(NEXT_ENTRANCE)),
+            next_night: read_volatile(addr_of!(NEXT_NIGHT)),
+            next_trial: read_volatile(addr_of!(NEXT_TRIAL)),
+            next_unk: read_volatile(addr_of!(NEXT_UNK)),
+            stage_mgr_valid: stage_mgr_valid as u8,
+            in_actually_trigger_entrance,
+        };
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn warp_to_start() -> bool {
     unsafe {

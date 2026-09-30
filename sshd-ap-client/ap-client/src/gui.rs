@@ -38,6 +38,7 @@
 //! `NetUtils.py`'s `color_codes`).
 
 use iced::alignment::{Horizontal, Vertical};
+use iced::keyboard::{self, key::Named};
 use iced::widget::{button, column, container, rich_text, row, scrollable, span, text, text_input, tooltip, Column, Space};
 use iced::{Color, Element, Length, Subscription, Task, Theme};
 
@@ -128,6 +129,24 @@ pub struct App {
     total: u16,
     /// Text currently typed into the command bar.
     command_input: String,
+    /// Previously submitted commands/chat text, oldest first, for
+    /// Up/Down history cycling (see `history_up`/`history_down`).
+    command_history: Vec<String>,
+    /// Position within `command_history` while cycling; `None` means
+    /// "not currently navigating" (i.e. sitting on whatever's actually
+    /// typed, past the newest history entry).
+    history_index: Option<usize>,
+    /// Whatever was typed into the command bar right before history
+    /// navigation started, so Down can restore it once you cycle back
+    /// past the newest entry — same as a shell's history behavior.
+    history_draft: String,
+    /// Whether the command bar is the thing currently being typed into,
+    /// so the global Up/Down hotkeys (see `subscription`) only cycle
+    /// history there and don't hijack the server/slot/password fields.
+    /// Best-effort: it's inferred from which field's *Changed message
+    /// last arrived, not real widget focus (iced doesn't expose that),
+    /// but that tracks actual usage closely enough in practice.
+    command_focused: bool,
 
     connected: bool,
     connecting: bool,
@@ -162,6 +181,12 @@ pub enum Message {
     /// our own `snap_to`) so `log_pinned` can track whether the user is
     /// still at the bottom.
     LogScrolled(scrollable::Viewport),
+    /// Up arrow anywhere in the window — steps back through command
+    /// history when the command bar is focused (see `command_focused`).
+    HistoryUp,
+    /// Down arrow — steps forward through history, or back to the
+    /// in-progress line once past the newest entry.
+    HistoryDown,
 }
 
 const MAX_LOG_LINES: usize = 500;
@@ -198,6 +223,10 @@ impl App {
             checked: 0,
             total: 0,
             command_input: String::new(),
+            command_history: Vec::new(),
+            history_index: None,
+            history_draft: String::new(),
+            command_focused: false,
 
             connected: false,
             connecting: false,
@@ -214,14 +243,17 @@ impl App {
         match message {
             Message::ServerChanged(v) => {
                 self.server = v;
+                self.command_focused = false;
                 Task::none()
             },
             Message::SlotChanged(v) => {
                 self.slot = v;
+                self.command_focused = false;
                 Task::none()
             },
             Message::PasswordChanged(v) => {
                 self.password = v;
+                self.command_focused = false;
                 Task::none()
             },
             Message::Connect => {
@@ -236,20 +268,31 @@ impl App {
             },
             Message::CommandChanged(v) => {
                 self.command_input = v;
+                self.command_focused = true;
                 Task::none()
             },
             Message::CommandSubmit => {
                 let text = std::mem::take(&mut self.command_input);
+                self.command_focused = true;
                 self.submit_command(text);
                 self.scroll_log_if_pinned()
             },
             Message::ShowHelp => {
+                self.command_focused = true;
                 self.submit_command("/help".to_string());
                 self.scroll_log_if_pinned()
             },
             Message::Worker(event) => {
                 self.handle_worker_event(event);
                 self.scroll_log_if_pinned()
+            },
+            Message::HistoryUp => {
+                self.history_up();
+                Task::none()
+            },
+            Message::HistoryDown => {
+                self.history_down();
+                Task::none()
             },
             Message::LogScrolled(viewport) => {
                 // `relative_offset().y` is 1.0 at the very bottom. There's
@@ -393,7 +436,14 @@ impl App {
     }
 
     pub fn subscription(&self) -> Subscription<Message> {
-        worker::subscription().map(Message::Worker)
+        Subscription::batch([
+            worker::subscription().map(Message::Worker),
+            keyboard::on_key_press(|key, _modifiers| match key {
+                keyboard::Key::Named(Named::ArrowUp) => Some(Message::HistoryUp),
+                keyboard::Key::Named(Named::ArrowDown) => Some(Message::HistoryDown),
+                _ => None,
+            }),
+        ])
     }
 
     pub fn theme(&self) -> Theme {
@@ -437,11 +487,58 @@ impl App {
             return;
         }
         self.push_log(&format!("> {text}"));
+        // Skip the push if it's identical to the last entry, so leaning
+        // on Enter to repeat a command doesn't pile up duplicates you'd
+        // then have to step past.
+        if self.command_history.last().map(String::as_str) != Some(text.as_str()) {
+            self.command_history.push(text.clone());
+        }
+        self.history_index = None;
+        self.history_draft.clear();
         match self.worker.as_mut() {
             Some(sender) => {
                 let _ = sender.try_send(WorkerInput::Command(text));
             },
             None => self.pending_commands.push(text),
+        }
+    }
+
+    /// Steps one entry further back (older) through `command_history`,
+    /// same as a shell's Up arrow. No-op outside the command bar (see
+    /// `command_focused`) or with no history yet.
+    fn history_up(&mut self) {
+        if !self.command_focused || self.command_history.is_empty() {
+            return;
+        }
+        let next_index = match self.history_index {
+            None => self.command_history.len() - 1,
+            Some(0) => 0,
+            Some(i) => i - 1,
+        };
+        if self.history_index.is_none() {
+            self.history_draft = std::mem::take(&mut self.command_input);
+        }
+        self.history_index = Some(next_index);
+        self.command_input = self.command_history[next_index].clone();
+    }
+
+    /// Steps one entry forward (newer) through `command_history`, or —
+    /// once past the newest entry — restores whatever was being typed
+    /// before history navigation started. No-op outside the command bar.
+    fn history_down(&mut self) {
+        if !self.command_focused {
+            return;
+        }
+        match self.history_index {
+            None => {},
+            Some(i) if i + 1 < self.command_history.len() => {
+                self.history_index = Some(i + 1);
+                self.command_input = self.command_history[i + 1].clone();
+            },
+            Some(_) => {
+                self.history_index = None;
+                self.command_input = std::mem::take(&mut self.history_draft);
+            },
         }
     }
 
