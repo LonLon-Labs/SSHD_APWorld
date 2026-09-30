@@ -183,6 +183,10 @@ Skyward Sword HD:
   # knockback damage, but the prolonged paralysis animation is removed.
   cheat_no_electric_stun: false
 
+  # No Enemy Damage
+  # When enabled, enemies cannot hit Link.
+  cheat_no_enemy_damage: false
+
   # Speed Multiplier
   # Multiplies Link's forward movement speed.
   # 10 = normal (1.0x), 20 = double (2.0x), 30 = triple (3.0x), etc.
