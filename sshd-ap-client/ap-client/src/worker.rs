@@ -1101,7 +1101,7 @@ fn cmd_help(output: &EventSink) {
         "/deathlink, /breathlink — toggle those tags",
         "/spawn_actor <ACTORID name|id> [param1] [oarc], /spawn_demise — spawn an actor",
         "/flag <storyflag|sceneflag|itemflag|dungeonflag> <get|set|unset> <id|all> [value_or_scene]",
-        "/warp start  |  /warp <stage name or id> [layer]",
+        "/warp start  |  /warp <stage name or id> [layer] [room] [entrance] [night] [trial]  (or key=value, e.g. night=1 room=2)",
         "/stage_info — current stage, layer, room, entrance, night, trial, fade frames (and the pending next-stage values)",
         "/go_mode — victory requirements and whether you have them",
         "/received, /missing, /checked, /players — multiworld info",
@@ -1639,32 +1639,112 @@ fn set_all_flags(
     log!(output, "Finished processing all {flag_type_name}s (value {value}).");
 }
 
+/// Optional `/warp` destination settings. `None` = not specified.
+#[derive(Default)]
+struct WarpOpts {
+    layer:    Option<u8>,
+    room:     Option<u8>,
+    entrance: Option<u8>,
+    night:    Option<bool>,
+    trial:    Option<bool>,
+}
+
+/// Positional order of the optional `/warp` arguments after the stage.
+const WARP_POSITIONAL: [&str; 5] = ["layer", "room", "entrance", "night", "trial"];
+
+fn warp_u8(name: &str, text: &str) -> Result<u8, String> {
+    let n = parse_int_auto(text)
+        .ok_or_else(|| format!("Invalid {name} '{text}'. Use decimal or 0x-prefixed hex."))?;
+    u8::try_from(n).map_err(|_| format!("{name} {n} out of range (0-255)."))
+}
+
+fn warp_bool(name: &str, text: &str) -> Result<bool, String> {
+    match text.to_lowercase().as_str() {
+        "1" | "true" | "yes" | "on" | "night" | "trial" => Ok(true),
+        "0" | "false" | "no" | "off" | "day" | "none" => Ok(false),
+        _ => Err(format!("Invalid {name} '{text}'. Use 0 or 1.")),
+    }
+}
+
+fn apply_warp_option(opts: &mut WarpOpts, key: &str, text: &str) -> Result<(), String> {
+    match key.to_lowercase().as_str() {
+        "layer" => opts.layer = Some(warp_u8("layer", text)?),
+        "room" => opts.room = Some(warp_u8("room", text)?),
+        "entrance" | "entr" => opts.entrance = Some(warp_u8("entrance", text)?),
+        "night" => opts.night = Some(warp_bool("night", text)?),
+        "trial" => opts.trial = Some(warp_bool("trial", text)?),
+        other => {
+            return Err(format!(
+                "Unknown warp option '{other}'. Options: layer, room, entrance, night, trial."
+            ))
+        },
+    }
+    Ok(())
+}
+
+/// Splits `/warp` arguments (everything after the command) into the stage
+/// text and its optional settings. Settings can be positional trailing
+/// numbers in the order `layer room entrance night trial` (`-` skips one),
+/// and/or named `key=value` tokens anywhere (e.g. `night=1 room=2`).
+fn parse_warp_args(args: &[&str]) -> Result<(String, WarpOpts), String> {
+    let mut opts = WarpOpts::default();
+    let mut rest: Vec<&str> = Vec::new();
+    for &tok in args {
+        match tok.split_once('=') {
+            Some((key, value)) => apply_warp_option(&mut opts, key, value)?,
+            None => rest.push(tok),
+        }
+    }
+
+    // Stage names can be multiple words ("Lanayru Mining Facility"), so only
+    // trailing numeric (or `-`) tokens count as positional settings; the stage
+    // itself always keeps at least one token.
+    let mut positional: Vec<&str> = Vec::new();
+    while rest.len() > 1 && positional.len() < WARP_POSITIONAL.len() {
+        let last = rest[rest.len() - 1];
+        if last == "-" || parse_int_auto(last).is_some() {
+            positional.push(rest.pop().unwrap());
+        } else {
+            break;
+        }
+    }
+    positional.reverse();
+    for (key, tok) in WARP_POSITIONAL.iter().zip(positional) {
+        if tok != "-" {
+            apply_warp_option(&mut opts, key, tok)?;
+        }
+    }
+
+    Ok((rest.join(" "), opts))
+}
+
 fn cmd_warp(args: &[&str], emulator: &mut Option<(Backend, usize)>, output: &EventSink) {
     if args.is_empty() {
         log!(output, "Usage: /warp start");
-        log!(output, "       /warp <stage name or stage id> [layer]");
+        log!(output, "       /warp <stage name or stage id> [layer] [room] [entrance] [night] [trial]");
+        log!(output, "  All settings after the stage are optional and default to 0 (day, no trial unless the stage is a Silent Realm).");
+        log!(output, "  Use '-' to skip one positionally, or name them: /warp F000 night=1 room=2 entrance=3");
+        log!(output, "  night and trial take 0 or 1. Example: /warp F000 0 0 3 1  (layer 0, room 0, entrance 3, night)");
         return;
     }
 
-    let (mode, stage_code, layer, target_desc);
+    let (mode, stage_code, opts, target_desc);
     if args[0].eq_ignore_ascii_case("start") {
         if args.len() > 1 {
-            log!(output, "WARNING: /warp start doesn't take a layer argument, ignoring it");
+            log!(output, "WARNING: /warp start doesn't take any other arguments, ignoring them");
         }
         mode = ap_ipc::WARP_MODE_START;
         stage_code = "";
-        layer = 0xFFu8;
+        opts = WarpOpts { layer: Some(0xFF), ..WarpOpts::default() };
         target_desc = "start".to_string();
     } else {
-        // Stage names can be multiple words ("Lanayru Mining Facility"); if
-        // there's more than one token and the last is a number, it's the
-        // optional layer.
-        let mut tokens: Vec<&str> = args.to_vec();
-        let mut layer_str = "";
-        if tokens.len() > 1 && parse_int_auto(tokens[tokens.len() - 1]).is_some() {
-            layer_str = tokens.pop().unwrap();
-        }
-        let target = tokens.join(" ");
+        let (target, parsed) = match parse_warp_args(args) {
+            Ok(v) => v,
+            Err(msg) => {
+                log!(output, "WARNING: {msg}");
+                return;
+            },
+        };
         let Some(code) = stages::resolve_stage_code(&target) else {
             log!(
                 output,
@@ -1673,23 +1753,42 @@ fn cmd_warp(args: &[&str], emulator: &mut Option<(Backend, usize)>, output: &Eve
             );
             return;
         };
-        let mut layer_val = 0u8;
-        if !layer_str.is_empty() {
-            let n = parse_int_auto(layer_str).unwrap_or(0);
-            if !(0..=255).contains(&n) {
-                log!(output, "WARNING: Layer {n} out of range (0-255).");
-                return;
-            }
-            layer_val = n as u8;
+
+        let mut parts: Vec<String> = Vec::new();
+        if let Some(v) = parsed.layer {
+            parts.push(format!("layer {v}"));
         }
+        if let Some(v) = parsed.room {
+            parts.push(format!("room {v}"));
+        }
+        if let Some(v) = parsed.entrance {
+            parts.push(format!("entrance {v}"));
+        }
+        if let Some(v) = parsed.night {
+            parts.push(if v { "night" } else { "day" }.to_string());
+        }
+        if let Some(v) = parsed.trial {
+            parts.push(if v { "trial" } else { "no trial" }.to_string());
+        }
+        target_desc = if parts.is_empty() { code.to_string() } else { format!("{code} ({})", parts.join(", ")) };
+
         mode = ap_ipc::WARP_MODE_STAGE;
         stage_code = code;
-        layer = layer_val;
-        target_desc = if layer_str.is_empty() { code.to_string() } else { format!("{code} layer {layer_val}") };
+        opts = parsed;
     }
 
     let Some((mem, root_addr)) = require_emulator(emulator, output) else { return };
-    match ipc_requests::warp_request(mem, root_addr, mode, stage_code, layer) {
+    match ipc_requests::warp_request_ex(
+        mem,
+        root_addr,
+        mode,
+        stage_code,
+        opts.layer.unwrap_or(0),
+        opts.room.unwrap_or(0),
+        opts.entrance.unwrap_or(0),
+        opts.night,
+        opts.trial,
+    ) {
         Ok(0) => log!(output, "Warping to {target_desc}..."),
         Ok(_) => log!(output, "WARNING: Warp request was rejected by the game (invalid state or destination)."),
         Err(e) => log!(

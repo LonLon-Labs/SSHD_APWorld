@@ -45,11 +45,15 @@ pub struct ApWarpRequest {
     pub pending:        u8,
     pub mode:           u8,
     pub layer:          u8,
-    pub _pad0:          u8,
+    /// Target room (was `_pad0`; 0 = default).
+    pub room:           u8,
     pub stage_name:     [u8; 8],
     pub response_ready: u8,
     pub response_code:  u8,
-    pub _pad1:          [u8; 2],
+    /// Target entrance (was `_pad1[0]`; 0 = default).
+    pub entrance:       u8,
+    /// `WARP_FLAG_*` bits (was `_pad1[1]`; 0 = night/trial unspecified).
+    pub flags:          u8,
 }
 
 #[repr(C, packed)]
@@ -385,6 +389,16 @@ pub const SCENE_INDEX_CURRENT: u16 = 0xFFFF;
 
 pub const WARP_MODE_START: u8 = 0;
 pub const WARP_MODE_STAGE: u8 = 1;
+
+/// `ApWarpRequest.flags` bits (mirror commands.rs).
+/// Night value to use (only honoured if `WARP_FLAG_NIGHT_SET` is also set).
+pub const WARP_FLAG_NIGHT: u8 = 1 << 0;
+/// The night value was explicitly specified.
+pub const WARP_FLAG_NIGHT_SET: u8 = 1 << 1;
+/// Trial value to use (only honoured if `WARP_FLAG_TRIAL_SET` is also set).
+pub const WARP_FLAG_TRIAL: u8 = 1 << 2;
+/// The trial value was explicitly specified.
+pub const WARP_FLAG_TRIAL_SET: u8 = 1 << 3;
 
 /// Decodes the 10-bit "custom flag" encoding used for the majority of
 /// location checks (see `flag::set_ap_custom_flag` in the game's `item.rs`,

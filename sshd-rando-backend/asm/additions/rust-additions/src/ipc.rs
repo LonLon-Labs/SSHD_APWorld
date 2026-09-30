@@ -249,11 +249,12 @@ pub static mut AP_IPC_ROOT: ApIpcRoot = ApIpcRoot {
         pending:        false,
         mode:           0,
         layer:          0xFF,
-        _pad0:          0,
+        room:           0,
         stage_name:     [0u8; 8],
         response_ready: false,
         response_code:  0,
-        _pad1:          [0u8; 2],
+        entrance:       0,
+        flags:          0,
     },
 
     spawn_request: ApSpawnRequest {

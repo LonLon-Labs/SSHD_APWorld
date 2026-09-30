@@ -79,25 +79,42 @@ assert_eq_size!([u8; 20], ApFlagRequest);
 //                              an explicit stage
 //   +6  layer u8             — target layer for mode=1; 0xFF = unspecified
 //                              (treated as 0). Unused for mode=0.
-//   +7  _pad0 u8
+//   +7  room u8             — target room for mode=1 (0 = default). Was
+//                              `_pad0`; old clients send 0 = old behaviour.
 //   +8  stage_name [u8; 8]   — ASCII stage code, null-padded (e.g.
 //                              "F000\0\0\0\0"). Unused for mode=0.
 //   +16 response_ready bool  — we set this to 1 once response_code is valid
 //   +17 response_code u8     — 0 = ok, 1 = failed (null pointers / invalid
-// mode)   +18 _pad1 [u8; 2]
+// mode)
+//   +18 entrance u8         — target entrance for mode=1 (0 = default). Was
+//                              `_pad1[0]`.
+//   +19 flags u8            — WARP_FLAG_* bits (night / trial overrides).
+//                              Was `_pad1[1]`; 0 = "unspecified", i.e. day
+//                              and the usual automatic trial detection.
 #[repr(C, packed(1))]
 pub struct ApWarpRequest {
     pub magic:          [u8; 4],
     pub pending:        bool,
     pub mode:           u8,
     pub layer:          u8,
-    pub _pad0:          u8,
+    pub room:           u8,
     pub stage_name:     [u8; 8],
     pub response_ready: bool,
     pub response_code:  u8,
-    pub _pad1:          [u8; 2],
+    pub entrance:       u8,
+    pub flags:          u8,
 }
 assert_eq_size!([u8; 20], ApWarpRequest);
+
+// ApWarpRequest.flags bits. Must match WARP_FLAG_* in the client's ap-ipc.
+/// Night value to use (only honoured if WARP_FLAG_NIGHT_SET is also set).
+const WARP_FLAG_NIGHT: u8 = 1 << 0;
+/// The client explicitly specified night (0 or 1).
+const WARP_FLAG_NIGHT_SET: u8 = 1 << 1;
+/// Trial (Silent Realm effect) value to use (only if WARP_FLAG_TRIAL_SET).
+const WARP_FLAG_TRIAL: u8 = 1 << 2;
+/// The client explicitly specified trial (0 or 1).
+const WARP_FLAG_TRIAL_SET: u8 = 1 << 3;
 
 // The live instance of this struct now lives at AP_IPC_ROOT.warp_request
 // (see ipc.rs) instead of a standalone static, for the same reason as
@@ -305,7 +322,25 @@ pub fn handle_warp_request() {
                 } else {
                     (*req).layer
                 };
-                entrance::warp_to_stage((*req).stage_name, layer)
+                let flags = (*req).flags;
+                let night = if flags & WARP_FLAG_NIGHT_SET != 0 {
+                    Some(flags & WARP_FLAG_NIGHT != 0)
+                } else {
+                    None
+                };
+                let trial = if flags & WARP_FLAG_TRIAL_SET != 0 {
+                    Some(flags & WARP_FLAG_TRIAL != 0)
+                } else {
+                    None
+                };
+                entrance::warp_to_stage(
+                    (*req).stage_name,
+                    layer,
+                    (*req).room,
+                    (*req).entrance,
+                    night,
+                    trial,
+                )
             },
             _ => false,
         };

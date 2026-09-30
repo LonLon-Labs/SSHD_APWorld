@@ -74,6 +74,23 @@ pub fn warp_request(
     stage_code: &str,
     layer: u8,
 ) -> Result<u8, MemError> {
+    warp_request_ex(mem, root_addr, mode, stage_code, layer, 0, 0, None, None)
+}
+
+/// Like `warp_request`, but also sets the destination `room` and `entrance`
+/// (0 = default), and optionally an explicit `night` / `trial` value
+/// (`None` = unspecified: day, and the game's automatic trial detection).
+pub fn warp_request_ex(
+    mem: &mut impl ProcessMemory,
+    root_addr: usize,
+    mode: u8,
+    stage_code: &str,
+    layer: u8,
+    room: u8,
+    entrance: u8,
+    night: Option<bool>,
+    trial: Option<bool>,
+) -> Result<u8, MemError> {
     let addr = root_addr + offsets::WARP_REQUEST;
 
     let mut stage_name = [0u8; 8];
@@ -81,16 +98,31 @@ pub fn warp_request(
     let n = stage_bytes.len().min(8);
     stage_name[..n].copy_from_slice(&stage_bytes[..n]);
 
+    let mut flags = 0u8;
+    if let Some(night) = night {
+        flags |= ap_ipc::WARP_FLAG_NIGHT_SET;
+        if night {
+            flags |= ap_ipc::WARP_FLAG_NIGHT;
+        }
+    }
+    if let Some(trial) = trial {
+        flags |= ap_ipc::WARP_FLAG_TRIAL_SET;
+        if trial {
+            flags |= ap_ipc::WARP_FLAG_TRIAL;
+        }
+    }
+
     let req = ap_ipc::ApWarpRequest {
         magic: [0; 4],
         pending: 1,
         mode,
         layer,
-        _pad0: 0,
+        room,
         stage_name,
         response_ready: 0,
         response_code: 0,
-        _pad1: [0; 2],
+        entrance,
+        flags,
     };
     mem.write_bytes(addr, &ap_ipc::bytes::write(&req))?;
 
