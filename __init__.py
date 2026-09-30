@@ -526,6 +526,37 @@ class SSHDWorld(World):
         super().__init__(*args, **kwargs)
         self.created_regions: list[str] = []
     
+    # Per-dungeon "require" toggles: AP option name for each dungeon.
+    _REQUIRE_DUNGEON_OPTIONS: ClassVar[dict] = {
+        "Skyview Temple": "require_skyview_temple",
+        "Earth Temple": "require_earth_temple",
+        "Lanayru Mining Facility": "require_lanayru_mining_facility",
+        "Ancient Cistern": "require_ancient_cistern",
+        "Sandship": "require_sandship",
+        "Fire Sanctuary": "require_fire_sanctuary",
+        "Sky Keep": "require_sky_keep",
+    }
+
+    def _user_chosen_dungeons(self) -> list[str]:
+        """Dungeons the player explicitly chose to be required (empty = not used)."""
+        return [
+            dungeon
+            for dungeon, option_name in self._REQUIRE_DUNGEON_OPTIONS.items()
+            if getattr(self.options, option_name).value
+        ]
+
+    def _effective_required_dungeon_count(self) -> int:
+        """Chosen dungeons override Required Dungeon Count when any are set."""
+        chosen = self._user_chosen_dungeons()
+        return len(chosen) if chosen else self.options.required_dungeon_count.value
+
+    def _effective_include_sky_keep(self) -> bool:
+        """Chosen dungeons override Include Sky Keep as a Dungeon when any are set."""
+        chosen = self._user_chosen_dungeons()
+        if chosen:
+            return "Sky Keep" in chosen
+        return bool(self.options.dungeons_include_sky_keep.value)
+
     def get_resolved_setting(self, setting_name: str, default: str = None) -> str:
         """
         Get a resolved setting value from sshd-rando.
@@ -613,6 +644,13 @@ class SSHDWorld(World):
         "randomize_loftwing": ("randomize_loftwing", "choice", {"off": 0, "on": 1, "random": 2}),
         "natural_night_connections": ("natural_night_connections", "toggle", None),
         "dungeons_include_sky_keep": ("dungeons_include_sky_keep", "toggle", None),
+        "require_skyview_temple": ("require_skyview_temple", "toggle", None),
+        "require_earth_temple": ("require_earth_temple", "toggle", None),
+        "require_lanayru_mining_facility": ("require_lanayru_mining_facility", "toggle", None),
+        "require_ancient_cistern": ("require_ancient_cistern", "toggle", None),
+        "require_sandship": ("require_sandship", "toggle", None),
+        "require_fire_sanctuary": ("require_fire_sanctuary", "toggle", None),
+        "require_sky_keep": ("require_sky_keep", "toggle", None),
         "empty_unrequired_dungeons": ("empty_unrequired_dungeons", "toggle", None),
         "lanayru_caves_keys": ("lanayru_caves_keys", "choice", {"vanilla": 0, "overworld": 1, "anywhere": 2, "removed": 3}),
         # QoL - Open Locations (some use "open" instead of "on")
@@ -1605,15 +1643,15 @@ class SSHDWorld(World):
                 self.options.gate_of_time_sword_requirement.value, 'true_master_sword')
             print(f"[__init__.py] Fallback: got_sword_requirement = {s['got_sword_requirement']}")
 
-        # required_dungeons — used by victory access rule for boss key count
-        # When dungeon_goal_requirement AP toggle is on, set to 0 so no progression
-        # is locked behind dungeon completion (goal checks dungeon count separately).
+        # required_dungeons — the real required-dungeon count, independent of the
+        # dungeon goal requirement (which has its own dungeon_goal_count).
         if 'required_dungeons' not in s:
-            if self.options.dungeon_goal_requirement.value:
-                s['required_dungeons'] = '0'
-            else:
-                s['required_dungeons'] = str(self.options.required_dungeon_count.value)
+            s['required_dungeons'] = str(self._effective_required_dungeon_count())
             print(f"[__init__.py] Fallback: required_dungeons = {s['required_dungeons']}")
+
+        # dungeon_goal_count — used by the victory access rule for boss key count
+        if 'dungeon_goal_count' not in s:
+            s['dungeon_goal_count'] = str(self.options.dungeon_goal_count.value)
 
         # boss_keys — used by victory access rule to decide if boss keys are needed
         if 'boss_keys' not in s:
@@ -2362,7 +2400,8 @@ class SSHDWorld(World):
         map_mode = self.options.map_shuffle.current_key               # e.g. "own_dungeon_restricted"
         triforce_mode = self.options.triforce_shuffle.current_key     # e.g. "anywhere"
         # Keep the true AP required-dungeon count for selection/barren handling.
-        required_count = self.options.required_dungeon_count.value
+        required_count = self._effective_required_dungeon_count()
+        chosen_dungeons = self._user_chosen_dungeons()
         # When dungeon_goal_requirement AP toggle is on, the goal condition checks
         # dungeon count at victory time, so progression should not be forced to
         # dungeon-end locations.
@@ -2570,7 +2609,7 @@ class SSHDWorld(World):
             ],
         }
         
-        include_sky_keep = self.options.dungeons_include_sky_keep.value
+        include_sky_keep = self._effective_include_sky_keep()
         all_main_dungeons = [
             "Skyview Temple", "Earth Temple", "Lanayru Mining Facility",
             "Ancient Cistern", "Sandship", "Fire Sanctuary",
@@ -2702,10 +2741,14 @@ class SSHDWorld(World):
         if required_count > 0:
             eligible_dungeons = list(all_main_dungeons)
             
-            # Randomly select which dungeons are required
-            selected_count = min(required_count, len(eligible_dungeons))
-            self.random.shuffle(eligible_dungeons)
-            selected_dungeons = eligible_dungeons[:selected_count]
+            # Use the dungeons the player chose; otherwise pick randomly
+            if chosen_dungeons:
+                selected_dungeons = [d for d in eligible_dungeons if d in chosen_dungeons]
+                selected_count = len(selected_dungeons)
+            else:
+                selected_count = min(required_count, len(eligible_dungeons))
+                self.random.shuffle(eligible_dungeons)
+                selected_dungeons = eligible_dungeons[:selected_count]
             
             # Store the selection so _generate_sshd_patches can sync Fi's text
             self._ap_required_dungeons = list(selected_dungeons)
@@ -3510,6 +3553,7 @@ class SSHDWorld(World):
                 "option_required_triforce_pieces": self.options.required_triforce_pieces.value,
                 "option_dungeon_goal_requirement": self.options.dungeon_goal_requirement.value,
                 "option_required_dungeon_count": self.options.required_dungeon_count.value,
+                "option_dungeon_goal_count": self.options.dungeon_goal_count.value,
                 "option_require_greg": self.options.require_greg.value,
                 "option_require_tim": self.options.require_tim.value,
                 "option_require_all_progression_items": self.options.require_all_progression_items.value,
@@ -3795,6 +3839,13 @@ class SSHDWorld(World):
             inject_custom_flags_into_world(world, self._custom_flag_mapping, self.multiworld, self.player)
             print(f"[__init__.py] ✓ Injected {len(self._custom_flag_mapping)} custom flags")
             
+            # Let Fi's text tell the player the dungeon goal count (None = goal disabled)
+            world.ap_dungeon_goal_count = (
+                self.options.dungeon_goal_count.value
+                if self.options.dungeon_goal_requirement.value
+                else None
+            )
+
             # Sync required-dungeon flags so Fi's text matches AP's selection
             ap_required = getattr(self, '_ap_required_dungeons', None)
             if ap_required is not None:
@@ -3965,13 +4016,11 @@ class SSHDWorld(World):
         settings_dict["item_pool"] = item_pool_map[self.options.item_pool.value]
         
         # Completion Requirements
-        # When dungeon_goal_requirement is on, rando backend gets required_dungeons=0 (no progression
-        # locked in dungeons). The AP goal logic checks dungeon count separately at victory time.
-        if self.options.dungeon_goal_requirement.value:
-            settings_dict["required_dungeons"] = "0"
-        else:
-            settings_dict["required_dungeons"] = str(self.options.required_dungeon_count.value)
+        # Required dungeons and the dungeon goal are independent: the backend always gets the
+        # real required-dungeon count; the AP goal logic checks dungeon_goal_count at victory time.
+        settings_dict["required_dungeons"] = str(self._effective_required_dungeon_count())
         settings_dict["required_dungeon_count"] = str(self.options.required_dungeon_count.value)
+        settings_dict["dungeon_goal_count"] = str(self.options.dungeon_goal_count.value)
         settings_dict["required_triforce_pieces"] = str(self.options.required_triforce_pieces.value)
         settings_dict["require_triforce_pieces"] = "on" if self.options.require_triforce_pieces.value else "off"
         settings_dict["require_dungeons"] = "on" if self.options.dungeon_goal_requirement.value else "off"
@@ -4258,7 +4307,7 @@ class SSHDWorld(World):
             settings_dict["custom_starting_items"] = {}
         
         # Dungeon Settings
-        settings_dict["dungeons_include_sky_keep"] = "on" if self.options.dungeons_include_sky_keep.value else "off"
+        settings_dict["dungeons_include_sky_keep"] = "on" if self._effective_include_sky_keep() else "off"
         settings_dict["empty_unrequired_dungeons"] = "on" if self.options.empty_unrequired_dungeons.value else "off"
 
         lanayru_caves_map = {0: "vanilla", 1: "overworld", 2: "anywhere", 3: "removed"}

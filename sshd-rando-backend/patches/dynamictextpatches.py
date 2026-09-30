@@ -74,6 +74,10 @@ def add_fi_text_patches(world: World, event_patch_handler: EventPatchHandler) ->
         required_dungeons_text,
     )
 
+    # Dungeon goal (Archipelago): if enabled, Fi also says how many dungeon
+    # bosses must be defeated before the goal boss counts.
+    dungeon_goal_count = getattr(world, "ap_dungeon_goal_count", None)
+
     event_patch_handler.append_to_event_patches(
         "006-8KenseiNormal",
         {
@@ -81,12 +85,53 @@ def add_fi_text_patches(world: World, event_patch_handler: EventPatchHandler) ->
             "type": "flowadd",
             "flow": {
                 "type": "type1",
-                "next": -1,
+                "next": (
+                    "Display Dungeon Goal Requirement"
+                    if dungeon_goal_count is not None
+                    else -1
+                ),
                 "param3": 68,
                 "param4": "Required Dungeons Text",
             },
         },
     )
+
+    if dungeon_goal_count is not None:
+        if dungeon_goal_count == 0:
+            dungeon_goal_text = Text(
+                "No dungeons need to be beaten before the final battle."
+            )
+        else:
+            plural = "" if dungeon_goal_count == 1 else "s"
+            dungeon_goal_text = (
+                Text("Before the final battle, you must defeat the boss of ")
+                + Text.apply_text_color(Text(f"{dungeon_goal_count} dungeon{plural}"), "r")
+                + Text(". Any dungeon will do.")
+            )
+        dungeon_goal_text.break_lines()
+
+        event_patch_handler.append_to_event_patches(
+            "006-8KenseiNormal",
+            {
+                "name": "Display Dungeon Goal Requirement",
+                "type": "flowadd",
+                "flow": {
+                    "type": "type1",
+                    "next": -1,
+                    "param3": 68,
+                    "param4": "Dungeon Goal Requirement Text",
+                },
+            },
+        )
+        event_patch_handler.append_to_event_patches(
+            "006-8KenseiNormal",
+            {
+                "name": "Dungeon Goal Requirement Text",
+                "type": "textadd",
+                "textboxtype": 2,
+            },
+        )
+        add_text_data("Dungeon Goal Requirement Text", dungeon_goal_text)
 
     # Fi hints
     # Determines how many hints will be shown back-to-back before a new

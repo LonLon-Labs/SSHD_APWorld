@@ -51,7 +51,8 @@ class ItemPool(Choice):
 
 class RequiredDungeonCount(Range):
     """
-    Determines the number of dungeons required to beat the seed.
+    Determines the number of dungeons that are required (the ones Fi lists).
+    This is independent of Dungeon Goal Requirement / Dungeon Goal Count.
     Beating Sky Keep is NOT required.
     Lanayru Mining Facility is beaten when exiting to the Temple of Time.
     Other dungeons are beaten when the Goddess Crest is struck with a Skyward Strike.
@@ -150,9 +151,84 @@ class Goal(Choice):
 class DungeonGoalRequirement(Toggle):
     """
     If enabled, a specific number of dungeons must be defeated before the goal boss counts.
-    Configure the number using Required Dungeon Count.
+    Configure the number using Dungeon Goal Count. Fi will tell you how many.
     """
     display_name = "Dungeon Goal Requirement"
+
+
+class DungeonGoalCount(Range):
+    """
+    Number of dungeon bosses that must be defeated before the goal boss counts.
+    Only used when Dungeon Goal Requirement is enabled.
+    Independent of Required Dungeon Count.
+    """
+    display_name = "Dungeon Goal Count"
+    range_start = 0
+    range_end = 6
+    default = 2
+
+
+class RequireSkyviewTemple(Toggle):
+    """
+    If enabled, Skyview Temple is a required dungeon.
+    If any dungeon is chosen this way, only the chosen dungeons are required and
+    Required Dungeon Count and Include Sky Keep as a Dungeon are ignored.
+    """
+    display_name = "Require Skyview Temple"
+
+
+class RequireEarthTemple(Toggle):
+    """
+    If enabled, Earth Temple is a required dungeon.
+    If any dungeon is chosen this way, only the chosen dungeons are required and
+    Required Dungeon Count and Include Sky Keep as a Dungeon are ignored.
+    """
+    display_name = "Require Earth Temple"
+
+
+class RequireLanayruMiningFacility(Toggle):
+    """
+    If enabled, Lanayru Mining Facility is a required dungeon.
+    If any dungeon is chosen this way, only the chosen dungeons are required and
+    Required Dungeon Count and Include Sky Keep as a Dungeon are ignored.
+    """
+    display_name = "Require Lanayru Mining Facility"
+
+
+class RequireAncientCistern(Toggle):
+    """
+    If enabled, Ancient Cistern is a required dungeon.
+    If any dungeon is chosen this way, only the chosen dungeons are required and
+    Required Dungeon Count and Include Sky Keep as a Dungeon are ignored.
+    """
+    display_name = "Require Ancient Cistern"
+
+
+class RequireSandship(Toggle):
+    """
+    If enabled, Sandship is a required dungeon.
+    If any dungeon is chosen this way, only the chosen dungeons are required and
+    Required Dungeon Count and Include Sky Keep as a Dungeon are ignored.
+    """
+    display_name = "Require Sandship"
+
+
+class RequireFireSanctuary(Toggle):
+    """
+    If enabled, Fire Sanctuary is a required dungeon.
+    If any dungeon is chosen this way, only the chosen dungeons are required and
+    Required Dungeon Count and Include Sky Keep as a Dungeon are ignored.
+    """
+    display_name = "Require Fire Sanctuary"
+
+
+class RequireSkyKeep(Toggle):
+    """
+    If enabled, Sky Keep is a required dungeon (even if Include Sky Keep as a Dungeon is off).
+    If any dungeon is chosen this way, only the chosen dungeons are required and
+    Required Dungeon Count and Include Sky Keep as a Dungeon are ignored.
+    """
+    display_name = "Require Sky Keep"
 
 
 class RequireGreg(Toggle):
@@ -1795,6 +1871,14 @@ class SSHDOptions(PerGameCommonOptions):
     require_triforce_pieces: RequireTriforcePieces
     required_triforce_pieces: RequiredTriforcePieces
     dungeon_goal_requirement: DungeonGoalRequirement
+    dungeon_goal_count: DungeonGoalCount
+    require_skyview_temple: RequireSkyviewTemple
+    require_earth_temple: RequireEarthTemple
+    require_lanayru_mining_facility: RequireLanayruMiningFacility
+    require_ancient_cistern: RequireAncientCistern
+    require_sandship: RequireSandship
+    require_fire_sanctuary: RequireFireSanctuary
+    require_sky_keep: RequireSkyKeep
     require_greg: RequireGreg
     require_tim: RequireTim
     require_all_progression_items: RequireAllProgressionItems
@@ -2030,6 +2114,14 @@ sshd_option_groups = [
         RequireTriforcePieces,
         RequiredTriforcePieces,
         DungeonGoalRequirement,
+        DungeonGoalCount,
+        RequireSkyviewTemple,
+        RequireEarthTemple,
+        RequireLanayruMiningFacility,
+        RequireAncientCistern,
+        RequireSandship,
+        RequireFireSanctuary,
+        RequireSkyKeep,
         RequireGreg,
         RequireTim,
         RequireAllProgressionItems,
