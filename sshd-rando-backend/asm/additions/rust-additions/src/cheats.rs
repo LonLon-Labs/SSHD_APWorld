@@ -498,20 +498,76 @@ pub fn handle_no_enemy_damage() {
     }
 }
 
+/// Offset of the player's movement-speed f32 inside dPlayer. It lies past the
+/// end of the mapped struct (0x64DC), so it's addressed by raw offset like in
+/// `handle_hovercraft`. Atmosphere's "Speed" cheats change movement speed by
+/// writing this same field (06244B68 - 0623E680 = 0x64E8).
+///
+/// NOTE: `obj_base_members.forward_speed` is NOT what drives Link's walking
+/// and running; the player code recomputes it, so scaling it had no effect.
+const PLAYER_SPEED_OFFSET: usize = 0x64E8;
+
+/// Bits of the last unboosted (`BASE`) and boosted (`OUT`) values we wrote to
+/// the speed field, so the multiplier is applied once per game refresh rather
+/// than compounding every frame. 0 = nothing written yet.
+static mut SPEED_LAST_BASE: u32 = 0;
+static mut SPEED_LAST_OUT: u32 = 0;
+
 pub fn handle_speed_multiplier() {
     unsafe {
-        let mult_bits = crate::ipc::AP_IPC_ROOT.cheat_flags.speed_multiplier_bits;
-        if mult_bits == 0 || mult_bits == 0x3F800000u32 {
-            return;
-        }
         if PLAYER_PTR.is_null() {
+            SPEED_LAST_BASE = 0;
+            SPEED_LAST_OUT = 0;
             return;
         }
+
+        let speed_ptr = (PLAYER_PTR as *mut u8).add(PLAYER_SPEED_OFFSET) as *mut f32;
+        let cur_bits = core::ptr::read_unaligned(speed_ptr).to_bits();
+
+        let mult_bits = crate::ipc::AP_IPC_ROOT.cheat_flags.speed_multiplier_bits;
         let multiplier = f32::from_bits(mult_bits);
-        let speed = (*PLAYER_PTR).obj_base_members.forward_speed;
-        if speed > 0.1f32 && speed < 200.0f32 {
-            (*PLAYER_PTR).obj_base_members.forward_speed = speed * multiplier;
+        let enabled = mult_bits != 0
+            && mult_bits != 0x3F800000u32
+            && multiplier.is_finite()
+            && multiplier > 0.0f32;
+
+        if !enabled {
+            // Turned off (or reset to 1.0): if the game hasn't refreshed the
+            // field since our boost, put the original value back.
+            if SPEED_LAST_OUT != 0 && cur_bits == SPEED_LAST_OUT {
+                core::ptr::write_unaligned(speed_ptr, f32::from_bits(SPEED_LAST_BASE));
+            }
+            SPEED_LAST_BASE = 0;
+            SPEED_LAST_OUT = 0;
+            return;
         }
+
+        // While hovering, handle_hovercraft sets this field itself each frame.
+        if crate::ipc::AP_IPC_ROOT.cheat_flags.hovercraft
+            && input::check_button_held_down(input::BUTTON_INPUTS::X_BUTTON)
+        {
+            return;
+        }
+
+        // If the field still holds our last boosted value, the game hasn't
+        // recomputed it, so scale the remembered base instead of re-scaling
+        // our own output.
+        let base_bits = if SPEED_LAST_OUT != 0 && cur_bits == SPEED_LAST_OUT {
+            SPEED_LAST_BASE
+        } else {
+            cur_bits
+        };
+        let base = f32::from_bits(base_bits);
+        if !(base > 0.1f32 && base < 200.0f32) {
+            SPEED_LAST_BASE = 0;
+            SPEED_LAST_OUT = 0;
+            return;
+        }
+
+        let out = base * multiplier;
+        core::ptr::write_unaligned(speed_ptr, out);
+        SPEED_LAST_BASE = base_bits;
+        SPEED_LAST_OUT = out.to_bits();
     }
 }
 

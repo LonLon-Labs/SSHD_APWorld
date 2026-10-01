@@ -456,7 +456,16 @@ impl DeliveryTracker {
             }
 
             let ap_code = item.item().id();
-            let Some(original_id) = items::original_id_for_ap_code(ap_code) else {
+            // Progressive items the game can't tier on its own (Progressive
+            // Loftwing: Loftwing -> Spiral Charge) are resolved here from how
+            // many copies were received before this one. Start-inventory
+            // copies count too: they are already in the save as earlier tiers.
+            let prior_copies = if ap_code == items::PROGRESSIVE_LOFTWING_CODE {
+                received[..index].iter().filter(|r| r.item().id() == ap_code).count()
+            } else {
+                0
+            };
+            let Some(original_id) = items::progressive_tier_original_id(ap_code, prior_copies) else {
                 out.verbose(format!(
                     "[AP] Received item #{index}: {} → event-only or unknown AP code {ap_code}, not deliverable via item_buffer",
                     item.item()

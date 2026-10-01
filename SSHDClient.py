@@ -1900,6 +1900,7 @@ class SSHDContext(CommonContext):
             "Progressive Bug Net": 0,
             "Progressive Wallet": 0,
             "Progressive Pouch": 0,
+            "Progressive Loftwing": 0,
         }
         
         # Deferred flag writes — no longer used.
@@ -1920,6 +1921,7 @@ class SSHDContext(CommonContext):
             "Progressive Bug Net":   [71, 140],
             "Progressive Wallet":    [108, 109, 110, 111],
             "Progressive Pouch":     [112, 113, 113, 113, 113],
+            "Progressive Loftwing":  [219, 21],
         }
 
         # Story flags that the rando event system sets for each progressive
@@ -1935,6 +1937,7 @@ class SSHDContext(CommonContext):
             "Progressive Slingshot": [947, 948],
             "Progressive Bug Net":   [949, 950],
             "Progressive Pouch":     [30, 932, 932, 932, 932],
+            "Progressive Loftwing":  [27, 364],
         }
         
         # Game state tracking
@@ -3526,6 +3529,11 @@ class SSHDContext(CommonContext):
                 # All tiers give a Pouch Expansion (game item 113)
                 actual_item_name = "Pouch Expansion"
                 logger.debug(f"Progressive Pouch #{count} -> {actual_item_name}")
+            elif item_name == "Progressive Loftwing":
+                # Tier 1: Loftwing (game item 219), 2: Spiral Charge (game item 21)
+                loftwing_tiers = ["Progressive Loftwing", "Spiral Charge"]
+                actual_item_name = loftwing_tiers[min(count - 1, 1)]
+                logger.debug(f"Progressive Loftwing #{count} -> {actual_item_name}")
         
         # Try using the new item system with animations
         if GameItemSystem:

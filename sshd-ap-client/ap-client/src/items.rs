@@ -183,7 +183,7 @@ const ITEM_CODE_TO_ORIGINAL_ID: &[(i64, u16)] = &[
     (2773216, 216), // Archipelago Item
     (2773217, 217), // Greg The Green Rupee
     (2773218, 218), // Tim The Tumbleweed
-    (2773219, 219), // Loftwing
+    (2773219, 219), // Progressive Loftwing (tier 1: Loftwing 219, tier 2: Spiral Charge 21 -- see progressive_tier_original_id)
     (2773220, 220), // Skyview Temple Key Ring
     (2773221, 221), // Lanayru Mining Facility Key Ring
     (2773222, 222), // Ancient Cistern Key Ring
@@ -229,6 +229,25 @@ const ITEM_CODE_TO_ORIGINAL_ID: &[(i64, u16)] = &[
 
 /// AP item code base — every SSHD item's `code` is `2773000 + original_id`.
 pub const AP_CODE_BASE: i64 = 2773000;
+
+/// AP code of "Progressive Loftwing" (the code the old standalone "Loftwing"
+/// item had). The game has no native tier resolution for it, so the client
+/// resolves the tier itself: 1st copy -> Loftwing, 2nd copy -> Spiral Charge.
+pub const PROGRESSIVE_LOFTWING_CODE: i64 = 2773219;
+
+/// Game item ids for each Progressive Loftwing tier, in order.
+const PROGRESSIVE_LOFTWING_TIERS: [u8; 2] = [219, 21];
+
+/// Like `original_id_for_ap_code`, but resolves progressive items the game
+/// can't resolve on its own. `prior_copies` is how many copies of this same
+/// AP item were received before this one (start-inventory copies included).
+pub fn progressive_tier_original_id(ap_code: i64, prior_copies: usize) -> Option<u8> {
+    if ap_code == PROGRESSIVE_LOFTWING_CODE {
+        let tier = prior_copies.min(PROGRESSIVE_LOFTWING_TIERS.len() - 1);
+        return Some(PROGRESSIVE_LOFTWING_TIERS[tier]);
+    }
+    original_id_for_ap_code(ap_code)
+}
 
 /// Look up the game's `original_id` for an Archipelago item code. Returns
 /// `None` if the code is unrecognized, OR if it maps to an `original_id`
@@ -282,8 +301,17 @@ mod tests {
     fn known_items_resolve() {
         assert_eq!(original_id_for_ap_code(2773001), Some(1)); // Small Key
         assert_eq!(original_id_for_ap_code(2773092), Some(92)); // Bomb Bag
-        assert_eq!(original_id_for_ap_code(2773219), Some(219)); // Loftwing
+        assert_eq!(original_id_for_ap_code(2773219), Some(219)); // Progressive Loftwing (tier 1)
         assert_eq!(original_id_for_ap_code(2773254), Some(254)); // Burn Trap
+    }
+
+    #[test]
+    fn progressive_loftwing_resolves_tiers() {
+        assert_eq!(progressive_tier_original_id(2773219, 0), Some(219)); // Loftwing
+        assert_eq!(progressive_tier_original_id(2773219, 1), Some(21)); // Spiral Charge
+        assert_eq!(progressive_tier_original_id(2773219, 5), Some(21)); // clamps to last tier
+        // Non-loftwing items fall through to the plain table lookup.
+        assert_eq!(progressive_tier_original_id(2773001, 3), Some(1));
     }
 
     #[test]

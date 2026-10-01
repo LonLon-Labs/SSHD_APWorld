@@ -67,6 +67,16 @@ _SMALL_KEY_TO_KEY_RING: dict[str, str] = {
 }
 
 
+# Progressive Loftwing: sshd-rando logic still asks for "Loftwing" and
+# "Spiral Charge" by name, but in AP they are two tiers of one progressive
+# item. Tier 1 (1 copy) = Loftwing, tier 2 (2 copies) = Spiral Charge.
+_PROGRESSIVE_LOFTWING = "Progressive Loftwing"
+_LOFTWING_TIERS: dict[str, int] = {
+    "Loftwing": 1,
+    "Spiral Charge": 2,
+}
+
+
 def _normalize_item_name(name: str) -> str:
     """Convert sshd-rando item/macro name (underscored) to AP item name (spaced)."""
     if name in _ITEM_NAME_FIXES:
@@ -367,6 +377,10 @@ class _ReqParser:
             # If this item is collected in vanilla (not shuffled), rule is auto-satisfied
             if item_name in self.vanilla_items:
                 return ALWAYS_TRUE
+            # Progressive Loftwing tiers (Loftwing -> Spiral Charge)
+            if item_name in _LOFTWING_TIERS:
+                needed = _LOFTWING_TIERS[item_name] + count_val - 1
+                return lambda state, player, _n=needed: state.count(_PROGRESSIVE_LOFTWING, player) >= _n
             # Key rings and skeleton key can substitute for small key count requirements
             key_ring = _SMALL_KEY_TO_KEY_RING.get(item_name)
             if key_ring:
@@ -421,6 +435,10 @@ class _ReqParser:
             # If this item is collected in vanilla (not shuffled), rule is auto-satisfied
             if item_name in self.vanilla_items:
                 return ALWAYS_TRUE
+            # Progressive Loftwing tiers (Loftwing -> Spiral Charge)
+            if item_name in _LOFTWING_TIERS:
+                needed = _LOFTWING_TIERS[item_name]
+                return lambda state, player, _n=needed: state.count(_PROGRESSIVE_LOFTWING, player) >= _n
             # Key rings and skeleton key can substitute for small key checks
             key_ring = _SMALL_KEY_TO_KEY_RING.get(item_name)
             if key_ring:

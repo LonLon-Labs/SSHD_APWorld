@@ -438,6 +438,8 @@ PROGRESSIVE_STAGE_ITEMS: set[str] = {
     "Big Wallet", "Giant Wallet", "Tycoon Wallet",
     # Pouch stages (Progressive Pouch covers these)
     "Pouch Expansion",
+    # Loftwing stages (Progressive Loftwing covers these: Loftwing -> Spiral Charge)
+    "Spiral Charge",
 }
 
 
@@ -1802,6 +1804,8 @@ class SSHDWorld(World):
             "Tycoon Wallet": "Progressive Wallet",
             "Adventure Pouch": "Progressive Pouch",
             "Pouch Expansion": "Progressive Pouch",
+            "Loftwing": "Progressive Loftwing",
+            "Spiral Charge": "Progressive Loftwing",
         }
         
         # Items to skip entirely (not part of the randomized pool)
