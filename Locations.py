@@ -915,3 +915,36 @@ LOCATION_TABLE: dict[str, SSHDLocation] = {
 
 # Reverse lookup: code -> name
 LOCATION_CODE_TO_NAME = {loc.code: name for name, loc in LOCATION_TABLE.items()}
+
+# Vanilla storyflag set by striking each goddess cube (227-256; 232, 233 and 253
+# are unused). Used when decouple_goddess_cubes_and_chests is on: the cubes are
+# real AP locations and the client polls these flags to detect the strikes.
+GODDESS_CUBE_STORY_FLAGS: dict[str, int] = {
+    "Deep Woods - Goddess Cube Near Goron": 227,
+    "Deep Woods - Goddess Cube in front of Temple": 228,
+    "Eldin Volcano - Goddess Cube at Eldin Entrance": 229,
+    "Lanayru Desert - Goddess Cube in Sand Oasis": 230,
+    "Faron Woods - Goddess Cube on East Great Tree with Clawshots Target": 231,
+    "Eldin Volcano - Goddess Cube near Mogma Turf Entrance": 234,
+    "Lanayru Mine - Goddess Cube behind First Landing Robot": 235,
+    "Faron Woods - Goddess Cube on East Great Tree with Rope": 236,
+    "Eldin Volcano - Goddess Cube East of Temple": 237,
+    "Skipper's Retreat - Goddess Cube on Southwest Pillar": 238,
+    "Lanayru Gorge - Goddess Cube near Sandfalls": 239,
+    "Volcano Summit - Goddess Cube in Lava Lake": 240,
+    "Faron Woods - Goddess Cube on West Great Tree near Exit": 241,
+    "Eldin Volcano - Goddess Cube on Sand Slide": 242,
+    "Pirate Stronghold - Goddess Cube on top of Shark Head": 243,
+    "Deep Woods - Goddess Cube on top of Temple": 244,
+    "Eldin Volcano - Goddess Cube behind Bombable Rock West of Temple": 245,
+    "Lanayru Desert - Goddess Cube in Secret Passageway": 246,
+    "Lanayru Desert - Goddess Cube near Caged Robot": 247,
+    "Volcano Summit - Goddess Cube near Fire Sanctuary Entrance": 248,
+    "Floria Waterfall - Goddess Cube on High Ledge": 249,
+    "Skyview Spring - Goddess Cube behind Crest": 250,
+    "Volcano Summit - Goddess Cube at Summit Waterfall": 251,
+    "Temple of Time - Goddess Cube on High Platform North of Tree": 252,
+    "Lake Floria - Goddess Cube near Bird Statue": 254,
+    "Mogma Turf - Goddess Cube on Raised Pillar": 255,
+    "Ancient Harbour - Goddess Cube in North Cave": 256,
+}

@@ -30,6 +30,12 @@ const BOSS_DEFEAT_FLAGS: &[(i64, usize, usize, u8)] = &[
 
 const SCENEFLAGS_BYTES: usize = 26 * 8 * 2; // [[u16; 8]; 26], read as raw bytes
 
+/// Every AP location code this module can report. Used by the check-count
+/// reporting so these locations are included in the in-game totals.
+pub fn location_codes() -> impl Iterator<Item = i64> {
+    BOSS_DEFEAT_FLAGS.iter().map(|&(code, ..)| code)
+}
+
 /// Returns AP location codes for any boss(es) newly detected as defeated.
 /// `already_checked` should be the caller's set of location codes already
 /// known-checked (e.g. from `sent_locations`/`checked_locations`
@@ -70,5 +76,11 @@ mod tests {
         codes.dedup();
         assert_eq!(codes.len(), 6);
         assert_eq!(BOSS_DEFEAT_FLAGS.len(), 6);
+    }
+
+    #[test]
+    fn location_codes_lists_every_boss() {
+        assert_eq!(location_codes().count(), BOSS_DEFEAT_FLAGS.len());
+        assert!(location_codes().any(|c| c == 2773700));
     }
 }

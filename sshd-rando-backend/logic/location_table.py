@@ -89,9 +89,16 @@ def get_disabled_shuffle_locations(
             )
             or (
                 settings["goddess_chest_shuffle"].value == "off"
+                and "Goddess Chests" in location.types
+            )
+            or (
+                # Goddess Cubes only hold randomized items when they are
+                # decoupled from their chests. Otherwise they are just
+                # dummy logic items linked to Goddess Chests.
+                "Goddess Cube" in location.types
                 and (
-                    "Goddess Chests" in location.types
-                    or "Goddess Cube" in location.types
+                    settings["decouple_goddess_cubes_and_chests"].value == "off"
+                    and settings["goddess_chest_shuffle"].value == "off"
                 )
             )
             or (

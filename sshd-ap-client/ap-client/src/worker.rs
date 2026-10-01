@@ -114,6 +114,7 @@ use crate::stages;
 use crate::colors::{self, LogSpan};
 use crate::delivery::{self, DeliveryTracker};
 use crate::goddess_chests::GoddessChestPoller;
+use crate::goddess_cubes::GoddessCubePoller;
 use crate::item_info;
 use crate::items;
 use crate::links::{self, LinkMonitor, LinkSignal};
@@ -194,6 +195,7 @@ struct SyncState {
     delivery:             DeliveryTracker,
     location_poller:      Option<CustomFlagPoller>,
     goddess_chest_poller: Option<GoddessChestPoller>,
+    goddess_cube_poller:  Option<GoddessCubePoller>,
     // Beedle's shop needs no slot_data (its 10-entry table is hardcoded),
     // so it's always present rather than an `Option`.
     beedle_poller:        BeedleShopPoller,
@@ -247,6 +249,7 @@ impl SyncState {
             delivery:             DeliveryTracker::new(),
             location_poller:      None,
             goddess_chest_poller: None,
+            goddess_cube_poller:  None,
             beedle_poller:        BeedleShopPoller::new(),
             pending_cheat_slot_data: None,
             pending_item_info: None,
@@ -502,6 +505,20 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                                 goddess_chests.len()
                             );
                             sync.goddess_chest_poller = Some(GoddessChestPoller::new(goddess_chests));
+
+                            let goddess_cubes = slot_data.goddess_cube_story_flags.clone();
+                            vlog!(
+                                "[AP] Loaded {} goddess cube location mappings from slot_data.",
+                                goddess_cubes.len()
+                            );
+                            // The game hands out a decoupled cube's item itself (item-get
+                            // animation), so own-world items from these locations must not
+                            // be delivered a second time when the server echoes them back.
+                            sync.delivery.set_native_locations(
+                                goddess_cubes.keys().copied().collect(),
+                                client.this_player().slot() as i64,
+                            );
+                            sync.goddess_cube_poller = Some(GoddessCubePoller::new(goddess_cubes));
 
                             // Seed `reported_locations` with whatever the server already
                             // knows we've checked (e.g. from a previous session). Without
@@ -866,6 +883,12 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                         Err(e) => vlog!("[IPC] goddess chest poll failed: {e}"),
                     }
                 }
+                if let Some(poller) = sync.goddess_cube_poller.as_mut() {
+                    match poller.poll(mem, root_addr, &already_checked) {
+                        Ok(codes) => newly_checked_all.extend(codes),
+                        Err(e) => vlog!("[IPC] goddess cube poll failed: {e}"),
+                    }
+                }
                 match sync.beedle_poller.poll(mem, root_addr, &already_checked) {
                     Ok(codes) => newly_checked_all.extend(codes),
                     Err(e) => vlog!("[IPC] Beedle's shop poll failed: {e}"),
@@ -897,7 +920,8 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                     if let Some(client) = conn.client() {
                         let mut all_checked = reported_locations.clone();
                         all_checked.extend(client.checked_locations().map(|l| l.id()));
-                        match crate::write_check_stats(mem, root_addr, client.slot_data(), &all_checked) {
+                        let own_slot = client.this_player().slot() as i64;
+                        match crate::write_check_stats(mem, root_addr, client.slot_data(), &all_checked, own_slot) {
                             Ok(Some((checked, total))) => {
                                 send(&output, WorkerEvent::Stats { checked, total });
                             },

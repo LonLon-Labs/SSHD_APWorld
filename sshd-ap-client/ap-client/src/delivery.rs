@@ -42,7 +42,7 @@
 //!
 //! NOTE: like the rest of this workspace, not compiled where it was written.
 
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::time::{Duration, Instant};
 
 use ap_ipc::{offsets, ApPlayerVitals, ARCHIPELAGO_BUFFER_SIZE};
@@ -129,6 +129,12 @@ pub struct DeliveryTracker {
     needs_buffer_clear: bool,
     last_progress: Instant,
     stall_logged: bool,
+    /// Locations whose item the game hands out itself when they are checked
+    /// (decoupled Goddess Cubes). Own-world items from these are never queued,
+    /// or they would arrive a second time when the server echoes them back.
+    native_locations: HashSet<i64>,
+    /// This client's own slot number, to tell own-world items from other players'.
+    own_slot: i64,
 }
 
 impl DeliveryTracker {
@@ -150,7 +156,16 @@ impl DeliveryTracker {
             needs_buffer_clear: true,
             last_progress: Instant::now(),
             stall_logged: false,
+            native_locations: HashSet::new(),
+            own_slot: -1,
         }
+    }
+
+    /// Declare the locations the game gives items for natively, plus our own
+    /// slot. Kept across rewinds; reset by creating a new tracker per connection.
+    pub fn set_native_locations(&mut self, locations: HashSet<i64>, own_slot: i64) {
+        self.native_locations = locations;
+        self.own_slot = own_slot;
     }
 
     pub fn is_ready(&self) -> bool {
@@ -449,6 +464,19 @@ impl DeliveryTracker {
             if item.location().id() == -2 {
                 out.verbose(format!(
                     "[AP] Received item #{index}: {} → start-inventory item, already in save file, skipping delivery",
+                    item.item()
+                ));
+                self.next_index += 1;
+                continue;
+            }
+
+            // Own-world items from locations the game already gave natively
+            // (decoupled Goddess Cubes play the item-get animation themselves).
+            if self.native_locations.contains(&item.location().id())
+                && item.sender().slot() as i64 == self.own_slot
+            {
+                out.verbose(format!(
+                    "[AP] Received item #{index}: {} → given natively by the game at its location, skipping delivery",
                     item.item()
                 ));
                 self.next_index += 1;

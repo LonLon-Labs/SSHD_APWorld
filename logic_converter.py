@@ -53,6 +53,9 @@ _ITEM_NAME_FIXES = {
     "Skippers_Retreat_Goddess_Cube": "Skipper's Retreat Goddess Cube",
 }
 
+# AP item name for the progressive sword (Goddess Sword == 2 of these).
+_PROGRESSIVE_SWORD = "Progressive Sword"
+
 # Maps each dungeon's small key AP name to its corresponding key ring name.
 # Used in logic rules to allow key rings and the skeleton key to satisfy
 # small key requirements.
@@ -429,6 +432,20 @@ class _ReqParser:
         if macro_name in self.macros:
             return self.macros[macro_name]
         
+        # Goddess Cube dummy items gating Goddess Chests: how a chest is unlocked
+        # depends on the Goddess Chest Unlock setting. (With locked_until_struck the
+        # item is provided by the "Cube Strike" events from _build_goddess_cube_events,
+        # whether or not the cube location itself is decoupled into a real check.)
+        if "Goddess Cube" in _normalize_item_name(atom):
+            unlock = self.resolved_settings.get("goddess_chest_unlock", "locked_until_struck")
+            if unlock == "unlocked_from_start":
+                return ALWAYS_TRUE
+            if unlock == "unlocked_after_goddess_sword":
+                sword_macro = self.macros.get("Goddess Sword")
+                if sword_macro is not None:
+                    return sword_macro
+                return lambda state, player: state.count(_PROGRESSIVE_SWORD, player) >= 2
+
         # Item check
         item_name = _normalize_item_name(atom)
         if item_name in self.known_items:
@@ -665,6 +682,8 @@ class SSHDLogicConverter:
         s = self.resolved_settings
         if s.get("goddess_chest_shuffle", "off") not in ("on", "randomized"):
             return  # Chests aren't AP locations — nothing to gate
+        if s.get("goddess_chest_unlock", "locked_until_struck") != "locked_until_struck":
+            return  # Chests don't depend on cubes (see _parse_atom) — nothing to gate
 
         from BaseClasses import Item as APItem, ItemClassification
 
@@ -783,8 +802,10 @@ class SSHDLogicConverter:
 
         # Goddess Cubes are dummy logic items (oarc: null) used internally by
         # sshd-rando to link cube-strike locations to sky Goddess Chests.
-        # They have no in-game model and must never be AP locations.
-        excluded.add("Goddess Cube")
+        # They only become real AP locations (holding a random item) when
+        # goddess cubes are decoupled from goddess chests.
+        if s.get("decouple_goddess_cubes_and_chests", "off") != "on":
+            excluded.add("Goddess Cube")
 
         # Goddess Chests: excluded unless goddess_chest_shuffle is on
         if s.get("goddess_chest_shuffle", "off") not in ("on", "randomized"):
@@ -862,8 +883,10 @@ class SSHDLogicConverter:
             excluded.add("Advanced Rupees")
         # "advanced" → nothing extra excluded
 
-        # Goddess Cubes are dummy logic items — always exclude from pool too
-        excluded.add("Goddess Cube")
+        # Goddess Cubes are dummy logic items — exclude from pool too, unless
+        # decoupled, in which case the cube locations hold randomized items
+        if s.get("decouple_goddess_cubes_and_chests", "off") != "on":
+            excluded.add("Goddess Cube")
 
         return excluded
 

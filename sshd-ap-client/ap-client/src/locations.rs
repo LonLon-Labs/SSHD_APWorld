@@ -42,6 +42,13 @@ pub struct SlotData {
     #[serde(default, deserialize_with = "deserialize_goddess_chest_map")]
     pub goddess_chest_scene_flags: HashMap<i64, (u16, u8)>,
 
+    /// AP location code -> vanilla storyflag id, for decoupled goddess
+    /// cubes (sent only when `decouple_goddess_cubes_and_chests` is on).
+    /// The server sends this as `{"<location_code>": <storyflag>}`; see
+    /// `goddess_cubes.rs` for how it's polled.
+    #[serde(default, deserialize_with = "deserialize_goddess_cube_map")]
+    pub goddess_cube_story_flags: HashMap<i64, u16>,
+
     /// flag_id (same `custom_flag` encoding as `custom_flag_to_location`)
     /// -> the real item name and owning player name for that location, so
     /// the game can show "You found a(n) X for Y!" instead of the generic
@@ -232,6 +239,14 @@ where
     Ok(raw.into_iter().filter_map(|(k, v)| k.parse::<i64>().ok().map(|k| (k, v))).collect())
 }
 
+fn deserialize_goddess_cube_map<'de, D>(deserializer: D) -> Result<HashMap<i64, u16>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let raw: HashMap<String, u16> = HashMap::deserialize(deserializer)?;
+    Ok(raw.into_iter().filter_map(|(k, v)| k.parse::<i64>().ok().map(|k| (k, v))).collect())
+}
+
 /// The real item name and owning player name for one `ap_item_info` entry
 /// -- see `SlotData::ap_item_info`'s field doc.
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -361,6 +376,16 @@ mod tests {
         let json = r#"{"goddess_chest_scene_flags": {"2773500": [21, 40]}}"#;
         let parsed: SlotData = serde_json::from_str(json).unwrap();
         assert_eq!(parsed.goddess_chest_scene_flags.get(&2773500), Some(&(21, 40)));
+    }
+
+    #[test]
+    fn slot_data_parses_goddess_cube_story_flags() {
+        let json = r#"{"goddess_cube_story_flags": {"2773284": 227, "2773707": 250}}"#;
+        let parsed: SlotData = serde_json::from_str(json).unwrap();
+        assert_eq!(parsed.goddess_cube_story_flags.get(&2773284), Some(&227));
+        assert_eq!(parsed.goddess_cube_story_flags.get(&2773707), Some(&250));
+        let empty: SlotData = serde_json::from_str("{}").unwrap();
+        assert!(empty.goddess_cube_story_flags.is_empty());
     }
 
     #[test]

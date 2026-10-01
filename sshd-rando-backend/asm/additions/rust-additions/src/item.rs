@@ -130,6 +130,11 @@ extern "C" {
 
     static mut CREST_CUSTOM_FLAGS: [u16; 3];
 
+    // Decoupled Goddess Cubes (filled in by the patcher via init_global_variables)
+    static GODDESS_CUBE_MAGIC: u32;
+    static mut GODDESS_CUBE_CUSTOM_FLAGS: [u16; 32];
+    static mut GODDESS_CUBE_ITEM_IDS: [u8; 32];
+
     static mut SQUIRRELS_CAUGHT_THIS_PLAY_SESSION: bool;
     static TADTONE_SCENEFLAGS: [u8; 17];
 
@@ -355,6 +360,26 @@ pub extern "C" fn give_item_with_sceneflag(itemid: u8, sceneflag: u8) -> *mut dA
 
 #[no_mangle]
 pub extern "C" fn give_item_with_archipelago_flag(itemid: u8, custom_flag: u16) -> *mut dAcItem {
+    give_item_with_archipelago_flag_and_trap(itemid, custom_flag, NO_TRAP_ID)
+}
+
+/// `trap_id` value meaning "this item is not a trap" (the same 0xF sentinel
+/// the item actor's param2 bits 4-7 use for non-trap items).
+const NO_TRAP_ID: u8 = 0xF;
+
+/// Like `give_item_with_archipelago_flag`, but when `trap_id` is not
+/// `NO_TRAP_ID` the spawned item actor is a real trap: `setup_traps` sees
+/// param2 bits 0-3 = 0xF (trappable) and bits 4-7 = the trap id, turns the
+/// item into a Rupoor for the frowny face/sound, and `update_traps` fires the
+/// effect. Pass a Rupoor (34) as `itemid` for traps so the model matches.
+/// `trap_id` is the 0-4 trap index (the same value the AP item buffer derives
+/// with `254 - item_id`).
+#[no_mangle]
+pub extern "C" fn give_item_with_archipelago_flag_and_trap(
+    itemid: u8,
+    custom_flag: u16,
+    trap_id: u8,
+) -> *mut dAcItem {
     unsafe {
         // Safety: ROOM_MGR can be null during scene transitions.
         if ROOM_MGR.is_null() {
@@ -392,8 +417,14 @@ pub extern "C" fn give_item_with_archipelago_flag(itemid: u8, custom_flag: u16) 
             _ => 0,  // Other items don't use original_itemid encoding
         };
 
-        let param2: u32 =
+        let mut param2: u32 =
             (flag << 8) | (scene_selector << 15) | (flag_space << 17) | (original_itemid << 18);
+
+        // Trap: bits 0-3 = 0xF marks the actor trappable, bits 4-7 = trap id.
+        // Non-traps leave both nibbles 0 so setup_traps ignores them.
+        if trap_id != NO_TRAP_ID {
+            param2 |= 0xF | ((trap_id as u32 & 0xF) << 4);
+        }
 
         // Spawn item with param1 for display, param2 for custom flag.
         // sceneflag=0xFF in bits 10-17 is REQUIRED: check_and_modify_item_actor's
@@ -594,6 +625,123 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
             set_ap_custom_flag(cf);
             give_item(whitesword_reward);
             flag::set_local_sceneflag(52);
+        }
+    }
+}
+
+/// Story flags set by striking each of the 27 Goddess Cubes, in ascending
+/// order. Must match GODDESS_CUBE_STORYFLAGS in stagepatchhandler.py, which
+/// indexes the GODDESS_CUBE_CUSTOM_FLAGS / GODDESS_CUBE_ITEM_IDS tables
+/// written by the patcher.
+const GODDESS_CUBE_STORYFLAGS: [u16; 27] = [
+    227, 228, 229, 230, 231, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247,
+    248, 249, 250, 251, 252, 254, 255, 256,
+];
+
+static mut GODDESS_CUBE_TICK: u32 = 0;
+
+/// "CUBE" as a little-endian u32; the patcher writes it next to the cube
+/// tables only when decoupled cubes have items. Anything else means the tables
+/// weren't patched in (or the bytes aren't ours), so the handler must not act
+/// on them.
+const GODDESS_CUBE_MAGIC_VALUE: u32 = 0x4542_5543;
+
+/// Decode a 10-bit AP custom flag and check the corresponding global
+/// sceneflag or dungeonflag (the counterpart of `set_ap_custom_flag`).
+unsafe fn check_ap_custom_flag(custom_flag: u16) -> bool {
+    let flag_val = custom_flag & 0x7F;
+    let scene_selector = (custom_flag >> 7) & 0x3;
+    let flag_space = (custom_flag >> 9) & 0x1;
+
+    let sceneindex: u16 = match scene_selector {
+        0 => 6,
+        1 => 13,
+        2 => 16,
+        3 => 19,
+        _ => 6,
+    };
+
+    match flag_space {
+        0 => flag::check_global_sceneflag(sceneindex, flag_val) != 0,
+        1 => flag::check_global_dungeonflag(sceneindex, flag_val) != 0,
+        _ => false,
+    }
+}
+
+/// Decoupled Goddess Cubes: when a cube's story flag gets set (by striking
+/// it), give that cube's randomized item with the normal item-get animation
+/// and mark the location as checked through its AP custom flag.
+///
+/// Does nothing for cubes whose custom flag is 0x3FF, which is every cube
+/// unless the "Decouple Goddess Cubes and Chests" setting is on. Called every
+/// frame from the main loop but only does real work every few frames.
+pub fn handle_goddess_cube_items() {
+    unsafe {
+        // Cheapest check first: no patched tables, nothing to do. Also keeps
+        // zeroed/garbage memory from being read as custom flags and item ids.
+        if core::ptr::read_volatile(core::ptr::addr_of!(GODDESS_CUBE_MAGIC))
+            != GODDESS_CUBE_MAGIC_VALUE
+        {
+            return;
+        }
+
+        GODDESS_CUBE_TICK = GODDESS_CUBE_TICK.wrapping_add(1);
+        if GODDESS_CUBE_TICK % 10 != 0 {
+            return;
+        }
+
+        // Same safety conditions as item delivery from the AP buffer
+        if ap_stage_cooldown_active() {
+            return;
+        }
+        if &CURRENT_STAGE_NAME[..4] == b"F000" && (CURRENT_LAYER == 26 || CURRENT_LAYER == 29) {
+            return;
+        }
+        if PLAYER_PTR.is_null() || ROOM_MGR.is_null() {
+            return;
+        }
+
+        for index in 0..GODDESS_CUBE_STORYFLAGS.len() {
+            let custom_flag =
+                core::ptr::read_volatile(core::ptr::addr_of!(GODDESS_CUBE_CUSTOM_FLAGS[index]));
+            if custom_flag == 0x3FF {
+                continue;
+            }
+            if flag::check_storyflag(GODDESS_CUBE_STORYFLAGS[index]) == 0 {
+                continue;
+            }
+            // Already given (the custom flag is set once the location is checked)
+            if check_ap_custom_flag(custom_flag) {
+                continue;
+            }
+
+            // Wait until Link can actually receive the item, then try again
+            if player_is_busy() {
+                return;
+            }
+
+            let item_id =
+                core::ptr::read_volatile(core::ptr::addr_of!(GODDESS_CUBE_ITEM_IDS[index]));
+            // Trap pseudo-items (250..=254, trap id = 254 - item id) are given as a
+            // real trap actor: a Rupoor carrying the trap id, so the effect fires
+            // instead of showing the generic Archipelago item.
+            let item_actor = if (250..=254).contains(&item_id) {
+                give_item_with_archipelago_flag_and_trap(34, custom_flag, 254 - item_id)
+            } else {
+                give_item_with_archipelago_flag(item_id, custom_flag)
+            };
+            if item_actor.is_null() {
+                return;
+            }
+            (*item_actor).prevent_timed_despawn = 1;
+
+            // Mark the location as checked right away, which also pre-sets
+            // LAST_AP_ITEM_FLAG_ID so the item textbox shows the right item/player.
+            // This is also what keeps us from spawning the item again next frame.
+            set_ap_custom_flag(custom_flag);
+
+            // One cube per call so two items never spawn in the same frame
+            return;
         }
     }
 }

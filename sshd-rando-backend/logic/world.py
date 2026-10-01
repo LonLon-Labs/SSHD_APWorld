@@ -253,6 +253,32 @@ class World:
                             self.get_location(location_name).loc_access_list.append(
                                 new_area.locations[-1]
                             )
+                            # When cubes are decoupled from their chests but chests are still
+                            # activated by striking their cube, striking the cube becomes an
+                            # event which the chest requires. Being able to reach the cube
+                            # location is the same as being able to strike the cube.
+                            cube_location = self.get_location(location_name)
+                            if (
+                                cube_location.types is not None
+                                and "Goddess Cube" in cube_location.types
+                                and self.setting("decouple_goddess_cubes_and_chests")
+                                == "on"
+                                and self.setting("goddess_chest_unlock")
+                                == "locked_until_struck"
+                                and cube_location.original_item is not None
+                            ):
+                                cube_event_name = goddess_cube_event_name(
+                                    cube_location.original_item
+                                )
+                                defined_events.add(cube_event_name)
+                                self.add_event(cube_event_name)
+                                new_area.events.append(
+                                    EventAccess(
+                                        self.events[cube_event_name],
+                                        location_req,
+                                        new_area,
+                                    )
+                                )
                             # Add the location to the dungeon if this area is part of one
                             if dungeon_name := area_node.get("dungeon", False):
                                 dungeon = self.get_dungeon(dungeon_name)
@@ -416,8 +442,12 @@ class World:
             ):
                 location.set_current_item(self.get_item(GREEN_RUPEE))
 
-            # Set Goddess Cubes as having their own item
-            if "Goddess Cube" in location.types:
+            # Set Goddess Cubes as having their own item. When cubes are decoupled
+            # from their chests they are regular checks and get a randomized item.
+            if (
+                "Goddess Cube" in location.types
+                and self.setting("decouple_goddess_cubes_and_chests") == "off"
+            ):
                 location.set_current_item(item)
                 location.has_known_vanilla_item = True
 

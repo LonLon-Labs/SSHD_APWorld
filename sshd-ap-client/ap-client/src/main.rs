@@ -44,6 +44,7 @@ mod colors;
 mod delivery;
 mod go_mode;
 mod goddess_chests;
+mod goddess_cubes;
 mod gui;
 mod ipc_requests;
 mod item_info;
@@ -63,6 +64,7 @@ use ap_ipc::{offsets, ApIpcRoot, AP_IPC_MAGIC, AP_IPC_SUPPORTED_VERSION};
 use archipelago_rs::{BounceOptions, Connection, ConnectionOptions, DeathLinkOptions, Error, Event};
 use beedle_shop::BeedleShopPoller;
 use goddess_chests::GoddessChestPoller;
+use goddess_cubes::GoddessCubePoller;
 use links::{LinkMonitor, LinkSignal};
 use locations::{CustomFlagPoller, SlotData};
 use process_memory::{MemError, ProcessMemory, SUPPORTED_EMULATOR_NAMES};
@@ -297,6 +299,7 @@ fn run_headless(args: StartupArgs) {
     // Built once slot_data arrives (on Event::Connected) — see locations.rs.
     let mut location_poller: Option<CustomFlagPoller> = None;
     let mut goddess_chest_poller: Option<GoddessChestPoller> = None;
+    let mut goddess_cube_poller: Option<GoddessCubePoller> = None;
     // Beedle's shop needs no slot_data (its 10-entry table is hardcoded),
     // so it can be built up front.
     let mut beedle_poller = BeedleShopPoller::new();
@@ -337,6 +340,13 @@ fn run_headless(args: StartupArgs) {
                             goddess_chests.len()
                         );
                         goddess_chest_poller = Some(GoddessChestPoller::new(goddess_chests));
+
+                        let goddess_cubes = slot_data.goddess_cube_story_flags.clone();
+                        println!(
+                            "[AP] Loaded {} goddess cube location mappings from slot_data.",
+                            goddess_cubes.len()
+                        );
+                        goddess_cube_poller = Some(GoddessCubePoller::new(goddess_cubes));
 
                         // Seed `reported_locations` with whatever the server already
                         // knows we've checked (e.g. from a previous session), so the
@@ -590,6 +600,12 @@ fn run_headless(args: StartupArgs) {
                 Err(e) => eprintln!("[IPC] goddess chest poll failed: {e}"),
             }
         }
+        if let Some(poller) = goddess_cube_poller.as_mut() {
+            match poller.poll(&mut mem, root_addr, &already_checked) {
+                Ok(codes) => newly_checked_all.extend(codes),
+                Err(e) => eprintln!("[IPC] goddess cube poll failed: {e}"),
+            }
+        }
         match beedle_poller.poll(&mut mem, root_addr, &already_checked) {
             Ok(codes) => newly_checked_all.extend(codes),
             Err(e) => eprintln!("[IPC] Beedle's shop poll failed: {e}"),
@@ -623,7 +639,8 @@ fn run_headless(args: StartupArgs) {
             if let Some(client) = connection.client() {
                 let mut all_checked = reported_locations.clone();
                 all_checked.extend(client.checked_locations().map(|l| l.id()));
-                if let Err(e) = write_check_stats(&mut mem, root_addr, client.slot_data(), &all_checked) {
+                let own_slot = client.this_player().slot() as i64;
+                if let Err(e) = write_check_stats(&mut mem, root_addr, client.slot_data(), &all_checked, own_slot) {
                     eprintln!("[IPC] failed to write check stats: {e}");
                 }
             }
@@ -712,37 +729,119 @@ pub(crate) fn write_check_stats(
     root_addr: usize,
     slot_data: &SlotData,
     all_checked: &HashSet<i64>,
+    own_slot: i64,
 ) -> Result<Option<(u16, u16)>, MemError> {
-    if slot_data.custom_flag_to_location.is_empty() {
+    let Some(counts) = check_counts(slot_data, all_checked, own_slot) else {
         return Ok(None);
-    }
-
-    let total_locations = slot_data.custom_flag_to_location.len();
-    let ap_codes: HashSet<i64> = slot_data
-        .ap_item_info
-        .keys()
-        .filter_map(|flag_id| slot_data.custom_flag_to_location.get(flag_id).copied())
-        .collect();
-    let ap_total = ap_codes.len();
-    let normal_total = total_locations.saturating_sub(ap_total);
-
-    let ap_checked = ap_codes.iter().filter(|c| all_checked.contains(c)).count();
-    let total_checked = slot_data
-        .custom_flag_to_location
-        .values()
-        .filter(|c| all_checked.contains(c))
-        .count();
-    let normal_checked = total_checked.saturating_sub(ap_checked);
+    };
 
     let clamp = |n: usize| n.min(u16::MAX as usize) as u16;
     let mut data = Vec::with_capacity(8);
-    for v in [normal_checked, normal_total, ap_checked, ap_total] {
+    for v in [counts.normal_checked, counts.normal_total, counts.ap_checked, counts.ap_total] {
         data.extend_from_slice(&clamp(v).to_le_bytes());
     }
     // +4 skips the magic, which belongs to the game.
     mem.write_bytes(root_addr + offsets::CHECK_STATS + 4, &data)?;
 
-    Ok(Some((clamp(total_checked), clamp(total_locations))))
+    Ok(Some((clamp(counts.normal_checked + counts.ap_checked), clamp(counts.normal_total + counts.ap_total))))
+}
+
+/// The four numbers shown in the in-game help menu.
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct CheckCounts {
+    pub normal_checked: usize,
+    pub normal_total:   usize,
+    pub ap_checked:     usize,
+    pub ap_total:       usize,
+}
+
+/// Counts every location this client can report: custom-flag locations,
+/// goddess chests, decoupled goddess cubes, Beedle's Airshop and boss
+/// defeats (deduped by location code, since the sources can overlap).
+/// "ap" locations are those holding an item that belongs to another
+/// player -- either listed in `ap_item_info` (looked up through its custom
+/// flag) or in `location_to_item_map` with an owner other than `own_slot`.
+///
+/// Returns `None` until slot_data has location data.
+pub(crate) fn check_counts(
+    slot_data: &SlotData,
+    all_checked: &HashSet<i64>,
+    own_slot: i64,
+) -> Option<CheckCounts> {
+    let mut all_codes: HashSet<i64> = slot_data.custom_flag_to_location.values().copied().collect();
+    if all_codes.is_empty() {
+        return None;
+    }
+    all_codes.extend(slot_data.goddess_chest_scene_flags.keys().copied());
+    all_codes.extend(slot_data.goddess_cube_story_flags.keys().copied());
+    all_codes.extend(beedle_shop::BEEDLE_STORYFLAG_TO_LOCATION.iter().map(|&(_, code)| code));
+    all_codes.extend(boss_defeats::location_codes());
+
+    let mut ap_codes: HashSet<i64> = slot_data
+        .ap_item_info
+        .keys()
+        .filter_map(|flag_id| slot_data.custom_flag_to_location.get(flag_id).copied())
+        .collect();
+    ap_codes.extend(
+        slot_data
+            .location_to_item_map
+            .iter()
+            .filter(|(_, item)| item.player != own_slot)
+            .map(|(&code, _)| code),
+    );
+    ap_codes.retain(|code| all_codes.contains(code));
+
+    let ap_total = ap_codes.len();
+    let ap_checked = ap_codes.iter().filter(|c| all_checked.contains(c)).count();
+    let total_checked = all_codes.iter().filter(|c| all_checked.contains(c)).count();
+
+    Some(CheckCounts {
+        normal_checked: total_checked.saturating_sub(ap_checked),
+        normal_total:   all_codes.len().saturating_sub(ap_total),
+        ap_checked,
+        ap_total,
+    })
+}
+
+#[cfg(test)]
+mod check_count_tests {
+    use super::*;
+    use crate::locations::LocationItem;
+
+    fn slot_data() -> SlotData {
+        let mut sd = SlotData::default();
+        sd.custom_flag_to_location.insert(1, 100);
+        sd.custom_flag_to_location.insert(2, 101);
+        sd.goddess_chest_scene_flags.insert(200, (1, 1));
+        sd.goddess_cube_story_flags.insert(300, 227);
+        sd
+    }
+
+    #[test]
+    fn none_until_slot_data_has_locations() {
+        assert_eq!(check_counts(&SlotData::default(), &HashSet::new(), 1), None);
+    }
+
+    #[test]
+    fn counts_chests_cubes_beedle_and_bosses() {
+        let sd = slot_data();
+        let c = check_counts(&sd, &HashSet::new(), 1).unwrap();
+        let extra = beedle_shop::BEEDLE_STORYFLAG_TO_LOCATION.len() + boss_defeats::location_codes().count();
+        assert_eq!(c.normal_total, 4 + extra);
+        assert_eq!(c.ap_total, 0);
+    }
+
+    #[test]
+    fn other_players_items_count_as_ap() {
+        let mut sd = slot_data();
+        sd.location_to_item_map.insert(300, LocationItem { item_id: 5, player: 2 });
+        sd.location_to_item_map.insert(100, LocationItem { item_id: 6, player: 1 });
+        let checked: HashSet<i64> = HashSet::from([300, 100]);
+        let c = check_counts(&sd, &checked, 1).unwrap();
+        assert_eq!(c.ap_total, 1);
+        assert_eq!(c.ap_checked, 1);
+        assert_eq!(c.normal_checked, 1);
+    }
 }
 
 // Keeping the full `ApIpcRoot` type referenced here (via this size assert)

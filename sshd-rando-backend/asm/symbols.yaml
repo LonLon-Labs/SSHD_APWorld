@@ -235,6 +235,16 @@ main:
     ## Size: 50 (who knows how many settings we'll get in the future)
     RANDOMIZER_SETTINGS: 0x712e54b6c0
 
+    ## Decoupled Goddess Cubes. Lives in the same patcher-written config area as
+    ## RANDOMIZER_SETTINGS (free space up to RANDOM_MUSIC_DATA); the game only reads it.
+    ## Size: 4 (u32) - must read 0x45425543 ("CUBE", little endian) or the tables are ignored
+    GODDESS_CUBE_MAGIC: 0x712e54b700
+    ## Size: 64 (32 x u16) - AP custom flag for each cube (0x3FF = none).
+    ## Indexed in the same order as GODDESS_CUBE_STORYFLAGS (item.rs / stagepatchhandler.py).
+    GODDESS_CUBE_CUSTOM_FLAGS: 0x712e54b710
+    ## Size: 32 (32 x u8) - item id handed out when each cube is struck
+    GODDESS_CUBE_ITEM_IDS: 0x712e54b750
+
     ## Size: 7616 (0x1DC0) = 32*238
     RANDOM_MUSIC_DATA: 0x712e54c000
 

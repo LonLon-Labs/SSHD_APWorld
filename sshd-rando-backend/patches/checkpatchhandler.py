@@ -21,6 +21,50 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from logic.item import Item
 
+# Story flag that gates the spawning of every Goddess Chest whenever the chests are
+# unlocked independently of their cubes. It is the single source of truth: writing 1
+# activates all Goddess Chests and writing 0 deactivates them. In
+# "unlocked_after_goddess_sword" mode the game's main loop sets it once story flag 907
+# (Goddess Sword / Progressive Sword 2) is set (see
+# handle_goddess_chest_unlock_flag in mainloop.rs).
+GODDESS_CHEST_UNLOCK_STORYFLAG = 95
+
+
+# Item id of the generic "Archipelago Item" placeholder
+AP_PLACEHOLDER_ITEMID = 216
+
+# Story flag set by striking each Goddess Cube (matches GODDESS_CUBE_STORYFLAGS in
+# stagepatchhandler.py and GODDESS_CUBE_STORY_FLAGS in the apworld's Locations.py)
+GODDESS_CUBE_NAME_TO_STORYFLAG: dict[str, int] = {
+    "Deep Woods - Goddess Cube Near Goron": 227,
+    "Deep Woods - Goddess Cube in front of Temple": 228,
+    "Eldin Volcano - Goddess Cube at Eldin Entrance": 229,
+    "Lanayru Desert - Goddess Cube in Sand Oasis": 230,
+    "Faron Woods - Goddess Cube on East Great Tree with Clawshots Target": 231,
+    "Eldin Volcano - Goddess Cube near Mogma Turf Entrance": 234,
+    "Lanayru Mine - Goddess Cube behind First Landing Robot": 235,
+    "Faron Woods - Goddess Cube on East Great Tree with Rope": 236,
+    "Eldin Volcano - Goddess Cube East of Temple": 237,
+    "Skipper's Retreat - Goddess Cube on Southwest Pillar": 238,
+    "Lanayru Gorge - Goddess Cube near Sandfalls": 239,
+    "Volcano Summit - Goddess Cube in Lava Lake": 240,
+    "Faron Woods - Goddess Cube on West Great Tree near Exit": 241,
+    "Eldin Volcano - Goddess Cube on Sand Slide": 242,
+    "Pirate Stronghold - Goddess Cube on top of Shark Head": 243,
+    "Deep Woods - Goddess Cube on top of Temple": 244,
+    "Eldin Volcano - Goddess Cube behind Bombable Rock West of Temple": 245,
+    "Lanayru Desert - Goddess Cube in Secret Passageway": 246,
+    "Lanayru Desert - Goddess Cube near Caged Robot": 247,
+    "Volcano Summit - Goddess Cube near Fire Sanctuary Entrance": 248,
+    "Floria Waterfall - Goddess Cube on High Ledge": 249,
+    "Skyview Spring - Goddess Cube behind Crest": 250,
+    "Volcano Summit - Goddess Cube at Summit Waterfall": 251,
+    "Temple of Time - Goddess Cube on High Platform North of Tree": 252,
+    "Lake Floria - Goddess Cube near Bird Statue": 254,
+    "Mogma Turf - Goddess Cube on Raised Pillar": 255,
+    "Ancient Harbour - Goddess Cube in North Cave": 256,
+}
+
 
 def determine_check_patches(
     world: World,
@@ -29,6 +73,22 @@ def determine_check_patches(
     asm_patch_handler: ASMPatchHandler,
 ):
     print_progress_text("Creating Location Patches")
+
+    # Decide which story flag gates the spawning of Goddess Chests.
+    #  - locked_until_struck: leave vanilla (each chest is gated by its cube)
+    #  - unlocked_after_goddess_sword: story flag 95, which the game sets once the
+    #    Goddess Sword story flag (907) is set
+    #  - unlocked_from_start: story flag 95
+    goddess_chest_unlock = world.setting("goddess_chest_unlock")
+    if goddess_chest_unlock in (
+        "unlocked_after_goddess_sword",
+        "unlocked_from_start",
+    ):
+        stage_patch_handler.goddess_chest_spawn_storyflag = (
+            GODDESS_CHEST_UNLOCK_STORYFLAG
+        )
+    else:
+        stage_patch_handler.goddess_chest_spawn_storyflag = None
 
     # Custom flags currently use 10 total bits as follows
     # in order of most significant to least significant bits:
@@ -162,6 +222,30 @@ def determine_check_patches(
             logging.getLogger("").debug(
                 f'Trapped item at "{location}" assigned model of "{item}".'
             )
+
+        # Decoupled Goddess Cubes: striking a cube gives the item at runtime. The
+        # game's main loop watches the cube's story flag and, once it is set, spawns
+        # this item (with the AP custom flag) so Link plays the normal item-get
+        # animation. The tables are filled in via init_global_variables.
+        if (
+            "Goddess Cube" in location.types
+            and world.setting("decouple_goddess_cubes_and_chests") == "on"
+            and item is not None
+        ):
+            cube_storyflag = GODDESS_CUBE_NAME_TO_STORYFLAG.get(location.name)
+            if cube_storyflag is not None:
+                if custom_flag == 0x3FF:
+                    # Standalone (non-AP) generation never injects a flag
+                    custom_flag = custom_flags.pop()
+                    location.custom_flag = custom_flag
+                # Trap items are stored as their real trap id (250-254) rather than
+                # the random substitute model's id; the game's cube handler gives
+                # those as a real trap actor (a Rupoor with the trap param) so the
+                # effect actually fires.
+                cube_itemid = trapid if trapid != 0 else item.id
+                stage_patch_handler.add_goddess_cube_item(
+                    cube_storyflag, cube_itemid, custom_flag
+                )
 
         for path in location.patch_paths:
             if stage_patch_match := STAGE_PATCH_PATH_REGEX.match(path):

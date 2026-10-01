@@ -527,7 +527,7 @@ class SSHDWorld(World):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.created_regions: list[str] = []
-    
+
     # Per-dungeon "require" toggles: AP option name for each dungeon.
     _REQUIRE_DUNGEON_OPTIONS: ClassVar[dict] = {
         "Skyview Temple": "require_skyview_temple",
@@ -558,7 +558,7 @@ class SSHDWorld(World):
         if chosen:
             return "Sky Keep" in chosen
         return bool(self.options.dungeons_include_sky_keep.value)
-
+    
     def get_resolved_setting(self, setting_name: str, default: str = None) -> str:
         """
         Get a resolved setting value from sshd-rando.
@@ -593,6 +593,8 @@ class SSHDWorld(World):
         "hidden_item_shuffle": ("hidden_item_shuffle", "toggle", None),
         "rupee_shuffle": ("rupee_shuffle", "choice", {"vanilla": 0, "beginner": 1, "intermediate": 2, "advanced": 3}),
         "goddess_chest_shuffle": ("goddess_chest_shuffle", "toggle", None),
+        "goddess_chest_unlock": ("goddess_chest_unlock", "choice", {"locked_until_struck": 0, "unlocked_after_goddess_sword": 1, "unlocked_from_start": 2}),
+        "decouple_goddess_cubes_and_chests": ("decouple_goddess_cubes_and_chests", "toggle", None),
         "trial_treasure_shuffle": ("trial_treasure_shuffle", "range", None),
         "tadtone_shuffle": ("tadtone_shuffle", "toggle", None),
         "gossip_stone_treasure_shuffle": ("gossip_stone_treasure_shuffle", "toggle", None),
@@ -1129,8 +1131,10 @@ class SSHDWorld(World):
 
         # Goddess Cubes are dummy logic items (oarc: null) used internally by
         # sshd-rando to link cube-strike locations to sky Goddess Chests.
-        # They have no in-game model and must never be in the AP pool.
-        excluded.add("Goddess Cube")
+        # They have no in-game model and are only real AP locations when goddess
+        # cubes are decoupled from goddess chests.
+        if not self._goddess_cubes_decoupled():
+            excluded.add("Goddess Cube")
 
         # "Game Beatable" is the victory pseudo-location.  It must NOT
         # exist as a real AP location (with an int address) because:
@@ -1142,6 +1146,13 @@ class SSHDWorld(World):
         excluded.add("Game Beatable")
 
         return excluded
+
+    def _goddess_cubes_decoupled(self) -> bool:
+        """Whether goddess cubes are decoupled from goddess chests (cubes are item locations)."""
+        s = getattr(self, '_sshd_resolved_settings', {})
+        if s:
+            return s.get("decouple_goddess_cubes_and_chests", "off") == "on"
+        return bool(self.options.decouple_goddess_cubes_and_chests.value)
 
     def _create_basic_regions(self) -> None:
         """Fallback: create basic regions from Regions.py (old behavior)."""
@@ -1357,8 +1368,15 @@ class SSHDWorld(World):
                     except (ValueError, TypeError):
                         trial_treasure_num_early = 0
 
-                # Goddess Cubes are dummy logic items (oarc: null) — always exclude
-                excluded_loc_types.add("Goddess Cube")
+                # Goddess Cubes are dummy logic items (oarc: null) unless decoupled,
+                # in which case they are real locations holding randomized items
+                _cube_setting = (
+                    world.setting_map.settings.get("decouple_goddess_cubes_and_chests")
+                    if hasattr(world, 'setting_map') and world.setting_map
+                    else None
+                )
+                if _cube_setting is None or _cube_setting.value != "on":
+                    excluded_loc_types.add("Goddess Cube")
                 
                 if excluded_loc_types:
                     print(f"[__init__.py] Excluding location types from item pool: {sorted(excluded_loc_types)}")
@@ -1382,7 +1400,7 @@ class SSHDWorld(World):
                     name for name in ITEM_TABLE if "Goddess Cube" in name
                 )
                 if _type_specific_skip_items:
-                    print(f"[__init__.py] Will skip shuffle-specific items at excluded locations: {sorted(_type_specific_skip_items)}")
+                    print(f"[__init__.py] Skipping items when rebuilding the pool (shuffle-specific items for excluded location types, plus dummy Goddess Cube logic items; cube locations are NOT excluded by this): {sorted(_type_specific_skip_items)}")
                 
                 # Individually excluded locations from config.yaml remain in the
                 # AP world as EXCLUDED locations, so their items still belong in
@@ -3383,6 +3401,17 @@ class SSHDWorld(World):
                 }
         
         slot_data["location_to_item_map"] = location_to_item_map
+
+        # Goddess cube location -> story flag mapping (decoupled cubes only).
+        # The client polls these story flags to detect cube strikes as location checks.
+        if self._goddess_cubes_decoupled():
+            from .Locations import GODDESS_CUBE_STORY_FLAGS
+            goddess_cube_story_flags = {}
+            for location in self.multiworld.get_locations(self.player):
+                cube_flag = GODDESS_CUBE_STORY_FLAGS.get(location.name)
+                if cube_flag is not None and location.address is not None:
+                    goddess_cube_story_flags[str(location.address)] = cube_flag
+            slot_data["goddess_cube_story_flags"] = goddess_cube_story_flags
         
         # Build custom flag mapping for ALL locations
         # This happens during slot_data generation (before generate_output)
@@ -3842,14 +3871,14 @@ class SSHDWorld(World):
             from .SSHDRWrapper import inject_custom_flags_into_world
             inject_custom_flags_into_world(world, self._custom_flag_mapping, self.multiworld, self.player)
             print(f"[__init__.py] ✓ Injected {len(self._custom_flag_mapping)} custom flags")
-            
+
             # Let Fi's text tell the player the dungeon goal count (None = goal disabled)
             world.ap_dungeon_goal_count = (
                 self.options.dungeon_goal_count.value
                 if self.options.dungeon_goal_requirement.value
                 else None
             )
-
+            
             # Sync required-dungeon flags so Fi's text matches AP's selection
             ap_required = getattr(self, '_ap_required_dungeons', None)
             if ap_required is not None:
@@ -4068,6 +4097,9 @@ class SSHDWorld(World):
         settings_dict["rupee_shuffle"] = rupee_mode_map[self.options.rupee_shuffle.value]
         
         settings_dict["goddess_chest_shuffle"] = "on" if self.options.goddess_chest_shuffle.value else "off"
+        goddess_chest_unlock_map = {0: "locked_until_struck", 1: "unlocked_after_goddess_sword", 2: "unlocked_from_start"}
+        settings_dict["goddess_chest_unlock"] = goddess_chest_unlock_map[self.options.goddess_chest_unlock.value]
+        settings_dict["decouple_goddess_cubes_and_chests"] = "on" if self.options.decouple_goddess_cubes_and_chests.value else "off"
         settings_dict["trial_treasure_shuffle"] = str(self.options.trial_treasure_shuffle.value)
         settings_dict["tadtone_shuffle"] = "on" if self.options.tadtone_shuffle.value else "off"
         settings_dict["gossip_stone_treasure_shuffle"] = "on" if self.options.gossip_stone_treasure_shuffle.value else "off"
