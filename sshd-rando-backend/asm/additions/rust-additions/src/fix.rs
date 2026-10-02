@@ -78,6 +78,19 @@ pub extern "C" fn fix_item_get() {
             return;
         }
 
+        // Safety: PLAYER_PTR can go null mid-animation if the player object
+        // is torn down while an item-get is still being processed (e.g. a
+        // manual/forced stage reload while items are being delivered from
+        // the buffer). Without this check the reads below crash with a
+        // null-pointer data abort.
+        if PLAYER_PTR.is_null() {
+            unsafe {
+                asm!("mov w8, #0"); // clamp to small animation, same as the
+                                    // bounds-check bail-out above
+            }
+            return;
+        }
+
         let current_action = (*PLAYER_PTR).current_action;
 
         // If in water or sliding, allow immediate item gets

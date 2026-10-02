@@ -133,7 +133,31 @@
     - "On"
   options:
     - "off": "Activating and opening Goddess Chests will not be required."
-    - "on": "Goddess Chests can contain any item. Goddess Chests are activated by Skyward Striking their corresponding Goddess Cube."
+    - "on": "Goddess Chests can contain any item. How Goddess Chests are activated depends on the Goddess Chest Unlock setting."
+
+- name: goddess_chest_unlock
+  tracker_important: true
+  default_option: locked_until_struck
+  pretty_name: Goddess Chest Unlock
+  pretty_options:
+    - Locked Until Struck
+    - Unlocked After Goddess Sword
+    - Unlocked From Start
+  options:
+    - locked_until_struck: "Goddess Chests are activated by Skyward Striking their corresponding Goddess Cube (vanilla behaviour)."
+    - unlocked_after_goddess_sword: "All Goddess Chests are activated as soon as you obtain the Goddess Sword."
+    - unlocked_from_start: "All Goddess Chests are activated from the start of the game."
+
+- name: decouple_goddess_cubes_and_chests
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Decouple Goddess Cubes and Chests
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Goddess Cubes only activate their corresponding Goddess Chest (or do nothing if Goddess Chests are already unlocked)."
+    - "on": "Goddess Cubes become checks that give a randomized item when Skyward Struck. If Goddess Chest Unlock is Locked Until Struck, striking a cube also activates its Goddess Chest as in vanilla."
 
 - name: trial_treasure_shuffle
   tracker_important: true

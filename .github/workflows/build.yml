@@ -51,10 +51,79 @@ jobs:
         path: dist/ArchipelagoSSHDPatcher.exe
         retention-days: 90
 
+  # ── Build the Rust client (sshd-ap-client) natively on every platform ──
+  # build_ap_client.py does a native build and stages the binary in
+  # sshd-ap-client/dist/<platform_tag>/, which matches the tags used by
+  # build_apworld.py and __init__.py.
+  build-rust-client:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            tag: win_amd64
+          - os: ubuntu-latest
+            tag: manylinux2014_x86_64
+          - os: macos-14          # Apple Silicon
+            tag: macosx_11_0_arm64
+          - os: macos-15-intel    # Intel
+            tag: macosx_10_9_x86_64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache cargo
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          sshd-ap-client/target
+        key: rust-client-${{ matrix.tag }}-${{ hashFiles('sshd-ap-client/Cargo.lock') }}
+        restore-keys: rust-client-${{ matrix.tag }}-
+
+    - name: Install Linux GUI build dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y pkg-config libxkbcommon-dev libwayland-dev libx11-dev
+
+    - name: Build Rust client
+      run: python build_ap_client.py
+
+    - name: Verify binary was staged
+      shell: python
+      run: |
+        import sys
+        from pathlib import Path
+        d = Path("sshd-ap-client/dist/${{ matrix.tag }}")
+        files = list(d.glob("ap-client*")) if d.exists() else []
+        if not files:
+            print("ap-client binary missing for ${{ matrix.tag }}")
+            sys.exit(1)
+        print("Built:", [f.name for f in files])
+
+    - name: Upload Rust client artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ap-client-${{ matrix.tag }}
+        path: sshd-ap-client/dist/
+        retention-days: 90
+
   # ── Build the .apworld ────────────────────────────────────────────
   build-apworld:
     runs-on: ubuntu-latest
-    needs: [build-patcher-exe]
+    needs: [build-patcher-exe, build-rust-client]
 
     steps:
     - name: Checkout code
@@ -81,7 +150,27 @@ jobs:
         name: sshd-patcher
         path: .
 
+    - name: Download Rust client binaries (all platforms)
+      uses: actions/download-artifact@v4
+      with:
+        pattern: ap-client-*
+        path: sshd-ap-client/dist
+        merge-multiple: true
+
+    - name: Verify Rust client binaries for all platforms
+      run: |
+        find sshd-ap-client/dist -type f | sort
+        for tag in win_amd64 manylinux2014_x86_64 macosx_11_0_arm64 macosx_10_9_x86_64; do
+          if ! ls sshd-ap-client/dist/$tag/ap-client* >/dev/null 2>&1; then
+            echo "::error::Missing Rust client binary for $tag"
+            exit 1
+          fi
+        done
+
     - name: Build APWorld
+      env:
+        # Binaries were prebuilt per-platform above; don't rebuild Linux here.
+        SSHD_SKIP_RUST_BUILD: "1"
       run: |
         python build_apworld.py
 
@@ -96,6 +185,10 @@ jobs:
         import sys
 
         required_files = [
+            'sshd/_bundled_bin/win_amd64/ap-client.exe',
+            'sshd/_bundled_bin/manylinux2014_x86_64/ap-client',
+            'sshd/_bundled_bin/macosx_11_0_arm64/ap-client',
+            'sshd/_bundled_bin/macosx_10_9_x86_64/ap-client',
             'sshd/__init__.py',
             'sshd/Items.py',
             'sshd/Locations.py',

@@ -599,6 +599,13 @@ class ASMPatchHandler:
         skip_harp_playing = world.setting("skip_harp_playing").value_index()
         cutoff_game_over_music = world.setting("cutoff_game_over_music").value_index()
         archipelago_item_model = world.setting("archipelago_item_model").value_index()
+        goddess_chest_unlock = world.setting("goddess_chest_unlock")
+        if goddess_chest_unlock == "unlocked_after_goddess_sword":
+            goddess_chest_unlock_mode = 1
+        elif goddess_chest_unlock == "unlocked_from_start":
+            goddess_chest_unlock_mode = 2
+        else:
+            goddess_chest_unlock_mode = 0
 
         sky_keep_goal = world.get_dungeon("Sky Keep").goal_location
         if sky_keep_goal == None:
@@ -622,6 +629,7 @@ class ASMPatchHandler:
                 sky_keep_beaten_sceneflag,
                 cutoff_game_over_music,
                 archipelago_item_model,
+                goddess_chest_unlock_mode,
             ],  # RANDOMIZER_SETTINGS
             0x712E5FF020: [
                 0xFF,
@@ -672,6 +680,28 @@ class ASMPatchHandler:
             flags[1] & 0xFF, (flags[1] >> 8) & 0xFF,
             flags[2] & 0xFF, (flags[2] >> 8) & 0xFF,
         ]  # CREST_CUSTOM_FLAGS
+
+        # Decoupled Goddess Cubes: per-cube AP custom flag (u16, 0x3FF = none, so the
+        # game ignores the slot) and the item id handed out when the cube is struck.
+        # Padded to 32 entries each to match the GODDESS_CUBE_* statics.
+        cube_flags, cube_item_ids = getattr(
+            self, "goddess_cube_arrays", ([0x3FF] * 27, [0] * 27)
+        )
+        cube_flags = list(cube_flags) + [0x3FF] * (32 - len(cube_flags))
+        cube_item_ids = list(cube_item_ids) + [0] * (32 - len(cube_item_ids))
+        flag_bytes: list[int] = []
+        for cube_flag in cube_flags:
+            flag_bytes += [cube_flag & 0xFF, (cube_flag >> 8) & 0xFF]
+        # Addresses match GODDESS_CUBE_* in symbols.yaml. They sit next to
+        # RANDOMIZER_SETTINGS (a region these patches already write and the game
+        # already reads). The magic word is only written when at least one cube
+        # has an item, so the game ignores the tables on every other seed.
+        if any(cube_flag != 0x3FF for cube_flag in cube_flags):
+            init_rw_globals_dict[0x712E54B700] = list(b"CUBE")  # GODDESS_CUBE_MAGIC
+        init_rw_globals_dict[0x712E54B710] = flag_bytes  # GODDESS_CUBE_CUSTOM_FLAGS
+        init_rw_globals_dict[0x712E54B750] = [
+            item_id & 0xFF for item_id in cube_item_ids
+        ]  # GODDESS_CUBE_ITEM_IDS
 
         # Apply additional symbol initializers provided by stage patch setup.
         global_symbol_values: dict[str, int] = getattr(self, "global_symbol_values", {})

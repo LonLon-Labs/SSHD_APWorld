@@ -56,6 +56,13 @@ pub struct WarpToStartInfo {
 }
 assert_eq_size!([u8; 12], WarpToStartInfo);
 
+// One-shot overrides set by warp_to_stage() for an explicit `/warp ... night=`
+// / `trial=` and consumed by handle_er_cases() (which otherwise recomputes
+// NEXT_NIGHT / NEXT_TRIAL from the stage name and the night storyflags, and
+// would silently discard the requested values). 0xFF = no override.
+static mut WARP_NIGHT_OVERRIDE: u8 = 0xFF;
+static mut WARP_TRIAL_OVERRIDE: u8 = 0xFF;
+
 // IMPORTANT: when using vanilla code, the start point must be declared in
 // symbols.yaml and then added to this extern block.
 extern "C" {
@@ -195,7 +202,11 @@ pub extern "C" fn handle_er_cases() {
 
         // If we're about to enter a stage that should have the silent realm effect
         // set it. Otherwise unset it
-        if NEXT_STAGE_NAME[0] == b'S' || &NEXT_STAGE_NAME[..7] == b"D003_8\0" {
+        if WARP_TRIAL_OVERRIDE != 0xFF {
+            // Explicit /warp trial value: honour it as-is (one-shot).
+            NEXT_TRIAL = WARP_TRIAL_OVERRIDE;
+            WARP_TRIAL_OVERRIDE = 0xFF;
+        } else if NEXT_STAGE_NAME[0] == b'S' || &NEXT_STAGE_NAME[..7] == b"D003_8\0" {
             NEXT_TRIAL = 1;
         } else {
             NEXT_TRIAL = 0;
@@ -204,7 +215,12 @@ pub extern "C" fn handle_er_cases() {
         // Force NEXT_NIGHT to day (storyflag keeps the night state stored)
         // If it should be night time, check if the entrance is valid at night
         // check_storyflag(899) can only be true if natural_night_connections is off
-        if (flag::check_storyflag(899) != 0 || NEXT_NIGHT == 1) {
+        if WARP_NIGHT_OVERRIDE != 0xFF {
+            // Explicit /warp night value: honour it as-is (one-shot), even if
+            // the destination wouldn't normally be valid at night.
+            NEXT_NIGHT = WARP_NIGHT_OVERRIDE;
+            WARP_NIGHT_OVERRIDE = 0xFF;
+        } else if (flag::check_storyflag(899) != 0 || NEXT_NIGHT == 1) {
             debug::debug_print(c"Should be night".as_ptr());
 
             if next_stage_is_valid_at_night() {
@@ -319,6 +335,53 @@ pub fn reload_current_stage() {
     }
 }
 
+/// Refreshes `AP_IPC_ROOT.stage_info` with a by-value copy of the current
+/// and next stage-loading state. Called once per frame from
+/// `item::refresh_ipc_addresses()`; backs the client's `/stage_info`.
+///
+/// `dStageMgr` is mostly opaque here (only `set_in_actually_trigger_entrance`
+/// is mapped), so the stage/room/layer/entrance/night/trial/fade values come
+/// from the CURRENT_*/NEXT_* globals that STAGE_MGR's reload path writes.
+/// STAGE_MGR itself contributes whether it exists and whether an entrance
+/// trigger is in progress.
+pub fn refresh_stage_info() {
+    use core::ptr::{addr_of, read_volatile};
+
+    unsafe {
+        let stage_mgr_valid = !STAGE_MGR.is_null();
+        let in_actually_trigger_entrance = if stage_mgr_valid {
+            read_volatile(addr_of!((*STAGE_MGR).set_in_actually_trigger_entrance))
+        } else {
+            0
+        };
+
+        crate::ipc::AP_IPC_ROOT.stage_info = crate::ipc::ApStageInfo {
+            stage_name: read_volatile(addr_of!(CURRENT_STAGE_NAME)),
+            stage_suffix: read_volatile(addr_of!(CURRENT_STAGE_SUFFIX)),
+            fade_frames: read_volatile(addr_of!(CURRENT_FADE_FRAMES)),
+            room: read_volatile(addr_of!(CURRENT_ROOM)),
+            layer: read_volatile(addr_of!(CURRENT_LAYER)),
+            entrance: read_volatile(addr_of!(CURRENT_ENTRANCE)),
+            night: read_volatile(addr_of!(CURRENT_NIGHT)),
+            trial: read_volatile(addr_of!(CURRENT_TRIAL)),
+            unk: read_volatile(addr_of!(CURRENT_UNK)),
+            layer_copy: read_volatile(addr_of!(CURRENT_LAYER_COPY)),
+            respawn_type: read_volatile(addr_of!(RESPAWN_TYPE)),
+            next_stage_name: read_volatile(addr_of!(NEXT_STAGE_NAME)),
+            next_stage_suffix: read_volatile(addr_of!(NEXT_STAGE_SUFFIX)),
+            next_fade_frames: read_volatile(addr_of!(NEXT_TRANSITION_FADE_FRAMES)),
+            next_room: read_volatile(addr_of!(NEXT_ROOM)),
+            next_layer: read_volatile(addr_of!(NEXT_LAYER)),
+            next_entrance: read_volatile(addr_of!(NEXT_ENTRANCE)),
+            next_night: read_volatile(addr_of!(NEXT_NIGHT)),
+            next_trial: read_volatile(addr_of!(NEXT_TRIAL)),
+            next_unk: read_volatile(addr_of!(NEXT_UNK)),
+            stage_mgr_valid: stage_mgr_valid as u8,
+            in_actually_trigger_entrance,
+        };
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn warp_to_start() -> bool {
     unsafe {
@@ -366,18 +429,29 @@ pub extern "C" fn warp_to_start() -> bool {
     }
 }
 
-/// Warp directly to an arbitrary stage/layer. Backs the Python client's
-/// `/warp <stage> [layer]` (anything other than `/warp start`, which reuses
-/// warp_to_start() above — the same path Fi's in-game warp uses).
+/// Warp directly to an arbitrary stage. Backs the client's
+/// `/warp <stage> [layer] [room] [entrance] [night] [trial]` (anything other
+/// than `/warp start`, which reuses warp_to_start() above — the same path
+/// Fi's in-game warp uses).
 ///
 /// Mirrors reload_current_stage()'s call into GameReloader__triggerEntrance,
 /// but targets an explicit destination instead of the CURRENT_* globals.
-/// Room and entrance are always 0 and night is always "day" — the Python
-/// client's /warp only exposes stage + layer, matching how /spawn_actor etc.
-/// keep their surface simple. (This is also why `/warp F000 28` warps you to
-/// the title screen and probably crashes the game — layer 28 isn't a real
-/// gameplay layer, it's exactly what you asked for.)
-pub fn warp_to_stage(mut stage_name: [u8; 8], layer: u8) -> bool {
+/// `room` and `entrance` are passed straight through (0 = the old default).
+/// `night` / `trial` are `None` when the client didn't specify them: night
+/// then defaults to day and trial to the usual Silent-Realm detection by
+/// stage name. When specified they override the values handle_er_cases()
+/// would otherwise compute (see WARP_NIGHT_OVERRIDE / WARP_TRIAL_OVERRIDE).
+/// (`/warp F000 28` warps you to the title screen and probably crashes the
+/// game — layer 28 isn't a real gameplay layer, it's exactly what you asked
+/// for.)
+pub fn warp_to_stage(
+    mut stage_name: [u8; 8],
+    layer: u8,
+    room: u8,
+    entrance: u8,
+    night: Option<bool>,
+    trial: Option<bool>,
+) -> bool {
     unsafe {
         if GAME_RELOADER_PTR.is_null() || FILE_MGR.is_null() {
             return false;
@@ -396,12 +470,25 @@ pub fn warp_to_stage(mut stage_name: [u8; 8], layer: u8) -> bool {
 
         // Same silent-realm trial detection handle_er_cases() uses for
         // NEXT_TRIAL, so warping straight into a Silent Realm stage doesn't
-        // leave the trial state stale.
-        let forced_trial: u32 = if stage_name[0] == b'S' || &stage_name[..7] == b"D003_8\0" {
-            1
-        } else {
-            0
-        };
+        // leave the trial state stale. An explicit trial value wins.
+        let auto_trial = stage_name[0] == b'S' || &stage_name[..7] == b"D003_8\0";
+        let forced_trial: u32 = trial.unwrap_or(auto_trial).into();
+        let forced_night: u32 = night.unwrap_or(false).into();
+
+        // Keep the night storyflag in sync with the requested time of day
+        // (same as warp_to_start), and make handle_er_cases() honour the
+        // explicit values instead of recomputing them.
+        if let Some(night) = night {
+            if night {
+                flag::set_storyflag(737);
+            } else {
+                flag::unset_storyflag(737);
+            }
+            WARP_NIGHT_OVERRIDE = night as u8;
+        }
+        if let Some(trial) = trial {
+            WARP_TRIAL_OVERRIDE = trial as u8;
+        }
 
         // Stage names are stored as 8 bytes, while the vanilla trigger API
         // takes a pointer to a 7-byte stage name buffer (same trick
@@ -411,16 +498,22 @@ pub fn warp_to_stage(mut stage_name: [u8; 8], layer: u8) -> bool {
         GameReloader__triggerEntrance(
             GAME_RELOADER_PTR,
             stage_name_ptr,
-            0, // room
+            room.into(),
             layer.into(),
-            0, // entrance
-            0, // forced_night — always day; /warp doesn't expose night
+            entrance.into(),
+            forced_night,
             forced_trial,
             0,    // transition_type
             0xF,  // transition_fade_frames
             0,    // unk10
             0xFF, // unk11
         );
+
+        // The overrides are one-shot and normally consumed by
+        // handle_er_cases() during the call above; clear any leftovers so a
+        // later, unrelated transition can't pick them up.
+        WARP_NIGHT_OVERRIDE = 0xFF;
+        WARP_TRIAL_OVERRIDE = 0xFF;
 
         true
     }

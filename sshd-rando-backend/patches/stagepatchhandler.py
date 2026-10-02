@@ -104,6 +104,41 @@ AP_ITEM_OARC_NAMES: frozenset[str] = frozenset({
 _SKIP_AP_OARC_STAGES: frozenset[str] = frozenset({"B400", "F402", "F403", "F404", "F405", "F407"})
 
 
+# Story flags set by striking each of the 27 Goddess Cubes, in ascending order.
+# The game's Rust additions (item.rs GODDESS_CUBE_STORYFLAGS) use the same order to
+# index the GODDESS_CUBE_CUSTOM_FLAGS / GODDESS_CUBE_ITEM_IDS tables.
+GODDESS_CUBE_STORYFLAGS: list[int] = [
+    227, 228, 229, 230, 231, 234, 235, 236, 237, 238, 239, 240, 241, 242,
+    243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 254, 255, 256,
+]
+
+
+def patch_goddess_chest_spawn_flag(bzs: dict, spawn_storyflag: int):
+    # Re-points the story flag that unlocks every vanilla Goddess Chest (TBox
+    # subtype 3) in the given layer. Vanilla, this is the story flag set by
+    # striking the chest's corresponding Goddess Cube.
+    #
+    # The chest passes its whole params2 to StoryflagManager::getFlag(u16), so
+    # the flag is the LOW 16 BITS of params2 (verified in the game binary:
+    # dAcTbox create reads actor+0x12C == param2 and calls getFlag with it).
+    # NOTE: this overlaps bits 8-15, which is why patch_tbox must never write a
+    # custom flag to bits 8-17 of a Goddess Chest (it would change the flag).
+    #
+    # This must run BEFORE patch_tbox modifies the chest's item id, since the
+    # vanilla subtype is read from the vanilla item id.
+    for tbox in bzs.get("OBJS", []):
+        if tbox["name"] != "TBox":
+            continue
+        vanilla_itemid = tbox["anglez"] & 0x1FF
+        try:
+            vanilla_subtype = VANILLA_TBOX_SUBTYPES[vanilla_itemid]
+        except (KeyError, IndexError):
+            continue
+        if vanilla_subtype != 3:
+            continue
+        tbox["params2"] = mask_shift_set(tbox["params2"], 0xFFFF, 0, spawn_storyflag)
+
+
 def patch_tbox(
     bzs: dict, itemid: int, object_id_str: str, trapid: int, tbox_subtype: int,
     custom_flag: int = 0x3FF,
@@ -1056,9 +1091,30 @@ class StagePatchHandler:
         # Populated during handle_stage_patches() when SwSB check patches are processed.
         # Written to the CREST_CUSTOM_FLAGS Rust static via init_global_variables.
         self.crest_custom_flags: list[int] = [0x3FF, 0x3FF, 0x3FF]
+        # Decoupled Goddess Cubes: story flag -> (item id, AP custom flag).
+        # Written to the GODDESS_CUBE_* Rust statics via init_global_variables;
+        # the game hands out the item when the cube's story flag gets set.
+        self.goddess_cube_items: dict[int, tuple[int, int]] = {}
         # Global symbol initializers consumed by ASM global init.
         # Format: {"type": "symbol", "symbol": <name>, "value": <int>}.
         self.global_patches: list[dict] = []
+        # Story flag that gates the spawning of every Goddess Chest, or None to
+        # leave the vanilla per-chest gate (the chest's Goddess Cube) untouched.
+        # Set by determine_check_patches based on the Goddess Chest Unlock setting.
+        self.goddess_chest_spawn_storyflag: int | None = None
+
+    def add_goddess_cube_item(self, storyflag: int, itemid: int, custom_flag: int):
+        self.goddess_cube_items[storyflag] = (itemid, custom_flag)
+
+    def get_goddess_cube_arrays(self) -> tuple[list[int], list[int]]:
+        # (custom flags, item ids), one entry per cube in GODDESS_CUBE_STORYFLAGS
+        # order. Unused slots are 0x3FF (no custom flag), which the game skips.
+        flags = [0x3FF] * len(GODDESS_CUBE_STORYFLAGS)
+        items = [0] * len(GODDESS_CUBE_STORYFLAGS)
+        for index, storyflag in enumerate(GODDESS_CUBE_STORYFLAGS):
+            if storyflag in self.goddess_cube_items:
+                items[index], flags[index] = self.goddess_cube_items[storyflag]
+        return flags, items
 
     def handle_stage_patches(self, onlyif_handler: ConditionalPatchHandler):
         for stage in self.stage_patches:
@@ -1206,6 +1262,12 @@ class StagePatchHandler:
                     else:
                         raise Exception(
                             f"Unsupported patch type '{patch_type}' found.\nPatch: {patch}"
+                        )
+
+                if self.goddess_chest_spawn_storyflag is not None:
+                    for layer_bzs in room_bzs["LAY "].values():
+                        patch_goddess_chest_spawn_flag(
+                            layer_bzs, self.goddess_chest_spawn_storyflag
                         )
 
                 for (

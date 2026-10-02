@@ -358,6 +358,12 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
         if isinstance(custom_items, dict):
             for item_name, count in custom_items.items():
                 if count > 0:
+                    if item_name == "Progressive Loftwing":
+                        # AP-only progressive item: tier 1 = Loftwing, tier 2 = Spiral Charge.
+                        setting_map.starting_inventory["Loftwing"] = 1
+                        if count >= 2:
+                            setting_map.starting_inventory["Spiral Charge"] = 1
+                        continue
                     setting_map.starting_inventory[item_name] = count
 
     return config
@@ -742,6 +748,12 @@ def overlay_multiworld_items(world: Any, location_item_mapping: Dict[str, str]) 
     print(f"[SSHDRWrapper] Mapping contains approximately {crossworld_in_mapping} cross-world item entries")
     
     # Iterate through all locations in the mapping
+    # AP-only progressive names with no sshd-rando equivalent. The ROM places the
+    # first tier's item natively; later tiers (Spiral Charge) are resolved and
+    # delivered by the client when it counts Progressive Loftwing copies.
+    AP_TO_SSHD_ITEM_NAME = {
+        "Progressive Loftwing": "Loftwing",
+    }
     for location_name, location in world.location_table.items():
         results["total_locations"] += 1
 
@@ -758,7 +770,7 @@ def overlay_multiworld_items(world: Any, location_item_mapping: Dict[str, str]) 
             
             # sshd-rando strips apostrophes from item names when storing in item_table
             # So we need to do the same when looking them up
-            target_item_lookup = target_item_name.replace("'", "")
+            target_item_lookup = AP_TO_SSHD_ITEM_NAME.get(target_item_name, target_item_name).replace("'", "")
             
             # Get or create the replacement item
             new_item = None

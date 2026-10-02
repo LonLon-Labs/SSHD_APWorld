@@ -90,7 +90,7 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
     temp_deps_path = Path(SSHD_RANDO_TEMP_DIR) / "_bundled_deps"
     
     # Extract sshd-rando-backend AND _bundled_deps from the zip
-    _EXTRACT_PREFIXES = ('sshd/sshd-rando-backend/', 'sshd/_bundled_deps/')
+    _EXTRACT_PREFIXES = ('sshd/sshd-rando-backend/', 'sshd/_bundled_deps/', 'sshd/_bundled_bin/')
     with zipfile.ZipFile(apworld_path, 'r') as zip_file:
         for file_info in zip_file.filelist:
             if not any(file_info.filename.startswith(p) for p in _EXTRACT_PREFIXES):
@@ -98,7 +98,7 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
             # Remove 'sshd/' prefix to get relative path
             relative_path = file_info.filename[5:]  # Remove 'sshd/'
             # Skip bare directory entries
-            if relative_path.rstrip('/') in ('sshd-rando-backend', '_bundled_deps'):
+            if relative_path.rstrip('/') in ('sshd-rando-backend', '_bundled_deps', '_bundled_bin'):
                 continue
             
             target_path = Path(SSHD_RANDO_TEMP_DIR) / relative_path
@@ -111,6 +111,16 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
                 with zip_file.open(file_info.filename) as source:
                     with open(target_path, 'wb') as target:
                         target.write(source.read())
+                # Preserve the executable bit for bundled Rust client
+                # binaries on POSIX — zipfile.extract() doesn't restore
+                # permission bits on its own, and without +x a Linux/macOS
+                # binary would fail to launch even though it's present.
+                if relative_path.startswith('_bundled_bin/') and sys.platform != "win32":
+                    try:
+                        current_mode = os.stat(target_path).st_mode
+                        os.chmod(target_path, current_mode | 0o111)
+                    except OSError:
+                        pass
     
     # Add sshd-rando-backend at highest priority.
     sys.path.insert(0, str(temp_backend_path))
@@ -135,6 +145,7 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
     importlib.invalidate_caches()
 
     SSHD_RANDO_AVAILABLE = True
+    RUST_CLIENT_BIN_DIR = Path(SSHD_RANDO_TEMP_DIR) / "_bundled_bin"
     
     # Register cleanup function to delete temp directory on exit
     def cleanup_temp_dir():
@@ -143,11 +154,15 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
     atexit.register(cleanup_temp_dir)
     
 elif SSHD_RANDO_PATH.exists():
-    # Running from filesystem
+    # Running from filesystem (dev mode) — look for a locally-built Rust
+    # client under sshd-ap-client/dist/ (see build_ap_client.py) rather
+    # than anything extracted from a zip.
     sys.path.insert(0, str(SSHD_RANDO_PATH))
     SSHD_RANDO_AVAILABLE = True
+    RUST_CLIENT_BIN_DIR = Path(__file__).parent / "sshd-ap-client" / "dist"
 else:
     SSHD_RANDO_AVAILABLE = False
+    RUST_CLIENT_BIN_DIR = None
 
 # Version information
 AP_VERSION = [0, 6, 5]
@@ -254,6 +269,115 @@ components.append(
 icon_paths["Skyward Sword HD"] = "ap:worlds.sshd/assets/icon.png"
 
 
+def _rust_platform_tag() -> str:
+    """Matches the tag convention build_ap_client.py uses when staging a
+    binary, so this always looks in the right dist/<tag>/ subdirectory."""
+    import platform as _platform
+    system = _platform.system().lower()
+    machine = _platform.machine().lower()
+    if system == "windows":
+        return "win_amd64"
+    if system == "linux":
+        return "manylinux2014_x86_64"
+    if system == "darwin":
+        return "macosx_11_0_arm64" if machine in ("arm64", "aarch64") else "macosx_10_9_x86_64"
+    return f"{system}_{machine}"
+
+
+def _find_rust_client_binary():
+    """Locates the bundled Rust client binary for the current platform, if
+    one was built and bundled (see build_ap_client.py / build_apworld.py).
+    Returns None if not available — callers should fall back to the Python
+    client in that case."""
+    if RUST_CLIENT_BIN_DIR is None or not RUST_CLIENT_BIN_DIR.exists():
+        return None
+    binary_name = "ap-client.exe" if sys.platform == "win32" else "ap-client"
+    candidate = RUST_CLIENT_BIN_DIR / _rust_platform_tag() / binary_name
+    return candidate if candidate.exists() else None
+
+
+def _run_rust_client_process(*args: str) -> None:
+    """Launches the bundled Rust client binary as a subprocess, translating
+    Archipelago's standard client args into what it expects.
+
+    NOTE: on Linux/macOS, a launcher-spawned process typically has no
+    visible terminal, so the Rust client's interactive "Enter slot name:"
+    prompt (when no slot name is supplied) won't be visible. This works
+    cleanly on Windows (a console is auto-allocated for a console-subsystem
+    child process) but is a known gap elsewhere until this launches with an
+    explicit terminal emulator per-platform, or the Rust client grows a way
+    to take the slot name as a flag from a generated connection file.
+    """
+    client_args = list(args) if args else []
+
+    # Patch-only mode (.apsshd) isn't something the Rust client does yet —
+    # fall back to the Python installer for that specific case.
+    patch_file = next((a for a in client_args if isinstance(a, str) and a.lower().endswith(".apsshd")), None)
+    if patch_file:
+        print("[SSHD Launcher] .apsshd patch install isn't implemented in the Rust client yet;")
+        print("[SSHD Launcher] falling back to the Python client for patch installation.")
+        _run_client_process(*args)
+        return
+
+    binary = _find_rust_client_binary()
+    if binary is None:
+        print("[SSHD Launcher] No Rust client binary bundled for this platform;")
+        print("[SSHD Launcher] falling back to the Python client.")
+        _run_client_process(*args)
+        return
+
+    # Archipelago typically passes a bare "server:port" positional arg (from
+    # a .archipelago connection file or the launcher's "Connect" dialog).
+    # Translate that into the Rust client's --connect flag; slot
+    # name/password aren't provided this way today, so the Rust client
+    # prompts for the slot name interactively in its own console window.
+    connect_arg = next((a for a in client_args if isinstance(a, str) and not a.lower().endswith(".apsshd")), None)
+    cmd = [str(binary)]
+    if connect_arg:
+        cmd += ["--connect", connect_arg]
+
+    print(f"[SSHD Launcher] Launching Rust client: {' '.join(cmd)}")
+    try:
+        popen_kwargs = {}
+        if sys.platform == "win32":
+            # Guarantee a dedicated console window rather than relying on
+            # Windows' default console-allocation heuristics.
+            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+        subprocess.Popen(cmd, **popen_kwargs)
+    except OSError as e:
+        print(f"[SSHD Launcher] Failed to launch Rust client ({e}); falling back to the Python client.")
+        _run_client_process(*args)
+
+
+def run_rust_client(*args: str) -> None:
+    """
+    Launch the experimental Rust SSHD client, if one was bundled for this
+    platform. See sshd-ap-client/README.md for what it does and doesn't
+    support yet — this is NOT a full replacement for the Python client (no
+    UI, missing several location-check mechanisms, hints, shop logic).
+    """
+    print(f"Running SSHD Rust Client (experimental) with args: {args}")
+    try:
+        launch_subprocess(_run_rust_client_process, name="SSHDRustClient", args=tuple(args))
+    except Exception:
+        _run_rust_client_process(*args)
+
+
+# Register the experimental Rust client launcher as a SEPARATE entry so the
+# existing, more feature-complete Python client stays the default. Falls
+# back to the Python client automatically if no Rust binary was bundled for
+# this platform (see _run_rust_client_process).
+components.append(
+    Component(
+        "Skyward Sword HD Client (Rust, experimental)",
+        func=run_rust_client,
+        component_type=Type.CLIENT,
+        file_identifier=SuffixIdentifier(".apsshd"),
+        icon="Skyward Sword HD"
+    )
+)
+
+
 class SSHDWeb(WebWorld):
     """
     Web interface for SSHD Archipelago.
@@ -314,6 +438,8 @@ PROGRESSIVE_STAGE_ITEMS: set[str] = {
     "Big Wallet", "Giant Wallet", "Tycoon Wallet",
     # Pouch stages (Progressive Pouch covers these)
     "Pouch Expansion",
+    # Loftwing stages (Progressive Loftwing covers these: Loftwing -> Spiral Charge)
+    "Spiral Charge",
 }
 
 
@@ -401,7 +527,7 @@ class SSHDWorld(World):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.created_regions: list[str] = []
-    
+
     # Per-dungeon "require" toggles: AP option name for each dungeon.
     _REQUIRE_DUNGEON_OPTIONS: ClassVar[dict] = {
         "Skyview Temple": "require_skyview_temple",
@@ -432,7 +558,7 @@ class SSHDWorld(World):
         if chosen:
             return "Sky Keep" in chosen
         return bool(self.options.dungeons_include_sky_keep.value)
-
+    
     def get_resolved_setting(self, setting_name: str, default: str = None) -> str:
         """
         Get a resolved setting value from sshd-rando.
@@ -467,6 +593,8 @@ class SSHDWorld(World):
         "hidden_item_shuffle": ("hidden_item_shuffle", "toggle", None),
         "rupee_shuffle": ("rupee_shuffle", "choice", {"vanilla": 0, "beginner": 1, "intermediate": 2, "advanced": 3}),
         "goddess_chest_shuffle": ("goddess_chest_shuffle", "toggle", None),
+        "goddess_chest_unlock": ("goddess_chest_unlock", "choice", {"locked_until_struck": 0, "unlocked_after_goddess_sword": 1, "unlocked_from_start": 2}),
+        "decouple_goddess_cubes_and_chests": ("decouple_goddess_cubes_and_chests", "toggle", None),
         "trial_treasure_shuffle": ("trial_treasure_shuffle", "range", None),
         "tadtone_shuffle": ("tadtone_shuffle", "toggle", None),
         "gossip_stone_treasure_shuffle": ("gossip_stone_treasure_shuffle", "toggle", None),
@@ -1003,8 +1131,10 @@ class SSHDWorld(World):
 
         # Goddess Cubes are dummy logic items (oarc: null) used internally by
         # sshd-rando to link cube-strike locations to sky Goddess Chests.
-        # They have no in-game model and must never be in the AP pool.
-        excluded.add("Goddess Cube")
+        # They have no in-game model and are only real AP locations when goddess
+        # cubes are decoupled from goddess chests.
+        if not self._goddess_cubes_decoupled():
+            excluded.add("Goddess Cube")
 
         # "Game Beatable" is the victory pseudo-location.  It must NOT
         # exist as a real AP location (with an int address) because:
@@ -1016,6 +1146,13 @@ class SSHDWorld(World):
         excluded.add("Game Beatable")
 
         return excluded
+
+    def _goddess_cubes_decoupled(self) -> bool:
+        """Whether goddess cubes are decoupled from goddess chests (cubes are item locations)."""
+        s = getattr(self, '_sshd_resolved_settings', {})
+        if s:
+            return s.get("decouple_goddess_cubes_and_chests", "off") == "on"
+        return bool(self.options.decouple_goddess_cubes_and_chests.value)
 
     def _create_basic_regions(self) -> None:
         """Fallback: create basic regions from Regions.py (old behavior)."""
@@ -1231,8 +1368,15 @@ class SSHDWorld(World):
                     except (ValueError, TypeError):
                         trial_treasure_num_early = 0
 
-                # Goddess Cubes are dummy logic items (oarc: null) — always exclude
-                excluded_loc_types.add("Goddess Cube")
+                # Goddess Cubes are dummy logic items (oarc: null) unless decoupled,
+                # in which case they are real locations holding randomized items
+                _cube_setting = (
+                    world.setting_map.settings.get("decouple_goddess_cubes_and_chests")
+                    if hasattr(world, 'setting_map') and world.setting_map
+                    else None
+                )
+                if _cube_setting is None or _cube_setting.value != "on":
+                    excluded_loc_types.add("Goddess Cube")
                 
                 if excluded_loc_types:
                     print(f"[__init__.py] Excluding location types from item pool: {sorted(excluded_loc_types)}")
@@ -1256,7 +1400,7 @@ class SSHDWorld(World):
                     name for name in ITEM_TABLE if "Goddess Cube" in name
                 )
                 if _type_specific_skip_items:
-                    print(f"[__init__.py] Will skip shuffle-specific items at excluded locations: {sorted(_type_specific_skip_items)}")
+                    print(f"[__init__.py] Skipping items when rebuilding the pool (shuffle-specific items for excluded location types, plus dummy Goddess Cube logic items; cube locations are NOT excluded by this): {sorted(_type_specific_skip_items)}")
                 
                 # Individually excluded locations from config.yaml remain in the
                 # AP world as EXCLUDED locations, so their items still belong in
@@ -1678,6 +1822,8 @@ class SSHDWorld(World):
             "Tycoon Wallet": "Progressive Wallet",
             "Adventure Pouch": "Progressive Pouch",
             "Pouch Expansion": "Progressive Pouch",
+            "Loftwing": "Progressive Loftwing",
+            "Spiral Charge": "Progressive Loftwing",
         }
         
         # Items to skip entirely (not part of the randomized pool)
@@ -3255,6 +3401,17 @@ class SSHDWorld(World):
                 }
         
         slot_data["location_to_item_map"] = location_to_item_map
+
+        # Goddess cube location -> story flag mapping (decoupled cubes only).
+        # The client polls these story flags to detect cube strikes as location checks.
+        if self._goddess_cubes_decoupled():
+            from .Locations import GODDESS_CUBE_STORY_FLAGS
+            goddess_cube_story_flags = {}
+            for location in self.multiworld.get_locations(self.player):
+                cube_flag = GODDESS_CUBE_STORY_FLAGS.get(location.name)
+                if cube_flag is not None and location.address is not None:
+                    goddess_cube_story_flags[str(location.address)] = cube_flag
+            slot_data["goddess_cube_story_flags"] = goddess_cube_story_flags
         
         # Build custom flag mapping for ALL locations
         # This happens during slot_data generation (before generate_output)
@@ -3307,10 +3464,16 @@ class SSHDWorld(World):
                     # for Beedle's Airshop locations.
                     loc_code = location.address
                     flag_id = None
-                    if loc_code in location_to_custom_flag:
-                        flag_id = location_to_custom_flag[loc_code]
-                    elif location.name in BEEDLE_SOLD_OUT_STORYFLAGS:
+                    # NOTE: Beedle must be checked FIRST. _build_custom_flag_mapping()
+                    # assigns a custom flag to ALL locations (Beedle included), so
+                    # testing location_to_custom_flag first always matched and the
+                    # 0x8000|storyflag branch was unreachable -- the game (shop.rs
+                    # handle_shop_traps) looks Beedle items up by 0x8000|storyflag,
+                    # so they never found their entry.
+                    if location.name in BEEDLE_SOLD_OUT_STORYFLAGS:
                         flag_id = 0x8000 | BEEDLE_SOLD_OUT_STORYFLAGS[location.name]
+                    elif loc_code in location_to_custom_flag:
+                        flag_id = location_to_custom_flag[loc_code]
                     if flag_id is not None:
                         player_name = self.multiworld.get_player_name(location.item.player)
                         ap_item_info[flag_id] = {
@@ -3708,14 +3871,14 @@ class SSHDWorld(World):
             from .SSHDRWrapper import inject_custom_flags_into_world
             inject_custom_flags_into_world(world, self._custom_flag_mapping, self.multiworld, self.player)
             print(f"[__init__.py] ✓ Injected {len(self._custom_flag_mapping)} custom flags")
-            
+
             # Let Fi's text tell the player the dungeon goal count (None = goal disabled)
             world.ap_dungeon_goal_count = (
                 self.options.dungeon_goal_count.value
                 if self.options.dungeon_goal_requirement.value
                 else None
             )
-
+            
             # Sync required-dungeon flags so Fi's text matches AP's selection
             ap_required = getattr(self, '_ap_required_dungeons', None)
             if ap_required is not None:
@@ -3934,6 +4097,9 @@ class SSHDWorld(World):
         settings_dict["rupee_shuffle"] = rupee_mode_map[self.options.rupee_shuffle.value]
         
         settings_dict["goddess_chest_shuffle"] = "on" if self.options.goddess_chest_shuffle.value else "off"
+        goddess_chest_unlock_map = {0: "locked_until_struck", 1: "unlocked_after_goddess_sword", 2: "unlocked_from_start"}
+        settings_dict["goddess_chest_unlock"] = goddess_chest_unlock_map[self.options.goddess_chest_unlock.value]
+        settings_dict["decouple_goddess_cubes_and_chests"] = "on" if self.options.decouple_goddess_cubes_and_chests.value else "off"
         settings_dict["trial_treasure_shuffle"] = str(self.options.trial_treasure_shuffle.value)
         settings_dict["tadtone_shuffle"] = "on" if self.options.tadtone_shuffle.value else "off"
         settings_dict["gossip_stone_treasure_shuffle"] = "on" if self.options.gossip_stone_treasure_shuffle.value else "off"

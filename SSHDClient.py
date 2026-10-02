@@ -57,7 +57,7 @@ from CommonClient import CommonContext, server_loop, gui_enabled, \
 from NetUtils import ClientStatus
 
 from .TrackerBridge import TrackerBridge
-from .Locations import LOCATION_TABLE
+from .Locations import LOCATION_TABLE, LOCATION_CODE_TO_NAME
 from .Items import ITEM_TABLE
 
 try:
@@ -1900,6 +1900,7 @@ class SSHDContext(CommonContext):
             "Progressive Bug Net": 0,
             "Progressive Wallet": 0,
             "Progressive Pouch": 0,
+            "Progressive Loftwing": 0,
         }
         
         # Deferred flag writes — no longer used.
@@ -1920,6 +1921,7 @@ class SSHDContext(CommonContext):
             "Progressive Bug Net":   [71, 140],
             "Progressive Wallet":    [108, 109, 110, 111],
             "Progressive Pouch":     [112, 113, 113, 113, 113],
+            "Progressive Loftwing":  [219, 21],
         }
 
         # Story flags that the rando event system sets for each progressive
@@ -1935,6 +1937,7 @@ class SSHDContext(CommonContext):
             "Progressive Slingshot": [947, 948],
             "Progressive Bug Net":   [949, 950],
             "Progressive Pouch":     [30, 932, 932, 932, 932],
+            "Progressive Loftwing":  [27, 364],
         }
         
         # Game state tracking
@@ -2027,6 +2030,13 @@ class SSHDContext(CommonContext):
         # Format: {location_code: [scene_index, set_sceneflag]}
         self.goddess_chest_scene_flags: Dict[int, list] = {}
         self.previous_goddess_chest_flags: Dict[int, int] = {}  # location_code -> last_state (0 or 1)
+
+        # Goddess cube strike checking (decouple_goddess_cubes_and_chests only).
+        # Striking a cube sets its vanilla storyflag (227-256); slot_data maps
+        # location_code -> storyflag id as goddess_cube_story_flags.
+        self.goddess_cube_story_flags: Dict[int, int] = {}
+        self._goddess_cube_cursor: int = 0            # round-robin position into the pending cubes
+        self._last_goddess_cube_poll_time: float = 0.0
         
         # AP item info table (for item 216 textbox display) and check stats (for help menu)
         self.ap_item_info: Dict[int, dict] = {}  # custom_flag_id -> {"item": name, "player": name}
@@ -2324,6 +2334,7 @@ class SSHDContext(CommonContext):
                     "option_dungeon_goal_count",
                     self.slot_data.get("option_required_dungeon_count", 2),
                 ))
+
             except (TypeError, ValueError):
                 required_dungeons = 2
 
@@ -3040,6 +3051,14 @@ class SSHDContext(CommonContext):
             else:
                 logger.info(f"[GoddessChest] WARNING: goddess_chest_scene_flags key missing or empty in slot_data (slot_data keys: {list(slot_data.keys())})")
 
+            # Load goddess cube storyflag mapping (only present when cubes are decoupled)
+            goddess_cube_raw = slot_data.get("goddess_cube_story_flags", {})
+            self.goddess_cube_story_flags = {int(k): int(v) for k, v in goddess_cube_raw.items()} if goddess_cube_raw else {}
+            self._goddess_cube_cursor = 0
+            self._last_goddess_cube_poll_time = 0.0
+            if self.goddess_cube_story_flags:
+                logger.debug(f"[GoddessCube] Loaded {len(self.goddess_cube_story_flags)} goddess cube storyflag mappings from slot_data")
+
             # Load AP item info for cross-world item textbox display
             ap_item_info_raw = slot_data.get("ap_item_info", {})
             if ap_item_info_raw:
@@ -3526,6 +3545,11 @@ class SSHDContext(CommonContext):
                 # All tiers give a Pouch Expansion (game item 113)
                 actual_item_name = "Pouch Expansion"
                 logger.debug(f"Progressive Pouch #{count} -> {actual_item_name}")
+            elif item_name == "Progressive Loftwing":
+                # Tier 1: Loftwing (game item 219), 2: Spiral Charge (game item 21)
+                loftwing_tiers = ["Progressive Loftwing", "Spiral Charge"]
+                actual_item_name = loftwing_tiers[min(count - 1, 1)]
+                logger.debug(f"Progressive Loftwing #{count} -> {actual_item_name}")
         
         # Try using the new item system with animations
         if GameItemSystem:
@@ -4377,6 +4401,11 @@ class SSHDContext(CommonContext):
                 # Goddess chests use vanilla scene flags instead of custom flags
                 if self.goddess_chest_scene_flags:
                     await self.check_goddess_chest_flags()
+
+                # Decoupled goddess cubes are their own locations; striking one
+                # sets its vanilla storyflag, which we read back via the game.
+                if self.goddess_cube_story_flags:
+                    await self.check_goddess_cube_flags()
                 
                 # Boss fight rewards (HeartCo actors) and Demise defeat don't
                 # set custom sceneflags, so monitor their vanilla flags directly.
@@ -5055,6 +5084,11 @@ class SSHDContext(CommonContext):
         if hasattr(self, '_prev_fa_tbox_snapshot'):
             self._prev_fa_tbox_snapshot = None
             self._prev_static_tbox_snapshot = None
+
+        # Reset goddess cube polling (storyflags are persistent, so a plain restart
+        # of the round-robin re-recovers anything already struck on the new file)
+        self._goddess_cube_cursor = 0
+        self._last_goddess_cube_poll_time = 0.0
 
         # Reset Beedle shop monitoring
         if hasattr(self, '_beedle_flags_initializing'):
@@ -6341,6 +6375,77 @@ class SSHDContext(CommonContext):
                     f"[GoddessChest] Initialized {initialized} flags "
                     f"({already_set} already set, stage={self.current_stage})"
                 )
+
+    async def check_goddess_cube_flags(self):
+        """
+        Detect goddess cube strikes (decouple_goddess_cubes_and_chests only).
+
+        When cubes are decoupled each cube is its own AP location holding a
+        randomized item. Striking a cube with a Skyward Strike sets that cube's
+        vanilla storyflag (227-256), so a location is checked as soon as its
+        storyflag reads back as set. The location_code -> storyflag mapping
+        comes from slot_data as goddess_cube_story_flags.
+
+        Like check_beedle_shop_storyflags, this asks the game for each flag
+        (request_flag_operation) instead of computing a byte offset locally,
+        since only the game's FlagMgr knows where a flag actually lives.
+
+        A flag that is already set counts as checked on every poll, which
+        recovers cubes struck while the client wasn't running or connected.
+        Locations the server already knows about are skipped without a read.
+
+        Every request blocks for about a game frame, so reading all 27 cubes
+        each tick would stall the 10 Hz update loop. Instead we poll at most
+        once per second and read only the next few not-yet-checked cubes,
+        walking round-robin through them. Detected cubes are never read again.
+        """
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return
+        if not self.goddess_cube_story_flags:
+            return
+        # Flag manager isn't valid until a save file is loaded (no stage = no save).
+        if not self.current_stage:
+            return
+
+        now = time.time()
+        if now - self._last_goddess_cube_poll_time < 1.0:
+            return
+        self._last_goddess_cube_poll_time = now
+
+        pending = [
+            (location_code, storyflag)
+            for location_code, storyflag in sorted(self.goddess_cube_story_flags.items())
+            if location_code not in self.checked_locations and location_code not in self.sent_locations
+        ]
+        if not pending:
+            return
+
+        batch_size = 6
+        start = self._goddess_cube_cursor % len(pending)
+        batch = [pending[(start + i) % len(pending)] for i in range(min(batch_size, len(pending)))]
+        self._goddess_cube_cursor = (start + len(batch)) % len(pending)
+
+        for location_code, storyflag in batch:
+            try:
+                flag_value = await self.request_flag_operation(
+                    "storyflag", "get", storyflag, timeout=0.3
+                )
+            except Exception as e:
+                logger.debug(f"[GoddessCube] Error querying storyflag {storyflag}: {e}")
+                continue
+
+            if not flag_value:
+                continue
+
+            self.checked_locations.add(location_code)
+            loc_name = LOCATION_CODE_TO_NAME.get(location_code, str(location_code))
+            logger.debug(f"[GoddessCube] Location checked: {loc_name} (sf{storyflag})")
+            # Trigger sword/beetle upgrade if this is a local progressive item.
+            if self._location_has_own_sword(location_code):
+                self._update_sword_storyflags()
+            elif location_code in self.beetle_location_codes:
+                self._update_beetle_storyflags()
+            self.update_tracker_state()
 
     async def check_beedle_shop_storyflags(self):
         """

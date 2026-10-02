@@ -309,6 +309,26 @@ class GoddessChestShuffle(Toggle):
     """Shuffle goddess chests."""
     display_name = "Goddess Chest Shuffle"
 
+class GoddessChestUnlock(Choice):
+    """Controls how goddess chests are unlocked.
+
+    Locked Until Struck: Chests are activated by striking their goddess cube (vanilla).
+    Unlocked After Goddess Sword: All goddess chests are activated once you obtain the Goddess Sword.
+    Unlocked From Start: All goddess chests are activated from the start of the game."""
+    display_name = "Goddess Chest Unlock"
+    option_locked_until_struck = 0
+    option_unlocked_after_goddess_sword = 1
+    option_unlocked_from_start = 2
+    default = 0
+
+class DecoupleGoddessCubesAndChests(Toggle):
+    """Decouple goddess cubes from goddess chests.
+
+    When enabled, striking a goddess cube gives a randomized item (each cube becomes a location).
+    If Goddess Chest Unlock is Locked Until Struck, striking a cube also still activates its chest.
+    When disabled, cubes only activate their chest (or do nothing if chests are already unlocked)."""
+    display_name = "Decouple Goddess Cubes and Chests"
+
 class TrialTreasureShuffle(Range):
     """Number of trial treasures to shuffle (0-10)."""
     display_name = "Trial Treasure Shuffle"
@@ -1898,6 +1918,8 @@ class SSHDOptions(PerGameCommonOptions):
     hidden_item_shuffle: HiddenItemShuffle
     rupee_shuffle: RupeeShuffle
     goddess_chest_shuffle: GoddessChestShuffle
+    goddess_chest_unlock: GoddessChestUnlock
+    decouple_goddess_cubes_and_chests: DecoupleGoddessCubesAndChests
     trial_treasure_shuffle: TrialTreasureShuffle
     tadtone_shuffle: TadtoneShuffle
     gossip_stone_treasure_shuffle: GossipStoneTreasureShuffle
@@ -2139,6 +2161,8 @@ sshd_option_groups = [
         HiddenItemShuffle,
         RupeeShuffle,
         GoddessChestShuffle,
+        GoddessChestUnlock,
+        DecoupleGoddessCubesAndChests,
         TrialTreasureShuffle,
         TadtoneShuffle,
         GossipStoneTreasureShuffle,

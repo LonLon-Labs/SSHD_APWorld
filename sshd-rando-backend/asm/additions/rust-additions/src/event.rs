@@ -253,7 +253,8 @@ pub fn apply_pending_ap_string_args() {
                 if idx != usize::MAX {
                     // Lookup succeeded — resolve pointers and write to both
                     // TextMgrs immediately.
-                    let entry_ptr = core::ptr::addr_of!(item::AP_ITEM_INFO_TABLE.entries[idx]);
+                    let entry_ptr =
+                        core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.item_info_table.entries[idx]);
                     let ip = core::ptr::addr_of!((*entry_ptr).item_name) as *const c_void;
                     let pp = core::ptr::addr_of!((*entry_ptr).player_name) as *const c_void;
 
@@ -503,7 +504,8 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
 
         let (item_ptr, player_ptr): (*const c_void, *const c_void) = if idx != usize::MAX {
             // ── Success: use the table entry ────────────────────────────
-            let entry_ptr = core::ptr::addr_of!(item::AP_ITEM_INFO_TABLE.entries[idx]);
+            let entry_ptr =
+                core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.item_info_table.entries[idx]);
             (
                 core::ptr::addr_of!((*entry_ptr).item_name) as *const c_void,
                 core::ptr::addr_of!((*entry_ptr).player_name) as *const c_void,

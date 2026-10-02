@@ -116,6 +116,7 @@ extern "C" {
     static SCENEFLAG_MGR: *mut flag::SceneflagMgr;
 
     static mut STATIC_DUNGEONFLAGS: [u16; 8];
+    static mut STATIC_TBOXFLAGS: [u8; 4];
     static mut CURRENT_STAGE_NAME: [u8; 8];
     static mut CURRENT_LAYER: u8;
 
@@ -128,6 +129,11 @@ extern "C" {
     static mut NEXT_CUSTOM_FLAG_PENDING: u8;
 
     static mut CREST_CUSTOM_FLAGS: [u16; 3];
+
+    // Decoupled Goddess Cubes (filled in by the patcher via init_global_variables)
+    static GODDESS_CUBE_MAGIC: u32;
+    static mut GODDESS_CUBE_CUSTOM_FLAGS: [u16; 32];
+    static mut GODDESS_CUBE_ITEM_IDS: [u8; 32];
 
     static mut SQUIRRELS_CAUGHT_THIS_PLAY_SESSION: bool;
     static TADTONE_SCENEFLAGS: [u8; 17];
@@ -354,6 +360,26 @@ pub extern "C" fn give_item_with_sceneflag(itemid: u8, sceneflag: u8) -> *mut dA
 
 #[no_mangle]
 pub extern "C" fn give_item_with_archipelago_flag(itemid: u8, custom_flag: u16) -> *mut dAcItem {
+    give_item_with_archipelago_flag_and_trap(itemid, custom_flag, NO_TRAP_ID)
+}
+
+/// `trap_id` value meaning "this item is not a trap" (the same 0xF sentinel
+/// the item actor's param2 bits 4-7 use for non-trap items).
+const NO_TRAP_ID: u8 = 0xF;
+
+/// Like `give_item_with_archipelago_flag`, but when `trap_id` is not
+/// `NO_TRAP_ID` the spawned item actor is a real trap: `setup_traps` sees
+/// param2 bits 0-3 = 0xF (trappable) and bits 4-7 = the trap id, turns the
+/// item into a Rupoor for the frowny face/sound, and `update_traps` fires the
+/// effect. Pass a Rupoor (34) as `itemid` for traps so the model matches.
+/// `trap_id` is the 0-4 trap index (the same value the AP item buffer derives
+/// with `254 - item_id`).
+#[no_mangle]
+pub extern "C" fn give_item_with_archipelago_flag_and_trap(
+    itemid: u8,
+    custom_flag: u16,
+    trap_id: u8,
+) -> *mut dAcItem {
     unsafe {
         // Safety: ROOM_MGR can be null during scene transitions.
         if ROOM_MGR.is_null() {
@@ -391,8 +417,14 @@ pub extern "C" fn give_item_with_archipelago_flag(itemid: u8, custom_flag: u16) 
             _ => 0,  // Other items don't use original_itemid encoding
         };
 
-        let param2: u32 =
+        let mut param2: u32 =
             (flag << 8) | (scene_selector << 15) | (flag_space << 17) | (original_itemid << 18);
+
+        // Trap: bits 0-3 = 0xF marks the actor trappable, bits 4-7 = trap id.
+        // Non-traps leave both nibbles 0 so setup_traps ignores them.
+        if trap_id != NO_TRAP_ID {
+            param2 |= 0xF | ((trap_id as u32 & 0xF) << 4);
+        }
 
         // Spawn item with param1 for display, param2 for custom flag.
         // sceneflag=0xFF in bits 10-17 is REQUIRED: check_and_modify_item_actor's
@@ -593,6 +625,123 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
             set_ap_custom_flag(cf);
             give_item(whitesword_reward);
             flag::set_local_sceneflag(52);
+        }
+    }
+}
+
+/// Story flags set by striking each of the 27 Goddess Cubes, in ascending
+/// order. Must match GODDESS_CUBE_STORYFLAGS in stagepatchhandler.py, which
+/// indexes the GODDESS_CUBE_CUSTOM_FLAGS / GODDESS_CUBE_ITEM_IDS tables
+/// written by the patcher.
+const GODDESS_CUBE_STORYFLAGS: [u16; 27] = [
+    227, 228, 229, 230, 231, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247,
+    248, 249, 250, 251, 252, 254, 255, 256,
+];
+
+static mut GODDESS_CUBE_TICK: u32 = 0;
+
+/// "CUBE" as a little-endian u32; the patcher writes it next to the cube
+/// tables only when decoupled cubes have items. Anything else means the tables
+/// weren't patched in (or the bytes aren't ours), so the handler must not act
+/// on them.
+const GODDESS_CUBE_MAGIC_VALUE: u32 = 0x4542_5543;
+
+/// Decode a 10-bit AP custom flag and check the corresponding global
+/// sceneflag or dungeonflag (the counterpart of `set_ap_custom_flag`).
+unsafe fn check_ap_custom_flag(custom_flag: u16) -> bool {
+    let flag_val = custom_flag & 0x7F;
+    let scene_selector = (custom_flag >> 7) & 0x3;
+    let flag_space = (custom_flag >> 9) & 0x1;
+
+    let sceneindex: u16 = match scene_selector {
+        0 => 6,
+        1 => 13,
+        2 => 16,
+        3 => 19,
+        _ => 6,
+    };
+
+    match flag_space {
+        0 => flag::check_global_sceneflag(sceneindex, flag_val) != 0,
+        1 => flag::check_global_dungeonflag(sceneindex, flag_val) != 0,
+        _ => false,
+    }
+}
+
+/// Decoupled Goddess Cubes: when a cube's story flag gets set (by striking
+/// it), give that cube's randomized item with the normal item-get animation
+/// and mark the location as checked through its AP custom flag.
+///
+/// Does nothing for cubes whose custom flag is 0x3FF, which is every cube
+/// unless the "Decouple Goddess Cubes and Chests" setting is on. Called every
+/// frame from the main loop but only does real work every few frames.
+pub fn handle_goddess_cube_items() {
+    unsafe {
+        // Cheapest check first: no patched tables, nothing to do. Also keeps
+        // zeroed/garbage memory from being read as custom flags and item ids.
+        if core::ptr::read_volatile(core::ptr::addr_of!(GODDESS_CUBE_MAGIC))
+            != GODDESS_CUBE_MAGIC_VALUE
+        {
+            return;
+        }
+
+        GODDESS_CUBE_TICK = GODDESS_CUBE_TICK.wrapping_add(1);
+        if GODDESS_CUBE_TICK % 10 != 0 {
+            return;
+        }
+
+        // Same safety conditions as item delivery from the AP buffer
+        if ap_stage_cooldown_active() {
+            return;
+        }
+        if &CURRENT_STAGE_NAME[..4] == b"F000" && (CURRENT_LAYER == 26 || CURRENT_LAYER == 29) {
+            return;
+        }
+        if PLAYER_PTR.is_null() || ROOM_MGR.is_null() {
+            return;
+        }
+
+        for index in 0..GODDESS_CUBE_STORYFLAGS.len() {
+            let custom_flag =
+                core::ptr::read_volatile(core::ptr::addr_of!(GODDESS_CUBE_CUSTOM_FLAGS[index]));
+            if custom_flag == 0x3FF {
+                continue;
+            }
+            if flag::check_storyflag(GODDESS_CUBE_STORYFLAGS[index]) == 0 {
+                continue;
+            }
+            // Already given (the custom flag is set once the location is checked)
+            if check_ap_custom_flag(custom_flag) {
+                continue;
+            }
+
+            // Wait until Link can actually receive the item, then try again
+            if player_is_busy() {
+                return;
+            }
+
+            let item_id =
+                core::ptr::read_volatile(core::ptr::addr_of!(GODDESS_CUBE_ITEM_IDS[index]));
+            // Trap pseudo-items (250..=254, trap id = 254 - item id) are given as a
+            // real trap actor: a Rupoor carrying the trap id, so the effect fires
+            // instead of showing the generic Archipelago item.
+            let item_actor = if (250..=254).contains(&item_id) {
+                give_item_with_archipelago_flag_and_trap(34, custom_flag, 254 - item_id)
+            } else {
+                give_item_with_archipelago_flag(item_id, custom_flag)
+            };
+            if item_actor.is_null() {
+                return;
+            }
+            (*item_actor).prevent_timed_despawn = 1;
+
+            // Mark the location as checked right away, which also pre-sets
+            // LAST_AP_ITEM_FLAG_ID so the item textbox shows the right item/player.
+            // This is also what keeps us from spawning the item again next frame.
+            set_ap_custom_flag(custom_flag);
+
+            // One cube per call so two items never spawn in the same frame
+            return;
         }
     }
 }
@@ -2157,7 +2306,7 @@ pub extern "C" fn setup_gossip_stone_item_params(
 // Byte 0: Item ID (0 = empty slot)
 // Byte 1: Flags (0x01 = show animation, 0x02 = play jingle)
 // Bytes 2-3: Reserved
-const ARCHIPELAGO_BUFFER_SIZE: usize = 1024;
+pub const ARCHIPELAGO_BUFFER_SIZE: usize = 1024;
 
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
@@ -2175,6 +2324,12 @@ const fn build_archipelago_item_buffer() -> [ArchipelagoItemSlot; ARCHIPELAGO_BU
         _reserved: [0, 0],
     }; ARCHIPELAGO_BUFFER_SIZE];
 
+    // Slot 0 is never used as a real item slot (loops below start at index 1).
+    // This used to double as a magic signature for an external per-buffer
+    // scan; that scan no longer happens (see ipc.rs — the whole IPC surface
+    // is now found via ONE scan for AP_IPC_ROOT.magic), but the sentinel
+    // value is left in place since it's harmless and avoids touching this
+    // const-eval'd buffer any further than necessary.
     buffer[0] = ArchipelagoItemSlot {
         item_id:   0x41,
         flags:     0x50,
@@ -2184,14 +2339,11 @@ const fn build_archipelago_item_buffer() -> [ArchipelagoItemSlot; ARCHIPELAGO_BU
     buffer
 }
 
-// Static buffer for Archipelago item queue
-// This will be written to by the Python client and read by the game
-// Magic signature at the start: "AP" in ASCII (0x4150), followed by version
-// 0x0001 This allows Python to find the real buffer by searching for this
-// signature Format: [magic_high, magic_low, version_high, version_low,
-// ...actual slots...]
-#[no_mangle]
-pub static mut ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] =
+// Initial value for the item queue. The live instance of this buffer now
+// lives at AP_IPC_ROOT.item_buffer (see ipc.rs) instead of a standalone
+// static, so the external client only needs ONE scan (for AP_IPC_ROOT's
+// magic) to find every mailbox, this one included.
+pub const EMPTY_ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] =
     build_archipelago_item_buffer();
 
 #[inline(always)]
@@ -2345,10 +2497,23 @@ static mut AP_RECEIVED_ITEMS_THIS_BATCH: u32 = 0;
 
 const AP_RECEIVE_BATCH_LIMIT: u32 = 50;
 
+// Reload / warp handling.
+//
+// `entrance::reload_current_stage()` (Left Stick + R + Y) and
+// `warp_to_stage()` call `reset_ap_item_receive_batch()` at the moment the
+// reload is TRIGGERED. This resets the 50-item batch so delivery resumes after
+// a reload, and it ALSO starts a cooldown. Without the cooldown, the very next
+// frame the buffer loop could spawn item actors into the old scene while it is
+// fading out / being torn down (a same-stage reload doesn't change
+// CURRENT_STAGE_NAME, so the stage-change cooldown below never applied). That
+// was the crash on "stage stalled at 50 items, then reload".
+const AP_RELOAD_COOLDOWN_FRAMES: u32 = 150;
+
 #[no_mangle]
 pub extern "C" fn reset_ap_item_receive_batch() {
     unsafe {
         AP_RECEIVED_ITEMS_THIS_BATCH = 0;
+        AP_STAGE_COOLDOWN = AP_RELOAD_COOLDOWN_FRAMES;
     }
 }
 
@@ -2368,6 +2533,7 @@ fn ap_stage_cooldown_active() -> bool {
             AP_STAGE_COOLDOWN = STAGE_COOLDOWN_FRAMES;
             AP_RECEIVED_ITEMS_THIS_BATCH = 0;
         }
+
         if AP_STAGE_COOLDOWN > 0 {
             AP_STAGE_COOLDOWN -= 1;
             return true;
@@ -2402,7 +2568,7 @@ pub extern "C" fn archipelago_check_item_buffer() {
             // Use volatile read because Python writes to this buffer via
             // cross-process WriteProcessMemory.  Without volatile the
             // compiler could hoist or elide loads across frames.
-            let slot_ptr = ARCHIPELAGO_ITEM_BUFFER.as_mut_ptr().add(i);
+            let slot_ptr = crate::ipc::AP_IPC_ROOT.item_buffer.as_mut_ptr().add(i);
             let item_id_val = core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).item_id));
 
             // Skip empty slots
@@ -2636,10 +2802,12 @@ unsafe fn ap_set_dungeon_item_flags(itemid: u16) {
     }
 }
 
-// Get the address of the Archipelago buffer for the Python client
+// Get the address of the Archipelago buffer. Kept for any in-game callers;
+// the external client no longer needs this — it reaches the buffer via
+// AP_IPC_ROOT.item_buffer (see ipc.rs) after one scan for AP_IPC_ROOT.magic.
 #[no_mangle]
 pub extern "C" fn get_archipelago_buffer_address() -> *mut ArchipelagoItemSlot {
-    unsafe { ARCHIPELAGO_ITEM_BUFFER.as_mut_ptr() }
+    unsafe { crate::ipc::AP_IPC_ROOT.item_buffer.as_mut_ptr() }
 }
 
 // ============================================================================
@@ -2649,7 +2817,8 @@ pub extern "C" fn get_archipelago_buffer_address() -> *mut ArchipelagoItemSlot {
 
 #[repr(C, packed(1))]
 pub struct ApCheckStats {
-    pub magic:          [u8; 4], // "CS\x00\x01" — signature for Python to find
+    pub magic:          [u8; 4], /* legacy per-struct signature; kept for layout compat only —
+                                  * discovery is now via AP_IPC_ROOT.magic (see ipc.rs) */
     pub normal_checked: u16,
     pub normal_total:   u16,
     pub ap_checked:     u16,
@@ -2657,14 +2826,9 @@ pub struct ApCheckStats {
 }
 assert_eq_size!([u8; 12], ApCheckStats);
 
-#[no_mangle]
-pub static mut AP_CHECK_STATS: ApCheckStats = ApCheckStats {
-    magic:          [0x43, 0x53, 0x00, 0x01], // "CS\x00\x01"
-    normal_checked: 0,
-    normal_total:   0,
-    ap_checked:     0,
-    ap_total:       0,
-};
+// The live instance of this struct now lives at AP_IPC_ROOT.check_stats
+// (see ipc.rs) instead of a standalone static. Written by the Python
+// client, read by lyt.rs via `crate::ipc::AP_IPC_ROOT.check_stats`.
 
 // ============================================================================
 // Archipelago Item Info Table (for item 216 textbox — item name + player name)
@@ -2683,7 +2847,7 @@ pub struct ApItemInfoEntry {
 }
 assert_eq_size!([u8; 98], ApItemInfoEntry);
 
-const EMPTY_AP_ENTRY: ApItemInfoEntry = ApItemInfoEntry {
+pub const EMPTY_AP_ENTRY: ApItemInfoEntry = ApItemInfoEntry {
     flag_id:     0xFFFF,
     item_name:   [0u16; 32],
     player_name: [0u16; 16],
@@ -2691,20 +2855,18 @@ const EMPTY_AP_ENTRY: ApItemInfoEntry = ApItemInfoEntry {
 
 #[repr(C, packed(1))]
 pub struct ApItemInfoTable {
-    pub magic:   [u8; 4], // "IT\x00\x01"
-    pub count:   u16,     // number of valid entries
+    pub magic:   [u8; 4], /* legacy per-struct signature; kept for layout compat only —
+                           * discovery is now via AP_IPC_ROOT.magic (see ipc.rs) */
+    pub count:   u16, // number of valid entries
     pub _pad:    u16,
     pub entries: [ApItemInfoEntry; AP_ITEM_TABLE_MAX],
 }
 assert_eq_size!([u8; 8 + 98 * 512], ApItemInfoTable);
 
-#[no_mangle]
-pub static mut AP_ITEM_INFO_TABLE: ApItemInfoTable = ApItemInfoTable {
-    magic:   [0x49, 0x54, 0x00, 0x01], // "IT\x00\x01"
-    count:   0,
-    _pad:    0,
-    entries: [EMPTY_AP_ENTRY; AP_ITEM_TABLE_MAX],
-};
+// The live instance of this struct now lives at AP_IPC_ROOT.item_info_table
+// (see ipc.rs) instead of a standalone static. Written once by the Python
+// client on connect, read by event.rs via
+// `crate::ipc::AP_IPC_ROOT.item_info_table`.
 
 // Tracks which item-216 location was most recently picked up.
 // Set in setup_traps() (stateWait*GetDemoUpdate, BEFORE the event fires) and
@@ -2714,6 +2876,97 @@ pub static mut AP_ITEM_INFO_TABLE: ApItemInfoTable = ApItemInfoTable {
 // cmd 81 already cleared it.
 #[no_mangle]
 pub static mut LAST_AP_ITEM_FLAG_ID: u16 = 0xFFFF;
+
+/// Refreshes `AP_IPC_ROOT.sceneflags` / `.dungeonflags` / `.tboxflags` /
+/// `.static_tboxflags` / `.current_scene_index` / `.current_stage_name`
+/// with live BY-VALUE COPIES (not addresses -- see ipc.rs's field docs
+/// for why) of the save file's sceneflags/dungeonflags/tboxflags arrays,
+/// the in-RAM STATIC_TBOXFLAGS working copy, the current scene index, and
+/// the current stage code. Called once per frame from `mainloop.rs` so
+/// the external client can batch-read these arrays directly out of
+/// AP_IPC_ROOT's own memory (which it already reads/writes reliably for
+/// item_buffer/check_stats/etc.) instead of issuing one flag_request
+/// round trip per flag.
+#[no_mangle]
+pub extern "C" fn refresh_ipc_addresses() {
+    unsafe {
+        if !FILE_MGR.is_null() {
+            let scene_ptr = core::ptr::addr_of!((*FILE_MGR).FA.sceneflags) as *const [u8; 416];
+            crate::ipc::AP_IPC_ROOT.sceneflags = core::ptr::read_unaligned(scene_ptr);
+
+            let dungeon_ptr = core::ptr::addr_of!((*FILE_MGR).FA.dungeonflags) as *const [u8; 416];
+            crate::ipc::AP_IPC_ROOT.dungeonflags = core::ptr::read_unaligned(dungeon_ptr);
+
+            let tbox_ptr = core::ptr::addr_of!((*FILE_MGR).FA.tboxflags) as *const [u8; 104];
+            crate::ipc::AP_IPC_ROOT.tboxflags = core::ptr::read_unaligned(tbox_ptr);
+        }
+
+        // STATIC_TBOXFLAGS doesn't depend on FILE_MGR (it's a fixed .bss
+        // symbol, always valid once the binary is loaded), so this copy
+        // isn't gated on the FILE_MGR null-check above.
+        crate::ipc::AP_IPC_ROOT.static_tboxflags = STATIC_TBOXFLAGS;
+
+        // SCENEFLAG_MGR can be null very early (before a save file/scene
+        // is loaded) even when FILE_MGR is already set up, so guard it
+        // separately rather than assuming FILE_MGR non-null implies it.
+        crate::ipc::AP_IPC_ROOT.current_scene_index = if SCENEFLAG_MGR.is_null() {
+            0xFFFF
+        } else {
+            (*SCENEFLAG_MGR).sceneindex
+        };
+
+        // Mirror the current stage code by value so the client can gate
+        // stage-specific polling (e.g. Beedle's Airshop purchase
+        // detection) on the player's actual location, the same way the
+        // old Python client's `current_stage` did.
+        crate::ipc::AP_IPC_ROOT.current_stage_name =
+            core::ptr::read_volatile(core::ptr::addr_of!(CURRENT_STAGE_NAME));
+
+        // Mirror the player's health and stamina by value so the client can
+        // detect deaths / stamina exhaustion for DeathLink / BreathLink.
+        // Health comes from the save file; stamina comes from the live
+        // player struct, using the same per-stage offset overrides as
+        // `cheats::handle_infinite_stamina`.
+        let save_loaded = !FILE_MGR.is_null();
+        let player_valid = !PLAYER_PTR.is_null();
+
+        let (current_health, health_capacity) = if save_loaded {
+            (
+                core::ptr::read_unaligned(core::ptr::addr_of!((*FILE_MGR).FA.current_health)),
+                core::ptr::read_unaligned(core::ptr::addr_of!((*FILE_MGR).FA.health_capacity)),
+            )
+        } else {
+            (0u16, 0u16)
+        };
+
+        let stamina = if player_valid {
+            let stage = &CURRENT_STAGE_NAME[..5];
+            let stamina_ptr: *const u32 = if stage == b"F103\0" {
+                (PLAYER_PTR as *const u8).offset(-0x7FA8isize) as *const u32
+            } else if stage == b"B301\0" {
+                (PLAYER_PTR as *const u8).add(0x5CD8) as *const u32
+            } else {
+                core::ptr::addr_of!((*PLAYER_PTR).stamina_amount)
+            };
+            core::ptr::read_unaligned(stamina_ptr)
+        } else {
+            0u32
+        };
+
+        crate::ipc::AP_IPC_ROOT.player_vitals = crate::ipc::ApPlayerVitals {
+            current_health,
+            health_capacity,
+            stamina,
+            save_loaded: save_loaded as u8,
+            player_valid: player_valid as u8,
+        };
+
+        // Mirror the current/next stage-loading state (stage, room, layer,
+        // entrance, night, trial, fade frames, ...) for the client's
+        // `/stage_info` command.
+        crate::entrance::refresh_stage_info();
+    }
+}
 
 /// Look up the table index for a given custom_flag_id.
 /// Returns the index into AP_ITEM_INFO_TABLE.entries, or usize::MAX if not
@@ -2725,7 +2978,7 @@ pub static mut LAST_AP_ITEM_FLAG_ID: u16 = 0xFFFF;
 /// values from the initial zeroed static.
 pub fn lookup_ap_item_index(flag_id: u16) -> usize {
     unsafe {
-        let count_ptr = core::ptr::addr_of!(AP_ITEM_INFO_TABLE.count);
+        let count_ptr = core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.item_info_table.count);
         let count = core::ptr::read_volatile(count_ptr) as usize;
         let limit = if count < AP_ITEM_TABLE_MAX {
             count
@@ -2733,7 +2986,8 @@ pub fn lookup_ap_item_index(flag_id: u16) -> usize {
             AP_ITEM_TABLE_MAX
         };
         for i in 0..limit {
-            let flag_ptr = core::ptr::addr_of!(AP_ITEM_INFO_TABLE.entries[i].flag_id);
+            let flag_ptr =
+                core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.item_info_table.entries[i].flag_id);
             if core::ptr::read_volatile(flag_ptr) == flag_id {
                 return i;
             }
