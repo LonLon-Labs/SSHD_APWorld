@@ -492,6 +492,8 @@
 - name: Volcano Entrance Statue
   events:
     Unlock Volcano Entrance Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Eldin Volcano - Volcano Entrance Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Volcano Entrance: Nothing # Back out of interaction.
@@ -499,6 +501,8 @@
 - name: Volcano East Statue
   events:
     Unlock Volcano East Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Eldin Volcano - Volcano East Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Volcano East: Nothing # Back out of interaction.
@@ -506,6 +510,8 @@
 - name: Volcano Ascent Statue
   events:
     Unlock Volcano Ascent Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Eldin Volcano - Volcano Ascent Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Volcano Ascent: Nothing # Back out of interaction.
@@ -513,6 +519,8 @@
 - name: Temple Entrance Statue
   events:
     Unlock Temple Entrance Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Eldin Volcano - Temple Entrance Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Near Temple Entrance: Nothing # Back out of interaction.

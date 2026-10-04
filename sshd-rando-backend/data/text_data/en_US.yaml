@@ -140,6 +140,75 @@
 - name: Item 213 Text
   standard: "You got the <s<Sky Keep>> Map!"
 
+- name: Item 300 Text
+  standard: "You got the <y<Behind the Temple Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 301 Text
+  standard: "You got the <y<Faron Woods Entry Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 302 Text
+  standard: "You got the <y<In the Woods Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 303 Text
+  standard: "You got the <y<Viewing Platform Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 304 Text
+  standard: "You got the <y<Deep Woods Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 305 Text
+  standard: "You got the <y<Forest Temple Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 306 Text
+  standard: "You got the <y<The Great Tree Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 307 Text
+  standard: "You got the <y<Lake Floria Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 308 Text
+  standard: "You got the <y<Floria Waterfall Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 309 Text
+  standard: "You got the <y<Volcano East Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 310 Text
+  standard: "You got the <y<Volcano Ascent Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 311 Text
+  standard: "You got the <y<Temple Entrance Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 312 Text
+  standard: "You got the <y<Desert Entrance Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 313 Text
+  standard: "You got the <y<West Desert Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 314 Text
+  standard: "You got the <y<Desert Gorge Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 315 Text
+  standard: "You got the <y<Temple of Time Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 316 Text
+  standard: "You got the <y<North Desert Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 317 Text
+  standard: "You got the <y<Stone Cache Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 318 Text
+  standard: "You got the <y<Ancient Harbour Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 319 Text
+  standard: "You got the <y<Skipper's Retreat Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 320 Text
+  standard: "You got the <y<Shipyard Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 321 Text
+  standard: "You got the <y<Pirate Stronghold Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 322 Text
+  standard: "You got the <y<Lanayru Gorge Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
 - name: Item 220 Text
   standard: "You got the <g<Skyview Temple>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
@@ -425,6 +494,144 @@
   standard: Loftwing
   pretty: the <Loftwing>
   cryptic: the <r<Loftwing>>
+  plurality: Singular
+
+- name: Behind the Temple Statue Unlock
+  standard: Behind the Temple Statue Unlock
+  pretty: the <Behind the Temple Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Faron Woods Entry Statue Unlock
+  standard: Faron Woods Entry Statue Unlock
+  pretty: the <Faron Woods Entry Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: In the Woods Statue Unlock
+  standard: In the Woods Statue Unlock
+  pretty: the <In the Woods Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Viewing Platform Statue Unlock
+  standard: Viewing Platform Statue Unlock
+  pretty: the <Viewing Platform Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Deep Woods Statue Unlock
+  standard: Deep Woods Statue Unlock
+  pretty: the <Deep Woods Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Forest Temple Statue Unlock
+  standard: Forest Temple Statue Unlock
+  pretty: the <Forest Temple Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: The Great Tree Statue Unlock
+  standard: The Great Tree Statue Unlock
+  pretty: the <Great Tree Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Lake Floria Statue Unlock
+  standard: Lake Floria Statue Unlock
+  pretty: the <Lake Floria Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Floria Waterfall Statue Unlock
+  standard: Floria Waterfall Statue Unlock
+  pretty: the <Floria Waterfall Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Volcano East Statue Unlock
+  standard: Volcano East Statue Unlock
+  pretty: the <Volcano East Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Volcano Ascent Statue Unlock
+  standard: Volcano Ascent Statue Unlock
+  pretty: the <Volcano Ascent Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Temple Entrance Statue Unlock
+  standard: Temple Entrance Statue Unlock
+  pretty: the <Temple Entrance Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Desert Entrance Statue Unlock
+  standard: Desert Entrance Statue Unlock
+  pretty: the <Desert Entrance Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: West Desert Statue Unlock
+  standard: West Desert Statue Unlock
+  pretty: the <West Desert Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Desert Gorge Statue Unlock
+  standard: Desert Gorge Statue Unlock
+  pretty: the <Desert Gorge Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Temple of Time Statue Unlock
+  standard: Temple of Time Statue Unlock
+  pretty: the <Temple of Time Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: North Desert Statue Unlock
+  standard: North Desert Statue Unlock
+  pretty: the <North Desert Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Stone Cache Statue Unlock
+  standard: Stone Cache Statue Unlock
+  pretty: the <Stone Cache Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Ancient Harbour Statue Unlock
+  standard: Ancient Harbour Statue Unlock
+  pretty: the <Ancient Harbour Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Skipper's Retreat Statue Unlock
+  standard: Skipper's Retreat Statue Unlock
+  pretty: the <Skipper's Retreat Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Shipyard Statue Unlock
+  standard: Shipyard Statue Unlock
+  pretty: the <Shipyard Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Pirate Stronghold Statue Unlock
+  standard: Pirate Stronghold Statue Unlock
+  pretty: the <Pirate Stronghold Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Lanayru Gorge Statue Unlock
+  standard: Lanayru Gorge Statue Unlock
+  pretty: the <Lanayru Gorge Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
   plurality: Singular
 
 - name: Ancient Cistern Boss Key
@@ -2554,6 +2761,136 @@
   standard: Inside the Thunderhead - Mogma Mitts Island Second Goddess Chest
   pretty: Inside the Thunderhead - Mogma Mitts Island Second Goddess Chest
   cryptic: a <s<goddess cube>> in a <ye<desert gorge>>
+
+- name: Sealed Grounds - Sealed Grounds Bird Statue
+  standard: Sealed Grounds - Sealed Grounds Bird Statue
+  pretty: Sealed Grounds - Sealed Grounds Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Sealed Grounds - Behind the Temple Bird Statue
+  standard: Sealed Grounds - Behind the Temple Bird Statue
+  pretty: Sealed Grounds - Behind the Temple Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Faron Woods - Faron Woods Entry Bird Statue
+  standard: Faron Woods - Faron Woods Entry Bird Statue
+  pretty: Faron Woods - Faron Woods Entry Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Faron Woods - In the Woods Bird Statue
+  standard: Faron Woods - In the Woods Bird Statue
+  pretty: Faron Woods - In the Woods Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Faron Woods - Viewing Platform Bird Statue
+  standard: Faron Woods - Viewing Platform Bird Statue
+  pretty: Faron Woods - Viewing Platform Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Deep Woods - Deep Woods Bird Statue
+  standard: Deep Woods - Deep Woods Bird Statue
+  pretty: Deep Woods - Deep Woods Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Deep Woods - Forest Temple Bird Statue
+  standard: Deep Woods - Forest Temple Bird Statue
+  pretty: Deep Woods - Forest Temple Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Faron Woods - Great Tree Bird Statue
+  standard: Faron Woods - Great Tree Bird Statue
+  pretty: Faron Woods - Great Tree Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Lake Floria - Lake Floria Bird Statue
+  standard: Lake Floria - Lake Floria Bird Statue
+  pretty: Lake Floria - Lake Floria Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Floria Waterfall - Floria Waterfall Bird Statue
+  standard: Floria Waterfall - Floria Waterfall Bird Statue
+  pretty: Floria Waterfall - Floria Waterfall Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Eldin Volcano - Volcano Entrance Bird Statue
+  standard: Eldin Volcano - Volcano Entrance Bird Statue
+  pretty: Eldin Volcano - Volcano Entrance Bird Statue
+  cryptic: a <r<winged guardian>> on the <r<burning mountain>>
+
+- name: Eldin Volcano - Volcano East Bird Statue
+  standard: Eldin Volcano - Volcano East Bird Statue
+  pretty: Eldin Volcano - Volcano East Bird Statue
+  cryptic: a <r<winged guardian>> on the <r<burning mountain>>
+
+- name: Eldin Volcano - Volcano Ascent Bird Statue
+  standard: Eldin Volcano - Volcano Ascent Bird Statue
+  pretty: Eldin Volcano - Volcano Ascent Bird Statue
+  cryptic: a <r<winged guardian>> on the <r<burning mountain>>
+
+- name: Eldin Volcano - Temple Entrance Bird Statue
+  standard: Eldin Volcano - Temple Entrance Bird Statue
+  pretty: Eldin Volcano - Temple Entrance Bird Statue
+  cryptic: a <r<winged guardian>> on the <r<burning mountain>>
+
+- name: Lanayru Mine - Mine Entry Bird Statue
+  standard: Lanayru Mine - Mine Entry Bird Statue
+  pretty: Lanayru Mine - Mine Entry Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Desert - Desert Entrance Bird Statue
+  standard: Lanayru Desert - Desert Entrance Bird Statue
+  pretty: Lanayru Desert - Desert Entrance Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Desert - West Desert Bird Statue
+  standard: Lanayru Desert - West Desert Bird Statue
+  pretty: Lanayru Desert - West Desert Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Desert - Desert Gorge Bird Statue
+  standard: Lanayru Desert - Desert Gorge Bird Statue
+  pretty: Lanayru Desert - Desert Gorge Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Temple of Time - Temple of Time Bird Statue
+  standard: Temple of Time - Temple of Time Bird Statue
+  pretty: Temple of Time - Temple of Time Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Desert - North Desert Bird Statue
+  standard: Lanayru Desert - North Desert Bird Statue
+  pretty: Lanayru Desert - North Desert Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Desert - Stone Cache Bird Statue
+  standard: Lanayru Desert - Stone Cache Bird Statue
+  pretty: Lanayru Desert - Stone Cache Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Ancient Harbour - Ancient Harbour Bird Statue
+  standard: Ancient Harbour - Ancient Harbour Bird Statue
+  pretty: Ancient Harbour - Ancient Harbour Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Skipper's Retreat - Skipper's Retreat Bird Statue
+  standard: Skipper's Retreat - Skipper's Retreat Bird Statue
+  pretty: Skipper's Retreat - Skipper's Retreat Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Shipyard - Shipyard Bird Statue
+  standard: Shipyard - Shipyard Bird Statue
+  pretty: Shipyard - Shipyard Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Pirate Stronghold - Pirate Stronghold Bird Statue
+  standard: Pirate Stronghold - Pirate Stronghold Bird Statue
+  pretty: Pirate Stronghold - Pirate Stronghold Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Gorge - Lanayru Gorge Bird Statue
+  standard: Lanayru Gorge - Lanayru Gorge Bird Statue
+  pretty: Lanayru Gorge - Lanayru Gorge Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
 
 - name: Sealed Grounds - Bonk Wall between Pillars near Bird Statue
   standard: Sealed Grounds - Bonk Wall between Pillars near Bird Statue

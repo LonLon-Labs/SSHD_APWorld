@@ -4,20 +4,22 @@
 //!
 //! Every entry's AP `code` is `2773000 + original_id` (a fixed offset the
 //! apworld uses), and `original_id` is exactly the byte value
-//! `rust-additions` expects in `ArchipelagoItemSlot.item_id` — see
-//! `item.rs::archipelago_check_item_buffer()`, which treats that byte as a
-//! real vanilla item ID and spawns an item actor for it directly.
+//! `rust-additions` expects in `ArchipelagoItemSlot` — the low byte in
+//! `item_id` and the high byte in `item_id_hi` (see `ap-ipc`), combined by
+//! `item.rs::archipelago_check_item_buffer()`, which treats the result as a
+//! real item ID and spawns an item actor for it directly. The item actor's
+//! id field is 9 bits wide, so ids up to 511 can be delivered.
 //!
-//! 28 entries (`Game Beatable` + the 27 Goddess Cube pseudo-items) have
-//! `original_id > 255` and therefore cannot fit in that `u8` slot at all —
-//! these are event-only IDs that Archipelago's server logic never actually
-//! sends as a `ReceivedItems` payload in normal play (Goddess Cubes are a
-//! location-side effect, not an inventory item; Game Beatable is the win
+//! 28 entries (`Game Beatable` + the 27 Goddess Cube pseudo-items, ids
+//! 256..=283) are event-only IDs that Archipelago's server logic never
+//! actually sends as a `ReceivedItems` payload in normal play (Goddess Cubes
+//! are a location-side effect, not an inventory item; Game Beatable is the win
 //! condition). `original_id_for_ap_code` returns `None` for these so
-//! callers can't accidentally write a truncated/wrong byte for them.
+//! callers can't accidentally deliver them. Id 255 is the game's "no item"
+//! sentinel and is never used.
 
-/// (ap_code, original_id) — sorted by ap_code. original_id fits in u8 for
-/// every entry except the 28 event-only IDs noted above.
+/// (ap_code, original_id) — sorted by ap_code. The Bird Statue unlock items
+/// use ids 300..=322 and therefore sit after the event-only ids.
 const ITEM_CODE_TO_ORIGINAL_ID: &[(i64, u16)] = &[
     (2773001, 1), // Small Key
     (2773002, 2), // Green Rupee
@@ -225,6 +227,29 @@ const ITEM_CODE_TO_ORIGINAL_ID: &[(i64, u16)] = &[
     (2773281, 281), // Skipper's Retreat Goddess Cube
     (2773282, 282), // Pirate Stronghold Goddess Cube
     (2773283, 283), // Skyview Spring Goddess Cube
+    (2773300, 300), // Behind the Temple Statue Unlock
+    (2773301, 301), // Faron Woods Entry Statue Unlock
+    (2773302, 302), // In the Woods Statue Unlock
+    (2773303, 303), // Viewing Platform Statue Unlock
+    (2773304, 304), // Deep Woods Statue Unlock
+    (2773305, 305), // Forest Temple Statue Unlock
+    (2773306, 306), // The Great Tree Statue Unlock
+    (2773307, 307), // Lake Floria Statue Unlock
+    (2773308, 308), // Floria Waterfall Statue Unlock
+    (2773309, 309), // Volcano East Statue Unlock
+    (2773310, 310), // Volcano Ascent Statue Unlock
+    (2773311, 311), // Temple Entrance Statue Unlock
+    (2773312, 312), // Desert Entrance Statue Unlock
+    (2773313, 313), // West Desert Statue Unlock
+    (2773314, 314), // Desert Gorge Statue Unlock
+    (2773315, 315), // Temple of Time Statue Unlock
+    (2773316, 316), // North Desert Statue Unlock
+    (2773317, 317), // Stone Cache Statue Unlock
+    (2773318, 318), // Ancient Harbour Statue Unlock
+    (2773319, 319), // Skipper's Retreat Statue Unlock
+    (2773320, 320), // Shipyard Statue Unlock
+    (2773321, 321), // Pirate Stronghold Statue Unlock
+    (2773322, 322), // Lanayru Gorge Statue Unlock
 ];
 
 /// AP item code base — every SSHD item's `code` is `2773000 + original_id`.
@@ -236,12 +261,12 @@ pub const AP_CODE_BASE: i64 = 2773000;
 pub const PROGRESSIVE_LOFTWING_CODE: i64 = 2773219;
 
 /// Game item ids for each Progressive Loftwing tier, in order.
-const PROGRESSIVE_LOFTWING_TIERS: [u8; 2] = [219, 21];
+const PROGRESSIVE_LOFTWING_TIERS: [u16; 2] = [219, 21];
 
 /// Like `original_id_for_ap_code`, but resolves progressive items the game
 /// can't resolve on its own. `prior_copies` is how many copies of this same
 /// AP item were received before this one (start-inventory copies included).
-pub fn progressive_tier_original_id(ap_code: i64, prior_copies: usize) -> Option<u8> {
+pub fn progressive_tier_original_id(ap_code: i64, prior_copies: usize) -> Option<u16> {
     if ap_code == PROGRESSIVE_LOFTWING_CODE {
         let tier = prior_copies.min(PROGRESSIVE_LOFTWING_TIERS.len() - 1);
         return Some(PROGRESSIVE_LOFTWING_TIERS[tier]);
@@ -249,16 +274,24 @@ pub fn progressive_tier_original_id(ap_code: i64, prior_copies: usize) -> Option
     original_id_for_ap_code(ap_code)
 }
 
+/// Highest game item id the item actor's 9-bit id field can hold.
+pub const MAX_DELIVERABLE_ITEM_ID: u16 = 511;
+
 /// Look up the game's `original_id` for an Archipelago item code. Returns
-/// `None` if the code is unrecognized, OR if it maps to an `original_id`
-/// too large to fit in `ArchipelagoItemSlot.item_id` (a `u8`) — see the
-/// module doc for why that's expected for a handful of event-only IDs.
-pub fn original_id_for_ap_code(ap_code: i64) -> Option<u8> {
+/// `None` if the code is unrecognized, OR if it maps to an id that can't be
+/// delivered through `ArchipelagoItemSlot`: the event-only ids 256..=283
+/// (Game Beatable + Goddess Cube pseudo-items) and 255, the game's "no item"
+/// sentinel.
+pub fn original_id_for_ap_code(ap_code: i64) -> Option<u16> {
     let idx = ITEM_CODE_TO_ORIGINAL_ID
         .binary_search_by_key(&ap_code, |&(code, _)| code)
         .ok()?;
     let (_, original_id) = ITEM_CODE_TO_ORIGINAL_ID[idx];
-    u8::try_from(original_id).ok()
+    if (1..=254).contains(&original_id) || (300..=MAX_DELIVERABLE_ITEM_ID).contains(&original_id) {
+        Some(original_id)
+    } else {
+        None
+    }
 }
 
 /// Names of the items `/go_mode` counts, keyed by `original_id`. Only these
@@ -315,9 +348,18 @@ mod tests {
     }
 
     #[test]
+    fn bird_statue_unlocks_resolve_above_255() {
+        assert_eq!(original_id_for_ap_code(2773300), Some(300)); // Behind the Temple
+        assert_eq!(original_id_for_ap_code(2773322), Some(322)); // Lanayru Gorge
+        // The old statue ids (228..=249, and 156 for Lanayru Gorge) are gone.
+        assert_eq!(original_id_for_ap_code(2773228), None);
+        assert_eq!(original_id_for_ap_code(2773156), None);
+    }
+
+    #[test]
     fn event_only_ids_are_rejected_not_truncated() {
-        // Game Beatable (256) and all 27 Goddess Cubes (257..=283) exceed
-        // u8::MAX and must come back None, never a wrapped/truncated byte.
+        // Game Beatable (256) and all 27 Goddess Cubes (257..=283) are
+        // event-only and must come back None, never a delivered item.
         assert_eq!(original_id_for_ap_code(2773256), None);
         assert_eq!(original_id_for_ap_code(2773257), None);
         assert_eq!(original_id_for_ap_code(2773283), None);

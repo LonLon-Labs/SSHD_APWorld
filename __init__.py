@@ -41,6 +41,12 @@ from worlds.LauncherComponents import (
 )
 
 from .Items import ITEM_TABLE
+
+# Locations whose in-game item carrier can only hold item ids 0-255, so the Bird
+# Statue unlock items (ids 300-322) must not be placed there. The Lumpy Pumpkin
+# chandelier reads its item id with a byte load in asm and has no spare
+# instruction slot to widen it (see stagepatchhandler.py patch_chandelier_item).
+EXTENDED_ITEM_ID_UNSUPPORTED_LOCATIONS = {"Lumpy Pumpkin - Item on Chandelier"}
 from .Locations import LOCATION_TABLE
 from .SSHD_Options import SSHDOptions, sshd_option_groups
 from .Rules import set_rules, set_completion_condition
@@ -646,6 +652,9 @@ class SSHDWorld(World):
         "unlock_all_groosenator_destinations": ("unlock_all_groosenator_destinations", "toggle", None),
         "allow_flying_at_night": ("allow_flying_at_night", "toggle", None),
         "randomize_loftwing": ("randomize_loftwing", "choice", {"off": 0, "on": 1, "random": 2}),
+        "bird_statues_give_items": ("bird_statues_give_items", "toggle", None),
+        "bird_statues_need_unlock": ("bird_statues_need_unlock", "toggle", None),
+        "start_with_region_bird_statues": ("start_with_region_bird_statues", "toggle", None),
         "natural_night_connections": ("natural_night_connections", "toggle", None),
         "dungeons_include_sky_keep": ("dungeons_include_sky_keep", "toggle", None),
         "require_skyview_temple": ("require_skyview_temple", "toggle", None),
@@ -1216,6 +1225,12 @@ class SSHDWorld(World):
                         data.code,
                         region
                     )
+                    if name in EXTENDED_ITEM_ID_UNSUPPORTED_LOCATIONS:
+                        # This location's item carrier can't hold item ids >= 256
+                        # (the Bird Statue unlock items), so never put one here.
+                        location.item_rule = lambda item, player=self.player: not (
+                            item.player == player and item.name.endswith(" Statue Unlock")
+                        )
                     region.locations.append(location)
 
         # Create a proper event-only location for Game Beatable
@@ -4182,6 +4197,9 @@ class SSHDWorld(World):
         settings_dict["allow_flying_at_night"] = "on" if self.options.allow_flying_at_night.value else "off"
         loftwing_start_map = {0: "off", 1: "on", 2: "random"}
         settings_dict["randomize_loftwing"] = loftwing_start_map[self.options.randomize_loftwing.value]
+        settings_dict["bird_statues_give_items"] = "on" if self.options.bird_statues_give_items.value else "off"
+        settings_dict["bird_statues_need_unlock"] = "on" if self.options.bird_statues_need_unlock.value else "off"
+        settings_dict["start_with_region_bird_statues"] = "on" if self.options.start_with_region_bird_statues.value else "off"
         settings_dict["natural_night_connections"] = "on" if self.options.natural_night_connections.value else "off"
         settings_dict["peatrice_conversations"] = str(self.options.peatrice_conversations.value)
         
@@ -4388,7 +4406,10 @@ class SSHDWorld(World):
         # IMPORTANT: Do NOT reverse - pop() from the end gives high IDs (1015, 1014, ...)
         # The sshd-rando patcher assigns from the low end (0, 1, 2, ...) for non-AP locations,
         # so AP must use the high end to avoid flag ID collisions.
-        custom_flags = [i for i in range(1024) if (i & 0x7F) != 0x7F]
+        # Custom flag IDs 0-31 are reserved for Bird Statue unlock flags (see
+        # BIRD_STATUE_UNLOCK_FLAG_RESERVED_COUNT in the sshd-rando backend), so
+        # neither the patcher nor AP may hand them out to locations.
+        custom_flags = [i for i in range(32, 1024) if (i & 0x7F) != 0x7F]
         
         custom_flag_to_location = {}
         

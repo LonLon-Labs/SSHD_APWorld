@@ -7524,3 +7524,161 @@
     - Silent Realms
   Paths:
     - stage/S200/r2/l2/WarpObj
+
+# Bird Statues. These have no stage object to patch. The game grants the
+# check when the statue is first touched (see Bird Statues Give Items).
+- name: Sealed Grounds - Sealed Grounds Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Sealed Grounds - Behind the Temple Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Faron Woods - Faron Woods Entry Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Faron Woods - In the Woods Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Faron Woods - Viewing Platform Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Deep Woods - Deep Woods Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Deep Woods - Forest Temple Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Faron Woods - Great Tree Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Lake Floria - Lake Floria Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Floria Waterfall - Floria Waterfall Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Eldin Volcano - Volcano Entrance Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Eldin Volcano - Volcano East Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Eldin Volcano - Volcano Ascent Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Eldin Volcano - Temple Entrance Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Lanayru Mine - Mine Entry Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Lanayru Desert - Desert Entrance Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Lanayru Desert - West Desert Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Lanayru Desert - Desert Gorge Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Temple of Time - Temple of Time Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Lanayru Desert - North Desert Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Lanayru Desert - Stone Cache Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Ancient Harbour - Ancient Harbour Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Skipper's Retreat - Skipper's Retreat Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Shipyard - Shipyard Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Pirate Stronghold - Pirate Stronghold Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Lanayru Gorge - Lanayru Gorge Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag

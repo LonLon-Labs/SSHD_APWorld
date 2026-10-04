@@ -506,12 +506,15 @@ impl DeliveryTracker {
                 break; // buffer full; can't happen with MAX_IN_FLIGHT, but be safe
             };
             let raw = ap_ipc::bytes::write(&ap_ipc::ArchipelagoItemSlot {
-                item_id:   original_id,
-                flags:     0,
-                _reserved: [0, 0],
+                item_id:    (original_id & 0xFF) as u8,
+                flags:      0,
+                _reserved:  0,
+                item_id_hi: (original_id >> 8) as u8,
             });
             mem.write_bytes(buffer_addr + slot * SLOT_SIZE, &raw)?;
-            buffer[slot * SLOT_SIZE] = original_id;
+            // Byte 0 is the "pending" marker; original_id is never 0 mod 256
+            // (items::original_id_for_ap_code rejects 256).
+            buffer[slot * SLOT_SIZE] = (original_id & 0xFF) as u8;
             if self.in_flight.is_empty() {
                 self.last_progress = now;
                 self.stall_logged = false;

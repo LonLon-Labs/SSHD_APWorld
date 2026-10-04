@@ -61,7 +61,7 @@ AP_ITEM_OARC_NAMES: frozenset[str] = frozenset({
     "Demo11_01",
     "GetSwordA", "GetHarp",
     "GetBowA", "GetBowB", "GetBowC",
-    "GetHookShot", "GetBirdStatue",
+    "GetHookShot", "GetBirdStatue", "SaveObjectA",
     "GetKeyBoss2A", "GetKeyBoss2B", "GetKeyBoss2C",
     "GetKeyKakera", "GetKeyBossA", "GetKeyBossB", "GetKeyBossC",
     "GetVacuum", "GetPachinkoA", "GetPachinkoB",
@@ -101,7 +101,7 @@ AP_ITEM_OARC_NAMES: frozenset[str] = frozenset({
 # pressure; the extra ~80 OARCs cause a PANIC on SSystem::mDvd.
 # Per-item OARCs from add_arcn_for_check are still applied so randomised
 # check pickups display the correct model.
-_SKIP_AP_OARC_STAGES: frozenset[str] = frozenset({"B400", "F402", "F403", "F404", "F405", "F407"})
+_SKIP_AP_OARC_STAGES: frozenset[str] = frozenset({"B400", "F400", "F402", "F403", "F404", "F405", "F407"})
 
 
 # Story flags set by striking each of the 27 Goddess Cubes, in ascending order.
@@ -110,6 +110,39 @@ _SKIP_AP_OARC_STAGES: frozenset[str] = frozenset({"B400", "F402", "F403", "F404"
 GODDESS_CUBE_STORYFLAGS: list[int] = [
     227, 228, 229, 230, 231, 234, 235, 236, 237, 238, 239, 240, 241, 242,
     243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 254, 255, 256,
+]
+
+
+# The 26 "Bird Statues Give Items" locations, in the order the game's Rust additions
+# (item.rs BIRD_STATUES) index the BIRD_STATUE_CUSTOM_FLAGS / BIRD_STATUE_ITEM_IDS
+# tables. Same order as the AP location codes 2773911..=2773936.
+BIRD_STATUE_LOCATION_NAMES: list[str] = [
+    "Sealed Grounds - Sealed Grounds Bird Statue",
+    "Sealed Grounds - Behind the Temple Bird Statue",
+    "Faron Woods - Faron Woods Entry Bird Statue",
+    "Faron Woods - In the Woods Bird Statue",
+    "Faron Woods - Viewing Platform Bird Statue",
+    "Deep Woods - Deep Woods Bird Statue",
+    "Deep Woods - Forest Temple Bird Statue",
+    "Faron Woods - Great Tree Bird Statue",
+    "Lake Floria - Lake Floria Bird Statue",
+    "Floria Waterfall - Floria Waterfall Bird Statue",
+    "Eldin Volcano - Volcano Entrance Bird Statue",
+    "Eldin Volcano - Volcano East Bird Statue",
+    "Eldin Volcano - Volcano Ascent Bird Statue",
+    "Eldin Volcano - Temple Entrance Bird Statue",
+    "Lanayru Mine - Mine Entry Bird Statue",
+    "Lanayru Desert - Desert Entrance Bird Statue",
+    "Lanayru Desert - West Desert Bird Statue",
+    "Lanayru Desert - Desert Gorge Bird Statue",
+    "Temple of Time - Temple of Time Bird Statue",
+    "Lanayru Desert - North Desert Bird Statue",
+    "Lanayru Desert - Stone Cache Bird Statue",
+    "Ancient Harbour - Ancient Harbour Bird Statue",
+    "Skipper's Retreat - Skipper's Retreat Bird Statue",
+    "Shipyard - Shipyard Bird Statue",
+    "Pirate Stronghold - Pirate Stronghold Bird Statue",
+    "Lanayru Gorge - Lanayru Gorge Bird Statue",
 ]
 
 
@@ -257,7 +290,7 @@ def patch_freestanding_item(
         )
 
     freestanding_item["params1"] = mask_shift_set(
-        freestanding_item["params1"], 0xFF, 0, itemid
+        freestanding_item["params1"], 0x1FF, 0, itemid
     )
 
     # Unset 9th bit of param1 to force a textbox for freestanding items.
@@ -321,7 +354,7 @@ def patch_dusk_relic(
 
     # Set the scene flag and item id to use in the params
     params1 = 0xFF9C0200
-    params1 = mask_shift_set(params1, 0xFF, 0, itemid)
+    params1 = mask_shift_set(params1, 0x1FF, 0, itemid)
     params1 = mask_shift_set(params1, 0xFF, 10, scene_flag)
     # Unset 9th bit of param1 to force a textbox for freestanding items.
     params1 = mask_shift_set(params1, 0x1, 9, 0)
@@ -359,7 +392,8 @@ def patch_bucha(
         # Makes sure the bit is set if not a trap
         bucha["params2"] = mask_shift_set(bucha["params2"], 0xF, 4, 0xF)
 
-    bucha["params2"] = mask_shift_set(bucha["params2"], 0xFF, 0x8, itemid)
+    # Item id is 9 bits wide: params2 bits 8-16 (read by fix-bucha.asm: load + ubfx).
+    bucha["params2"] = mask_shift_set(bucha["params2"], 0x1FF, 0x8, itemid)
 
     # Encode Archipelago custom_flag into params2 bits 18-27 (10 bits)
     # NOTE: bits 8-15 are occupied by itemid, so custom_flag uses
@@ -422,8 +456,13 @@ def patch_closet(
     closet["params1"] = mask_shift_set(
         closet["params1"], 0xFF, 0, unused_scene_flags[(stage, room, id)]
     )
-    # Patch in the item
-    closet["params1"] = mask_shift_set(closet["params1"], 0xFF, 8, itemid)
+    # Patch in the item: params1 bits 8-15 hold the low 8 bits of the id (that's what
+    # the game's closet code reads). Ids >= 256 additionally clear params2 bit 18
+    # (1 for every other closet) so handle_closet_traps rebuilds the full 9-bit id.
+    closet["params1"] = mask_shift_set(closet["params1"], 0xFF, 8, itemid & 0xFF)
+    closet["params2"] = mask_shift_set(
+        closet["params2"], 0x1, 18, 0 if itemid >= 256 else 1
+    )
     # Tell the closet to interpret the flag as a local scene flag
     closet["params1"] = mask_shift_set(closet["params1"], 0x1, 16, 1)
 
@@ -446,8 +485,14 @@ def patch_ac_key_boko(bzs: dict, itemid: int, object_id_str: str, trapid: int, c
         # Makes sure the bit is set if not a trap
         boko["params2"] = mask_shift_set(boko["params2"], 0xF, 8, 0xF)
 
-    # Store itemid in params2 bits 0-7 (ASM reads from offset 0x12C)
-    boko["params2"] = mask_shift_set(boko["params2"], 0xFF, 0x0, itemid)
+    # Store the low 8 bits of the itemid in params2 bits 0-7 (ASM reads from offset
+    # 0x12C). Ids >= 256 set tag 0 in params2 bits 22-23 so the shared trap hook
+    # (traps.rs handle_ac_boko_and_heartco_and_digspot_traps) rebuilds the full id;
+    # tag 3 (all ones, the unpatched default) means no extended id.
+    boko["params2"] = mask_shift_set(boko["params2"], 0xFF, 0x0, itemid & 0xFF)
+    boko["params2"] = mask_shift_set(
+        boko["params2"], 0x3, 22, 0 if itemid >= 256 else 3
+    )
 
     # Encode Archipelago custom_flag into params2 bits 12-21 (10 bits)
     # Always write (even 0x3FF sentinel) so vanilla bits are overwritten
@@ -478,8 +523,13 @@ def patch_heart_container(bzs: dict, itemid: int, trapid: int, custom_flag: int 
             heart_container["params2"], 0xF, 8, 0xF
         )
 
+    # Low 8 bits of the itemid in params1 bits 16-23; ids >= 256 set tag 1 in
+    # params2 bits 22-23 (see the boko patch / traps.rs); 3 = no extended id.
     heart_container["params1"] = mask_shift_set(
-        heart_container["params1"], 0xFF, 16, itemid
+        heart_container["params1"], 0xFF, 16, itemid & 0xFF
+    )
+    heart_container["params2"] = mask_shift_set(
+        heart_container["params2"], 0x3, 22, 1 if itemid >= 256 else 3
     )
 
     # Encode Archipelago custom_flag into params2 bits 12-21 (10 bits)
@@ -501,6 +551,17 @@ def patch_chandelier_item(bzs: dict, itemid: int, trapid: int, custom_flag: int 
     # Don't use fake itemid yet, this needs patching properly first
     if trapid:
         itemid = 34  # rupoor
+
+    # The chandelier's asm reads its item id with a single byte load (params1 bits
+    # 8-15) and there is no spare instruction there to widen it, so ids >= 256 (the
+    # Bird Statue unlock items) can't be placed here. The AP world forbids that
+    # placement (EXTENDED_ITEM_ID_UNSUPPORTED_LOCATIONS in __init__.py); fail loudly
+    # rather than silently placing the wrong item if it ever happens anyway.
+    if itemid > 0xFF:
+        raise Exception(
+            f"Chandelier item id {itemid} doesn't fit in 8 bits; only item ids 0-255 "
+            "can be placed on the chandelier."
+        )
 
     chandelier["params1"] = mask_shift_set(chandelier["params1"], 0xFF, 8, itemid)
 
@@ -526,7 +587,8 @@ def patch_tree_of_life(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0
         tree["params2"] = mask_shift_set(tree["params2"], 0xF, 4, trapbits)
     # No need for other checks as params2 is always 0xFFFFFFFF
 
-    tree["params1"] = mask_shift_set(tree["params1"], 0xFF, 24, itemid)
+    # Item id: params1 bits 23-31 (9 bits). Read by Rust (spawn_tree_of_life_item).
+    tree["params1"] = mask_shift_set(tree["params1"], 0x1FF, 23, itemid)
 
     # Encode Archipelago custom_flag into params2 bits 8-17 (10 bits)
     # The Rust spawn_tree_of_life_item() passes param2 directly to the spawned
@@ -561,9 +623,13 @@ def patch_digspot_item(bzs: dict, itemid: int, object_id_str: str, trapid: int, 
 
     # patch digspot to be the same as key piece digspots in all ways except it keeps it's initial sceneflag
     digspot["params1"] = (digspot["params1"] & 0xFF0) | 0xFF0B1004
-    # Store itemid in params2 bits 24-31 (ASM reads from offset 0x12F)
-    # Bits 0-7 are preserved for vanilla dAcOsoil::init behaviour.
-    digspot["params2"] = mask_shift_set(digspot["params2"], 0xFF, 0x18, itemid)
+    # Store the low 8 bits of the itemid in params2 bits 24-31 (ASM reads from offset
+    # 0x12F). Bits 0-7 are preserved for vanilla dAcOsoil::init behaviour. Ids >= 256
+    # set tag 2 in params2 bits 22-23 (see the boko patch / traps.rs); 3 = none.
+    digspot["params2"] = mask_shift_set(digspot["params2"], 0xFF, 0x18, itemid & 0xFF)
+    digspot["params2"] = mask_shift_set(
+        digspot["params2"], 0x3, 22, 2 if itemid >= 256 else 3
+    )
 
     # Encode Archipelago custom_flag into params2 bits 12-21 (10 bits)
     # Always write (even 0x3FF sentinel) so vanilla bits are overwritten
@@ -583,8 +649,11 @@ def patch_goddess_crest(bzs: dict, itemid: int, index: str, trapid: int, custom_
     if trapid:
         itemid = 34  # rupoor
 
-    # 3 items patched into same object at different points in the params
-    # Item IDs: params1[24:31], params1[16:23], params2[24:31]
+    # Item ids are 9 bits wide. The low 8 bits stay in the original byte of each
+    # field and the 9th bit lives in spare params2 bits 21-23 (crest rewards are
+    # read by Rust, see handle_crest_hit_give_item / item_id_9bit).
+    # Item IDs: params1[24:31] + params2[22], params1[16:23] + params2[21],
+    # params2[24:31] + params2[23]
     #
     # IMPORTANT: Do NOT write Archipelago custom flags into params1 or params2.
     # The game engine reads low bits of params1 (and possibly params2) during
@@ -596,14 +665,19 @@ def patch_goddess_crest(bzs: dict, itemid: int, index: str, trapid: int, custom_
     # Custom flags for the three crest rewards are instead stored in the
     # CREST_CUSTOM_FLAGS Rust static (populated via init_global_variables)
     # and propagated to spawned item actors via the NEXT_CUSTOM_FLAG mechanism.
+    hi_bit = (itemid >> 8) & 1
+    low8 = itemid & 0xFF
+    params2 = crest.get("params2", 0xFFFFFFFF)
     if index == "0":
-        crest["params1"] = mask_shift_set(crest["params1"], 0xFF, 0x18, itemid)
+        crest["params1"] = mask_shift_set(crest["params1"], 0xFF, 0x18, low8)
+        params2 = mask_shift_set(params2, 0x1, 22, hi_bit)
     elif index == "1":
-        crest["params1"] = mask_shift_set(crest["params1"], 0xFF, 0x10, itemid)
+        crest["params1"] = mask_shift_set(crest["params1"], 0xFF, 0x10, low8)
+        params2 = mask_shift_set(params2, 0x1, 21, hi_bit)
     elif index == "2":
-        crest["params2"] = mask_shift_set(
-            crest.get("params2", 0xFFFFFFFF), 0xFF, 0x18, itemid
-        )
+        params2 = mask_shift_set(params2, 0xFF, 0x18, low8)
+        params2 = mask_shift_set(params2, 0x1, 23, hi_bit)
+    crest["params2"] = params2
 
 
 def patch_squirrels(bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int = 0x3FF):
@@ -620,7 +694,12 @@ def patch_squirrels(bzs: dict, itemid: int, object_id_str: str, trapid: int, cus
     if trapid:
         itemid = 34  # rupoor
 
-    squirrel_tag["params2"] = mask_shift_set(squirrel_tag["params2"], 0xFF, 0, itemid)
+    # Item id: params2 bits 0-7 + bit 18 (9th bit), read by Rust (give_squirrel_item).
+    # The 9th bit is always written so a vanilla 1 there is never misread.
+    squirrel_tag["params2"] = mask_shift_set(squirrel_tag["params2"], 0xFF, 0, itemid & 0xFF)
+    squirrel_tag["params2"] = mask_shift_set(
+        squirrel_tag["params2"], 0x1, 18, (itemid >> 8) & 1
+    )
 
     if custom_flag != 0x3FF:
         # AP mode: encode the 10-bit custom flag into bits 8-17 (same 3-part
@@ -651,6 +730,7 @@ def patch_tadtone_group(bzs: dict, itemid: int, groupid_str: str, trapid: int, c
     if trapid:
         itemid = 34  # rupoor
 
+    # Item id is stored as the whole 9-bit value in the z rotation (u16).
     for clef in clefs:
         clef["anglez"] = mask_shift_set(clef["anglez"], 0xFFFF, 0, itemid)
 
@@ -673,7 +753,8 @@ def patch_trial_gate(bzs: dict, itemid: int, trapid: int):
     if trapid:
         itemid = 34  # rupoor
 
-    trial_gate["params1"] = mask_shift_set(trial_gate["params1"], 0xFF, 0x18, itemid)
+    # Item id: params1 bits 23-31 (9 bits). Read by Rust (archipelago_silent_realm_tear_fix).
+    trial_gate["params1"] = mask_shift_set(trial_gate["params1"], 0x1FF, 0x17, itemid)
 
 
 def patch_tgreact(
@@ -705,8 +786,10 @@ def patch_tgreact(
     else:
         tgreact["params2"] = mask_shift_set(tgreact["params2"], 1, 18, 0)
 
-    # THEN, patch item id
-    tgreact["params1"] = mask_shift_set(tgreact["params1"], 0xFF, 8, itemid)
+    # THEN, patch item id: params1 bits 8-15 + params2 bit 23 (9th bit, always
+    # written; read by Rust, see item_id_9bit)
+    tgreact["params1"] = mask_shift_set(tgreact["params1"], 0xFF, 8, itemid & 0xFF)
+    tgreact["params2"] = mask_shift_set(tgreact["params2"], 0x1, 23, (itemid >> 8) & 1)
 
     if custom_flag != -1:
         tgreact["params2"] = mask_shift_set(tgreact["params2"], 0x3FF, 8, custom_flag)
@@ -727,7 +810,12 @@ def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0
     if trapid:
         itemid = 34  # rupoor
 
-    academy_bell["params1"] = mask_shift_set(academy_bell["params1"], 0xFF, 0, itemid)
+    # Item id: params1 bits 0-7 + params2 bit 18 (9th bit, always written; read
+    # by Rust, see item_id_9bit)
+    academy_bell["params1"] = mask_shift_set(academy_bell["params1"], 0xFF, 0, itemid & 0xFF)
+    academy_bell["params2"] = mask_shift_set(
+        academy_bell.get("params2", 0xFFFFFFFF), 0x1, 18, (itemid >> 8) & 1
+    )
 
     # Encode Archipelago custom_flag into params2 bits 8-17 (10 bits)
     if custom_flag != 0x3FF:
@@ -757,7 +845,10 @@ def patch_hrphint(bzs: dict, itemid: int, object_id_str: str, trapid: int, custo
         # Makes sure the bit is set if not a trap
         hrphint["params2"] = mask_shift_set(hrphint["params2"], 0xF, 0, 0xF)
 
-    hrphint["params2"] = mask_shift_set(hrphint["params2"], 0xFF, 4, itemid)
+    # Item id: params2 bits 4-11 + bit 22 (9th bit, always written; read by Rust,
+    # see item_id_9bit)
+    hrphint["params2"] = mask_shift_set(hrphint["params2"], 0xFF, 4, itemid & 0xFF)
+    hrphint["params2"] = mask_shift_set(hrphint["params2"], 0x1, 22, (itemid >> 8) & 1)
 
     # Encode AP custom_flag (10 bits) into bits 12-21.
     # Sentinel 0x3FF means no AP flag (vanilla sceneflag path in Rust).
@@ -1095,6 +1186,10 @@ class StagePatchHandler:
         # Written to the GODDESS_CUBE_* Rust statics via init_global_variables;
         # the game hands out the item when the cube's story flag gets set.
         self.goddess_cube_items: dict[int, tuple[int, int]] = {}
+        # Bird Statues Give Items: statue index (BIRD_STATUE_LOCATION_NAMES) ->
+        # (item id, AP custom flag). Written to the BIRD_STATUE_* Rust statics via
+        # init_global_variables; the game hands out the item when the statue is touched.
+        self.bird_statue_items: dict[int, tuple[int, int]] = {}
         # Global symbol initializers consumed by ASM global init.
         # Format: {"type": "symbol", "symbol": <name>, "value": <int>}.
         self.global_patches: list[dict] = []
@@ -1105,6 +1200,18 @@ class StagePatchHandler:
 
     def add_goddess_cube_item(self, storyflag: int, itemid: int, custom_flag: int):
         self.goddess_cube_items[storyflag] = (itemid, custom_flag)
+
+    def add_bird_statue_item(self, statue_index: int, itemid: int, custom_flag: int):
+        self.bird_statue_items[statue_index] = (itemid, custom_flag)
+
+    def get_bird_statue_arrays(self) -> tuple[list[int], list[int]]:
+        # (custom flags, item ids), one entry per statue in BIRD_STATUE_LOCATION_NAMES
+        # order. Unused slots are 0x3FF (no custom flag), which the game skips.
+        flags = [0x3FF] * len(BIRD_STATUE_LOCATION_NAMES)
+        items = [0] * len(BIRD_STATUE_LOCATION_NAMES)
+        for index, (itemid, custom_flag) in self.bird_statue_items.items():
+            items[index], flags[index] = itemid, custom_flag
+        return flags, items
 
     def get_goddess_cube_arrays(self) -> tuple[list[int], list[int]]:
         # (custom flags, item ids), one entry per cube in GODDESS_CUBE_STORYFLAGS

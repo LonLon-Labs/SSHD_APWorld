@@ -1,6 +1,10 @@
 import logging
 import random
-from constants.itemconstants import CTMC_ITEMS_TO_FILTER_OUT, ITEMS_NOT_TO_TRAP
+from constants.itemconstants import (
+    BIRD_STATUE_UNLOCK_FLAG_RESERVED_COUNT,
+    CTMC_ITEMS_TO_FILTER_OUT,
+    ITEMS_NOT_TO_TRAP,
+)
 from constants.patchconstants import (
     STAGE_PATCH_PATH_REGEX,
     EVENT_PATCH_PATH_REGEX,
@@ -14,7 +18,7 @@ from logic.world import World
 
 from patches.asmpatchhandler import ASMPatchHandler
 from patches.eventpatchhandler import EventPatchHandler
-from patches.stagepatchhandler import StagePatchHandler
+from patches.stagepatchhandler import BIRD_STATUE_LOCATION_NAMES, StagePatchHandler
 
 from typing import TYPE_CHECKING
 
@@ -102,7 +106,15 @@ def determine_check_patches(
 
     # - (7 bits) flag: The flag within the unused flag space. Can be any value from 0-127.
     # 128 is used to indicate there being no custom flag (so really we can have up to 1,016 flags)
-    custom_flags = [i for i in range(1024) if (i & 0x7F) != 0x7F]
+    #
+    # Custom flag IDs 0 to BIRD_STATUE_UNLOCK_FLAG_RESERVED_COUNT - 1 are reserved for the
+    # Bird Statue unlock flags (scene flag space, first unused scene index). They are never
+    # handed out to locations. Keep this in sync with the AP world's custom flag pool.
+    custom_flags = [
+        i
+        for i in range(BIRD_STATUE_UNLOCK_FLAG_RESERVED_COUNT, 1024)
+        if (i & 0x7F) != 0x7F
+    ]
     custom_flags.reverse()
 
     location_table = world.location_table
@@ -246,6 +258,28 @@ def determine_check_patches(
                 stage_patch_handler.add_goddess_cube_item(
                     cube_storyflag, cube_itemid, custom_flag
                 )
+
+        # Bird Statues Give Items: touching a statue gives the item at runtime, the
+        # same way decoupled Goddess Cubes do. The game's main loop watches the
+        # statue's flag and, once it is set, spawns this item (with the AP custom
+        # flag) so Link plays the normal item-get animation. Trap items are stored
+        # as their real trap id (250-254) so the game gives a real trap actor.
+        if (
+            "Bird Statues" in location.types
+            and world.setting("bird_statues_give_items") == "on"
+            and item is not None
+            and location.name in BIRD_STATUE_LOCATION_NAMES
+        ):
+            if custom_flag == 0x3FF:
+                # Standalone (non-AP) generation never injects a flag
+                custom_flag = custom_flags.pop()
+                location.custom_flag = custom_flag
+            statue_itemid = trapid if trapid != 0 else item.id
+            stage_patch_handler.add_bird_statue_item(
+                BIRD_STATUE_LOCATION_NAMES.index(location.name),
+                statue_itemid,
+                custom_flag,
+            )
 
         for path in location.patch_paths:
             if stage_patch_match := STAGE_PATCH_PATH_REGEX.match(path):

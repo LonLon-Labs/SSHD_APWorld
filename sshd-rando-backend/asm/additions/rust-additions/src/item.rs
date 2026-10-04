@@ -133,7 +133,12 @@ extern "C" {
     // Decoupled Goddess Cubes (filled in by the patcher via init_global_variables)
     static GODDESS_CUBE_MAGIC: u32;
     static mut GODDESS_CUBE_CUSTOM_FLAGS: [u16; 32];
-    static mut GODDESS_CUBE_ITEM_IDS: [u8; 32];
+    static mut GODDESS_CUBE_ITEM_IDS: [u16; 32];
+
+    // Bird Statues Give Items (filled in by the patcher via init_global_variables)
+    static BIRD_STATUE_MAGIC: u32;
+    static mut BIRD_STATUE_CUSTOM_FLAGS: [u16; 32];
+    static mut BIRD_STATUE_ITEM_IDS: [u16; 32];
 
     static mut SQUIRRELS_CAUGHT_THIS_PLAY_SESSION: bool;
     static TADTONE_SCENEFLAGS: [u8; 17];
@@ -195,7 +200,7 @@ static mut TRIAL_WARP_PENDING: bool = false;
 // Deferred AP reward: stored when the trial completes inside the realm, then
 // spawned as an item pickup once the player reloads into the overworld.
 static mut PENDING_TRIAL_CUSTOM_FLAG: u16 = 0xFFFF;
-static mut PENDING_TRIAL_ITEMID: u8 = 0;
+static mut PENDING_TRIAL_ITEMID: u16 = 0;
 
 #[no_mangle]
 pub extern "C" fn archipelago_silent_realm_tear_fix() {
@@ -217,7 +222,7 @@ pub extern "C" fn archipelago_silent_realm_tear_fix() {
             // the overworld after trial completion.
             if PENDING_TRIAL_CUSTOM_FLAG != 0xFFFF {
                 let item_ptr = give_item_with_archipelago_flag(
-                    PENDING_TRIAL_ITEMID,
+                    PENDING_TRIAL_ITEMID as u16,
                     PENDING_TRIAL_CUSTOM_FLAG,
                 );
                 if !item_ptr.is_null() {
@@ -282,7 +287,8 @@ pub extern "C" fn archipelago_silent_realm_tear_fix() {
                     actor::find_actor_by_type(actor::ACTORID::OBJ_WARP, core::ptr::null_mut())
                         as *mut actor::dAcOWarp;
                 PENDING_TRIAL_ITEMID = if !warp_actor.is_null() {
-                    ((*warp_actor).base.basebase.members.param1 >> 24) as u8
+                    // Trial gate item id: params1 bits 23-31 (9 bits).
+                    (((*warp_actor).base.basebase.members.param1 >> 23) & 0x1FF) as u16
                 } else {
                     0 // fallback (should not happen — warp actor is always
                       // present)
@@ -315,16 +321,26 @@ pub extern "C" fn archipelago_silent_realm_tear_fix() {
     }
 }
 
+// Item ids are 9 bits wide in the game (item actor param1 & 0x1FF), but most
+// placement carriers (actor params) only had an 8-bit field for them. Each
+// carrier now stores the low 8 bits where it always did and the 9th bit in a
+// spare bit, which this combines. Keep the bit positions in sync with the
+// patch_* functions in patches/stagepatchhandler.py.
+#[inline(always)]
+fn item_id_9bit(low8: u32, bit8: u32) -> u16 {
+    ((low8 & 0xFF) | ((bit8 & 1) << 8)) as u16
+}
+
 // IMPORTANT: when adding functions here that need to get called from the game,
 // add `#[no_mangle]` and add a .global *symbolname* to
 // additions/rust-additions.asm
 #[no_mangle]
-pub extern "C" fn give_item(itemid: u8) {
+pub extern "C" fn give_item(itemid: u16) {
     give_item_with_sceneflag(itemid, 0xFF);
 }
 
 #[no_mangle]
-pub extern "C" fn give_item_with_sceneflag(itemid: u8, sceneflag: u8) -> *mut dAcItem {
+pub extern "C" fn give_item_with_sceneflag(itemid: u16, sceneflag: u8) -> *mut dAcItem {
     unsafe {
         // Safety: ROOM_MGR can be null during scene transitions.
         if ROOM_MGR.is_null() {
@@ -359,7 +375,7 @@ pub extern "C" fn give_item_with_sceneflag(itemid: u8, sceneflag: u8) -> *mut dA
 }
 
 #[no_mangle]
-pub extern "C" fn give_item_with_archipelago_flag(itemid: u8, custom_flag: u16) -> *mut dAcItem {
+pub extern "C" fn give_item_with_archipelago_flag(itemid: u16, custom_flag: u16) -> *mut dAcItem {
     give_item_with_archipelago_flag_and_trap(itemid, custom_flag, NO_TRAP_ID)
 }
 
@@ -376,7 +392,7 @@ const NO_TRAP_ID: u8 = 0xF;
 /// with `254 - item_id`).
 #[no_mangle]
 pub extern "C" fn give_item_with_archipelago_flag_and_trap(
-    itemid: u8,
+    itemid: u16,
     custom_flag: u16,
     trap_id: u8,
 ) -> *mut dAcItem {
@@ -389,7 +405,15 @@ pub extern "C" fn give_item_with_archipelago_flag_and_trap(
         NUMBER_OF_ITEMS = 0;
         ITEM_GET_BOTTLE_POUCH_SLOT = 0xFFFFFFFF;
 
-        let new_itemid = dAcItem__determineFinalItemid(itemid as u64);
+        // Loftwing and the Bird Statue unlock items must keep their own item id:
+        // determineFinalItemid can remap them to rupee logic (wrong model, and the
+        // unlock flag would never be set). Same rule as the AP item buffer.
+        let new_itemid = if itemid == 219 || bird_statue_unlock_flag_index(itemid as u16).is_some()
+        {
+            itemid as u64
+        } else {
+            dAcItem__determineFinalItemid(itemid as u64)
+        };
 
         // Decode custom_flag from eventpatchhandler.py encoding:
         // Bits 0-6: flag (0-127)
@@ -589,8 +613,11 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
 
         // Goddess Sword Reward
         if flag::check_local_sceneflag(50) == 0 {
-            let goddess_sword_reward: u8 =
-                ((*crest_actor).base.basebase.members.param1 >> 0x18) as u8;
+            // Item id: params1 bits 24-31 + params2 bit 22 (9th bit).
+            let goddess_sword_reward: u16 = item_id_9bit(
+                (*crest_actor).base.basebase.members.param1 >> 0x18,
+                (*crest_actor).base.members.base.param2 >> 22,
+            );
             // Directly set the AP custom flag in game memory so the AP client
             // detects this location as checked.  This is more reliable than
             // the NEXT_CUSTOM_FLAG→param2 chain for crest items because all
@@ -607,7 +634,11 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
 
         // Longsword Reward
         if flag::check_local_sceneflag(51) == 0 {
-            let longsword_reward: u8 = ((*crest_actor).base.basebase.members.param1 >> 0x10) as u8;
+            // Item id: params1 bits 16-23 + params2 bit 21 (9th bit).
+            let longsword_reward: u16 = item_id_9bit(
+                (*crest_actor).base.basebase.members.param1 >> 0x10,
+                (*crest_actor).base.members.base.param2 >> 21,
+            );
             let cf = core::ptr::read_volatile(core::ptr::addr_of!(CREST_CUSTOM_FLAGS[1]));
             set_ap_custom_flag(cf);
             give_item(longsword_reward);
@@ -620,7 +651,11 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
 
         // White Sword Reward
         if flag::check_local_sceneflag(52) == 0 {
-            let whitesword_reward: u8 = ((*crest_actor).base.members.base.param2 >> 0x18) as u8;
+            // Item id: params2 bits 24-31 + bit 23 (9th bit).
+            let whitesword_reward: u16 = item_id_9bit(
+                (*crest_actor).base.members.base.param2 >> 0x18,
+                (*crest_actor).base.members.base.param2 >> 23,
+            );
             let cf = core::ptr::read_volatile(core::ptr::addr_of!(CREST_CUSTOM_FLAGS[2]));
             set_ap_custom_flag(cf);
             give_item(whitesword_reward);
@@ -726,7 +761,7 @@ pub fn handle_goddess_cube_items() {
             // real trap actor: a Rupoor carrying the trap id, so the effect fires
             // instead of showing the generic Archipelago item.
             let item_actor = if (250..=254).contains(&item_id) {
-                give_item_with_archipelago_flag_and_trap(34, custom_flag, 254 - item_id)
+                give_item_with_archipelago_flag_and_trap(34, custom_flag, (254 - item_id) as u8)
             } else {
                 give_item_with_archipelago_flag(item_id, custom_flag)
             };
@@ -1098,7 +1133,9 @@ pub extern "C" fn activation_checks_for_goddess_walls() -> bool {
 pub extern "C" fn give_squirrel_item(musasabi_tag: *mut actor::dTgMusasabi) {
     unsafe {
         if SQUIRRELS_CAUGHT_THIS_PLAY_SESSION && (*musasabi_tag).unused == 0 {
-            let itemid: u8 = ((*musasabi_tag).base.members.param2 & 0xFF) as u8;
+            // Item id: params2 bits 0-7 + bit 18 (9th bit).
+            let squirrel_param2 = (*musasabi_tag).base.members.param2;
+            let itemid: u16 = item_id_9bit(squirrel_param2 & 0xFF, squirrel_param2 >> 18);
             // Bits 8-17 hold either a 10-bit AP custom flag (3-part tgreact
             // encoding: flag[0-6] | scene_sel[7-8] | flag_space[9]) or the
             // sentinel 0x3FF meaning no flag.
@@ -1120,10 +1157,10 @@ pub extern "C" fn give_squirrel_item(musasabi_tag: *mut actor::dTgMusasabi) {
                     _ => flag::check_global_dungeonflag(sceneindex, flag_num) != 0,
                 };
                 if !already_given {
-                    give_item_with_archipelago_flag(itemid, raw_flag as u16);
+                    give_item_with_archipelago_flag(itemid as u16, raw_flag as u16);
                 }
             } else {
-                give_item(flag::ITEMFLAGS::RED_RUPEE as u8);
+                give_item(flag::ITEMFLAGS::RED_RUPEE as u16);
             }
 
             // Keep track of if the item has already been given this session
@@ -1180,7 +1217,11 @@ pub extern "C" fn tgreact_spawn_custom_item(
                 _ => {},
             }
 
-            let new_itemid = dAcItem__determineFinalItemid(((tgreact_param1 >> 8) & 0xFF) as u64);
+            // Item id: params1 bits 8-15 + params2 bit 23 (9th bit).
+            let new_itemid = dAcItem__determineFinalItemid(item_id_9bit(
+                (tgreact_param1 >> 8) & 0xFF,
+                param2 >> 23,
+            ) as u64);
 
             // If the tgreact would give hearts in vanilla and the randomized item is a
             // heart, behave like the flag has already been set. This allows 3
@@ -1264,7 +1305,11 @@ pub extern "C" fn academy_bell_give_custom_item() {
         let bell_actor: *mut actor::dAcObell;
         asm!("mov {0:x}, x19", out(reg) bell_actor);
 
-        let itemid = (*bell_actor).base.basebase.members.param1 & 0xFF;
+        // Item id: params1 bits 0-7 + params2 bit 18 (9th bit).
+        let itemid = item_id_9bit(
+            (*bell_actor).base.basebase.members.param1 & 0xFF,
+            (*bell_actor).base.members.base.param2 >> 18,
+        ) as u32;
         let param1 = 0x19FC00 | itemid; // item will set sceneflag 127 on collection
         asm!("mov w1, {0:w}", in(reg) param1);
 
@@ -1356,6 +1401,8 @@ pub extern "C" fn fix_freestanding_item_y_offset(item_actor: *mut dAcItem) {
                 19 | 90 | 91 | 98 | 116 | 125 => y_offset = 23.0,
                 // Clawshots | Spiral Charge | Loftwing | Mogma Mitts | Life Tree Seedling
                 20 | 21 | 219 | 99 | 197 => y_offset = 25.0,
+                // Bird Statue Unlocks
+                300..=322 => y_offset = 5.0,
                 // AC BK | FS BK
                 25 | 26 => y_offset = 30.0,
                 // SSH BK, ET Key, SVT BK, ET BK | Amber Tablet
@@ -1491,8 +1538,8 @@ pub extern "C" fn fix_freestanding_item_horizontal_offset(item_actor: *mut dAcIt
                     angle_change_x = 0x0500;
                     angle_change_y = 0x2400;
                 },
-                // Spiral Charge | Loftwing
-                21 | 219 => {
+                // Spiral Charge | Loftwing | Bird Statue Unlocks
+                21 | 219 | 300..=322 => {
                     h_offset = 27.0;
                     angle_change_y = 0x3000;
                     angle_change_z = 0x0300;
@@ -1689,7 +1736,7 @@ pub extern "C" fn fix_freestanding_item_horizontal_offset(item_actor: *mut dAcIt
 }
 
 #[no_mangle]
-pub extern "C" fn check_and_open_trial_gates(collected_item: flag::ITEMFLAGS) {
+pub extern "C" fn check_and_open_trial_gates(collected_item: u16) {
     unsafe {
         // Don't try to open any trial gates if the setting isn't on
         if RANDOMIZER_SETTINGS.skip_harp_playing == 0 {
@@ -1705,7 +1752,10 @@ pub extern "C" fn check_and_open_trial_gates(collected_item: flag::ITEMFLAGS) {
             flag::ITEMFLAGS::FARON_SONG_OF_THE_HERO_PART,
             flag::ITEMFLAGS::SONG_OF_THE_HERO,
         ];
-        if !relevant_items.iter().any(|&item| item == collected_item) {
+        if !relevant_items
+            .iter()
+            .any(|&item| item as u16 == collected_item)
+        {
             return;
         }
 
@@ -1759,17 +1809,238 @@ pub extern "C" fn check_and_open_trial_gates(collected_item: flag::ITEMFLAGS) {
     }
 }
 
+// Bird Statue unlock items. Each one owns a scene flag in scene 6 (an index
+// the game does not use) whose number is returned here. Keep this in sync with
+// ALL_BIRD_STATUE_UNLOCK_ITEMS in constants/itemconstants.py and the
+// Archipelago custom flag pool, which reserves the same flags (IDs 0-31) so
+// nothing else ever writes to them.
+pub const BIRD_STATUE_UNLOCK_SCENE_INDEX: u16 = 6;
+// Scale applied to the SaveObjectA statue model when it is used as an item.
+const BIRD_STATUE_ITEM_MODEL_SCALE: f32 = 0.2;
+// Bird Statue unlock items occupy ids 300..=322 (23 items, one per statue).
+// The flag index is `id - 300`, matching the item's index in
+// ALL_BIRD_STATUE_UNLOCK_ITEMS. Keep these in sync with data/items.yaml and
+// custom-items.asm.
+pub const BIRD_STATUE_UNLOCK_FIRST_ITEM_ID: u16 = 300;
+pub const BIRD_STATUE_UNLOCK_LAST_ITEM_ID: u16 = 322;
+
+// ---------------------------------------------------------------------------
+// Bird Statues Give Items
+//
+// Each of the 26 surface Bird Statues is a location. Touching one sets a flag
+// (a scene flag for most, a story flag 800-807 for some); the three region
+// entrance statues have their flag preset by the randomizer, so they trigger
+// on first being in their region instead. Once the flag reads set, the item
+// the patcher stored for that statue is given with the normal item-get
+// animation (or as a real trap actor), exactly like decoupled Goddess Cubes.
+// ---------------------------------------------------------------------------
+
+/// "BIRD" as a little-endian u32; the patcher writes it next to the statue
+/// tables only when at least one statue has an item.
+const BIRD_STATUE_MAGIC_VALUE: u32 = 0x4452_4942;
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum BirdStatueRegion {
+    Faron,
+    Eldin,
+    Lanayru,
+}
+
+#[derive(Copy, Clone)]
+enum BirdStatueTrigger {
+    /// Global scene flag: (scene index, flag)
+    Scene(u16, u16),
+    /// Story flag
+    Story(u16),
+    /// Region entrance statue: triggers while the player is in its region
+    Entrance,
+}
+
+#[derive(Copy, Clone)]
+struct BirdStatue {
+    trigger: BirdStatueTrigger,
+    region:  BirdStatueRegion,
+}
+
+const fn statue(trigger: BirdStatueTrigger, region: BirdStatueRegion) -> BirdStatue {
+    BirdStatue { trigger, region }
+}
+
+/// Same order as BIRD_STATUE_LOCATION_NAMES in stagepatchhandler.py (and the
+/// AP location codes 2773911..=2773936). Flags match bird_statue_data.yaml.
+const BIRD_STATUES: [BirdStatue; 26] = {
+    use BirdStatueRegion::*;
+    use BirdStatueTrigger::*;
+    [
+        statue(Entrance, Faron),       // Sealed Grounds
+        statue(Scene(10, 31), Faron),  // Behind the Temple
+        statue(Story(800), Faron),     // Faron Woods Entry
+        statue(Story(801), Faron),     // In the Woods
+        statue(Story(802), Faron),     // Viewing Platform
+        statue(Scene(1, 103), Faron),  // Deep Woods
+        statue(Scene(1, 104), Faron),  // Forest Temple
+        statue(Story(803), Faron),     // The Great Tree
+        statue(Scene(2, 32), Faron),   // Lake Floria
+        statue(Scene(2, 33), Faron),   // Floria Waterfall
+        statue(Entrance, Eldin),       // Volcano Entrance
+        statue(Story(805), Eldin),     // Volcano East
+        statue(Story(806), Eldin),     // Volcano Ascent
+        statue(Story(807), Eldin),     // Temple Entrance
+        statue(Entrance, Lanayru),     // Lanayru Mine Entry
+        statue(Scene(7, 66), Lanayru), // Desert Entrance
+        statue(Scene(7, 51), Lanayru), // West Desert
+        statue(Scene(7, 77), Lanayru), // Desert Gorge
+        statue(Scene(7, 78), Lanayru), // Temple of Time
+        statue(Scene(7, 67), Lanayru), // North Desert
+        statue(Scene(7, 2), Lanayru),  // Stone Cache
+        statue(Scene(8, 10), Lanayru), // Ancient Harbour
+        statue(Scene(8, 28), Lanayru), // Skipper's Retreat
+        statue(Scene(8, 85), Lanayru), // Shipyard
+        statue(Scene(8, 84), Lanayru), // Pirate Stronghold
+        statue(Scene(9, 12), Lanayru), // Lanayru Gorge
+    ]
+};
+
+/// Which surface region the current stage belongs to (same stage list the AP
+/// client used to use for statue detection).
+unsafe fn current_bird_statue_region() -> Option<BirdStatueRegion> {
+    match &CURRENT_STAGE_NAME[..4] {
+        b"F100" | b"F101" | b"F102" | b"F103" | b"F400" | b"F401" => Some(BirdStatueRegion::Faron),
+        b"F200" | b"F201" | b"F210" | b"F211" | b"D201" => Some(BirdStatueRegion::Eldin),
+        b"F300" | b"F301" | b"F302" => Some(BirdStatueRegion::Lanayru),
+        _ => None,
+    }
+}
+
+static mut BIRD_STATUE_TICK: u32 = 0;
+
+/// Bird Statues Give Items: when a statue has been touched, give its
+/// randomized item with the normal item-get animation and mark the location as
+/// checked through its AP custom flag.
+///
+/// Does nothing unless the patcher wrote the statue tables (the "Bird Statues
+/// Give Items" setting is on). Called every frame from the main loop but only
+/// does real work every few frames.
+pub fn handle_bird_statue_items() {
+    unsafe {
+        if core::ptr::read_volatile(core::ptr::addr_of!(BIRD_STATUE_MAGIC))
+            != BIRD_STATUE_MAGIC_VALUE
+        {
+            return;
+        }
+
+        BIRD_STATUE_TICK = BIRD_STATUE_TICK.wrapping_add(1);
+        // Offset from the goddess cube handler (every 10th tick) so the two never
+        // try to spawn an item in the same frame.
+        if BIRD_STATUE_TICK % 10 != 5 {
+            return;
+        }
+
+        if ap_stage_cooldown_active() {
+            return;
+        }
+        if &CURRENT_STAGE_NAME[..4] == b"F000" && (CURRENT_LAYER == 26 || CURRENT_LAYER == 29) {
+            return;
+        }
+        if PLAYER_PTR.is_null() || ROOM_MGR.is_null() {
+            return;
+        }
+
+        // Every surface statue lives in one of the three regions
+        let region = match current_bird_statue_region() {
+            Some(region) => region,
+            None => return,
+        };
+
+        for index in 0..BIRD_STATUES.len() {
+            let custom_flag =
+                core::ptr::read_volatile(core::ptr::addr_of!(BIRD_STATUE_CUSTOM_FLAGS[index]));
+            if custom_flag == 0x3FF {
+                continue;
+            }
+
+            let statue = &BIRD_STATUES[index];
+            if statue.region != region {
+                continue;
+            }
+            let touched = match statue.trigger {
+                BirdStatueTrigger::Entrance => true,
+                BirdStatueTrigger::Scene(scene, flag) => {
+                    flag::check_global_sceneflag(scene, flag) != 0
+                },
+                BirdStatueTrigger::Story(flag) => flag::check_storyflag(flag) != 0,
+            };
+            if !touched {
+                continue;
+            }
+            // Already given (the custom flag is set once the location is checked)
+            if check_ap_custom_flag(custom_flag) {
+                continue;
+            }
+
+            // Wait until Link can actually receive the item, then try again
+            if player_is_busy() {
+                return;
+            }
+
+            let item_id =
+                core::ptr::read_volatile(core::ptr::addr_of!(BIRD_STATUE_ITEM_IDS[index]));
+            // Trap pseudo-items (250..=254, trap id = 254 - item id) are given as a
+            // real trap actor: a Rupoor carrying the trap id.
+            let item_actor = if (250..=254).contains(&item_id) {
+                give_item_with_archipelago_flag_and_trap(34, custom_flag, (254 - item_id) as u8)
+            } else {
+                give_item_with_archipelago_flag(item_id, custom_flag)
+            };
+            if item_actor.is_null() {
+                return;
+            }
+            (*item_actor).prevent_timed_despawn = 1;
+
+            // Mark the location as checked right away, which also pre-sets
+            // LAST_AP_ITEM_FLAG_ID so the item textbox shows the right item/player
+            // and keeps us from spawning the item again next time.
+            set_ap_custom_flag(custom_flag);
+
+            // One statue per call so two items never spawn in the same frame
+            return;
+        }
+    }
+}
+
+/// Unlock flag index for a Bird Statue unlock item (ids 300..=322, in the
+/// same order as ALL_BIRD_STATUE_UNLOCK_ITEMS, so the flag is `id - 300`).
+pub fn bird_statue_unlock_flag_index(item_id: u16) -> Option<u16> {
+    match item_id {
+        BIRD_STATUE_UNLOCK_FIRST_ITEM_ID..=BIRD_STATUE_UNLOCK_LAST_ITEM_ID => {
+            Some(item_id - BIRD_STATUE_UNLOCK_FIRST_ITEM_ID)
+        },
+        _ => None,
+    }
+}
+
 #[no_mangle]
-pub extern "C" fn after_item_collection_hook(collected_item: flag::ITEMFLAGS) -> flag::ITEMFLAGS {
+// NOTE: `collected_item` is a raw item id (u16), NOT `flag::ITEMFLAGS`. Custom
+// item ids (Bird Statue unlocks 300..=322, key rings, ...) are not variants of
+// that enum, and a repr(u16) enum with out-of-range values is undefined
+// behavior: rustc attaches a valid-range to it, so the optimizer can delete
+// the `300..=322` branch below and the unlock flag is never set.
+pub extern "C" fn after_item_collection_hook(collected_item: u16) -> u16 {
     unsafe {
         fix::fix_ammo_counts(collected_item);
         check_and_open_trial_gates(collected_item);
-        if collected_item == flag::ITEMFLAGS::LOFTWING {
+        if collected_item == flag::ITEMFLAGS::LOFTWING as u16 {
             flag::set_storyflag(27);
         }
 
+        // Bird Statue unlock items set their own unlock flag. The statue landing
+        // map reads these flags when "Bird Statues Need to be Unlocked" is on.
+        if let Some(flag_index) = bird_statue_unlock_flag_index(collected_item) {
+            flag::set_global_sceneflag(BIRD_STATUE_UNLOCK_SCENE_INDEX, flag_index);
+        }
+
         // Replaced code
-        asm!("mov w8, {0:w}", in(reg) ((collected_item as u16) - 2));
+        asm!("mov w8, {0:w}", in(reg) (collected_item.wrapping_sub(2)));
 
         return collected_item;
     }
@@ -1787,6 +2058,7 @@ pub extern "C" fn resolve_progressive_item_models(
             model_name = match item_id {
                 15 => c"Demo11_01".as_ptr(),
                 21 | 219 => c"GetBirdStatue".as_ptr(),
+                300..=322 => c"SaveObjectA".as_ptr(),
                 214 => c"Onp".as_ptr(),
                 215 => c"DesertRobot".as_ptr(),
                 216 => {
@@ -1815,6 +2087,9 @@ pub extern "C" fn resolve_progressive_item_models(
             model_name = match item_id {
                 15 => c"GetStole".as_ptr(),
                 21 | 219 => c"GetBirdStatue".as_ptr(),
+                // The Bird Statue unlock items use the statue's own model
+                // (SaveObjectA is already in ObjectPack).
+                300..=322 => c"SaveObjectA".as_ptr(),
                 // Randomly pick which of the two tadtone models is used for fun :p
                 214 if (s_rng & 1) == 0 => c"OnpA".as_ptr(),
                 214 => c"OnpB".as_ptr(),
@@ -2065,6 +2340,9 @@ pub extern "C" fn change_model_scale(item_actor: *mut dAcItem, world_matrix: *mu
         let mut scale = match (*item_actor).final_determined_itemid {
             214 => 0.5f32, // Tadtone
             215 => 0.3f32, // Scrapper
+            // Bird Statue Unlock items: the SaveObjectA statue model is far
+            // bigger than a normal item model, so scale it way down.
+            300..=322 => BIRD_STATUE_ITEM_MODEL_SCALE,
             _ => 1.0f32,
         };
 
@@ -2078,6 +2356,17 @@ pub extern "C" fn change_model_scale(item_actor: *mut dAcItem, world_matrix: *mu
 
             if current_player_action == player::PLAYER_ACTIONS::ITEM_GET {
                 (*world_matrix).yw += -20.0;
+            }
+        }
+
+        // Change Bird Statue Unlock item height during item get
+        if ((*item_actor).itemid >= BIRD_STATUE_UNLOCK_FIRST_ITEM_ID
+            && (*item_actor).itemid <= BIRD_STATUE_UNLOCK_LAST_ITEM_ID)
+        {
+            let current_player_action = (*PLAYER_PTR).current_action;
+
+            if current_player_action == player::PLAYER_ACTIONS::ITEM_GET {
+                (*world_matrix).yw += -45.0;
             }
         }
 
@@ -2184,7 +2473,8 @@ pub extern "C" fn get_silent_realm_item_glow_color(item_id: u32) -> u32 {
 #[no_mangle]
 pub extern "C" fn give_tadtone_random_item(tadtone_actor: *const actor::dAcOClef) {
     unsafe {
-        let itemid = (*tadtone_actor).base.members.base.rot.z & 0xFF;
+        // Item id: rot.z (a full 16 bits; the patcher writes the whole 9-bit id).
+        let itemid: u16 = ((*tadtone_actor).base.members.base.rot.z as u16) & 0x1FF;
         let tadtone_group_index: u8 =
             ((((*tadtone_actor).base.basebase.members.param1 >> 3) & 0x1F) - 1) as u8;
 
@@ -2197,10 +2487,7 @@ pub extern "C" fn give_tadtone_random_item(tadtone_actor: *const actor::dAcOClef
             NEXT_CUSTOM_FLAG_PENDING = 1;
         }
 
-        give_item_with_sceneflag(
-            itemid as u8,
-            TADTONE_SCENEFLAGS[tadtone_group_index as usize],
-        );
+        give_item_with_sceneflag(itemid, TADTONE_SCENEFLAGS[tadtone_group_index as usize]);
     }
 }
 
@@ -2227,7 +2514,8 @@ pub extern "C" fn spawn_tree_of_life_item() -> *mut dAcItem {
         let item_actor: *mut dAcItem = actor::spawn_actor(
             actor::ACTORID::ITEM,
             (*ROOM_MGR).roomid.into(),
-            0xFF9C0200 | (52 << 10) | (tree_param1 >> 24),
+            // Item id: params1 bits 23-31 (9 bits).
+            0xFF9C0200 | (52 << 10) | (tree_param1 >> 23),
             ACTOR_PARAM_POS,
             core::ptr::null_mut(),
             core::ptr::null_mut(),
@@ -2254,7 +2542,11 @@ pub extern "C" fn setup_gossip_stone_item_params(
     unsafe {
         let sceneflag: u32 = (*hrphint_actor).basebase.members.param1 & 0xFF;
         let trapid: u32 = (*hrphint_actor).members.base.param2 & 0xF;
-        let itemid: u32 = ((*hrphint_actor).members.base.param2 >> 4) & 0xFF;
+        // Item id: params2 bits 4-11 + bit 22 (9th bit).
+        let itemid: u32 = item_id_9bit(
+            ((*hrphint_actor).members.base.param2 >> 4) & 0xFF,
+            (*hrphint_actor).members.base.param2 >> 22,
+        ) as u32;
         // Bits 12-21 hold a 10-bit AP custom flag
         // (flag[0-6]|scene_sel[7-8]|flag_space[9]) or the sentinel 0x3FF
         // meaning no AP flag (use vanilla sceneflag).
@@ -2311,17 +2603,24 @@ pub const ARCHIPELAGO_BUFFER_SIZE: usize = 1024;
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
 pub struct ArchipelagoItemSlot {
-    pub item_id:   u8,
-    pub flags:     u8,
-    pub _reserved: [u8; 2],
+    /// Low byte of the item id. A slot is pending when this is non-zero, so
+    /// ids whose low byte is 0 (256, 512) can't be delivered.
+    pub item_id:    u8,
+    pub flags:      u8,
+    /// Must stay untouched: the Python client's buffer access test writes
+    /// here.
+    pub _reserved:  u8,
+    /// High byte of the item id (the item actor's id field is 9 bits wide).
+    pub item_id_hi: u8,
 }
 assert_eq_size!([u8; 4], ArchipelagoItemSlot);
 
 const fn build_archipelago_item_buffer() -> [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] {
     let mut buffer = [ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
+        item_id:    0,
+        flags:      0,
+        _reserved:  0,
+        item_id_hi: 0,
     }; ARCHIPELAGO_BUFFER_SIZE];
 
     // Slot 0 is never used as a real item slot (loops below start at index 1).
@@ -2331,9 +2630,10 @@ const fn build_archipelago_item_buffer() -> [ArchipelagoItemSlot; ARCHIPELAGO_BU
     // value is left in place since it's harmless and avoids touching this
     // const-eval'd buffer any further than necessary.
     buffer[0] = ArchipelagoItemSlot {
-        item_id:   0x41,
-        flags:     0x50,
-        _reserved: [0x00, 0x01],
+        item_id:    0x41,
+        flags:      0x50,
+        _reserved:  0x00,
+        item_id_hi: 0x01,
     };
 
     buffer
@@ -2569,12 +2869,17 @@ pub extern "C" fn archipelago_check_item_buffer() {
             // cross-process WriteProcessMemory.  Without volatile the
             // compiler could hoist or elide loads across frames.
             let slot_ptr = crate::ipc::AP_IPC_ROOT.item_buffer.as_mut_ptr().add(i);
-            let item_id_val = core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).item_id));
+            let item_id_lo = core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).item_id));
 
             // Skip empty slots
-            if item_id_val == 0 {
+            if item_id_lo == 0 {
                 continue;
             }
+
+            // The clients write the whole 4-byte slot in one go, so the high
+            // byte is already valid once the low byte is non-zero.
+            let item_id_hi = core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).item_id_hi));
+            let item_id_val: u16 = ((item_id_hi as u16) << 8) | (item_id_lo as u16);
 
             // Item pending — check if the player is in a state where we can
             // safely deliver it.  If not, leave the slot and retry next frame.
@@ -2593,7 +2898,7 @@ pub extern "C" fn archipelago_check_item_buffer() {
             // TRAP_ID and fire the runtime effect (e.g., Groose spawn).
             let is_buffer_trap = (250..=254).contains(&item_id_val);
             let trap_id = if is_buffer_trap {
-                (254u8 - item_id_val) as u32
+                (254u16 - item_id_val) as u32
             } else {
                 0xFu32
             };
@@ -2605,11 +2910,14 @@ pub extern "C" fn archipelago_check_item_buffer() {
             let item_id = item_id_val as u64;
             let final_id = if is_buffer_trap {
                 34u16
-            } else if item_id_val == 219 {
-                // Loftwing must remain item 219 for AP delivery. Vanilla
-                // determineFinalItemid can remap this to rupee logic,
-                // which forces GetRupee visuals instead of GetBirdStatue.
-                219u16
+            } else if item_id_val == 219
+                || bird_statue_unlock_flag_index(item_id_val as u16).is_some()
+            {
+                // Loftwing and the Bird Statue Unlock items must keep their own
+                // item id for AP delivery. Vanilla determineFinalItemid can remap
+                // them to rupee logic, which forces GetRupee visuals instead of
+                // GetBirdStatue (and would never set the unlock flag).
+                item_id_val as u16
             } else {
                 dAcItem__determineFinalItemid(item_id) as u16
             };
@@ -2685,7 +2993,8 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 // Spawn succeeded — clear the buffer slot and reset retries.
                 core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).item_id), 0u8);
                 core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).flags), 0u8);
-                (*slot_ptr)._reserved = [0, 0];
+                (*slot_ptr)._reserved = 0;
+                (*slot_ptr).item_id_hi = 0;
                 AP_SLOT_RETRIES[i] = 0;
                 AP_RECEIVED_ITEMS_THIS_BATCH += 1;
             } else {
@@ -2698,7 +3007,8 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 if AP_SLOT_RETRIES[i] >= MAX_RETRY_FRAMES {
                     core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).item_id), 0u8);
                     core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).flags), 0u8);
-                    (*slot_ptr)._reserved = [0, 0];
+                    (*slot_ptr)._reserved = 0;
+                    (*slot_ptr).item_id_hi = 0;
                     AP_SLOT_RETRIES[i] = 0;
                 }
             }

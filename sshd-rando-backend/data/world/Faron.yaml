@@ -496,6 +496,8 @@
 - name: Sealed Grounds Statue
   events:
     Unlock Sealed Grounds Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Sealed Grounds - Sealed Grounds Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Sealed Grounds: Nothing # Back out of interaction.
@@ -503,6 +505,8 @@
 - name: Behind the Temple Statue
   events:
     Unlock Behind the Temple Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Sealed Grounds - Behind the Temple Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Behind the Temple: Nothing # Back out of interaction.
@@ -510,6 +514,8 @@
 - name: Faron Woods Entry Statue
   events:
     Unlock Faron Woods Entry Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Faron Woods - Faron Woods Entry Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Faron Woods Entry: Nothing # Back out of interaction.
@@ -517,6 +523,8 @@
 - name: Viewing Platform Statue
   events:
     Unlock Viewing Platform Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Faron Woods - Viewing Platform Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Faron Woods: Nothing # Back out of interaction.
@@ -524,6 +532,8 @@
 - name: In the Woods Statue
   events:
     Unlock In the Woods Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Faron Woods - In the Woods Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Faron Woods: Nothing # Back out of interaction.
@@ -531,6 +541,8 @@
 - name: Deep Woods Statue
   events:
     Unlock Deep Woods Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Deep Woods - Deep Woods Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Deep Woods: Nothing # Back out of interaction.
@@ -538,6 +550,8 @@
 - name: Forest Temple Statue
   events:
     Unlock Forest Temple Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Deep Woods - Forest Temple Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Deep Woods: Nothing # Back out of interaction.
@@ -545,6 +559,8 @@
 - name: The Great Tree Statue
   events:
     Unlock The Great Tree Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Faron Woods - Great Tree Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Great Tree Exterior Top: Nothing # Back out of interaction.
@@ -552,6 +568,8 @@
 - name: Lake Floria Statue
   events:
     Unlock Lake Floria Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lake Floria - Lake Floria Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lake Floria Emerged Area: Nothing # Back out of interaction.
@@ -559,6 +577,8 @@
 - name: Floria Waterfall Statue
   events:
     Unlock Floria Waterfall Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Floria Waterfall - Floria Waterfall Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Floria Waterfall: Nothing # Back out of interaction.

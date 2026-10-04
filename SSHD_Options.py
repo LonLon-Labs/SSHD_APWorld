@@ -925,6 +925,32 @@ class RandomizeLoftwing(Choice):
     default = "random"
 
 
+class BirdStatuesGiveItems(Toggle):
+    """
+    If enabled, every Bird Statue becomes a check. Unlocking a Bird Statue for the first time gives an item.
+    This does not gate the statues: unless Bird Statues Need to be Unlocked is also enabled, every statue can still be dropped down to as normal.
+    """
+    display_name = "Bird Statues Give Items"
+
+
+class BirdStatuesNeedUnlock(Toggle):
+    """
+    If enabled, each Bird Statue has its own unlock item that is added to the item pool.
+    Until its unlock item is obtained you cannot drop down to that statue from the sky, but you can still use it to fly up to the sky.
+    The Sealed Grounds, Volcano Entrance and Lanayru Mine Entry statues are always unlocked.
+    """
+    display_name = "Bird Statues Need to be Unlocked"
+
+
+class StartWithRegionBirdStatues(Toggle):
+    """
+    Only has an effect when Bird Statues Need to be Unlocked is enabled.
+    If enabled, you start with one unlocked Bird Statue in each of Faron, Eldin and Lanayru.
+    Those statues are removed from the item pool.
+    """
+    display_name = "Start with a Bird Statue in Each Region"
+
+
 class NaturalNightConnections(DefaultOnToggle):
     """
     If enabled, nighttime-only checks are only accessible via natural night connections in the overworld.
@@ -1970,6 +1996,9 @@ class SSHDOptions(PerGameCommonOptions):
     unlock_all_groosenator_destinations: UnlockAllGroosenatorDestinations
     allow_flying_at_night: AllowFlyingAtNight
     randomize_loftwing: RandomizeLoftwing
+    bird_statues_give_items: BirdStatuesGiveItems
+    bird_statues_need_unlock: BirdStatuesNeedUnlock
+    start_with_region_bird_statues: StartWithRegionBirdStatues
     natural_night_connections: NaturalNightConnections
     dungeons_include_sky_keep: DungeonsIncludeSkyKeep
     empty_unrequired_dungeons: EmptyUnrequiredDungeons
@@ -2272,6 +2301,9 @@ sshd_option_groups = [
         UnlockAllGroosenatorDestinations,
         AllowFlyingAtNight,
         RandomizeLoftwing,
+        BirdStatuesGiveItems,
+        BirdStatuesNeedUnlock,
+        StartWithRegionBirdStatues,
         RandomTrialObjectPositions,
         EnableBackInTime,
         UndergroundRupeeShufle,

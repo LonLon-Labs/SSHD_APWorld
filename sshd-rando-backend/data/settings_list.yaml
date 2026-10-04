@@ -687,6 +687,36 @@
     - "on": "You will start with your Loftwing unlocked."
     - "random": "The randomizer will choose whether you start with your Loftwing unlocked when generating the seed."
 
+- name: bird_statues_give_items
+  default_option: "off"
+  pretty_name: Bird Statues Give Items
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Bird Statues will not give items."
+    - "on": "Unlocking a Bird Statue for the first time will give an item. This applies to every Bird Statue. Statues are not gated unless Bird Statues Need to be Unlocked is also enabled."
+
+- name: bird_statues_need_unlock
+  default_option: "off"
+  pretty_name: Bird Statues Need to be Unlocked
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Bird Statues can be dropped down to as normal."
+    - "on": "Each Bird Statue has an unlock item in the item pool. You cannot drop down to a Bird Statue until its item is obtained, but you can still use it to fly up to the sky."
+
+- name: start_with_region_bird_statues
+  default_option: "off"
+  pretty_name: Start with a Bird Statue in Each Region
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "You will not start with any extra Bird Statues unlocked."
+    - "on": "Only applies when Bird Statues Need to be Unlocked is on. You start with one Bird Statue unlocked in each of Faron, Eldin and Lanayru, and those unlock items are removed from the item pool."
+
 - name: skip_horde
   default_option: "off"
   pretty_name: Skip The Horde Fight

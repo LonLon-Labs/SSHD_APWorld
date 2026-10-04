@@ -64,7 +64,7 @@ jobs:
             tag: win_amd64
           - os: ubuntu-latest
             tag: manylinux2014_x86_64
-          - os: macos-14          # Apple Silicon
+          - os: macos-15          # Apple Silicon
             tag: macosx_11_0_arm64
           - os: macos-15-intel    # Intel
             tag: macosx_10_9_x86_64

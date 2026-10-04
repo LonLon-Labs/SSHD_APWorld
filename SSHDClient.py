@@ -431,6 +431,48 @@ BIRD_STATUE_FLAGS = {
     "Lanayru Gorge Statue":      ("scene",  9, 12),
 }
 
+# Bird Statue -> "Bird Statues Give Items" location name. Every statue in
+# BIRD_STATUE_FLAGS except the two dungeon-area ones has a check. The server only
+# knows these locations when the option is on, so the client reports them only
+# if the server lists the location for this slot.
+BIRD_STATUE_LOCATION_NAMES = {
+    "Sealed Grounds Statue":     "Sealed Grounds - Sealed Grounds Bird Statue",
+    "Behind the Temple Statue":  "Sealed Grounds - Behind the Temple Bird Statue",
+    "Faron Woods Entry Statue":  "Faron Woods - Faron Woods Entry Bird Statue",
+    "In the Woods Statue":       "Faron Woods - In the Woods Bird Statue",
+    "Viewing Platform Statue":   "Faron Woods - Viewing Platform Bird Statue",
+    "Deep Woods Statue":         "Deep Woods - Deep Woods Bird Statue",
+    "Forest Temple Statue":      "Deep Woods - Forest Temple Bird Statue",
+    "The Great Tree Statue":     "Faron Woods - Great Tree Bird Statue",
+    "Lake Floria Statue":        "Lake Floria - Lake Floria Bird Statue",
+    "Floria Waterfall Statue":   "Floria Waterfall - Floria Waterfall Bird Statue",
+    "Volcano Entrance Statue":   "Eldin Volcano - Volcano Entrance Bird Statue",
+    "Volcano East Statue":       "Eldin Volcano - Volcano East Bird Statue",
+    "Volcano Ascent Statue":     "Eldin Volcano - Volcano Ascent Bird Statue",
+    "Temple Entrance Statue":    "Eldin Volcano - Temple Entrance Bird Statue",
+    "Lanayru Mine Entry Statue": "Lanayru Mine - Mine Entry Bird Statue",
+    "Desert Entrance Statue":    "Lanayru Desert - Desert Entrance Bird Statue",
+    "West Desert Statue":        "Lanayru Desert - West Desert Bird Statue",
+    "Desert Gorge Statue":       "Lanayru Desert - Desert Gorge Bird Statue",
+    "Temple of Time Statue":     "Temple of Time - Temple of Time Bird Statue",
+    "North Desert Statue":       "Lanayru Desert - North Desert Bird Statue",
+    "Stone Cache Statue":        "Lanayru Desert - Stone Cache Bird Statue",
+    "Ancient Harbour Statue":    "Ancient Harbour - Ancient Harbour Bird Statue",
+    "Skipper's Retreat Statue":  "Skipper's Retreat - Skipper's Retreat Bird Statue",
+    "Shipyard Statue":           "Shipyard - Shipyard Bird Statue",
+    "Pirate Stronghold Statue":  "Pirate Stronghold - Pirate Stronghold Bird Statue",
+    "Lanayru Gorge Statue":      "Lanayru Gorge - Lanayru Gorge Bird Statue",
+}
+
+# The statue that is always unlocked (the region entrance in the logic) for each
+# surface region. Its touch flag is already set from the start, so its check is
+# reported the first time the player visits the region instead.
+_REGION_LOGIC_ENTRANCE_STATUES = {
+    "faron":   "Sealed Grounds Statue",
+    "eldin":   "Volcano Entrance Statue",
+    "lanayru": "Lanayru Mine Entry Statue",
+}
+
 # Map from game stage codes to the scene indices where bird statues live.
 # When the player is in a stage, flags for statues in the corresponding scene
 # index(es) are allowed to be newly set (the player walked near a statue).
@@ -4053,10 +4095,16 @@ class SSHDContext(CommonContext):
                 region = _stage_to_region(stage_name)
                 if region and region not in self._visited_regions:
                     self._visited_regions.add(region)
+                    logic_entrance = _REGION_LOGIC_ENTRANCE_STATUES.get(region)
+                    if logic_entrance:
+                        self._report_bird_statue_check(logic_entrance)
                     entry_name = _REGION_ENTRY_STATUES.get(region)
                     if entry_name and self._bird_statue_snapshot is not None:
                         if not self._bird_statue_snapshot.get(entry_name, False):
                             self._bird_statue_snapshot[entry_name] = True
+                            # The entry statue is enabled for the player without a touch
+                            # event, so report its check here or it would never fire.
+                            self._report_bird_statue_check(entry_name)
                             logger.info(
                                 f"[BirdStatue] Auto-enabled entry statue: {entry_name} "
                                 f"(first visit to {region})"
@@ -6698,6 +6746,28 @@ class SSHDContext(CommonContext):
             return next(iter(scene_set))
         return None
 
+    def _report_bird_statue_check(self, statue_name: str) -> None:
+        """Report the "Bird Statues Give Items" check for a statue the player
+        has just legitimately activated.
+
+        The locations only exist on the server when the option is enabled, so
+        this does nothing unless the server lists the location for this slot.
+        """
+        location_name = BIRD_STATUE_LOCATION_NAMES.get(statue_name)
+        if not location_name:
+            return
+        location = LOCATION_TABLE.get(location_name)
+        if location is None:
+            return
+        code = location.code
+        server_locations = getattr(self, "server_locations", None)
+        if server_locations is not None and code not in server_locations:
+            return  # option off (or not connected yet): no such location
+        if code in self.checked_locations:
+            return
+        self.checked_locations.add(code)
+        logger.info(f"[BirdStatue] Checked {location_name}")
+
     def _enforce_bird_statue_flags(self) -> None:
         """Prevent the game's HD-progression system from auto-unlocking
         bird statues the player hasn't physically visited.
@@ -6764,6 +6834,7 @@ class SSHDContext(CommonContext):
 
                 if legitimate:
                     self._bird_statue_snapshot[name] = True
+                    self._report_bird_statue_check(name)
                     if name not in self._bird_statue_enforcement_log:
                         logger.info(f"[BirdStatue] {name} legitimately activated")
                         self._bird_statue_enforcement_log.add(name)

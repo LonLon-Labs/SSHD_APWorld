@@ -3,6 +3,54 @@ from constants.itemnames import *
 # Item Groups
 ALL_TABLETS = (EMERALD_TABLET, RUBY_TABLET, AMBER_TABLET)
 
+# Bird Statue unlock items, grouped by the region their statue is in.
+# Sealed Grounds, Volcano Entrance and Lanayru Mine Entry have no unlock item
+# because they are always unlocked (they are the region entrances).
+BIRD_STATUE_UNLOCK_ITEMS_BY_REGION = {
+    "Faron": [
+        "Behind the Temple Statue Unlock",
+        "Faron Woods Entry Statue Unlock",
+        "In the Woods Statue Unlock",
+        "Viewing Platform Statue Unlock",
+        "Deep Woods Statue Unlock",
+        "Forest Temple Statue Unlock",
+        "The Great Tree Statue Unlock",
+        "Lake Floria Statue Unlock",
+        "Floria Waterfall Statue Unlock",
+    ],
+    "Eldin": [
+        "Volcano East Statue Unlock",
+        "Volcano Ascent Statue Unlock",
+        "Temple Entrance Statue Unlock",
+    ],
+    "Lanayru": [
+        "Desert Entrance Statue Unlock",
+        "West Desert Statue Unlock",
+        "Desert Gorge Statue Unlock",
+        "Temple of Time Statue Unlock",
+        "North Desert Statue Unlock",
+        "Stone Cache Statue Unlock",
+        "Ancient Harbour Statue Unlock",
+        "Skipper's Retreat Statue Unlock",
+        "Shipyard Statue Unlock",
+        "Pirate Stronghold Statue Unlock",
+        "Lanayru Gorge Statue Unlock",
+    ],
+}
+
+ALL_BIRD_STATUE_UNLOCK_ITEMS = tuple(
+    item
+    for region_items in BIRD_STATUE_UNLOCK_ITEMS_BY_REGION.values()
+    for item in region_items
+)
+
+# Custom flag IDs 0..31 are reserved for Bird Statue unlock flags. Each unlock item
+# owns the flag whose ID is its index in ALL_BIRD_STATUE_UNLOCK_ITEMS. These are in
+# the scene flag space of the first unused scene index, so the bird statue map
+# tables (which read scene flags) can point straight at them.
+# Keep the AP world's custom flag pool (__init__.py) in sync with this value.
+BIRD_STATUE_UNLOCK_FLAG_RESERVED_COUNT = 32
+
 COMMON_TREASURES = (
     ELDIN_ORE,
     ANCIENT_FLOWER,

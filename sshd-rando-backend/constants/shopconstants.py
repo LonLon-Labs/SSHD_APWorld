@@ -419,3 +419,13 @@ DISPLAY_HEIGHT_OFFSETS = {
     214: 0.0,  # Group of Tadtones
     215: 0.0,  # Scrapper
 }
+
+
+# Bird Statue Unlock items (ids 300..=322) use the full-size SaveObjectA statue
+# model, so they need much smaller shop scales than the defaults.
+BIRD_STATUE_UNLOCK_ITEM_IDS = tuple(range(300, 323))
+
+for _item_id in BIRD_STATUE_UNLOCK_ITEM_IDS:
+    BUY_DECIDE_SCALES[_item_id] = 0.2
+    PUT_SCALES[_item_id] = 0.35         # default 1.7 x 0.2 ≈ 0.34
+    DISPLAY_HEIGHT_OFFSETS[_item_id] = -5.0

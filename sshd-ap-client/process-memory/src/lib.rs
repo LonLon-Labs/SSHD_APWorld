@@ -14,6 +14,7 @@
 //! offset math, or for five-to-seven separate per-mailbox magics.
 
 use std::io;
+use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone)]
 pub struct MemoryRegion {
@@ -45,6 +46,10 @@ pub enum MemError {
     ProcessNotFound,
     PermissionDenied(String),
     Unsupported(String),
+    /// `find_ap_ipc_root` couldn't locate a live `AP_IPC_ROOT` (yet). The text is
+    /// a complete, user-presentable sentence; its wording is kept stable between
+    /// retries so callers can de-duplicate log lines.
+    RootNotFound(String),
 }
 
 impl std::fmt::Display for MemError {
@@ -61,6 +66,7 @@ impl std::fmt::Display for MemError {
             MemError::ProcessNotFound => write!(f, "process not found"),
             MemError::PermissionDenied(s) => write!(f, "permission denied: {s}"),
             MemError::Unsupported(s) => write!(f, "unsupported: {s}"),
+            MemError::RootNotFound(s) => write!(f, "{s}"),
         }
     }
 }
@@ -81,6 +87,30 @@ pub trait ProcessMemory {
 
     fn read_u8(&mut self, address: usize) -> MemResult<u8> {
         Ok(self.read_bytes(address, 1)?[0])
+    }
+
+    /// Reads up to `buf.len()` bytes at `address` into `buf` and returns how many
+    /// were actually read (0 on failure). Unlike `read_bytes` this allocates
+    /// nothing and keeps a PARTIAL read, so a scan can salvage everything up to
+    /// the first unreadable page instead of throwing away the whole chunk (a
+    /// page whose protection flipped between enumeration and read used to make
+    /// the scan silently skip 4 MiB, which is one way a scan could miss the
+    /// marker on one run and find it on the next).
+    fn read_into(&mut self, address: usize, buf: &mut [u8]) -> usize {
+        match self.read_bytes(address, buf.len()) {
+            Ok(data) => {
+                buf.copy_from_slice(&data);
+                buf.len()
+            },
+            Err(_) => 0,
+        }
+    }
+
+    /// Regions worth scanning for game data, IN THE ORDER they should be
+    /// scanned (most likely home of guest RAM first). Backends override this
+    /// with their own filtering/ordering; the default is every readable region.
+    fn scannable_regions(&mut self) -> MemResult<Vec<MemoryRegion>> {
+        Ok(self.enumerate_regions()?.into_iter().filter(|r| r.is_readable()).collect())
     }
 
     /// Scan every readable region for `pattern`, returning absolute
@@ -176,6 +206,290 @@ fn find_subslice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
         return None;
     }
     haystack.windows(needle.len()).position(|w| w == needle)
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// AP_IPC_ROOT discovery
+// ─────────────────────────────────────────────────────────────────────────
+//
+// Finding `AP_IPC_ROOT` used to mean "read every readable byte of the
+// emulator, and demand that every hit looks identical". That was both slow
+// (tens of seconds: most of an emulator process is not guest RAM, and RAM was
+// walked once per alias) and flaky, because the marker legitimately appears
+// more than once and NOT every copy is the live one:
+//   * emulators map guest RAM at several host addresses (aliases: all live),
+//   * the loader keeps pristine copies of the game's initial .data image
+//     (dead: same bytes at first, but nothing ever updates them).
+// Comparing the first 256 bytes of each hit can't tell those apart, so the
+// outcome depended on timing ("pattern matched 4 times ... DIFFERING content"),
+// and when the copies did happen to match, the client could end up attached to
+// a dead one.
+//
+// The game rewrites `current_scene_index` every frame (see
+// `item::refresh_ipc_addresses` on the game side), so a copy is LIVE exactly
+// when it overwrites a sentinel we plant there. `find_ap_ipc_root` scans
+// likely-guest-RAM regions first, probes each hit the moment it's found, and
+// stops at the first live one. Candidates are cached in `RootSearch`, so
+// retries and re-attaches after a hiccup don't rescan at all.
+
+/// Bytes read per `read_into` call while scanning.
+const SCAN_CHUNK: usize = 8 * 1024 * 1024;
+/// Value planted in `current_scene_index` to test whether a copy is live. Not a
+/// valid scene index (those are small, or 0xFFFF for "none").
+const LIVENESS_SENTINEL: u16 = 0xA5A5;
+/// How long to wait for the game to overwrite the sentinel. Generous, because
+/// emulators can stutter badly (shader compiles etc.); returns as soon as any
+/// copy answers, so this only costs time when nothing is live.
+const LIVENESS_TIMEOUT: Duration = Duration::from_millis(750);
+const LIVENESS_POLL: Duration = Duration::from_millis(10);
+/// After a probe finds no live copy, don't probe the same candidates again for
+/// this long (a paused emulator would otherwise stall the caller every retry).
+const DEAD_PROBE_BACKOFF: Duration = Duration::from_secs(3);
+/// A hit must have at least this many bytes of its region after it, or it can't
+/// be a real `AP_IPC_ROOT` (everything up to `current_stage_name`).
+const MIN_ROOT_BYTES: usize = ap_ipc::offsets::CURRENT_STAGE_NAME + 8;
+
+/// Streams `regions` through `pattern`, calling `on_hit(mem, hit_address,
+/// region_end)` for every match; stops early as soon as `on_hit` returns true.
+/// Returns the number of bytes actually read.
+///
+/// One reusable buffer, SIMD substring search, and partial-read salvage (see
+/// `ProcessMemory::read_into`).
+pub fn scan_regions<M: ProcessMemory + ?Sized>(
+    mem: &mut M,
+    regions: &[MemoryRegion],
+    pattern: &[u8],
+    on_hit: &mut dyn FnMut(&mut M, usize, usize) -> bool,
+) -> usize {
+    scan_regions_chunked(mem, regions, pattern, SCAN_CHUNK, on_hit)
+}
+
+fn scan_regions_chunked<M: ProcessMemory + ?Sized>(
+    mem: &mut M,
+    regions: &[MemoryRegion],
+    pattern: &[u8],
+    chunk: usize,
+    on_hit: &mut dyn FnMut(&mut M, usize, usize) -> bool,
+) -> usize {
+    if pattern.is_empty() {
+        return 0;
+    }
+    let overlap = pattern.len() - 1;
+    assert!(chunk > overlap, "scan chunk must be larger than the pattern");
+    let finder = memchr::memmem::Finder::new(pattern);
+    let mut buf = vec![0u8; chunk];
+    let mut scanned = 0usize;
+
+    for region in regions {
+        let end = region.base + region.size;
+        let mut pos = region.base;
+        while pos < end {
+            let want = chunk.min(end - pos);
+            let got = mem.read_into(pos, &mut buf[..want]);
+            scanned += got;
+
+            let mut from = 0;
+            while let Some(i) = finder.find(&buf[from..got]) {
+                let abs = from + i;
+                if on_hit(mem, pos + abs, end) {
+                    return scanned;
+                }
+                from = abs + 1;
+            }
+
+            if got == want {
+                if pos + want >= end {
+                    break;
+                }
+                // Re-read the last `overlap` bytes so a match straddling the
+                // chunk boundary isn't missed (and none can be found twice).
+                pos += want - overlap;
+            } else {
+                // Short read: a page after `pos + got` is unreadable (its
+                // protection changed since the regions were enumerated).
+                // Skip just that page and carry on.
+                pos = ((pos + got) & !0xFFF) + 0x1000;
+            }
+        }
+    }
+    scanned
+}
+
+fn has_marker<M: ProcessMemory + ?Sized>(mem: &mut M, addr: usize) -> bool {
+    matches!(mem.read_bytes(addr, ap_ipc::AP_IPC_MAGIC.len()), Ok(b) if b == ap_ipc::AP_IPC_MAGIC)
+}
+
+/// Plants a sentinel in `current_scene_index` of every candidate and returns
+/// the first one the running game overwrites (i.e. the live `AP_IPC_ROOT`;
+/// any alias of it is equally good). Candidates the game didn't touch get
+/// their original value back.
+fn probe_live<M: ProcessMemory + ?Sized>(mem: &mut M, candidates: &[usize]) -> Option<usize> {
+    let sentinel = LIVENESS_SENTINEL.to_le_bytes();
+
+    // (root, field address, original value)
+    let mut armed: Vec<(usize, usize, [u8; 2])> = Vec::new();
+    for &root in candidates {
+        let field = root + ap_ipc::offsets::CURRENT_SCENE_INDEX;
+        let Ok(orig) = mem.read_bytes(field, 2) else { continue };
+        if mem.write_bytes(field, &sentinel).is_ok() {
+            armed.push((root, field, [orig[0], orig[1]]));
+        }
+    }
+    if armed.is_empty() {
+        return None;
+    }
+
+    let deadline = Instant::now() + LIVENESS_TIMEOUT;
+    let mut live = None;
+    'wait: loop {
+        for &(root, field, _) in &armed {
+            if let Ok(v) = mem.read_bytes(field, 2) {
+                if v.as_slice() != sentinel {
+                    live = Some(root);
+                    break 'wait;
+                }
+            }
+        }
+        if Instant::now() >= deadline {
+            break;
+        }
+        std::thread::sleep(LIVENESS_POLL);
+    }
+
+    // Put back anything the game never touched (dead copies).
+    for &(_, field, orig) in &armed {
+        if let Ok(v) = mem.read_bytes(field, 2) {
+            if v.as_slice() == sentinel {
+                let _ = mem.write_bytes(field, &orig);
+            }
+        }
+    }
+    live
+}
+
+/// Per-process memory of an `AP_IPC_ROOT` search. Keep one per emulator pid
+/// and pass it to every `find_ap_ipc_root` call for that process.
+pub struct RootSearch {
+    candidates: Vec<usize>,
+    next_probe: Option<Instant>,
+    last_scan_finished: Option<Instant>,
+    rescan_interval: Duration,
+    scan_count: u32,
+    last_scan_bytes: usize,
+    last_scan_time: Duration,
+}
+
+impl RootSearch {
+    pub fn new() -> Self {
+        RootSearch {
+            candidates: Vec::new(),
+            next_probe: None,
+            last_scan_finished: None,
+            rescan_interval: Duration::from_secs(10),
+            scan_count: 0,
+            last_scan_bytes: 0,
+            last_scan_time: Duration::ZERO,
+        }
+    }
+
+    /// Every address where the marker has been seen (live aliases and dead copies).
+    pub fn candidates(&self) -> &[usize] {
+        &self.candidates
+    }
+
+    /// How many full memory scans this search has run.
+    pub fn scan_count(&self) -> u32 {
+        self.scan_count
+    }
+
+    /// (bytes read, wall time) of the most recent full scan.
+    pub fn last_scan_summary(&self) -> (usize, Duration) {
+        (self.last_scan_bytes, self.last_scan_time)
+    }
+}
+
+impl Default for RootSearch {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+fn root_not_found(candidates: usize) -> MemError {
+    MemError::RootNotFound(if candidates == 0 {
+        "AP_IPC_ROOT marker not found in the emulator's memory".to_string()
+    } else {
+        format!(
+            "found {candidates} copy/copies of the AP_IPC_ROOT marker, but the game isn't updating \
+             any of them (paused, or still booting?)"
+        )
+    })
+}
+
+/// Finds the LIVE `AP_IPC_ROOT` in `mem` and returns its address.
+///
+/// 1. Cached candidates from earlier calls are re-checked and probed first
+///    (cheap: no scanning).
+/// 2. Otherwise, at most once per `rescan_interval`, scans likely guest-RAM
+///    regions first, probing each hit immediately and returning at the first
+///    live one.
+///
+/// `Err(MemError::RootNotFound)` means "not yet": call again later (the error
+/// text is stable between retries). Never returns a copy the game isn't
+/// updating.
+pub fn find_ap_ipc_root<M: ProcessMemory + ?Sized>(
+    mem: &mut M,
+    search: &mut RootSearch,
+) -> MemResult<usize> {
+    // Forget candidates that no longer hold the marker (game restarted,
+    // memory remapped).
+    search.candidates.retain(|&addr| has_marker(mem, addr));
+
+    let mut known_dead: Vec<usize> = Vec::new();
+    if !search.candidates.is_empty() && search.next_probe.map_or(true, |t| Instant::now() >= t) {
+        match probe_live(mem, &search.candidates) {
+            Some(addr) => {
+                search.next_probe = None;
+                return Ok(addr);
+            },
+            None => {
+                known_dead = search.candidates.clone();
+                search.next_probe = Some(Instant::now() + DEAD_PROBE_BACKOFF);
+            },
+        }
+    }
+
+    let scan_due = search.last_scan_finished.map_or(true, |t| t.elapsed() >= search.rescan_interval);
+    if !scan_due {
+        return Err(root_not_found(search.candidates.len()));
+    }
+
+    let started = Instant::now();
+    let regions = mem.scannable_regions()?;
+    let mut live: Option<usize> = None;
+    let bytes = scan_regions(mem, &regions, &ap_ipc::AP_IPC_MAGIC, &mut |mem, addr, region_end| {
+        if region_end - addr < MIN_ROOT_BYTES || known_dead.contains(&addr) {
+            return false;
+        }
+        if !search.candidates.contains(&addr) {
+            search.candidates.push(addr);
+        }
+        match probe_live(mem, &[addr]) {
+            Some(root) => {
+                live = Some(root);
+                true
+            },
+            None => false,
+        }
+    });
+    search.scan_count += 1;
+    search.last_scan_bytes = bytes;
+    search.last_scan_time = started.elapsed();
+    search.last_scan_finished = Some(Instant::now());
+
+    match live {
+        Some(addr) => Ok(addr),
+        None => Err(root_not_found(search.candidates.len())),
+    }
 }
 
 /// Emulator process names this client knows how to attach to. Mirrors the
@@ -336,6 +650,14 @@ pub mod linux {
     }
 
     impl ProcessMemory for LinuxProcessMemory {
+        fn read_into(&mut self, address: usize, buf: &mut [u8]) -> usize {
+            self.mem_file.read_at(buf, address as u64).unwrap_or(0)
+        }
+
+        fn scannable_regions(&mut self) -> MemResult<Vec<MemoryRegion>> {
+            self.enumerate_scannable_regions()
+        }
+
         fn read_bytes(&mut self, address: usize, size: usize) -> MemResult<Vec<u8>> {
             let mut buf = vec![0u8; size];
             let n = self.mem_file.read_at(&mut buf, address as u64)?;
@@ -472,7 +794,7 @@ pub mod windows {
         TH32CS_SNAPPROCESS,
     };
     use windows_sys::Win32::System::Memory::{
-        VirtualQueryEx, MEMORY_BASIC_INFORMATION, MEM_COMMIT, MEM_IMAGE, PAGE_GUARD,
+        VirtualQueryEx, MEMORY_BASIC_INFORMATION, MEM_COMMIT, MEM_IMAGE, MEM_MAPPED, PAGE_GUARD,
     };
     use windows_sys::Win32::System::Threading::{
         OpenProcess, PROCESS_QUERY_INFORMATION, PROCESS_VM_OPERATION, PROCESS_VM_READ,
@@ -514,6 +836,87 @@ pub mod windows {
                 });
             }
             Ok(WindowsProcessMemory { handle })
+        }
+    }
+
+    impl WindowsProcessMemory {
+        /// Regions to scan for `AP_IPC_ROOT`, in scan order.
+        ///
+        /// Differences from `enumerate_scannable_regions`:
+        /// - Adjacent readable regions are MERGED before the size filter.
+        ///   Emulators flip page protections constantly (write tracking, JIT),
+        ///   which makes `VirtualQueryEx` report guest RAM as many small
+        ///   fragments; filtering each fragment by size could drop the very
+        ///   fragment holding `AP_IPC_ROOT`.
+        /// - The size floor is the size of `AP_IPC_ROOT` itself, not an
+        ///   arbitrary 1 MiB.
+        /// - `MEM_MAPPED` regions (where emulators put guest RAM) come first,
+        ///   largest first, then `MEM_PRIVATE`. The first live hit ends the
+        ///   scan, so this is what turns a ~minute-long full walk into a few
+        ///   seconds. Loaded modules (`MEM_IMAGE`) are never scanned.
+        fn scan_order_regions(&mut self) -> MemResult<Vec<MemoryRegion>> {
+            const READABLE: &[u32] = &[0x02, 0x04, 0x08, 0x20, 0x40, 0x80];
+
+            // (base, size, is_mapped)
+            let mut spans: Vec<(usize, usize, bool)> = Vec::new();
+            let mut address: u64 = 0x10000;
+            let max_address: u64 = 0x7FFF_FFFF_FFFF;
+
+            unsafe {
+                while address < max_address {
+                    let mut mbi: MEMORY_BASIC_INFORMATION = std::mem::zeroed();
+                    let result = VirtualQueryEx(
+                        self.handle,
+                        address as *const _,
+                        &mut mbi,
+                        std::mem::size_of::<MEMORY_BASIC_INFORMATION>(),
+                    );
+                    if result == 0 {
+                        address += 0x1000;
+                        continue;
+                    }
+
+                    let rbase = mbi.BaseAddress as u64;
+                    let rsize = mbi.RegionSize as u64;
+                    if rsize == 0 {
+                        address += 0x1000;
+                        continue;
+                    }
+
+                    let base_prot = mbi.Protect & 0xFF;
+                    let usable = mbi.State == MEM_COMMIT
+                        && READABLE.contains(&base_prot)
+                        && (mbi.Protect & PAGE_GUARD) == 0
+                        && mbi.Type != MEM_IMAGE;
+                    if usable {
+                        let mapped = mbi.Type == MEM_MAPPED;
+                        let extends = matches!(
+                            spans.last(),
+                            Some(prev) if prev.2 == mapped && (prev.0 + prev.1) as u64 == rbase
+                        );
+                        if extends {
+                            spans.last_mut().unwrap().1 += rsize as usize;
+                        } else {
+                            spans.push((rbase as usize, rsize as usize, mapped));
+                        }
+                    }
+
+                    address = rbase + rsize;
+                }
+            }
+
+            spans.retain(|s| s.1 >= ap_ipc::offsets::TOTAL_SIZE);
+            spans.sort_by(|a, b| b.2.cmp(&a.2).then(b.1.cmp(&a.1)));
+            Ok(spans
+                .into_iter()
+                .map(|(base, size, mapped)| MemoryRegion {
+                    base,
+                    size,
+                    perms: "rw-p".to_string(),
+                    pathname: if mapped { "[mapped]" } else { "[private]" }.to_string(),
+                    rss: -1,
+                })
+                .collect())
         }
     }
 
@@ -648,6 +1051,26 @@ pub mod windows {
     }
 
     impl ProcessMemory for WindowsProcessMemory {
+        /// Keeps a partial read: `ReadProcessMemory` reports how many bytes it
+        /// copied before hitting an inaccessible page (ERROR_PARTIAL_COPY).
+        fn read_into(&mut self, address: usize, buf: &mut [u8]) -> usize {
+            let mut read: usize = 0;
+            unsafe {
+                ReadProcessMemory(
+                    self.handle,
+                    address as *const _,
+                    buf.as_mut_ptr() as *mut _,
+                    buf.len(),
+                    &mut read,
+                );
+            }
+            read.min(buf.len())
+        }
+
+        fn scannable_regions(&mut self) -> MemResult<Vec<MemoryRegion>> {
+            self.scan_order_regions()
+        }
+
         fn read_bytes(&mut self, address: usize, size: usize) -> MemResult<Vec<u8>> {
             let mut buf = vec![0u8; size];
             let mut read: usize = 0;
@@ -930,6 +1353,10 @@ pub mod macos {
     }
 
     impl ProcessMemory for MacOsProcessMemory {
+        fn scannable_regions(&mut self) -> MemResult<Vec<MemoryRegion>> {
+            self.enumerate_scannable_regions()
+        }
+
         fn read_bytes(&mut self, address: usize, size: usize) -> MemResult<Vec<u8>> {
             let mut buf = vec![0u8; size];
             let mut out: u64 = 0;
@@ -1085,6 +1512,180 @@ pub use windows::{find_process_by_names, find_processes_by_names, WindowsProcess
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// In-memory stand-in for a process: one flat region at `base`.
+    struct MockMem {
+        base:       usize,
+        data:       Vec<u8>,
+        /// Root offsets (into `data`) that behave like the running game: they put
+        /// the real value straight back into `current_scene_index` after a write.
+        live_roots: Vec<usize>,
+        /// Byte range of `data` that can't be read (a page that went away).
+        bad:        Option<std::ops::Range<usize>>,
+    }
+
+    impl MockMem {
+        fn new(base: usize, size: usize) -> Self {
+            MockMem { base, data: vec![0u8; size], live_roots: vec![], bad: None }
+        }
+
+        fn put_root(&mut self, offset: usize, scene: u16) {
+            self.data[offset..offset + 8].copy_from_slice(&ap_ipc::AP_IPC_MAGIC);
+            self.data[offset + 8..offset + 10].copy_from_slice(&9u16.to_le_bytes());
+            let f = offset + ap_ipc::offsets::CURRENT_SCENE_INDEX;
+            self.data[f..f + 2].copy_from_slice(&scene.to_le_bytes());
+        }
+
+        fn index(&self, address: usize, len: usize) -> Option<usize> {
+            address.checked_sub(self.base).filter(|s| s + len <= self.data.len())
+        }
+    }
+
+    impl ProcessMemory for MockMem {
+        fn read_bytes(&mut self, address: usize, size: usize) -> MemResult<Vec<u8>> {
+            let err = MemError::ShortRead { addr: address, expected: size, got: 0 };
+            let start = self.index(address, size).ok_or(err)?;
+            if let Some(bad) = &self.bad {
+                if start < bad.end && start + size > bad.start {
+                    return Err(MemError::ShortRead { addr: address, expected: size, got: 0 });
+                }
+            }
+            Ok(self.data[start..start + size].to_vec())
+        }
+
+        fn read_into(&mut self, address: usize, buf: &mut [u8]) -> usize {
+            let Some(start) = self.index(address, buf.len()) else { return 0 };
+            let mut got = buf.len();
+            if let Some(bad) = &self.bad {
+                if start < bad.end && start + got > bad.start {
+                    got = bad.start.saturating_sub(start);
+                }
+            }
+            buf[..got].copy_from_slice(&self.data[start..start + got]);
+            got
+        }
+
+        fn write_bytes(&mut self, address: usize, bytes: &[u8]) -> MemResult<()> {
+            let err = MemError::ShortWrite { addr: address, expected: bytes.len(), wrote: 0 };
+            let start = self.index(address, bytes.len()).ok_or(err)?;
+            self.data[start..start + bytes.len()].copy_from_slice(bytes);
+            for &root in &self.live_roots {
+                if start == root + ap_ipc::offsets::CURRENT_SCENE_INDEX {
+                    self.data[start..start + 2].copy_from_slice(&0xFFFFu16.to_le_bytes());
+                }
+            }
+            Ok(())
+        }
+
+        fn enumerate_regions(&mut self) -> MemResult<Vec<MemoryRegion>> {
+            Ok(vec![MemoryRegion {
+                base:     self.base,
+                size:     self.data.len(),
+                perms:    "rw-p".to_string(),
+                pathname: String::new(),
+                rss:      -1,
+            }])
+        }
+    }
+
+    #[test]
+    fn scan_finds_matches_across_chunk_boundaries() {
+        let pat = ap_ipc::AP_IPC_MAGIC;
+        let mut mem = MockMem::new(0x1000, 100);
+        for off in [12usize, 50, 92] {
+            mem.data[off..off + 8].copy_from_slice(&pat);
+        }
+        let regions = mem.enumerate_regions().unwrap();
+        let mut hits = Vec::new();
+        scan_regions_chunked(&mut mem, &regions, &pat, 16, &mut |_, addr, _| {
+            hits.push(addr);
+            false
+        });
+        assert_eq!(hits, vec![0x1000 + 12, 0x1000 + 50, 0x1000 + 92]);
+    }
+
+    #[test]
+    fn scan_salvages_around_an_unreadable_page() {
+        let pat = ap_ipc::AP_IPC_MAGIC;
+        let mut mem = MockMem::new(0x10_0000, 0x4000);
+        mem.data[0x100..0x108].copy_from_slice(&pat);
+        mem.data[0x3000..0x3008].copy_from_slice(&pat);
+        mem.bad = Some(0x1000..0x2000);
+        let regions = mem.enumerate_regions().unwrap();
+        let mut hits = Vec::new();
+        // One chunk spans the bad page; both matches must still be found.
+        scan_regions_chunked(&mut mem, &regions, &pat, 0x4000, &mut |_, addr, _| {
+            hits.push(addr);
+            false
+        });
+        assert_eq!(hits, vec![0x10_0000 + 0x100, 0x10_0000 + 0x3000]);
+    }
+
+    #[test]
+    fn scan_stops_when_callback_says_so() {
+        let pat = ap_ipc::AP_IPC_MAGIC;
+        let mut mem = MockMem::new(0, 200);
+        for off in [10usize, 60, 120] {
+            mem.data[off..off + 8].copy_from_slice(&pat);
+        }
+        let regions = mem.enumerate_regions().unwrap();
+        let mut hits = 0;
+        scan_regions_chunked(&mut mem, &regions, &pat, 32, &mut |_, _, _| {
+            hits += 1;
+            true
+        });
+        assert_eq!(hits, 1);
+    }
+
+    #[test]
+    fn root_search_picks_the_live_copy_over_a_dead_one() {
+        let base = 0x10000;
+        let mut mem = MockMem::new(base, 0x20000);
+        // Dead (pristine) copy first so it is probed first, live one after.
+        mem.put_root(0x1000, 7);
+        mem.put_root(0x8000, 0xFFFF);
+        mem.live_roots.push(0x8000);
+
+        let mut search = RootSearch::new();
+        let found = find_ap_ipc_root(&mut mem, &mut search).unwrap();
+        assert_eq!(found, base + 0x8000);
+        assert_eq!(search.scan_count(), 1);
+        assert_eq!(search.candidates().len(), 2);
+
+        // The dead copy must have its original value restored.
+        let f = 0x1000 + ap_ipc::offsets::CURRENT_SCENE_INDEX;
+        assert_eq!(&mem.data[f..f + 2], &7u16.to_le_bytes());
+
+        // A second call answers from the cache without rescanning.
+        let again = find_ap_ipc_root(&mut mem, &mut search).unwrap();
+        assert_eq!(again, found);
+        assert_eq!(search.scan_count(), 1);
+    }
+
+    #[test]
+    fn root_search_never_returns_a_dead_copy() {
+        let mut mem = MockMem::new(0x10000, 0x20000);
+        mem.put_root(0x1000, 7);
+
+        let mut search = RootSearch::new();
+        let err = find_ap_ipc_root(&mut mem, &mut search).unwrap_err();
+        assert!(matches!(err, MemError::RootNotFound(_)));
+        assert_eq!(search.candidates().len(), 1);
+
+        // Immediate retry: no rescan, no second probe stall, same message.
+        let again = find_ap_ipc_root(&mut mem, &mut search).unwrap_err();
+        assert_eq!(err.to_string(), again.to_string());
+        assert_eq!(search.scan_count(), 1);
+    }
+
+    #[test]
+    fn root_search_reports_nothing_found() {
+        let mut mem = MockMem::new(0x10000, 0x20000);
+        let mut search = RootSearch::new();
+        let err = find_ap_ipc_root(&mut mem, &mut search).unwrap_err();
+        assert!(matches!(err, MemError::RootNotFound(_)));
+        assert!(search.candidates().is_empty());
+    }
 
     #[test]
     fn find_subslice_basic() {

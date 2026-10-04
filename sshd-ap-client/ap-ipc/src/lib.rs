@@ -68,12 +68,18 @@ pub struct ApCheckStats {
 
 pub const ARCHIPELAGO_BUFFER_SIZE: usize = 1024;
 
+/// One slot of the item buffer. The item id is 9 bits wide in the game, so it
+/// is split across two bytes: the low byte in `item_id` and the high byte in
+/// `item_id_hi`. A slot is pending when `item_id != 0`, so ids whose low byte is
+/// 0 (256, 512) can't be delivered. `_reserved` (byte 2) must stay untouched:
+/// the Python client's buffer access test writes to it.
 #[repr(C, packed)]
 #[derive(Copy, Clone, Debug, Default)]
 pub struct ArchipelagoItemSlot {
-    pub item_id:   u8,
-    pub flags:     u8,
-    pub _reserved: [u8; 2],
+    pub item_id:    u8,
+    pub flags:      u8,
+    pub _reserved:  u8,
+    pub item_id_hi: u8,
 }
 
 pub const AP_ITEM_TABLE_MAX: usize = 512;

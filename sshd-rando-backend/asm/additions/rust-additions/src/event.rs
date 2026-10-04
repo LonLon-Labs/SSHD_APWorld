@@ -359,7 +359,9 @@ pub extern "C" fn custom_event_commands(
         // Give item with custom sceneflag (for Archipelago)
         79 => unsafe {
             use crate::item::give_item_with_sceneflag;
-            let itemid = (event_flow_element.param2 & 0xFF) as u8;
+            // param2 holds the item id in bits 0-8; the patcher may put trap bits above
+            // that (bits 11-14), so mask to the 9-bit id instead of using the raw value.
+            let itemid: u16 = event_flow_element.param2 & 0x1FF;
             let custom_flag = event_flow_element.param4 as u8;
             give_item_with_sceneflag(itemid, custom_flag);
         },

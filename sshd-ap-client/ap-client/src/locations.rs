@@ -138,6 +138,12 @@ pub struct SlotData {
     pub option_require_tim: i64,
     #[serde(default, deserialize_with = "deserialize_lenient_i64", rename = "option_require_all_progression_items")]
     pub option_require_all_progression_items: i64,
+
+    /// `bird_statues_give_items` — when non-zero the 26 Bird Statue locations
+    /// exist on the server and `bird_statues.rs` reports them. The AP world
+    /// already sends every option as `option_<name>` in slot_data.
+    #[serde(default, deserialize_with = "deserialize_lenient_i64", rename = "option_bird_statues_give_items")]
+    pub option_bird_statues_give_items: i64,
 }
 
 fn default_speed_multiplier() -> u32 {

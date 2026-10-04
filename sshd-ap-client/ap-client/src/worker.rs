@@ -89,13 +89,13 @@ use std::collections::{HashMap, HashSet};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use ap_ipc::{offsets, AP_IPC_MAGIC, AP_IPC_SUPPORTED_VERSION};
+use ap_ipc::{offsets, AP_IPC_SUPPORTED_VERSION};
 use archipelago_rs::{BounceOptions, Connection, ConnectionOptions, DeathLinkOptions, Error, Event};
 use iced::futures::channel::mpsc;
 use iced::futures::{SinkExt, StreamExt};
 use iced::stream;
 use iced::Subscription;
-use process_memory::{ProcessMemory, SUPPORTED_EMULATOR_NAMES};
+use process_memory::{find_ap_ipc_root, ProcessMemory, RootSearch, SUPPORTED_EMULATOR_NAMES};
 
 #[cfg(target_os = "linux")]
 use process_memory::linux::{find_processes_by_names, LinuxProcessMemory as Backend};
@@ -106,6 +106,7 @@ use process_memory::windows::{find_processes_by_names, WindowsProcessMemory as B
 
 use crate::actorid;
 use crate::beedle_shop::BeedleShopPoller;
+use crate::bird_statues;
 use crate::boss_defeats;
 use crate::cheat_sync;
 use crate::go_mode;
@@ -304,6 +305,10 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
     // still logged instead of only ever the first one.
     let mut last_discovery: Option<Instant> = None;
     let mut last_search_msg = String::new();
+    // Per-emulator-pid memory of the AP_IPC_ROOT search: every address where the
+    // marker was seen, so retries and re-attaches re-probe those instead of
+    // rescanning the whole process (see `process_memory::find_ap_ipc_root`).
+    let mut root_searches: HashMap<i64, RootSearch> = HashMap::new();
 
     // Archipelago side: `None` until a `Connect` (button or command)
     // arrives; `ap_connected` only flips true once `Event::Connected`
@@ -344,6 +349,7 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                 WorkerInput::RescanEmulator => {
                     emulator = None;
                     emulator_search_logged = false;
+                    root_searches.clear();
                 },
                 WorkerInput::Command(text) => {
                     if let Some(follow_up) = handle_command(
@@ -359,6 +365,7 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                             WorkerInput::RescanEmulator => {
                                 emulator = None;
                                 emulator_search_logged = false;
+                                root_searches.clear();
                             },
                             WorkerInput::Connect { server, slot, password } => {
                                 own_name = slot.clone();
@@ -395,6 +402,7 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
             // launcher/updater/leftover with a matching name, or an emulator
             // instance without the mod loaded, shouldn't block the right one.
             let candidates = find_processes_by_names(SUPPORTED_EMULATOR_NAMES);
+            root_searches.retain(|pid, _| candidates.iter().any(|(p, _)| *p as i64 == *pid));
             let mut problems: Vec<String> = Vec::new();
             for (pid, proc_name) in &candidates {
                 match Backend::attach(*pid as _) {
@@ -404,10 +412,25 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                         if !emulator_search_logged {
                             vlog!("Found emulator process {proc_name} (pid {pid}). Attaching...");
                             vlog!(
-                                "Scanning for AP_IPC_ROOT (one scan, no NSO-header math, no per-mailbox magics)..."
+                                "Looking for AP_IPC_ROOT (guest-RAM mappings first; the first copy the game is actually updating wins)..."
                             );
                         }
-                        match mem.pattern_scan_unique(&AP_IPC_MAGIC) {
+                        let search = root_searches.entry(*pid as i64).or_insert_with(RootSearch::new);
+                        let scans_before = search.scan_count();
+                        let candidates_before = search.candidates().len();
+                        let found = find_ap_ipc_root(&mut mem, search);
+                        if search.scan_count() != scans_before
+                            && (scans_before == 0 || search.candidates().len() != candidates_before)
+                        {
+                            let (bytes, took) = search.last_scan_summary();
+                            vlog!(
+                                "AP_IPC_ROOT scan: {} MiB read in {:.1}s, {} marker copy/copies seen.",
+                                bytes / (1024 * 1024),
+                                took.as_secs_f32(),
+                                search.candidates().len()
+                            );
+                        }
+                        match found {
                             Ok(root_addr) => {
                                 vlog!("Found AP_IPC_ROOT at {root_addr:#x}");
                                 match mem.read_bytes(root_addr + offsets::VERSION, 2) {
@@ -438,8 +461,7 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                                 break;
                             },
                             Err(e) => problems.push(format!(
-                                "{proc_name} (pid {pid}): AP_IPC_ROOT not found yet ({e}) — is \
-                                 Skyward Sword HD running with the mod loaded?"
+                                "{proc_name} (pid {pid}): {e} — is Skyward Sword HD running with the mod loaded?"
                             )),
                         }
                     },
@@ -514,11 +536,19 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                             // The game hands out a decoupled cube's item itself (item-get
                             // animation), so own-world items from these locations must not
                             // be delivered a second time when the server echoes them back.
+                            let mut native_locations: std::collections::HashSet<i64> =
+                                goddess_cubes.keys().copied().collect();
+                            // Same for Bird Statues Give Items: the game gives the item
+                            // itself when the statue is touched.
+                            if slot_data.option_bird_statues_give_items != 0 {
+                                native_locations.extend(bird_statues::location_codes());
+                            }
                             sync.delivery.set_native_locations(
-                                goddess_cubes.keys().copied().collect(),
+                                native_locations,
                                 client.this_player().slot() as i64,
                             );
                             sync.goddess_cube_poller = Some(GoddessCubePoller::new(goddess_cubes));
+
 
                             // Seed `reported_locations` with whatever the server already
                             // knows we've checked (e.g. from a previous session). Without

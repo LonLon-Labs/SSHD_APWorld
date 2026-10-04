@@ -290,6 +290,397 @@
       param3: 3
       param4: Item 227 Text
 
+  - name: Statue Unlock 300 Entry
+    type: entryadd
+    entry:
+      name: "003_300"
+      value: Show Item 300 Text
+  - name: Item 300 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 300 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 300 Text
+
+  - name: Statue Unlock 301 Entry
+    type: entryadd
+    entry:
+      name: "003_301"
+      value: Show Item 301 Text
+  - name: Item 301 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 301 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 301 Text
+
+  - name: Statue Unlock 302 Entry
+    type: entryadd
+    entry:
+      name: "003_302"
+      value: Show Item 302 Text
+  - name: Item 302 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 302 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 302 Text
+
+  - name: Statue Unlock 303 Entry
+    type: entryadd
+    entry:
+      name: "003_303"
+      value: Show Item 303 Text
+  - name: Item 303 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 303 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 303 Text
+
+  - name: Statue Unlock 304 Entry
+    type: entryadd
+    entry:
+      name: "003_304"
+      value: Show Item 304 Text
+  - name: Item 304 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 304 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 304 Text
+
+  - name: Statue Unlock 305 Entry
+    type: entryadd
+    entry:
+      name: "003_305"
+      value: Show Item 305 Text
+  - name: Item 305 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 305 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 305 Text
+
+  - name: Statue Unlock 306 Entry
+    type: entryadd
+    entry:
+      name: "003_306"
+      value: Show Item 306 Text
+  - name: Item 306 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 306 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 306 Text
+
+  - name: Statue Unlock 307 Entry
+    type: entryadd
+    entry:
+      name: "003_307"
+      value: Show Item 307 Text
+  - name: Item 307 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 307 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 307 Text
+
+  - name: Statue Unlock 308 Entry
+    type: entryadd
+    entry:
+      name: "003_308"
+      value: Show Item 308 Text
+  - name: Item 308 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 308 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 308 Text
+
+  - name: Statue Unlock 309 Entry
+    type: entryadd
+    entry:
+      name: "003_309"
+      value: Show Item 309 Text
+  - name: Item 309 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 309 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 309 Text
+
+  - name: Statue Unlock 310 Entry
+    type: entryadd
+    entry:
+      name: "003_310"
+      value: Show Item 310 Text
+  - name: Item 310 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 310 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 310 Text
+
+  - name: Statue Unlock 311 Entry
+    type: entryadd
+    entry:
+      name: "003_311"
+      value: Show Item 311 Text
+  - name: Item 311 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 311 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 311 Text
+
+  - name: Statue Unlock 312 Entry
+    type: entryadd
+    entry:
+      name: "003_312"
+      value: Show Item 312 Text
+  - name: Item 312 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 312 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 312 Text
+
+  - name: Statue Unlock 313 Entry
+    type: entryadd
+    entry:
+      name: "003_313"
+      value: Show Item 313 Text
+  - name: Item 313 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 313 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 313 Text
+
+  - name: Statue Unlock 314 Entry
+    type: entryadd
+    entry:
+      name: "003_314"
+      value: Show Item 314 Text
+  - name: Item 314 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 314 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 314 Text
+
+  - name: Statue Unlock 315 Entry
+    type: entryadd
+    entry:
+      name: "003_315"
+      value: Show Item 315 Text
+  - name: Item 315 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 315 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 315 Text
+
+  - name: Statue Unlock 316 Entry
+    type: entryadd
+    entry:
+      name: "003_316"
+      value: Show Item 316 Text
+  - name: Item 316 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 316 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 316 Text
+
+  - name: Statue Unlock 317 Entry
+    type: entryadd
+    entry:
+      name: "003_317"
+      value: Show Item 317 Text
+  - name: Item 317 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 317 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 317 Text
+
+  - name: Statue Unlock 318 Entry
+    type: entryadd
+    entry:
+      name: "003_318"
+      value: Show Item 318 Text
+  - name: Item 318 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 318 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 318 Text
+
+  - name: Statue Unlock 319 Entry
+    type: entryadd
+    entry:
+      name: "003_319"
+      value: Show Item 319 Text
+  - name: Item 319 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 319 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 319 Text
+
+  - name: Statue Unlock 320 Entry
+    type: entryadd
+    entry:
+      name: "003_320"
+      value: Show Item 320 Text
+  - name: Item 320 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 320 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 320 Text
+
+  - name: Statue Unlock 321 Entry
+    type: entryadd
+    entry:
+      name: "003_321"
+      value: Show Item 321 Text
+  - name: Item 321 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 321 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 321 Text
+
+  - name: Statue Unlock 322 Entry
+    type: entryadd
+    entry:
+      name: "003_322"
+      value: Show Item 322 Text
+  - name: Item 322 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 322 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 322 Text
+
   - name: Give Scrapper Storyflag
     type: flowadd
     flow:

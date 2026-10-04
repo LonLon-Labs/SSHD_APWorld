@@ -2971,6 +2971,7 @@ version = "0.1.0"
 dependencies = [
  "ap-ipc",
  "libc",
+ "memchr",
  "windows-sys 0.52.0",
 ]
 

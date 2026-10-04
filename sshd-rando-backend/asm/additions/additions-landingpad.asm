@@ -319,10 +319,14 @@ cmp w8, #99
 b.eq check_sailcloth_for_air_vents
 
 cmp w8, #100
-b.eq require_sailcloth_to_fly_to_sky
+b.eq require_sailcloth_and_loftwing_to_fly_to_sky
 
 cmp w8, #101
 b.eq voidout_near_skyloft_or_light_pillars_without_sailcloth
+
+; shop item buy decide position
+cmp w8, #102
+b.eq get_shop_item_move_target
 
 ret ; this should never be reached
 

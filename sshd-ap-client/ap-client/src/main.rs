@@ -38,6 +38,7 @@
 
 mod actorid;
 mod beedle_shop;
+mod bird_statues;
 mod boss_defeats;
 mod cheat_sync;
 mod colors;
@@ -60,14 +61,14 @@ use std::thread;
 use std::time::Duration;
 use std::collections::HashSet;
 
-use ap_ipc::{offsets, ApIpcRoot, AP_IPC_MAGIC, AP_IPC_SUPPORTED_VERSION};
+use ap_ipc::{offsets, ApIpcRoot, AP_IPC_SUPPORTED_VERSION};
 use archipelago_rs::{BounceOptions, Connection, ConnectionOptions, DeathLinkOptions, Error, Event};
 use beedle_shop::BeedleShopPoller;
 use goddess_chests::GoddessChestPoller;
 use goddess_cubes::GoddessCubePoller;
 use links::{LinkMonitor, LinkSignal};
 use locations::{CustomFlagPoller, SlotData};
-use process_memory::{MemError, ProcessMemory, SUPPORTED_EMULATOR_NAMES};
+use process_memory::{find_ap_ipc_root, MemError, ProcessMemory, RootSearch, SUPPORTED_EMULATOR_NAMES};
 
 #[cfg(target_os = "linux")]
 use process_memory::linux::{find_process_by_names, LinuxProcessMemory as Backend};
@@ -255,9 +256,10 @@ fn run_headless(args: StartupArgs) {
 
     let mut mem = Backend::attach(pid as _).expect("failed to attach to emulator process");
 
-    println!("Scanning for AP_IPC_ROOT (one scan, no NSO-header math, no per-mailbox magics)...");
+    println!("Looking for AP_IPC_ROOT (guest-RAM mappings first; the first copy the game is actually updating wins)...");
+    let mut root_search = RootSearch::new();
     let root_addr = loop {
-        match mem.pattern_scan_unique(&AP_IPC_MAGIC) {
+        match find_ap_ipc_root(&mut mem, &mut root_search) {
             Ok(addr) => break addr,
             Err(e) => {
                 eprintln!("  not found yet ({e}) — is Skyward Sword HD running with the mod loaded?");
@@ -670,7 +672,7 @@ fn run_headless(args: StartupArgs) {
 pub(crate) fn write_item_to_buffer(
     mem: &mut impl ProcessMemory,
     root_addr: usize,
-    original_id: u8,
+    original_id: u16,
 ) -> Result<bool, MemError> {
     let buffer_addr = root_addr + offsets::ITEM_BUFFER;
     let buffer_bytes = mem.read_bytes(
@@ -682,10 +684,15 @@ pub(crate) fn write_item_to_buffer(
         let slot_offset = i * std::mem::size_of::<ap_ipc::ArchipelagoItemSlot>();
         let current_id = buffer_bytes[slot_offset]; // item_id is the slot's first byte
         if current_id == 0 {
+            // The game's item id is 9 bits wide: low byte in `item_id`, high
+            // byte in `item_id_hi`. A slot is pending when the low byte is
+            // non-zero, which `items::original_id_for_ap_code` guarantees
+            // (it never returns 256 or 512).
             let slot = ap_ipc::ArchipelagoItemSlot {
-                item_id:   original_id,
-                flags:     0,
-                _reserved: [0, 0],
+                item_id:    (original_id & 0xFF) as u8,
+                flags:      0,
+                _reserved:  0,
+                item_id_hi: (original_id >> 8) as u8,
             };
             mem.write_bytes(buffer_addr + slot_offset, &ap_ipc::bytes::write(&slot))?;
             return Ok(true);

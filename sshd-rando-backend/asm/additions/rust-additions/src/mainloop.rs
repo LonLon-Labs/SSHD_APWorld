@@ -178,6 +178,10 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     // animation) once its story flag has been set by striking it.
     item::handle_goddess_cube_items();
 
+    // Bird Statues Give Items - give a statue's item (with the item-get
+    // animation) once the statue has been touched.
+    item::handle_bird_statue_items();
+
     // Goddess Chests - in "unlocked after Goddess Sword" mode, mirror the
     // Goddess Sword storyflag (907) into the chest unlock flag (95).
     handle_goddess_chest_unlock_flag();

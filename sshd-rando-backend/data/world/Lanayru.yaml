@@ -615,6 +615,8 @@
 - name: Lanayru Mine Entry Statue
   events:
     Unlock Lanayru Mine Entry Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Mine - Mine Entry Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lanayru Mine Entry: Nothing # Back out of interaction.
@@ -622,6 +624,8 @@
 - name: Desert Entrance Statue
   events:
     Unlock Desert Entrance Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Desert - Desert Entrance Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lanayru Desert South: Nothing # Back out of interaction.
@@ -629,6 +633,8 @@
 - name: West Desert Statue
   events:
     Unlock West Desert Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Desert - West Desert Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Sand Oasis Middle: Nothing # Back out of interaction.
@@ -636,6 +642,8 @@
 - name: Desert Gorge Statue
   events:
     Unlock Desert Gorge Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Desert - Desert Gorge Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Temple of Time South: Nothing # Back out of interaction.
@@ -643,6 +651,8 @@
 - name: Temple of Time Statue
   events:
     Unlock Temple of Time Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Temple of Time - Temple of Time Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Temple of Time West Past Rubble: Nothing # Back out of interaction.
@@ -650,6 +660,8 @@
 - name: North Desert Statue
   events:
     Unlock North Desert Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Desert - North Desert Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lanayru Desert North: Nothing # Back out of interaction.
@@ -657,6 +669,8 @@
 - name: Stone Cache Statue
   events:
     Unlock Stone Cache Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Desert - Stone Cache Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lanayru Desert East: Nothing # Back out of interaction.
@@ -664,6 +678,8 @@
 - name: Ancient Harbour Statue
   events:
     Unlock Ancient Harbour Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Ancient Harbour - Ancient Harbour Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Ancient Harbour: Nothing # Back out of interaction.
@@ -671,6 +687,8 @@
 - name: Skipper's Retreat Statue
   events:
     Unlock Skippers Retreat Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Skipper's Retreat - Skipper's Retreat Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Skipper's Retreat Dock: Nothing # Back out of interaction.
@@ -678,6 +696,8 @@
 - name: Shipyard Statue
   events:
     Unlock Shipyard Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Shipyard - Shipyard Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Shipyard Dock: Nothing # Back out of interaction.
@@ -685,6 +705,8 @@
 - name: Pirate Stronghold Statue
   events:
     Unlock Pirate Stronghold Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Pirate Stronghold - Pirate Stronghold Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Pirate Stronghold Dock: Nothing # Back out of interaction.
@@ -692,6 +714,8 @@
 - name: Lanayru Gorge Statue
   events:
     Unlock Lanayru Gorge Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Gorge - Lanayru Gorge Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lanayru Gorge: Nothing # Back out of interaction.

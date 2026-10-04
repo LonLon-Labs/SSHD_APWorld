@@ -30,8 +30,11 @@ pub struct RandomizerSettings {
     pub goddess_chest_unlock_mode: u8, /* 0 = vanilla (cube gated), 1 = unlocked after
                                         * Goddess Sword, 2 = unlocked from start. Modes 1
                                         * and 2 gate the chests on storyflag 95 */
+    pub bird_statues_need_unlock:  u8, /* 1 = flying up from a statue also needs its
+                                        * unlock flag (scene 6), see
+                                        * lyt::require_sailcloth_and_loftwing_to_fly_to_sky */
 }
-assert_eq_size!([u8; 0x5], RandomizerSettings);
+assert_eq_size!([u8; 0x6], RandomizerSettings);
 
 // IMPORTANT: when using vanilla code, the start point must be declared in
 // symbols.yaml and then added to this extern block.

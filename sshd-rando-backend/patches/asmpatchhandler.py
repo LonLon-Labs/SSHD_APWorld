@@ -10,6 +10,7 @@ from lz4.block import compress, decompress
 
 from constants.asmconstants import *
 from constants.itemconstants import (
+    ALL_BIRD_STATUE_UNLOCK_ITEMS,
     ITEM_ITEMFLAGS,
     ITEM_STORYFLAGS,
     ITEM_DUNGEONFLAGS,
@@ -313,6 +314,14 @@ class ASMPatchHandler:
                 ASM_PATCHES_DIFFS_PATH / damage_multiplier_diff_file_path, world
             )
 
+            print_progress_text("Creating bird statue unlock patch")
+            bird_statue_unlock_diff_file_path = (
+                temp_dir_name / "bird-statue-unlock-diff.yaml"
+            )
+            self.create_bird_statue_unlock_patch(
+                ASM_PATCHES_DIFFS_PATH / bird_statue_unlock_diff_file_path, world
+            )
+
             print_progress_text("Applying asm patches")
             self.patch_asm(
                 world,
@@ -487,6 +496,7 @@ class ASMPatchHandler:
 
         # Set flags for random starting statues
         bird_statue_data = yaml_load(BIRD_STATUE_DATA_PATH)
+        bird_statue_unlock_flags: list[int] = []
         faron_starting_statue = world.get_entrance(
             "Faron Region Entrance -> Sealed Grounds Statue"
         ).connected_area.name
@@ -510,6 +520,26 @@ class ASMPatchHandler:
                     sceneflags[scene] = []
                 sceneflags[scene].append(flag)
 
+        # With "Bird Statues Need to be Unlocked", the landing map reads a separate
+        # unlock flag per statue (see create_bird_statue_unlock_patch). Set the
+        # flags for any unlock items we start with, and for whichever statue ended
+        # up as a region's starting statue so it is always droppable.
+        if world.setting("bird_statues_need_unlock") == "on":
+            unlock_item_names = list(ALL_BIRD_STATUE_UNLOCK_ITEMS)
+            unlocked_names: set[str] = set()
+            for item, count in world.starting_item_pool.items():
+                if count > 0 and item.name in unlock_item_names:
+                    unlocked_names.add(item.name)
+            for statue in (
+                faron_starting_statue,
+                eldin_starting_statue,
+                lanayru_starting_statue,
+            ):
+                if f"{statue} Unlock" in unlock_item_names:
+                    unlocked_names.add(f"{statue} Unlock")
+            bird_statue_unlock_flags = sorted(
+                unlock_item_names.index(name) for name in unlocked_names
+            )
         # Each section is delimited by 0xFFFF
         startflags_data = BytesIO()
 
@@ -525,6 +555,10 @@ class ASMPatchHandler:
                 startflags_data.write(
                     struct.pack("<BB", SCENE_NAME_TO_SCENE_INDEX[scene], flag)
                 )
+
+        # Bird Statue unlock flags live in scene 6's flag space
+        for flag in bird_statue_unlock_flags:
+            startflags_data.write(struct.pack("<BB", 6, flag))
 
         startflags_data.write(bytes.fromhex("FFFF"))
 
@@ -630,6 +664,7 @@ class ASMPatchHandler:
                 cutoff_game_over_music,
                 archipelago_item_model,
                 goddess_chest_unlock_mode,
+                1 if world.setting("bird_statues_need_unlock") == "on" else 0,
             ],  # RANDOMIZER_SETTINGS
             0x712E5FF020: [
                 0xFF,
@@ -700,8 +735,30 @@ class ASMPatchHandler:
             init_rw_globals_dict[0x712E54B700] = list(b"CUBE")  # GODDESS_CUBE_MAGIC
         init_rw_globals_dict[0x712E54B710] = flag_bytes  # GODDESS_CUBE_CUSTOM_FLAGS
         init_rw_globals_dict[0x712E54B750] = [
-            item_id & 0xFF for item_id in cube_item_ids
-        ]  # GODDESS_CUBE_ITEM_IDS
+            byte
+            for item_id in cube_item_ids
+            for byte in (item_id & 0xFF, (item_id >> 8) & 0xFF)
+        ]  # GODDESS_CUBE_ITEM_IDS (32 x u16, little endian)
+
+        # Bird Statues Give Items: same layout as the Goddess Cube tables, placed right
+        # after them in the patcher-written config area (see symbols.yaml). The magic
+        # word is only written when at least one statue has an item.
+        statue_flags, statue_item_ids = getattr(
+            self, "bird_statue_arrays", ([0x3FF] * 26, [0] * 26)
+        )
+        statue_flags = list(statue_flags) + [0x3FF] * (32 - len(statue_flags))
+        statue_item_ids = list(statue_item_ids) + [0] * (32 - len(statue_item_ids))
+        statue_flag_bytes: list[int] = []
+        for statue_flag in statue_flags:
+            statue_flag_bytes += [statue_flag & 0xFF, (statue_flag >> 8) & 0xFF]
+        if any(statue_flag != 0x3FF for statue_flag in statue_flags):
+            init_rw_globals_dict[0x712E54B790] = list(b"BIRD")  # BIRD_STATUE_MAGIC
+        init_rw_globals_dict[0x712E54B7A0] = statue_flag_bytes  # BIRD_STATUE_CUSTOM_FLAGS
+        init_rw_globals_dict[0x712E54B7E0] = [
+            byte
+            for item_id in statue_item_ids
+            for byte in (item_id & 0xFF, (item_id >> 8) & 0xFF)
+        ]  # BIRD_STATUE_ITEM_IDS (32 x u16, little endian)
 
         # Apply additional symbol initializers provided by stage patch setup.
         global_symbol_values: dict[str, int] = getattr(self, "global_symbol_values", {})
@@ -731,6 +788,88 @@ class ASMPatchHandler:
         }
 
         yaml_write(output_path, damage_multiplier_dict)
+
+    # Bird Statue landing map condition tables (rodata, addresses in the same
+    # address space as the .offset values in the asm patches). Each table holds
+    # `count` first-half entries (the flag set when the statue is visited) followed
+    # by `count` second-half entries (the "HD progression" flag). Entries are
+    # 8 bytes: u32 type (0 = scene flag, 1 = story flag) then the value, which is
+    # (u16 scene, u16 flag) for scene flags and the flag number for story flags.
+    # The landing map shows a statue if either half's flag is set.
+    #
+    # Only statues that get an unlock item are listed. The region entrance statues
+    # (Sealed Grounds, Volcano Entrance, Lanayru Mine Entry) and the two inner
+    # dungeon statues are left alone. Values are each statue's table index.
+    BIRD_STATUE_MAP_TABLES = (
+        (
+            0x71013A2434,  # Faron
+            10,
+            {
+                "Behind the Temple Statue": 0,
+                "Faron Woods Entry Statue": 1,
+                "In the Woods Statue": 2,
+                "Viewing Platform Statue": 3,
+                "The Great Tree Statue": 4,
+                "Forest Temple Statue": 5,
+                "Deep Woods Statue": 6,
+                "Lake Floria Statue": 7,
+                "Floria Waterfall Statue": 8,
+            },
+        ),
+        (
+            0x71013A24D4,  # Eldin
+            6,
+            {
+                "Volcano East Statue": 1,
+                "Volcano Ascent Statue": 2,
+                "Temple Entrance Statue": 3,
+            },
+        ),
+        (
+            0x71013A2534,  # Lanayru
+            12,
+            {
+                "Desert Entrance Statue": 1,
+                "West Desert Statue": 2,
+                "North Desert Statue": 3,
+                "Stone Cache Statue": 4,
+                "Desert Gorge Statue": 5,
+                "Temple of Time Statue": 6,
+                "Ancient Harbour Statue": 7,
+                "Skipper's Retreat Statue": 8,
+                "Shipyard Statue": 9,
+                "Pirate Stronghold Statue": 10,
+                "Lanayru Gorge Statue": 11,
+            },
+        ),
+    )
+
+    def create_bird_statue_unlock_patch(self, output_path: Path, world: World):
+        # Only needed when statues have to be unlocked. Point each gated statue's
+        # landing map condition at its own unlock flag (scene 6, flag = the item's
+        # index in ALL_BIRD_STATUE_UNLOCK_ITEMS, which the item sets when it is
+        # collected) and disable its "HD progression" flag so nothing else can
+        # make it droppable. Touching a statue then only lets you fly up from it.
+        if world.setting("bird_statues_need_unlock") != "on":
+            return
+
+        unlock_item_names = list(ALL_BIRD_STATUE_UNLOCK_ITEMS)
+        patch: dict[int, list[int]] = {}
+
+        for table_address, count, statues in self.BIRD_STATUE_MAP_TABLES:
+            for statue_area, index in statues.items():
+                flag = unlock_item_names.index(f"{statue_area} Unlock")
+
+                # First half: type 0 (scene flag), scene 6, unlock flag
+                patch[table_address + index * 8] = list(
+                    struct.pack("<IHH", 0, 6, flag)
+                )
+                # Second half: type 1 (story flag) with the invalid flag 0xFFFF
+                patch[table_address + (index + count) * 8] = list(
+                    struct.pack("<II", 1, 0xFFFF)
+                )
+
+        yaml_write(output_path, patch)
 
     def add_shop_data(
         self,

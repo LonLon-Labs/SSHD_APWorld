@@ -619,11 +619,67 @@ extern "C" fn override_inventory_caption_item_text(
     }
 }
 
+/// Maps `dLytSaveMgr.save_obj_name_index` (the statue actor's param2 low byte,
+/// i.e. its SAVEOBJ_NAME_xx text index) to that statue's Bird Statue unlock
+/// flag in scene 6. The flag is the unlock item's index in
+/// `ALL_BIRD_STATUE_UNLOCK_ITEMS` (itemconstants.py). -1 = no unlock item (the
+/// region entrance statues, the inner dungeon statues and non-statue save
+/// objects), which fails open. Measured in game by walking to each statue.
+const BIRD_STATUE_UNLOCK_FLAG_BY_SAVE_OBJ_INDEX: [i8; 30] = [
+    0,  // 0  Behind the Temple
+    1,  // 1  Faron Woods Entry
+    2,  // 2  In the Woods
+    3,  // 3  Viewing Platform
+    6,  // 4  The Great Tree
+    5,  // 5  Forest Temple
+    4,  // 6  Deep Woods
+    7,  // 7  Lake Floria
+    8,  // 8  Floria Waterfall
+    -1, // 9
+    -1, // 10
+    9,  // 11 Volcano East
+    10, // 12 Volcano Ascent
+    11, // 13 Temple Entrance
+    -1, // 14
+    -1, // 15
+    18, // 16 Ancient Harbour
+    12, // 17 Desert Entrance
+    13, // 18 West Desert
+    16, // 19 North Desert
+    17, // 20 Stone Cache
+    14, // 21 Desert Gorge
+    15, // 22 Temple of Time
+    -1, // 23
+    19, // 24 Skipper's Retreat
+    20, // 25 Shipyard
+    21, // 26 Pirate Stronghold
+    22, // 27 Lanayru Gorge
+    -1, // 28
+    -1, // 29
+];
+
+/// True if "Bird Statues Need to be Unlocked" is on and the statue whose save
+/// prompt is open has an unlock flag that is not set. Fails open for any
+/// statue that isn't in the table.
+unsafe fn bird_statue_locked(save_mgr: *mut dLytSaveMgr) -> bool {
+    if RANDOMIZER_SETTINGS.bird_statues_need_unlock == 0 {
+        return false;
+    }
+    let index = (*save_mgr).save_obj_name_index as usize;
+    if index >= BIRD_STATUE_UNLOCK_FLAG_BY_SAVE_OBJ_INDEX.len() {
+        return false;
+    }
+    let flag_id = BIRD_STATUE_UNLOCK_FLAG_BY_SAVE_OBJ_INDEX[index];
+    flag_id >= 0 && flag::check_global_sceneflag(6, flag_id as u16) == 0
+}
+
 #[no_mangle]
-pub extern "C" fn require_sailcloth_to_fly_to_sky(save_mgr: *mut dLytSaveMgr) {
+pub extern "C" fn require_sailcloth_and_loftwing_to_fly_to_sky(save_mgr: *mut dLytSaveMgr) {
     unsafe {
         if (*save_mgr).save_text_prompt_index == 1
-            && flag::check_itemflag(flag::ITEMFLAGS::SAILCLOTH) == 0
+            && (flag::check_itemflag(flag::ITEMFLAGS::SAILCLOTH) == 0
+                || flag::check_storyflag(27) == 0
+                || bird_statue_locked(save_mgr))
         {
             (*save_mgr).save_text_prompt_index = 0;
         }

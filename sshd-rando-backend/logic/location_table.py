@@ -153,6 +153,10 @@ def get_disabled_shuffle_locations(
                 settings["gossip_stone_treasure_shuffle"].value == "off"
                 and "Gossip Stone Treasures" in location.types
             )
+            or (
+                settings["bird_statues_give_items"].value == "off"
+                and "Bird Statues" in location.types
+            )
         )
     ]
 
