@@ -39,5 +39,10 @@ SECTIONS
   /* App data */
   .data : {
     *(.data .data.*)
+    /* objcopy -O binary drops NOBITS sections, so a separate .bss would sit
+       past the end of the emitted blob (unmapped in game). Fold zero-initialised
+       statics into .data so they are real zero bytes in the binary. */
+    *(.bss .bss.*)
+    *(COMMON)
   } :data
 }

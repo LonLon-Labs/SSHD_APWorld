@@ -4,10 +4,14 @@ from constants.itemnames import *
 ALL_TABLETS = (EMERALD_TABLET, RUBY_TABLET, AMBER_TABLET)
 
 # Bird Statue unlock items, grouped by the region their statue is in.
-# Sealed Grounds, Volcano Entrance and Lanayru Mine Entry have no unlock item
-# because they are always unlocked (they are the region entrances).
+# Every surface statue has an unlock item, including the three region entrance
+# statues (Sealed Grounds, Volcano Entrance and Lanayru Mine Entry). None of them
+# is unlocked for free when "Bird Statues Need to be Unlocked" is on; the only
+# ones you start with are the ones picked by "Start with a Bird Statue in Each
+# Region".
 BIRD_STATUE_UNLOCK_ITEMS_BY_REGION = {
     "Faron": [
+        "Sealed Grounds Statue Unlock",
         "Behind the Temple Statue Unlock",
         "Faron Woods Entry Statue Unlock",
         "In the Woods Statue Unlock",
@@ -19,11 +23,13 @@ BIRD_STATUE_UNLOCK_ITEMS_BY_REGION = {
         "Floria Waterfall Statue Unlock",
     ],
     "Eldin": [
+        "Volcano Entrance Statue Unlock",
         "Volcano East Statue Unlock",
         "Volcano Ascent Statue Unlock",
         "Temple Entrance Statue Unlock",
     ],
     "Lanayru": [
+        "Lanayru Mine Entry Statue Unlock",
         "Desert Entrance Statue Unlock",
         "West Desert Statue Unlock",
         "Desert Gorge Statue Unlock",
@@ -38,11 +44,22 @@ BIRD_STATUE_UNLOCK_ITEMS_BY_REGION = {
     ],
 }
 
+# The unlock flag / item id order. This is NOT the order of the dict above: the
+# first 23 entries keep their original ids (300..=322) and the three region
+# entrance statues were added afterwards as 323..=325. Keep this in sync with
+# data/items.yaml, Items.py and the BIRD_STATUE_UNLOCK_* constants in item.rs.
+BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS = (
+    "Sealed Grounds Statue Unlock",
+    "Volcano Entrance Statue Unlock",
+    "Lanayru Mine Entry Statue Unlock",
+)
+
 ALL_BIRD_STATUE_UNLOCK_ITEMS = tuple(
     item
     for region_items in BIRD_STATUE_UNLOCK_ITEMS_BY_REGION.values()
     for item in region_items
-)
+    if item not in BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS
+) + BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS
 
 # Custom flag IDs 0..31 are reserved for Bird Statue unlock flags. Each unlock item
 # owns the flag whose ID is its index in ALL_BIRD_STATUE_UNLOCK_ITEMS. These are in

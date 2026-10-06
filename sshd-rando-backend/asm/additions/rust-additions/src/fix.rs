@@ -301,7 +301,7 @@ pub extern "C" fn is_kikwi_found(dont_care: *mut c_void, found_storyflag: u16) -
 #[no_mangle]
 pub extern "C" fn fix_ammo_counts(collected_item: u16) {
     // Raw item id (u16), not `flag::ITEMFLAGS`: custom ids such as the Bird
-    // Statue unlocks (300..=322) are not enum variants, and passing one as the
+    // Statue unlocks (300..=325) are not enum variants, and passing one as the
     // enum is undefined behavior.
     const FIVE_BOMBS: u16 = flag::ITEMFLAGS::FIVE_BOMBS as u16;
     const TEN_BOMBS: u16 = flag::ITEMFLAGS::TEN_BOMBS as u16;

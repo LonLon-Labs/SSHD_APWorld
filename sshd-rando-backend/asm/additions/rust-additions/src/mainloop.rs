@@ -167,6 +167,10 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
 
     color::handle_colors();
 
+    // Cache story state that hooks can't safely query themselves (see
+    // flag::refresh_cached_story_state).
+    flag::refresh_cached_story_state();
+
     // Archipelago - Refresh IPC-exposed addresses (sceneflags/dungeonflags)
     // for the external client's batch location-check polling.
     item::refresh_ipc_addresses();
@@ -194,6 +198,10 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     // On the first item-216 pickup of a session, LYT_MSG_WINDOW.text_mgr may
     // be null when cmd 81 fires.  The main loop retries until it's ready.
     event::apply_pending_ap_string_args();
+
+    // Dismounting the Loftwing near Skyloft without the Sailcloth voids out
+    // immediately (armed by the SCEN type 5 hook).
+    entrance::tick_skyloft_dismount_voidout();
 
     fix::apply_loftwing_speed_override();
     cheats::handle_moon_jump();

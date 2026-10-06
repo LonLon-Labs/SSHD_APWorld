@@ -1519,7 +1519,250 @@
     type: flowpatch
     index: 2
     flow:
-      next: Display Fi Call Text
+      next: Check Fi Cant Drop Pending
+  # Fi "can't drop down" message. Started from code (see
+  # event::start_fi_cant_drop_event) when the player steps into a light pillar
+  # with no droppable Bird Statue; the normal Fi call menu is skipped.
+  - name: Check Fi Cant Drop Pending
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Cant Drop Switch
+      param3: 82 # custom command: is a Fi can't-drop-down message pending (0/1)
+  - name: Fi Cant Drop Switch
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7 # use result from previous check
+    cases:
+      - Display Fi Call Text # 0: normal Fi call menu
+      - Check Fi Cant Drop Is Sailcloth # 1: a can't-drop-down message is pending
+  # Only plain 0/1 switches below: pick no-statue vs Sailcloth, then one of the
+  # 7 Sailcloth texts as a 3-bit binary tree (command 85 = bit N of the variant).
+  - name: Check Fi Cant Drop Is Sailcloth
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Cant Drop Is Sailcloth Switch
+      param3: 84 # custom command: 1 if no Sailcloth (checked live), else 0
+  - name: Fi Cant Drop Is Sailcloth Switch
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Bird Statue Text # 0: has the Sailcloth, no droppable Bird Statue
+      - Fi Variant Bit2 Check # 1: no Sailcloth
+  - name: Fi Variant Bit2 Check
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit2 Switch
+      param1: 2
+      param3: 85
+  - name: Fi Variant Bit2 Switch
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Fi Variant Bit1 Check A
+      - Fi Variant Bit1 Check B
+  - name: Fi Variant Bit1 Check A
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit1 Switch A
+      param1: 1
+      param3: 85
+  - name: Fi Variant Bit1 Switch A
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Fi Variant Bit0 Check A0
+      - Fi Variant Bit0 Check A1
+  - name: Fi Variant Bit1 Check B
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit1 Switch B
+      param1: 1
+      param3: 85
+  - name: Fi Variant Bit1 Switch B
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Fi Variant Bit0 Check B0
+      - Fi Variant Bit0 Check B1
+  - name: Fi Variant Bit0 Check A0
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit0 Switch A0
+      param1: 0
+      param3: 85
+  - name: Fi Variant Bit0 Switch A0
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Sailcloth Text 1
+      - Show Fi No Sailcloth Text 2
+  - name: Fi Variant Bit0 Check A1
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit0 Switch A1
+      param1: 0
+      param3: 85
+  - name: Fi Variant Bit0 Switch A1
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Sailcloth Text 3
+      - Show Fi No Sailcloth Text 4
+  - name: Fi Variant Bit0 Check B0
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit0 Switch B0
+      param1: 0
+      param3: 85
+  - name: Fi Variant Bit0 Switch B0
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Sailcloth Text 5
+      - Show Fi No Sailcloth Text 6
+  - name: Fi Variant Bit0 Check B1
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit0 Switch B1
+      param1: 0
+      param3: 85
+  - name: Fi Variant Bit0 Switch B1
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Sailcloth Text 7
+      - Show Fi No Sailcloth Text 8
+  - name: Fi No Sailcloth Text 1
+    type: textadd
+    textboxtype: 2 # Fi text box background
+  - name: Show Fi No Sailcloth Text 1
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 1
+  - name: Fi No Sailcloth Text 2
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 2
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 2
+  - name: Fi No Sailcloth Text 3
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 3
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 3
+  - name: Fi No Sailcloth Text 4
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 4
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 4
+  - name: Fi No Sailcloth Text 5
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 5
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 5
+  - name: Fi No Sailcloth Text 6
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 6
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 6
+  - name: Fi No Sailcloth Text 7
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 7
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 7
+  - name: Fi No Sailcloth Text 8
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 8
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 8
+  - name: Fi No Bird Statue Text
+    type: textadd
+    textboxtype: 2 # Fi text box background
+  - name: Show Fi No Bird Statue Text
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Bird Statue Text
+  - name: Fi Cant Drop Voidout
+    type: flowadd
+    flow:
+      type: type3
+      next: -1
+      param3: 83 # custom command: mark the Fi message finished (no-Sailcloth messages then void out from the main loop)
   - name: Display Fi Call Text
     type: flowadd
     flow:

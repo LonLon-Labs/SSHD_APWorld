@@ -31,8 +31,8 @@
 - name: Faron Pillar
   hint_region: None
   exits:
-    Faron Region Entrance: Nothing
-    Sealed Grounds Statue: "'Unlock_Sealed_Grounds_Statue'"
+    Faron Region Entrance: bird_statues_need_unlock == off
+    Sealed Grounds Statue: "('Unlock_Sealed_Grounds_Statue' and bird_statues_need_unlock == off) or (Sealed_Grounds_Statue_Unlock and bird_statues_need_unlock == on)"
     Behind the Temple Statue: "('Unlock_Behind_the_Temple_Statue' and bird_statues_need_unlock == off) or (Behind_the_Temple_Statue_Unlock and bird_statues_need_unlock == on)"
     Faron Woods Entry Statue: "('Unlock_Faron_Woods_Entry_Statue' and bird_statues_need_unlock == off) or (Faron_Woods_Entry_Statue_Unlock and bird_statues_need_unlock == on)"
     Viewing Platform Statue: "('Unlock_Viewing_Platform_Statue' and bird_statues_need_unlock == off) or (Viewing_Platform_Statue_Unlock and bird_statues_need_unlock == on)"
@@ -51,8 +51,8 @@
 - name: Eldin Pillar
   hint_region: None
   exits:
-    Eldin Region Entrance: Nothing
-    Volcano Entrance Statue: "'Unlock_Volcano_Entrance_Statue'"
+    Eldin Region Entrance: bird_statues_need_unlock == off
+    Volcano Entrance Statue: "('Unlock_Volcano_Entrance_Statue' and bird_statues_need_unlock == off) or (Volcano_Entrance_Statue_Unlock and bird_statues_need_unlock == on)"
     Volcano East Statue: "('Unlock_Volcano_East_Statue' and bird_statues_need_unlock == off) or (Volcano_East_Statue_Unlock and bird_statues_need_unlock == on)"
     Volcano Ascent Statue: "('Unlock_Volcano_Ascent_Statue' and bird_statues_need_unlock == off) or (Volcano_Ascent_Statue_Unlock and bird_statues_need_unlock == on)"
     Temple Entrance Statue: "('Unlock_Temple_Entrance_Statue' and bird_statues_need_unlock == off) or (Temple_Entrance_Statue_Unlock and bird_statues_need_unlock == on)"
@@ -67,8 +67,8 @@
 - name: Lanayru Pillar
   hint_region: None
   exits:
-    Lanayru Region Entrance: Nothing
-    Lanayru Mine Entry Statue: "'Unlock_Lanayru_Mine_Entry_Statue'"
+    Lanayru Region Entrance: bird_statues_need_unlock == off
+    Lanayru Mine Entry Statue: "('Unlock_Lanayru_Mine_Entry_Statue' and bird_statues_need_unlock == off) or (Lanayru_Mine_Entry_Statue_Unlock and bird_statues_need_unlock == on)"
     Desert Entrance Statue: "('Unlock_Desert_Entrance_Statue' and bird_statues_need_unlock == off) or (Desert_Entrance_Statue_Unlock and bird_statues_need_unlock == on)"
     West Desert Statue: "('Unlock_West_Desert_Statue' and bird_statues_need_unlock == off) or (West_Desert_Statue_Unlock and bird_statues_need_unlock == on)"
     Desert Gorge Statue: "('Unlock_Desert_Gorge_Statue' and bird_statues_need_unlock == off) or (Desert_Gorge_Statue_Unlock and bird_statues_need_unlock == on)"

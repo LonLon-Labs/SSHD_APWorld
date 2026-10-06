@@ -184,12 +184,33 @@ main:
 
     dLytHelp__stateNoneUpdate: 0x7100c3fc0c
 
+    # Requests an event from the event manager (FUN_7100b70290 in Ghidra main-new).
+    # Args: (owner actor, *const Event, 0). Used to start Fi's "talk_sword_sprit" event.
+    startEventRequest: 0x7100b70290
+
+    # Fi proactive alert chooser (FUN_7100dc0600 in Ghidra, runtime = Ghidra + 0x4000):
+    # returns the alert id Fi should speak (0xffff = none). Called from the player
+    # update FUN_7100a69ccc.
+    fiProactiveAlertChooser: 0x7100dc4600
+
 
     # Misc
     DAT_7102c01000: 0x7102c01000
+
+    # DEBUG (Fi can't-drop investigation, remove with the diagnostic): globals
+    # tested by the early-outs of the player update FUN_7100a69ccc.
+    # (runtime = Ghidra + 0x4000)
+    DAT_7102bf98fe: 0x7102bfd8fe
+    DAT_710182ded8: 0x7101831ed8
+    DAT_710192fb58: 0x7101933b58
+    DAT_710166cc10: 0x7101670c10
     BOOT_PTR: 0x7102bfda58
 
     dLytSaveMgr__sSavePrompts: 0x710166d9a0
+
+    # u32 stamped into the Fi controller (+0x1170) after a Fi event is requested
+    # (Ghidra DAT_7102bf9974 + 0x4000)
+    FI_EVENT_TIMESTAMP: 0x7102bfd974
 
     CURRENT_SKY_COLOR: 0x7101838838
     DAYTIME_SKY_COLOR: 0x7101838a40

@@ -47,7 +47,7 @@ from sslib.yaml import yaml_load, yaml_write
 # Only prints that start with "> " will be printed to the console on yuzu
 # This variable disables this functionality if desired (mainly just leftover
 # from when this would print *everything* to the console ^^')
-ASM_DEBUG_PRINT = False
+ASM_DEBUG_PRINT = True
 
 
 class ASMPatchHandler:
@@ -521,22 +521,16 @@ class ASMPatchHandler:
                 sceneflags[scene].append(flag)
 
         # With "Bird Statues Need to be Unlocked", the landing map reads a separate
-        # unlock flag per statue (see create_bird_statue_unlock_patch). Set the
-        # flags for any unlock items we start with, and for whichever statue ended
-        # up as a region's starting statue so it is always droppable.
+        # unlock flag per statue (see create_bird_statue_unlock_patch). Only set the
+        # flags for the unlock items we actually start with (i.e. the ones chosen by
+        # "Start with a Bird Statue in Each Region"). No statue is forced open: the
+        # region's starting statue is not unlocked for free.
         if world.setting("bird_statues_need_unlock") == "on":
             unlock_item_names = list(ALL_BIRD_STATUE_UNLOCK_ITEMS)
             unlocked_names: set[str] = set()
             for item, count in world.starting_item_pool.items():
                 if count > 0 and item.name in unlock_item_names:
                     unlocked_names.add(item.name)
-            for statue in (
-                faron_starting_statue,
-                eldin_starting_statue,
-                lanayru_starting_statue,
-            ):
-                if f"{statue} Unlock" in unlock_item_names:
-                    unlocked_names.add(f"{statue} Unlock")
             bird_statue_unlock_flags = sorted(
                 unlock_item_names.index(name) for name in unlocked_names
             )
@@ -797,9 +791,9 @@ class ASMPatchHandler:
     # (u16 scene, u16 flag) for scene flags and the flag number for story flags.
     # The landing map shows a statue if either half's flag is set.
     #
-    # Only statues that get an unlock item are listed. The region entrance statues
-    # (Sealed Grounds, Volcano Entrance, Lanayru Mine Entry) and the two inner
-    # dungeon statues are left alone. Values are each statue's table index.
+    # Every surface statue has an unlock item, including the region entrance
+    # statues (Sealed Grounds, Volcano Entrance, Lanayru Mine Entry). Only the two
+    # inner dungeon statues are left alone. Values are each statue's table index.
     BIRD_STATUE_MAP_TABLES = (
         (
             0x71013A2434,  # Faron
@@ -814,12 +808,14 @@ class ASMPatchHandler:
                 "Deep Woods Statue": 6,
                 "Lake Floria Statue": 7,
                 "Floria Waterfall Statue": 8,
+                "Sealed Grounds Statue": 9,
             },
         ),
         (
             0x71013A24D4,  # Eldin
             6,
             {
+                "Volcano Entrance Statue": 0,
                 "Volcano East Statue": 1,
                 "Volcano Ascent Statue": 2,
                 "Temple Entrance Statue": 3,
@@ -829,6 +825,7 @@ class ASMPatchHandler:
             0x71013A2534,  # Lanayru
             12,
             {
+                "Lanayru Mine Entry Statue": 0,
                 "Desert Entrance Statue": 1,
                 "West Desert Statue": 2,
                 "North Desert Statue": 3,

@@ -209,6 +209,15 @@
 - name: Item 322 Text
   standard: "You got the <y<Lanayru Gorge Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
 
+- name: Item 323 Text
+  standard: "You got the <y<Sealed Grounds Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 324 Text
+  standard: "You got the <y<Volcano Entrance Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 325 Text
+  standard: "You got the <y<Lanayru Mine Entry Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
 - name: Item 220 Text
   standard: "You got the <g<Skyview Temple>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
@@ -631,6 +640,24 @@
 - name: Lanayru Gorge Statue Unlock
   standard: Lanayru Gorge Statue Unlock
   pretty: the <Lanayru Gorge Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Sealed Grounds Statue Unlock
+  standard: Sealed Grounds Statue Unlock
+  pretty: the <Sealed Grounds Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Volcano Entrance Statue Unlock
+  standard: Volcano Entrance Statue Unlock
+  pretty: the <Volcano Entrance Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Lanayru Mine Entry Statue Unlock
+  standard: Lanayru Mine Entry Statue Unlock
+  pretty: the <Lanayru Mine Entry Statue Unlock>
   cryptic: a <r<key to the sky's edge>>
   plurality: Singular
 
@@ -6792,6 +6819,41 @@
 
 - name: Fi require Sailcloth to Amiibo Warp
   standard: "Master, I unfortunately cannot allow you to\nuse the amiibo without the <y<Sailcloth>>."
+
+- name: Fi No Bird Statue Text
+  standard: "Master, you have not yet unlocked a <y<Bird\nStatue>> in this region, so you cannot drop down."
+
+- name: Fi No Sailcloth Text 1
+  standard:
+    "Master, you cannot make the descent\nwithout the <y<Sailcloth>>. You must find it\nbefore you can drop down."
+
+- name: Fi No Sailcloth Text 2
+  standard:
+    "Master, you will break your legs without\nthe <y<Sailcloth>>. You must find it before\nyou can drop down."
+
+- name: Fi No Sailcloth Text 3
+  standard:
+    "Master, do a backflip lol"
+
+- name: Fi No Sailcloth Text 4
+  standard:
+    "Master, dost thou have a death wish?\nClearly you must have the <y<Sailcloth>> to\ndrop down."
+
+- name: Fi No Sailcloth Text 5
+  standard:
+    "Master, you do not have the <y<Sailcloth>>\ndropping down without it would be...\nill advised."
+
+- name: Fi No Sailcloth Text 6
+  standard:
+    "Master, the batteries in your <y<Sailcloth>>\nare depleted."
+
+- name: Fi No Sailcloth Text 7
+  standard:
+    "Master, with that line of thinking, one would\npresume you wish to meet the goddess Hylia,\nyou must find your <y<Sailcloth>> to drop down."
+
+- name: Fi No Sailcloth Text 8
+  standard:
+    "<slowtext>Master, a drop from this height would\nterminate you<pause 5>.<pause 5>.<pause 5>. I-I mean your quest.\nHave you tried finding your <y<Sailcloth>>?"
 
 - name: Forced Required Dungeons Text
   standard: "Welcome to your new adventure, Master. I have\n<r<important information>> about your journey."

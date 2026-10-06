@@ -1402,7 +1402,7 @@ pub extern "C" fn fix_freestanding_item_y_offset(item_actor: *mut dAcItem) {
                 // Clawshots | Spiral Charge | Loftwing | Mogma Mitts | Life Tree Seedling
                 20 | 21 | 219 | 99 | 197 => y_offset = 25.0,
                 // Bird Statue Unlocks
-                300..=322 => y_offset = 5.0,
+                300..=325 => y_offset = 5.0,
                 // AC BK | FS BK
                 25 | 26 => y_offset = 30.0,
                 // SSH BK, ET Key, SVT BK, ET BK | Amber Tablet
@@ -1539,7 +1539,7 @@ pub extern "C" fn fix_freestanding_item_horizontal_offset(item_actor: *mut dAcIt
                     angle_change_y = 0x2400;
                 },
                 // Spiral Charge | Loftwing | Bird Statue Unlocks
-                21 | 219 | 300..=322 => {
+                21 | 219 | 300..=325 => {
                     h_offset = 27.0;
                     angle_change_y = 0x3000;
                     angle_change_z = 0x0300;
@@ -1817,12 +1817,12 @@ pub extern "C" fn check_and_open_trial_gates(collected_item: u16) {
 pub const BIRD_STATUE_UNLOCK_SCENE_INDEX: u16 = 6;
 // Scale applied to the SaveObjectA statue model when it is used as an item.
 const BIRD_STATUE_ITEM_MODEL_SCALE: f32 = 0.2;
-// Bird Statue unlock items occupy ids 300..=322 (23 items, one per statue).
+// Bird Statue unlock items occupy ids 300..=325 (26 items, one per statue).
 // The flag index is `id - 300`, matching the item's index in
 // ALL_BIRD_STATUE_UNLOCK_ITEMS. Keep these in sync with data/items.yaml and
 // custom-items.asm.
 pub const BIRD_STATUE_UNLOCK_FIRST_ITEM_ID: u16 = 300;
-pub const BIRD_STATUE_UNLOCK_LAST_ITEM_ID: u16 = 322;
+pub const BIRD_STATUE_UNLOCK_LAST_ITEM_ID: u16 = 325;
 
 // ---------------------------------------------------------------------------
 // Bird Statues Give Items
@@ -2008,7 +2008,7 @@ pub fn handle_bird_statue_items() {
     }
 }
 
-/// Unlock flag index for a Bird Statue unlock item (ids 300..=322, in the
+/// Unlock flag index for a Bird Statue unlock item (ids 300..=325, in the
 /// same order as ALL_BIRD_STATUE_UNLOCK_ITEMS, so the flag is `id - 300`).
 pub fn bird_statue_unlock_flag_index(item_id: u16) -> Option<u16> {
     match item_id {
@@ -2021,10 +2021,10 @@ pub fn bird_statue_unlock_flag_index(item_id: u16) -> Option<u16> {
 
 #[no_mangle]
 // NOTE: `collected_item` is a raw item id (u16), NOT `flag::ITEMFLAGS`. Custom
-// item ids (Bird Statue unlocks 300..=322, key rings, ...) are not variants of
+// item ids (Bird Statue unlocks 300..=325, key rings, ...) are not variants of
 // that enum, and a repr(u16) enum with out-of-range values is undefined
 // behavior: rustc attaches a valid-range to it, so the optimizer can delete
-// the `300..=322` branch below and the unlock flag is never set.
+// the `300..=325` branch below and the unlock flag is never set.
 pub extern "C" fn after_item_collection_hook(collected_item: u16) -> u16 {
     unsafe {
         fix::fix_ammo_counts(collected_item);
@@ -2058,7 +2058,7 @@ pub extern "C" fn resolve_progressive_item_models(
             model_name = match item_id {
                 15 => c"Demo11_01".as_ptr(),
                 21 | 219 => c"GetBirdStatue".as_ptr(),
-                300..=322 => c"SaveObjectA".as_ptr(),
+                300..=325 => c"SaveObjectA".as_ptr(),
                 214 => c"Onp".as_ptr(),
                 215 => c"DesertRobot".as_ptr(),
                 216 => {
@@ -2089,7 +2089,7 @@ pub extern "C" fn resolve_progressive_item_models(
                 21 | 219 => c"GetBirdStatue".as_ptr(),
                 // The Bird Statue unlock items use the statue's own model
                 // (SaveObjectA is already in ObjectPack).
-                300..=322 => c"SaveObjectA".as_ptr(),
+                300..=325 => c"SaveObjectA".as_ptr(),
                 // Randomly pick which of the two tadtone models is used for fun :p
                 214 if (s_rng & 1) == 0 => c"OnpA".as_ptr(),
                 214 => c"OnpB".as_ptr(),
@@ -2342,7 +2342,7 @@ pub extern "C" fn change_model_scale(item_actor: *mut dAcItem, world_matrix: *mu
             215 => 0.3f32, // Scrapper
             // Bird Statue Unlock items: the SaveObjectA statue model is far
             // bigger than a normal item model, so scale it way down.
-            300..=322 => BIRD_STATUE_ITEM_MODEL_SCALE,
+            300..=325 => BIRD_STATUE_ITEM_MODEL_SCALE,
             _ => 1.0f32,
         };
 

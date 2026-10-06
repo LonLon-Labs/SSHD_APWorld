@@ -503,6 +503,7 @@ class CustomStartingItems(ItemDict):
 class RandomStartingStatues(Toggle):
     """
     Randomize which bird statue is unlocked at the start for each surface region.
+    Has no effect on which statues are unlocked when Bird Statues Need to be Unlocked is enabled (use Start with a Bird Statue in Each Region instead).
     """
     display_name = "Random Starting Statues"
 
@@ -935,9 +936,9 @@ class BirdStatuesGiveItems(Toggle):
 
 class BirdStatuesNeedUnlock(Toggle):
     """
-    If enabled, each Bird Statue has its own unlock item that is added to the item pool.
+    If enabled, each Bird Statue has its own unlock item that is added to the item pool, including the Sealed Grounds, Volcano Entrance and Lanayru Mine Entry statues.
     Until its unlock item is obtained you cannot drop down to that statue from the sky, but you can still use it to fly up to the sky.
-    The Sealed Grounds, Volcano Entrance and Lanayru Mine Entry statues are always unlocked.
+    No statue is unlocked for free: the only ones you start with are the ones given by Start with a Bird Statue in Each Region.
     """
     display_name = "Bird Statues Need to be Unlocked"
 
@@ -945,8 +946,9 @@ class BirdStatuesNeedUnlock(Toggle):
 class StartWithRegionBirdStatues(Toggle):
     """
     Only has an effect when Bird Statues Need to be Unlocked is enabled.
-    If enabled, you start with one unlocked Bird Statue in each of Faron, Eldin and Lanayru.
+    If enabled, you start with exactly one unlocked Bird Statue in each of Faron, Eldin and Lanayru.
     Those statues are removed from the item pool.
+    If disabled, no Bird Statue is unlocked at the start.
     """
     display_name = "Start with a Bird Statue in Each Region"
 

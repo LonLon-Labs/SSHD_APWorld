@@ -328,6 +328,28 @@ b.eq voidout_near_skyloft_or_light_pillars_without_sailcloth
 cmp w8, #102
 b.eq get_shop_item_move_target
 
+; Fi proactive alert override
+cmp w8, #103
+b.eq fi_proactive_alert_override
+
+; Fi can't-drop gate
+cmp w8, #104
+b.eq fi_cant_drop_gate_pending
+
+; DEBUG (remove after the sky test): FUN_7100a69ccc entry counter
+cmp w8, #105
+b.eq fi_dbg_entry
+
+; DEBUG (remove after the sky test): before the Fi event request call
+; (x0 = Fi object, x1 = request struct)
+cmp w8, #106
+b.eq fi_dbg_request_pre
+
+; DEBUG (remove after the sky test): after the Fi event request call
+; (x0 = result of FUN_7100b70290)
+cmp w8, #107
+b.eq fi_dbg_request_post
+
 ret ; this should never be reached
 
 ; Wrapper for custom_event_commands.

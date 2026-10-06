@@ -43,7 +43,7 @@ from worlds.LauncherComponents import (
 from .Items import ITEM_TABLE
 
 # Locations whose in-game item carrier can only hold item ids 0-255, so the Bird
-# Statue unlock items (ids 300-322) must not be placed there. The Lumpy Pumpkin
+# Statue unlock items (ids 300-325) must not be placed there. The Lumpy Pumpkin
 # chandelier reads its item id with a byte load in asm and has no spare
 # instruction slot to widen it (see stagepatchhandler.py patch_chandelier_item).
 EXTENDED_ITEM_ID_UNSUPPORTED_LOCATIONS = {"Lumpy Pumpkin - Item on Chandelier"}

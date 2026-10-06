@@ -221,17 +221,13 @@ pub extern "C" fn handle_er_cases() {
             NEXT_NIGHT = WARP_NIGHT_OVERRIDE;
             WARP_NIGHT_OVERRIDE = 0xFF;
         } else if (flag::check_storyflag(899) != 0 || NEXT_NIGHT == 1) {
-            debug::debug_print(c"Should be night".as_ptr());
-
+            // (debug prints removed to keep .text under 0x712e0bd000)
             if next_stage_is_valid_at_night() {
-                debug::debug_print(c"Next stage is valid at night: NEXT_NIGHT = 1".as_ptr());
                 NEXT_NIGHT = 1;
             } else {
-                debug::debug_print(c"Next stage is NOT valid at night: NEXT_NIGHT = 0".as_ptr());
                 NEXT_NIGHT = 0;
             }
         } else {
-            debug::debug_print(c"Should not be night".as_ptr());
             NEXT_NIGHT = 0;
         }
 
@@ -645,13 +641,86 @@ pub extern "C" fn voidout_near_skyloft_or_light_pillars_without_sailcloth(
     unsafe {
         // SCEN type 5 == "landing on skyloft"
         // SCEN type 9 == "entering light pillar"
-        if (scen_type == 5 || scen_type == 9)
-            && flag::check_itemflag(flag::ITEMFLAGS::SAILCLOTH) == 0
-        {
-            // Triggers a voidout.
-            ((*(*PLAYER_PTR).vtable).can_handle_gameover)(PLAYER_PTR, 1, 0, 0);
+        // Without the Sailcloth (types 5 and 9) the scene change is suppressed,
+        // Fi's randomized "you need the Sailcloth" message is requested, and the
+        // player is voided out once it has been shown (see
+        // event::tick_fi_cant_drop). That message ALWAYS takes priority over the
+        // "no Bird Statue unlocked" one, which is only considered when the
+        // player does have the Sailcloth.
+        // Game hooks must not call the flag getters (they have faulted here),
+        // so the Sailcloth state comes from a cache the main loop refreshes.
+        let drop_scen = scen_type == 5 || scen_type == 9;
+
+        if drop_scen && !flag::has_sailcloth_cached() {
+            if scen_type == 5 {
+                // Near Skyloft without the Sailcloth: arm the dismount void-out
+                // (see tick_skyloft_dismount_voidout). Refreshed every frame the
+                // player stays in the trigger.
+                core::ptr::write_volatile(
+                    core::ptr::addr_of_mut!(SKYLOFT_DROP_ARMED),
+                    SKYLOFT_DROP_ARMED_FRAMES,
+                );
+            }
+            crate::event::start_fi_cant_drop_event_with(crate::event::FI_REASON_NO_SAILCLOTH);
+        } else if scen_type == 9 && crate::lyt::no_droppable_bird_statues(scen_link) {
+            // Only sets a plain byte (no event system calls here); the game's
+            // own player update then runs Fi's event (see
+            // event::start_fi_cant_drop_event_with). This hook can run every frame
+            // while the player stands in the trigger, which is fine: repeat
+            // requests are ignored while one is active and during the cooldown.
+            crate::event::start_fi_cant_drop_event_with(crate::event::FI_REASON_NO_STATUE);
         } else {
             ((*(*player).vtable).trigger_scen_change)(player, scen_link, path_index, scen_type);
         }
+    }
+}
+
+/// Frames left during which a dismount near Skyloft (SCEN type 5, no
+/// Sailcloth) voids the player out. The scen hook refreshes it every frame the
+/// player is in the trigger.
+static mut SKYLOFT_DROP_ARMED: u8 = 0;
+const SKYLOFT_DROP_ARMED_FRAMES: u8 = 30;
+
+/// True if the player has left the Loftwing and is diving/falling/landing
+/// (PLAYER_ACTIONS 0x12 DIVE_SKY ..= 0x15 LAND). Plain integer compares only.
+fn player_dismounted_loftwing() -> bool {
+    unsafe {
+        if PLAYER_PTR.is_null() {
+            return false;
+        }
+        let action = core::ptr::read_unaligned(
+            core::ptr::addr_of!((*PLAYER_PTR).current_action) as *const u32
+        );
+        action >= 0x12 && action <= 0x15
+    }
+}
+
+/// Per-frame (main loop). If the player dismounts the Loftwing while inside
+/// the Skyloft landing trigger without the Sailcloth, void out right away
+/// instead of waiting for Fi's text to finish.
+pub fn tick_skyloft_dismount_voidout() {
+    unsafe {
+        let armed = core::ptr::read_volatile(core::ptr::addr_of!(SKYLOFT_DROP_ARMED));
+        if armed == 0 {
+            return;
+        }
+        core::ptr::write_volatile(core::ptr::addr_of_mut!(SKYLOFT_DROP_ARMED), armed - 1);
+        if player_dismounted_loftwing() {
+            core::ptr::write_volatile(core::ptr::addr_of_mut!(SKYLOFT_DROP_ARMED), 0);
+            crate::event::fi_cant_drop_abort();
+            voidout_now();
+        }
+    }
+}
+
+/// Triggers a voidout of the player (same call the vanilla game-over path
+/// uses).
+pub fn voidout_now() {
+    unsafe {
+        // Also called from the main loop, where the player may not exist yet.
+        if PLAYER_PTR.is_null() {
+            return;
+        }
+        ((*(*PLAYER_PTR).vtable).can_handle_gameover)(PLAYER_PTR, 1, 0, 0);
     }
 }

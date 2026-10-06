@@ -361,6 +361,33 @@
   shop_arc_name: SaveObjectA
   shop_model_name: SaveObjectA
   advancement: true
+- id: 323
+  name: Sealed Grounds Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 324
+  name: Volcano Entrance Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 325
+  name: Lanayru Mine Entry Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
 - id: 25
   name: Ancient Cistern Boss Key
   types:
