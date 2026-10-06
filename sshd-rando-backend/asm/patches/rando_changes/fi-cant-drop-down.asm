@@ -40,13 +40,13 @@ bl 0x7100659b58
 .offset 0x7100a6e320
 bl 0x7100659b58
 
-; DEBUG (remove after the sky test): counts entries of the player update
+; DEBUG: counts entries of the player update
 ; (replaces `mov w8, #0x73b0` at the top of FUN_7100a69ccc; stub in jumptable.asm).
 ; Ghidra 0x7100a69ce8
 .offset 0x7100a6dce8
 bl 0x7100659b80
 
-; DEBUG (remove after the sky test): wraps the game's own event request call so
+; DEBUG: wraps the game's own event request call so
 ; the request, its result and the event manager state get logged. Replaces
 ; `bl 0x7100b70290` (FUN_7100b70290, the event manager's request function) at
 ; Ghidra 0x7100a6a770. The stub (jumptable.asm, 0x7100659bd0) calls the real

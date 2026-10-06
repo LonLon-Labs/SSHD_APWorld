@@ -6824,36 +6824,34 @@
   standard: "Master, you have not yet unlocked a <y<Bird\nStatue>> in this region, so you cannot drop down."
 
 - name: Fi No Sailcloth Text 1
-  standard:
-    "Master, you cannot make the descent\nwithout the <y<Sailcloth>>. You must find it\nbefore you can drop down."
+  standard: "Master, you cannot make the descent\nwithout the <y<Sailcloth>>. You must find it\nbefore you can drop down."
 
 - name: Fi No Sailcloth Text 2
-  standard:
-    "Master, you will break your legs without\nthe <y<Sailcloth>>. You must find it before\nyou can drop down."
+  standard: "Master, you will break your legs without\nthe <y<Sailcloth>>. You must find it before\nyou can drop down."
 
 - name: Fi No Sailcloth Text 3
-  standard:
-    "Master, do a backflip lol"
+  standard: "Master, do a backflip lol"
 
 - name: Fi No Sailcloth Text 4
-  standard:
-    "Master, dost thou have a death wish?\nClearly you must have the <y<Sailcloth>> to\ndrop down."
+  standard: "Master, dost thou have a death wish?\nClearly you must have the <y<Sailcloth>> to\ndrop down."
 
 - name: Fi No Sailcloth Text 5
-  standard:
-    "Master, you do not have the <y<Sailcloth>>\ndropping down without it would be...\nill advised."
+  standard: "Master, you do not have the <y<Sailcloth>>.\nDropping down without it would be...\nill advised."
 
 - name: Fi No Sailcloth Text 6
-  standard:
-    "Master, the batteries in your <y<Sailcloth>>\nare depleted."
+  standard: "Master, the batteries in your <y<Sailcloth>>\nare depleted."
 
 - name: Fi No Sailcloth Text 7
-  standard:
-    "Master, with that line of thinking, one would\npresume you wish to meet the goddess Hylia,\nyou must find your <y<Sailcloth>> to drop down."
+  standard: "Master, with that line of thinking, one would\npresume you wish to meet the goddess Hylia,\nyou must find your <y<Sailcloth>> to drop down."
 
 - name: Fi No Sailcloth Text 8
-  standard:
-    "<slowtext>Master, a drop from this height would\nterminate you<pause 5>.<pause 5>.<pause 5>. I-I mean your quest.\nHave you tried finding your <y<Sailcloth>>?"
+  standard: "<slowtext>Master, a drop from this height would\nterminate you<pause 5>.<pause 5>.<pause 5>. I-I mean your quest.\nHave you tried finding your <y<Sailcloth>>?"
+
+- name: Fi No Sailcloth Text 9
+  standard: "Master, I calculate a 99% probability of this\nbreaking every bone in your body, finding the\n<y<Sailcloth>> drastically lowers this percentage."
+
+- name: Fi No Sailcloth Text 10
+  standard: "<slowtext>Master, you do not possess the skills\nto deploy a Water Bucket at the last second.\nSuggested alternative: Find the <y<Sailcloth>>."
 
 - name: Forced Required Dungeons Text
   standard: "Welcome to your new adventure, Master. I have\n<r<important information>> about your journey."

@@ -1539,7 +1539,7 @@
       - Display Fi Call Text # 0: normal Fi call menu
       - Check Fi Cant Drop Is Sailcloth # 1: a can't-drop-down message is pending
   # Only plain 0/1 switches below: pick no-statue vs Sailcloth, then one of the
-  # 7 Sailcloth texts as a 3-bit binary tree (command 85 = bit N of the variant).
+  # 10 Sailcloth texts as a 3-bit binary tree (command 85 = bit N of the variant).
   - name: Check Fi Cant Drop Is Sailcloth
     type: flowadd
     flow:
@@ -1554,7 +1554,39 @@
       param3: 7
     cases:
       - Show Fi No Bird Statue Text # 0: has the Sailcloth, no droppable Bird Statue
-      - Fi Variant Bit2 Check # 1: no Sailcloth
+      - Fi Variant Bit3 Check # 1: no Sailcloth
+  - name: Fi Variant Bit3 Check
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit3 Switch
+      param1: 3
+      param3: 85
+  - name: Fi Variant Bit3 Switch
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Fi Variant Bit2 Check # variants 0-7 (Text 1-8)
+      - Fi Variant Bit0 Check C # variants 8-9 (Text 9-10)
+  - name: Fi Variant Bit0 Check C
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit0 Switch C
+      param1: 0
+      param3: 85
+  - name: Fi Variant Bit0 Switch C
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Sailcloth Text 9
+      - Show Fi No Sailcloth Text 10
   - name: Fi Variant Bit2 Check
     type: flowadd
     flow:
@@ -1747,6 +1779,26 @@
       next: Fi Cant Drop Voidout
       param3: 68
       param4: Fi No Sailcloth Text 8
+  - name: Fi No Sailcloth Text 9
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 9
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 9
+  - name: Fi No Sailcloth Text 10
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 10
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 10
   - name: Fi No Bird Statue Text
     type: textadd
     textboxtype: 2 # Fi text box background

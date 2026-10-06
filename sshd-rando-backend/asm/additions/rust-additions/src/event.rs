@@ -448,7 +448,7 @@ const FI_DEBUG: bool = false;
 /// Why the message was requested; selects the text the flow shows.
 pub const FI_REASON_NO_STATUE: u8 = 1;
 pub const FI_REASON_NO_SAILCLOTH: u8 = 2;
-/// Flow result values 2..=8 are the seven no-Sailcloth text variants. Index 2
+/// Flow result values 2..=9 are the eight no-Sailcloth text variants. Index 2
 /// (variant 3, the backflip joke) is the rare one.
 const FI_SAILCLOTH_FIRST_RESULT: u8 = 2;
 const FI_SAILCLOTH_RARE_VARIANT: u8 = 2;
@@ -467,7 +467,7 @@ fn fi_cant_drop_reason_is_sailcloth() -> bool {
 }
 
 /// Picks the flow result for a no-Sailcloth message: 1% the rare variant
-/// (Text 3), 33% Text 1, otherwise one of the other six with equal chance.
+/// (Text 3), 33% Text 1, otherwise one of the other eight with equal chance.
 fn fi_pick_sailcloth_result() -> u8 {
     let mut x = unsafe { core::ptr::read_volatile(core::ptr::addr_of!(FI_RNG_COUNTER)) }
         .wrapping_mul(2654435761)
@@ -482,9 +482,9 @@ fn fi_pick_sailcloth_result() -> u8 {
         // Text 1 (variant 0)
         0
     } else {
-        // Variants 1, 3, 4, 5, 6, 7 (skipping Text 1 and the rare Text 3). Plain
-        // integer math, no tables.
-        let n = ((x / 100) % 6) as u8;
+        // Variants 1, 3, 4, 5, 6, 7, 8, 9 (skipping Text 1 and the rare Text 3).
+        // Plain integer math, no tables.
+        let n = ((x / 100) % 8) as u8;
         if n == 0 {
             1
         } else {
