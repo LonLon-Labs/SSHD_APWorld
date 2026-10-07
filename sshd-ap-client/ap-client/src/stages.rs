@@ -70,7 +70,7 @@ pub const STAGE_NAMES: &[(&str, &str)] = &[
     ("F401", "Sealed Grounds Spiral"),
     ("F402", "Sealed Temple"),
     ("F403", "Ghirahim Boss Arena"),
-    ("F404", "Credits"),
+    ("F404", "Sealed Grounds Temple (Past)"),
     ("F405", "Sealed Grounds Spiral Cutscene (first cutscene)"),
     ("F407", "Sky Keep beaten CS"),
     // Dungeons

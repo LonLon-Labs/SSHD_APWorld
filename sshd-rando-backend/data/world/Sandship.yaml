@@ -32,6 +32,10 @@
   exits:
     Sandship Main Deck: count(2, Sandship_Small_Key) or small_keys == removed
   locations:
+    Sandship Captain's Cabin - Pot 1: Nothing
+    Sandship Captain's Cabin - Pot 2: Nothing
+    Sandship Captain's Cabin - Pot 3: Nothing
+    Sandship Captain's Cabin - Pot 4: Nothing
     Sandship - Chest in Captain's Cabin: Bow and 'Sandship_Freely_Usable_Timeshift_Stone' and Can_Defeat_Beamos
 
 - name: Sandship Before Ship's Bow

@@ -51,10 +51,15 @@ pub struct SaveFile {
     pub player_name:               [u16; 8],
     pub storyflags:                [u16; 128],
     pub itemflags:                 [u16; 64],
-    pub dungeonflags:              [[u16; 8]; 26],
-    pub _1:                        [u8; 3680],
-    pub sceneflags:                [[u16; 8]; 26],
-    pub _2:                        [u8; 0xE60],
+    // The save file reserves 0x1000 bytes (256 indexes of 8 u16) for each of the
+    // dungeonflag and sceneflag arrays, but the game only ever uses indexes 0-25.
+    // Indexes 26-29 are exposed here for the Archipelago extended custom flag
+    // group (see GROUP1_FIRST_SCENE_INDEX in item.rs). Keep the total size of
+    // each array + its padding at 4096 bytes.
+    pub dungeonflags:              [[u16; 8]; 30],
+    pub _1:                        [u8; 3616],
+    pub sceneflags:                [[u16; 8]; 30],
+    pub _2:                        [u8; 0xE20],
     pub tboxflags:                 [[u8; 4]; 26],
     pub _3:                        [u8; 0x498],
     pub enemy_kill_counters:       [u16; 100],

@@ -292,6 +292,10 @@ class NpcClosetShuffle(Toggle):
     """Shuffle NPC closets."""
     display_name = "NPC Closet Shuffle"
 
+class PotShuffle(Toggle):
+    """Shuffle pots. Breaking a pot can give a randomized item."""
+    display_name = "Pot Shuffle"
+
 class HiddenItemShuffle(Toggle):
     """Shuffle hidden items."""
     display_name = "Hidden Item Shuffle"
@@ -1943,6 +1947,7 @@ class SSHDOptions(PerGameCommonOptions):
     gratitude_crystal_shuffle: GratitudeCrystalShuffle
     stamina_fruit_shuffle: StaminaFruitShuffle
     npc_closet_shuffle: NpcClosetShuffle
+    pot_shuffle: PotShuffle
     hidden_item_shuffle: HiddenItemShuffle
     rupee_shuffle: RupeeShuffle
     goddess_chest_shuffle: GoddessChestShuffle
@@ -2189,6 +2194,7 @@ sshd_option_groups = [
         GratitudeCrystalShuffle,
         StaminaFruitShuffle,
         NpcClosetShuffle,
+        PotShuffle,
         HiddenItemShuffle,
         RupeeShuffle,
         GoddessChestShuffle,

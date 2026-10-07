@@ -441,8 +441,16 @@ pub extern "C" fn give_item_with_archipelago_flag_and_trap(
             _ => 0,  // Other items don't use original_itemid encoding
         };
 
+        // Pots (group 1) can't also carry an original item id: the group marker
+        // occupies the same param2 bits, and dropped items never revert to one.
+        let original_field: u32 = if custom_flag & CUSTOM_FLAG_GROUP1 != 0 {
+            GROUP1_PARAM2_MARK
+        } else {
+            original_itemid << 18
+        };
+
         let mut param2: u32 =
-            (flag << 8) | (scene_selector << 15) | (flag_space << 17) | (original_itemid << 18);
+            (flag << 8) | (scene_selector << 15) | (flag_space << 17) | original_field;
 
         // Trap: bits 0-3 = 0xF marks the actor trappable, bits 4-7 = trap id.
         // Non-traps leave both nibbles 0 so setup_traps ignores them.
@@ -565,30 +573,86 @@ pub extern "C" fn hide_appearing_chest(tbox: *mut dAcTbox) {
     }
 }
 
-/// Decode a 10-bit AP custom flag and set the corresponding global
+// ---------------------------------------------------------------------------
+// Archipelago custom flag IDs
+//
+// A custom flag ID is a u16:
+//   bits 0-6  : bit within a 128-bit flag page
+//   bits 7-8  : page selector (0-3)
+//   bit  9    : flag space (0 = sceneflags, 1 = dungeonflags)
+//   bit  10   : group (0 = original pages, 1 = extended pages)
+// Actors only have room for the low 10 bits in param2 bits 8-17. The group
+// is implicit for actors that can only ever be one group (pots are group 1),
+// and is carried on the spawned item actor as GROUP1_PARAM2_MARK.
+//
+// Group 0 uses scene indexes 6/13/16/19, the only indexes no stage maps to.
+// Group 1 uses indexes 26-29, which no stage maps to either: they exist only
+// as reserved padding in the save file's flag arrays (see savefile.rs).
+// Keep this in sync with the tables in ap-ipc, the Python client and
+// _build_custom_flag_mapping in the APWorld.
+// ---------------------------------------------------------------------------
+
+/// Sentinel for "no custom flag" in the low 10 bits (also: selector 3, bit
+/// 127).
+pub const CUSTOM_FLAG_NONE: u16 = 0x3FF;
+/// Group bit in a full (u16) custom flag ID.
+pub const CUSTOM_FLAG_GROUP1: u16 = 0x400;
+/// Marker stored in an item actor's param2 bits 18-23 meaning "this custom
+/// flag belongs to group 1". Bits 18-23 normally hold the original item id
+/// (values 0-5) or 0x3F for actors spawned with param2 = 0xFFFFFFFF, so 0x20
+/// (only bit 23 set) never occurs for group 0.
+pub const GROUP1_PARAM2_MARK: u32 = 0x20 << 18;
+const PARAM2_ORIGINAL_ITEM_FIELD: u32 = 0x3F << 18;
+
+const GROUP0_SCENE_INDEXES: [u16; 4] = [6, 13, 16, 19];
+pub const GROUP1_FIRST_SCENE_INDEX: u16 = 26;
+
+/// Splits a custom flag ID into (flag_space, scene_index, bit).
+#[inline]
+pub fn decode_custom_flag(custom_flag: u16) -> (u16, u16, u16) {
+    let bit = custom_flag & 0x7F;
+    let selector = (custom_flag >> 7) & 0x3;
+    let flag_space = (custom_flag >> 9) & 0x1;
+    let sceneindex = if custom_flag & CUSTOM_FLAG_GROUP1 != 0 {
+        GROUP1_FIRST_SCENE_INDEX + selector
+    } else {
+        GROUP0_SCENE_INDEXES[selector as usize]
+    };
+    (flag_space, sceneindex, bit)
+}
+
+/// True if an item actor's param2 carries the group 1 marker.
+#[inline]
+pub fn param2_is_group1(param2: u32) -> bool {
+    (param2 & PARAM2_ORIGINAL_ITEM_FIELD) == GROUP1_PARAM2_MARK
+}
+
+/// The full custom flag ID (including the group bit) stored in an item
+/// actor's param2. Returns the low 10 bits unchanged for the sentinel.
+#[inline]
+pub fn custom_flag_id_from_item_param2(param2: u32) -> u16 {
+    let local = ((param2 >> 8) & 0x3FF) as u16;
+    if local != CUSTOM_FLAG_NONE && param2_is_group1(param2) {
+        local | CUSTOM_FLAG_GROUP1
+    } else {
+        local
+    }
+}
+
+/// Decode a custom flag ID and set the corresponding global
 /// sceneflag or dungeonflag.  Also pre-sets LAST_AP_ITEM_FLAG_ID so the
 /// item-216 textbox can look up the correct item/player name.
-/// Does nothing when `custom_flag == 0x3FF` (no custom flag assigned).
+/// Does nothing when the low 10 bits are the 0x3FF sentinel (no custom flag).
 unsafe fn set_ap_custom_flag(custom_flag: u16) {
-    if custom_flag == 0x3FF {
+    if custom_flag & 0x3FF == CUSTOM_FLAG_NONE {
         return;
     }
 
-    let flag_val = (custom_flag & 0x7F) as u32;
-    let scene_selector = ((custom_flag >> 7) & 0x3) as u32;
-    let flag_space = ((custom_flag >> 9) & 0x1) as u32;
-
-    let sceneindex: u16 = match scene_selector {
-        0 => 6,
-        1 => 13,
-        2 => 16,
-        3 => 19,
-        _ => 6,
-    };
+    let (flag_space, sceneindex, flag_val) = decode_custom_flag(custom_flag);
 
     match flag_space {
-        0 => flag::set_global_sceneflag(sceneindex, flag_val as u16),
-        1 => flag::set_global_dungeonflag(sceneindex, flag_val as u16),
+        0 => flag::set_global_sceneflag(sceneindex, flag_val),
+        1 => flag::set_global_dungeonflag(sceneindex, flag_val),
         _ => {},
     }
 
@@ -681,20 +745,10 @@ static mut GODDESS_CUBE_TICK: u32 = 0;
 /// on them.
 const GODDESS_CUBE_MAGIC_VALUE: u32 = 0x4542_5543;
 
-/// Decode a 10-bit AP custom flag and check the corresponding global
+/// Decode a custom flag ID and check the corresponding global
 /// sceneflag or dungeonflag (the counterpart of `set_ap_custom_flag`).
 unsafe fn check_ap_custom_flag(custom_flag: u16) -> bool {
-    let flag_val = custom_flag & 0x7F;
-    let scene_selector = (custom_flag >> 7) & 0x3;
-    let flag_space = (custom_flag >> 9) & 0x1;
-
-    let sceneindex: u16 = match scene_selector {
-        0 => 6,
-        1 => 13,
-        2 => 16,
-        3 => 19,
-        _ => 6,
-    };
+    let (flag_space, sceneindex, flag_val) = decode_custom_flag(custom_flag);
 
     match flag_space {
         0 => flag::check_global_sceneflag(sceneindex, flag_val) != 0,
@@ -978,18 +1032,23 @@ pub extern "C" fn unpack_custom_item_params(item_actor: *mut dAcItem) -> Unpacke
     unsafe {
         let param2: u32 = (*item_actor).base.members.base.param2;
         let flag: u32 = (param2 & (0x00007F00)) >> 8;
-        let mut sceneindex: u32 = (param2 & (0x00018000)) >> 15;
+        let selector: u32 = (param2 & (0x00018000)) >> 15;
         let flag_space_trigger: u32 = (param2 & (0x00020000)) >> 17;
-        let mut original_itemid: u32 = (param2 & (0x00FC0000)) >> 18;
+        let is_group1 = param2_is_group1(param2);
+        // Group 1 items carry GROUP1_PARAM2_MARK in bits 18-23 instead of an
+        // original item id.
+        let mut original_itemid: u32 = if is_group1 {
+            0
+        } else {
+            (param2 & PARAM2_ORIGINAL_ITEM_FIELD) >> 18
+        };
 
-        // Transform the scene index into one of the unused ones
-        match sceneindex {
-            0 => sceneindex = 6,
-            1 => sceneindex = 13,
-            2 => sceneindex = 16,
-            3 => sceneindex = 19,
-            _ => {},
-        }
+        // Transform the selector into one of the unused scene indexes
+        let sceneindex: u32 = if is_group1 {
+            (GROUP1_FIRST_SCENE_INDEX as u32) + selector
+        } else {
+            GROUP0_SCENE_INDEXES[selector as usize] as u32
+        };
 
         // Transform the original_itemid into its proper itemid
         match original_itemid {
@@ -1180,6 +1239,88 @@ pub extern "C" fn give_squirrel_item(musasabi_tag: *mut actor::dTgMusasabi) {
     }
 }
 
+/// Shared "drop a randomized item where an actor was destroyed" helper, used
+/// by TgReacts and pots.
+///
+/// `param2` is the destroyed actor's param2 in the TgReact layout:
+///   bits 8-17  : AP custom flag (copied into the item so collecting it sets
+/// it)   bit 18     : velocity flag (item pops out instead of just appearing)
+///   bits 19-22 : trap id (0xF = not a trap)
+///   bits 24-31 : vanilla drop id (only used to give seeds a bit more push)
+/// `itemid` must already be resolved with `dAcItem__determineFinalItemid`.
+/// Returns null if the item actor could not be spawned.
+unsafe fn spawn_item_on_destroy(
+    roomid: u32,
+    pos: math::Vec3f,
+    rot_y: u16,
+    itemid: u16,
+    param2: u32,
+    group1: bool,
+) -> *mut dAcItem {
+    let item_actor_param1: u32 = (itemid as u32) | 0xFF1FFE00;
+
+    let mut actor_pos = pos;
+    let actor_pos_ptr: *mut math::Vec3f = &mut actor_pos as *mut math::Vec3f;
+
+    let mut facing_angle = rot_y;
+    if facing_angle == 0 {
+        facing_angle = (*PLAYER_PTR)
+            .obj_base_members
+            .base
+            .rot
+            .y
+            .wrapping_sub(0x8000);
+    }
+
+    let mut item_rot = math::Vec3s {
+        x: 0,
+        y: facing_angle,
+        z: 0,
+    };
+    let item_rot_ptr: *mut math::Vec3s = &mut item_rot as *mut math::Vec3s;
+
+    let trapid = (param2 >> 19) & 0xF;
+
+    let item_actor: *mut dAcItem = actor::spawn_actor(
+        actor::ACTORID::ITEM,
+        roomid,
+        item_actor_param1,
+        actor_pos_ptr,
+        item_rot_ptr,
+        core::ptr::null_mut(),
+        0xFF00000F
+            | (param2 & 0x3FF00)
+            | (trapid << 4)
+            | if group1 { GROUP1_PARAM2_MARK } else { 0 },
+    ) as *mut dAcItem;
+
+    if item_actor.is_null() {
+        return item_actor;
+    }
+
+    let mut forward_speed = 0.0;
+    let mut velocity_y = 0.0;
+
+    if (param2 >> 18) & 1 == 1 {
+        forward_speed = 12.0;
+        velocity_y = 19.5;
+    }
+
+    // Give items that are normally Deku Seeds a bit of an extra push xD
+    if ((param2 >> 24) & 0xFF) == 0x0D {
+        forward_speed += 2.0;
+        velocity_y += 3.0;
+    }
+
+    (*item_actor).base.members.forward_speed = forward_speed;
+    (*item_actor).base.members.velocity.x = 0.0;
+    (*item_actor).base.members.velocity.y = velocity_y;
+    (*item_actor).base.members.velocity.z = 0.0;
+    (*item_actor).prevent_timed_despawn = 1;
+
+    item_actor
+}
+
 #[no_mangle]
 pub extern "C" fn tgreact_spawn_custom_item(
     mut param2_s0x18: u8,
@@ -1227,59 +1368,18 @@ pub extern "C" fn tgreact_spawn_custom_item(
             // heart, behave like the flag has already been set. This allows 3
             // hearts to spawn instead
             if flag_is_on == 0 && (((param2 >> 24) & 0xFF) != 6 || new_itemid != 6) {
-                let item_actor_param1: u32 = (new_itemid as u32) | 0xFF1FFE00;
-
-                let mut actor_pos = (*tgreact).members.base.pos;
-                let actor_pos_ptr: *mut math::Vec3f = &mut actor_pos as *mut math::Vec3f;
-
-                let mut facing_angle = (*tgreact).members.base.rot.y;
-
-                if facing_angle == 0 {
-                    facing_angle = (*PLAYER_PTR).obj_base_members.base.rot.y - 0x8000;
-                }
-
-                let mut item_rot = math::Vec3s {
-                    x: 0,
-                    y: facing_angle,
-                    z: 0,
-                };
-                let item_rot_ptr: *mut math::Vec3s = &mut item_rot as *mut math::Vec3s;
-
-                let trapid = (param2 >> 19) & 0xF;
-
-                let item_actor: *mut dAcItem = actor::spawn_actor(
-                    actor::ACTORID::ITEM,
+                let item_actor = spawn_item_on_destroy(
                     roomid,
-                    item_actor_param1,
-                    actor_pos_ptr,
-                    item_rot_ptr,
-                    core::ptr::null_mut(),
-                    0xFF00000F | (param2 & 0x3FF00) | (trapid << 4),
-                ) as *mut dAcItem;
+                    (*tgreact).members.base.pos,
+                    (*tgreact).members.base.rot.y,
+                    new_itemid as u16,
+                    param2,
+                    false,
+                );
 
                 if item_actor.is_null() {
                     return param2_s0x18.into();
                 }
-
-                let mut forward_speed = 0.0;
-                let mut velocity_y = 0.0;
-
-                if (param2 >> 18) & 1 == 1 {
-                    forward_speed = 12.0;
-                    velocity_y = 19.5;
-                }
-
-                // Give items that are normally Deku Seeds a bit of an extra push xD
-                if ((param2 >> 24) & 0xFF) == 0x0D {
-                    forward_speed += 2.0;
-                    velocity_y += 3.0;
-                }
-
-                (*item_actor).base.members.forward_speed = forward_speed;
-                (*item_actor).base.members.velocity.x = 0.0;
-                (*item_actor).base.members.velocity.y = velocity_y;
-                (*item_actor).base.members.velocity.z = 0.0;
-                (*item_actor).prevent_timed_despawn = 1;
                 param2_s0x18 = 0xFF;
                 (*tgreact).members.base.param2 |= 0x3FF00;
             }
@@ -1296,6 +1396,72 @@ pub extern "C" fn tgreact_spawn_custom_item(
         }
 
         return 0;
+    }
+}
+
+/// Pot sanity: replaces the `bl checkParam2OnDestroy` calls that drop a pot's
+/// vanilla item. Two call sites reach it through a jumptable stub (landingpad
+/// #108) that passes the actor (x19) as a sixth argument:
+///   - runtime 0x7100eca45c: the shared object base-class update, which is
+///     what drops items for almost every pot (314 of 318 have param1 bits
+///     14-15 set and never enter the Rebirth state). It serves many actor
+///     types, so the actor id is checked here.
+///   - runtime 0x71009b96a4: dAcOtubo_c's Rebirth state (4 pots in D301).
+///
+/// Patched pots carry the TgReact param2 layout, except the item id is stored
+/// in param2 bits 0-7 (+ bit 23 as the 9th bit), since a pot's param1 has no
+/// room. Anything that isn't a pot, pots whose custom flag is 0x3FF
+/// (unpatched, the vanilla value), ammo pots (vanilla drop id 0xFE) and pots
+/// whose check was already collected keep the vanilla drop. After spawning,
+/// the actor's custom flag is set to 0x3FF in memory so the repeated per-frame
+/// call (and the second call site) can't drop a second item.
+#[no_mangle]
+pub extern "C" fn pot_spawn_custom_item(
+    param2_s0x18: u8,
+    roomid: u32,
+    pos: *mut math::Vec3f,
+    param_4: u32,
+    param_5: *mut c_void,
+    pot: *mut actor::dAcOBase,
+) -> u32 {
+    unsafe {
+        if !pot.is_null() && (*pot).basebase.members.actorid == actor::ACTORID::OBJ_TUBO as u16 {
+            let param2 = (*pot).members.base.param2;
+            let raw_flag = (param2 >> 8) & 0x3FF;
+
+            // Pots are the only actor using custom flag group 1 (extended pages).
+            if raw_flag != 0x3FF
+                && param2_s0x18 != 0xFE
+                && !check_ap_custom_flag(raw_flag as u16 | CUSTOM_FLAG_GROUP1)
+            {
+                let new_itemid =
+                    dAcItem__determineFinalItemid(item_id_9bit(param2 & 0xFF, param2 >> 23) as u64)
+                        as u16;
+
+                let drop_pos = if pos.is_null() {
+                    (*pot).members.base.pos
+                } else {
+                    *pos
+                };
+
+                let item_actor = spawn_item_on_destroy(
+                    roomid,
+                    drop_pos,
+                    (*pot).members.base.rot.y,
+                    new_itemid,
+                    param2,
+                    true,
+                );
+
+                if !item_actor.is_null() {
+                    (*pot).members.base.param2 |= 0x3FF00;
+                    // Bit 0 set = "an item was dropped", same as vanilla
+                    return 1;
+                }
+            }
+        }
+
+        checkParam2OnDestroy(param2_s0x18, roomid, pos, param_4, param_5)
     }
 }
 
@@ -3146,7 +3312,9 @@ assert_eq_size!([u8; 12], ApCheckStats);
 // event flow triggers to inject dynamic text into the textbox.
 // ============================================================================
 
-pub const AP_ITEM_TABLE_MAX: usize = 512;
+// Must hold every location that can carry a custom flag (all shuffles + pots
+// is ~1231). Mirrored in the client's ap-ipc crate and ItemSystemIntegration.
+pub const AP_ITEM_TABLE_MAX: usize = 1280;
 
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
@@ -3171,7 +3339,7 @@ pub struct ApItemInfoTable {
     pub _pad:    u16,
     pub entries: [ApItemInfoEntry; AP_ITEM_TABLE_MAX],
 }
-assert_eq_size!([u8; 8 + 98 * 512], ApItemInfoTable);
+assert_eq_size!([u8; 8 + 98 * 1280], ApItemInfoTable);
 
 // The live instance of this struct now lives at AP_IPC_ROOT.item_info_table
 // (see ipc.rs) instead of a standalone static. Written once by the Python
@@ -3209,6 +3377,18 @@ pub extern "C" fn refresh_ipc_addresses() {
 
             let tbox_ptr = core::ptr::addr_of!((*FILE_MGR).FA.tboxflags) as *const [u8; 104];
             crate::ipc::AP_IPC_ROOT.tboxflags = core::ptr::read_unaligned(tbox_ptr);
+
+            // Extended custom flag pages (group 1): scene/dungeon indexes 26-29.
+            let ext_scene_ptr =
+                core::ptr::addr_of!((*FILE_MGR).FA.sceneflags[GROUP1_FIRST_SCENE_INDEX as usize])
+                    as *const [u8; 64];
+            crate::ipc::AP_IPC_ROOT.ext_flags.sceneflags = core::ptr::read_unaligned(ext_scene_ptr);
+
+            let ext_dungeon_ptr =
+                core::ptr::addr_of!((*FILE_MGR).FA.dungeonflags[GROUP1_FIRST_SCENE_INDEX as usize])
+                    as *const [u8; 64];
+            crate::ipc::AP_IPC_ROOT.ext_flags.dungeonflags =
+                core::ptr::read_unaligned(ext_dungeon_ptr);
         }
 
         // STATIC_TBOXFLAGS doesn't depend on FILE_MGR (it's a fixed .bss

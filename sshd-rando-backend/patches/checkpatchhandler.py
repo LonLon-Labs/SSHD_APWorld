@@ -37,6 +37,20 @@ GODDESS_CHEST_UNLOCK_STORYFLAG = 95
 # Item id of the generic "Archipelago Item" placeholder
 AP_PLACEHOLDER_ITEMID = 216
 
+# Custom flag "group" bit (bit 10 of the full custom flag ID). Group 0 is the
+# original 10-bit space (scene indexes 6/13/16/19). Group 1 lives in the
+# extended save-file pages (scene indexes 26-29, scene space only) and is only
+# ever used by pots, whose params2 stores just the low 10 bits (the group is
+# implicit for a Tubo). Keep in sync with CUSTOM_FLAG_GROUP1 in item.rs, the
+# ap-ipc crate, the Python client and _build_custom_flag_mapping in the APWorld.
+CUSTOM_FLAG_GROUP1 = 0x400
+
+# Local IDs available to group 1: selector (bits 7-8) 0-3, bit 9 (flag space) is
+# always 0, bit within page 0-126. Local ID 0 means "no flag" to the game's item
+# handler, and every (i & 0x7F) == 0x7F is skipped, as in group 0. That leaves
+# 4 * 127 - 1 = 507 IDs.
+GROUP1_LOCAL_FLAGS = [i for i in range(1, 512) if (i & 0x7F) != 0x7F]
+
 # Story flag set by striking each Goddess Cube (matches GODDESS_CUBE_STORYFLAGS in
 # stagepatchhandler.py and GODDESS_CUBE_STORY_FLAGS in the apworld's Locations.py)
 GODDESS_CUBE_NAME_TO_STORYFLAG: dict[str, int] = {
@@ -117,6 +131,10 @@ def determine_check_patches(
     ]
     custom_flags.reverse()
 
+    # Pot sanity draws from the group 1 pool instead (see CUSTOM_FLAG_GROUP1)
+    group1_flags = [CUSTOM_FLAG_GROUP1 | i for i in GROUP1_LOCAL_FLAGS]
+    group1_flags.reverse()
+
     location_table = world.location_table
 
     # Remove flags already injected by Archipelago to prevent collisions.
@@ -128,6 +146,7 @@ def determine_check_patches(
     }
     if injected_flags:
         custom_flags = [f for f in custom_flags if f not in injected_flags]
+        group1_flags = [f for f in group1_flags if f not in injected_flags]
 
     # A set is okay here because it doesn't touch any randomization
     playthrough_items = set()
@@ -145,13 +164,44 @@ def determine_check_patches(
             # Use the pre-injected custom flag from Archipelago
             custom_flag = location.custom_flag
         elif "Custom Flag" in location.types:
-            # Assign a new custom flag for vanilla sshd-rando locations
-            custom_flag = custom_flags.pop()
+            # Assign a new custom flag for vanilla sshd-rando locations. Pots use
+            # the extended group 1 pool when they're actually shuffled; with pots
+            # off the old group 0 draw is kept so existing seeds don't shift.
+            if "Pots" in location.types and world.setting("pot_shuffle") != "off":
+                custom_flag = group1_flags.pop()
+            elif "Pots" in location.types:
+                # Unshuffled pots are never patched, so their flag is never used.
+                # Keep burning a group 0 flag while any are left so existing
+                # seeds don't shift, but don't fail when the pool runs dry (the
+                # AP world already injects a flag for every shuffled location).
+                custom_flag = custom_flags.pop() if custom_flags else 0x3FF
+            else:
+                custom_flag = custom_flags.pop()
             location.custom_flag = custom_flag
         else:
             # No custom flag needed
             custom_flag = 0x3FF
-        
+
+        # Only pots can carry a group 1 flag (their params2 has no room for the
+        # group bit, so the game treats every pot flag as group 1), and every
+        # shuffled pot must carry one. A mismatch would make a check set another
+        # location's flag.
+        if custom_flag != 0x3FF:
+            is_group1 = bool(custom_flag & CUSTOM_FLAG_GROUP1)
+            is_pot = "Pots" in location.types
+            pots_off = world.setting("pot_shuffle") == "off"
+            if is_group1 and not is_pot:
+                raise Exception(
+                    f'"{location.name}" has group 1 custom flag {custom_flag:#x} '
+                    "but isn't a pot."
+                )
+            # With pots off the location is never patched, so its flag is unused
+            if is_pot and not pots_off and not is_group1:
+                raise Exception(
+                    f'Pot "{location.name}" has group 0 custom flag '
+                    f"{custom_flag:#x}; pots must use group 1."
+                )
+
         original_itemid = 0
 
         if "Stamina Fruits" in location.types:
@@ -166,6 +216,10 @@ def determine_check_patches(
             "Closets" in location.types
             and world.setting("npc_closet_shuffle") == "vanilla"
         ):
+            continue
+
+        # Don't patch pots if they're off
+        if "Pots" in location.types and world.setting("pot_shuffle") == "off":
             continue
 
         # Deal with traps

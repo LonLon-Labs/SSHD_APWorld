@@ -797,6 +797,56 @@ def patch_tgreact(
         tgreact["params2"] = mask_shift_set(tgreact["params2"], 0x3FF, 8, 0x3FF)
 
 
+def patch_pot(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+):
+    """Pot sanity (Tubo, dAcOtubo_c). Read by pot_spawn_custom_item in item.rs.
+
+    A pot's param1 has no free bits, so everything goes in params2 (the top byte
+    keeps the vanilla drop id and bits 0-23 are 0xFFFFFF in every vanilla pot):
+      bits 0-7   item id (low 8 bits), bit 23 = 9th bit
+      bits 8-17  custom flag (0x3FF = unpatched, vanilla drop)
+      bit 18     velocity flag (item pops out of the pot)
+      bits 19-22 trap id (0xF = not a trap)
+    """
+    id = int(object_id_str, 16)
+
+    pot: dict | None = next(
+        filter(lambda x: x["name"] == "Tubo" and x["id"] == id, bzs["OBJ "]), None
+    )
+
+    if pot is None:
+        raise Exception(f"No pot (Tubo) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla drop
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return
+
+    # The pot's params2 only has room for the low 10 bits of the flag. The game
+    # treats every pot flag as an extended (group 1, bit 10) flag, so a group 0
+    # flag here would make the pot set a different location's flag.
+    if not (custom_flag & 0x400):
+        raise Exception(
+            f"Pot '{hex(id)}' was given group 0 custom flag {custom_flag:#x}; "
+            "pots must use group 1 flags (bit 10 set)."
+        )
+    custom_flag &= 0x3FF
+
+    # Need to check this as itemid is the itemid of the fake item model when trapid > 0
+    if trapid:
+        trapbits = 254 - trapid
+        pot["params2"] = mask_shift_set(pot["params2"], 0xF, 19, trapbits)
+    else:
+        pot["params2"] = mask_shift_set(pot["params2"], 0xF, 19, 0xF)
+
+    # Item pops out of the pot
+    pot["params2"] = mask_shift_set(pot["params2"], 1, 18, 1)
+
+    pot["params2"] = mask_shift_set(pot["params2"], 0xFF, 0, itemid & 0xFF)
+    pot["params2"] = mask_shift_set(pot["params2"], 0x1, 23, (itemid >> 8) & 1)
+    pot["params2"] = mask_shift_set(pot["params2"], 0x3FF, 8, custom_flag)
+
+
 def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0x3FF):
 
     academy_bell: dict | None = next(
@@ -1501,6 +1551,14 @@ class StagePatchHandler:
                         )
                     elif object_name == "TgReact":
                         patch_tgreact(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                    elif object_name == "Tubo":
+                        patch_pot(
                             room_bzs["LAY "][f"l{layer}"],
                             itemid,
                             objectid,

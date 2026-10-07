@@ -817,6 +817,7 @@ class SSHDLogicConverter:
             "Gratitude Crystals":    "gratitude_crystal_shuffle",
             "Stamina Fruits":        "stamina_fruit_shuffle",
             "Hidden Items":          "hidden_item_shuffle",
+            "Pots":                  "pot_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",
         }
@@ -860,6 +861,7 @@ class SSHDLogicConverter:
             "Gratitude Crystals":    "gratitude_crystal_shuffle",
             "Stamina Fruits":        "stamina_fruit_shuffle",
             "Hidden Items":          "hidden_item_shuffle",
+            "Pots":                  "pot_shuffle",
             "Goddess Chests":        "goddess_chest_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",

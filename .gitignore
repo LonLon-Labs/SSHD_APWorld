@@ -47,6 +47,7 @@ Desktop.ini
 
 # Generated files
 *.generated.yaml
+*.bak
 
 # Development utilities
 ALL_ITEM_MEMORY_ADDRESSES.py
@@ -63,6 +64,8 @@ compare*
 sshd-rando-backend/asm/debug_link_rust_additions.py
 extract_sword_models.py
 install_latest_patch.py
+sshd-rando-backend/dump_pots.py
+sshd-rando-backend/pots.yaml
 ArchipelagoItem.arc.arc.LZ.bak
 # Might add these patcher scripts in the future, but for now they don't do much
 assets/patch_custom_model.py

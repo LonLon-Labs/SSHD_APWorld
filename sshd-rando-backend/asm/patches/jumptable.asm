@@ -159,6 +159,16 @@ ldr x0, [sp, #40]
 ldp x29, x30, [sp], #48
 ret
 
+; Pot sanity item drop (landingpad index 108).
+; Called via bl from pot.asm in place of the call to checkParam2OnDestroy in
+; dAcOtubo_c's Rebirth state. x0-x4 are the vanilla call's arguments; the pot
+; actor (x19) is passed as a sixth argument in x5. The Rust function returns
+; straight to the pot code (b, not bl, so lr is untouched).
+.offset 0x7100659c10
+mov x5, x19
+mov w8, #108
+b additions_jumptable
+
 ; Actually branches to the rust additions landingpad
 ; additions_jumptable
 .offset 0x710065a070 ; uses 10 instructions

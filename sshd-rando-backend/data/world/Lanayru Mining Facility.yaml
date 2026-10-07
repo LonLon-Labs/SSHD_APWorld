@@ -24,6 +24,11 @@
     LMF Big Hub South: Nothing # Push a box up against the broken stairs and climb up.
     LMF Key Locked Room: Lanayru_Mining_Facility_Small_Key or small_keys == removed
     LMF First West Room: Gust_Bellows # Blow sand off the switch and nearby box.
+  locations:
+    LMF First Hub - Pot 1: Nothing
+    LMF First Hub - Pot 2: Nothing
+    LMF First Hub - Pot 3: Nothing
+    LMF First Hub - Pot 4: Nothing
 
 - name: LMF Key Locked Room
   dungeon: Lanayru Mining Facility
@@ -116,6 +121,14 @@
     LMF Big Hub Near Boss Door: Gust_Bellows and Can_Hit_Timeshift_Stone_in_Minecart
   # Also includes the platform in Big Hub after the door
   locations:
+    LMF Sand Spike Maze - Pot 1: Nothing
+    LMF Sand Spike Maze - Pot 2: Nothing
+    LMF Sand Spike Maze - Pot 3: Nothing
+    LMF Sand Spike Maze - Pot 4: Nothing
+    LMF Sand Spike Maze - Pot 5: Nothing
+    LMF Sand Spike Maze - Pot 6: Nothing
+    LMF Sand Spike Maze - Pot 7: Nothing
+    LMF Sand Spike Maze - Pot 8: Nothing
     Lanayru Mining Facility - First Rupee in Crawlspace before Spike Maze: Gust_Bellows
     Lanayru Mining Facility - Second Rupee in Crawlspace before Spike Maze: Gust_Bellows
     Lanayru Mining Facility - West Rupee in Spike Maze 1: Gust_Bellows
@@ -159,6 +172,9 @@
   exits:
     LMF Big Hub Near Boss Key Room North: Bomb_Bag and Gust_Bellows and Can_Defeat_Armos
   locations:
+    LMF Boss Key Room - Pot 1: Nothing
+    LMF Boss Key Room - Pot 2: Nothing
+    LMF Boss Key Room - Pot 3: Nothing
     Lanayru Mining Facility - Rupee behind South Statue in Northeast Room: Bomb_Bag
     Lanayru Mining Facility - Blow Robot behind Bottom Northwest Statue: Bomb_Bag and Gust_Bellows
     Lanayru Mining Facility - Blow Robot behind Middle Northwest Statue: Bomb_Bag and Gust_Bellows
@@ -183,6 +199,12 @@
   exits:
     LMF Hall of Ancient Robots: Nothing # Exit through the door.
   locations:
+    LMF After Sand Drain - Pot 1: Nothing
+    LMF After Sand Drain - Pot 2: Nothing
+    LMF After Sand Drain - Pot 3: Nothing
+    LMF After Sand Drain - Pot 4: Nothing
+    LMF After Sand Drain - Pot 5: Nothing
+    LMF After Sand Drain - Pot 6: Nothing
     Lanayru Mining Facility - Defeat Boss: Nothing # Moldarach needs to be defeated for the sand to drain, then the item spawns.
 
 - name: LMF Hall of Ancient Robots

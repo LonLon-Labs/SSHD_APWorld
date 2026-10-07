@@ -7682,3 +7682,2379 @@
   types:
     - Bird Statues
     - Custom Flag
+
+- name: Skyview Boss Room - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l0/Tubo/0xFC00
+
+- name: Skyview Boss Room - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l0/Tubo/0xFC01
+
+- name: Skyview Boss Room - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l0/Tubo/0xFC02
+
+- name: Skyview Boss Room - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l0/Tubo/0xFC03
+
+- name: Skyview Boss Room - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l0/Tubo/0xFC04
+
+- name: Skyview Boss Room - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l0/Tubo/0xFC05
+
+- name: Skyview Boss Room - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l1/Tubo/0xFC11
+    - stage/B100/r0/l2/Tubo/0xFC11
+    - stage/B100/r0/l4/Tubo/0xFC11
+    - stage/B100/r0/l5/Tubo/0xFC11
+
+- name: Skyview Boss Room - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l1/Tubo/0xFC12
+
+- name: Skyview Boss Room - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l2/Tubo/0xFC10
+    - stage/B100/r0/l4/Tubo/0xFC10
+    - stage/B100/r0/l5/Tubo/0xFC10
+
+- name: Skyview Boss Room - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l3/Tubo/0xFC13
+
+- name: Skyview Boss Room - Pot 11
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B100/r0/l3/Tubo/0xFC14
+
+- name: LMF After Sand Drain - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B300/r0/l1/Tubo/0xFC0C
+    - stage/B300/r0/l2/Tubo/0xFC0C
+
+- name: LMF After Sand Drain - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B300/r0/l1/Tubo/0xFC0D
+    - stage/B300/r0/l2/Tubo/0xFC0D
+
+- name: LMF After Sand Drain - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B300/r0/l1/Tubo/0xFC0E
+    - stage/B300/r0/l2/Tubo/0xFC0E
+
+- name: LMF After Sand Drain - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B300/r0/l1/Tubo/0xFC0F
+    - stage/B300/r0/l2/Tubo/0xFC0F
+
+- name: LMF After Sand Drain - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B300/r0/l1/Tubo/0xFC10
+    - stage/B300/r0/l2/Tubo/0xFC10
+
+- name: LMF After Sand Drain - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/B300/r0/l1/Tubo/0xFC11
+    - stage/B300/r0/l2/Tubo/0xFC11
+
+- name: Waterfall Cave - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D000/r0/l0/Tubo/0xFC10
+
+- name: Waterfall Cave - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D000/r0/l0/Tubo/0xFC11
+
+- name: Waterfall Cave - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D000/r0/l0/Tubo/0xFC12
+
+- name: SK Earth Temple Room North - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_1/r0/l0/Tubo/0xFC1F
+
+- name: SK Earth Temple Room North - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_1/r0/l0/Tubo/0xFC20
+
+- name: SK Earth Temple Room North - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_1/r0/l0/Tubo/0xFC21
+
+- name: SK Earth Temple Room North - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_1/r0/l0/Tubo/0xFC22
+
+- name: SK Earth Temple Room North - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_1/r0/l0/Tubo/0xFC23
+
+- name: SK Earth Temple Room North - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_1/r0/l0/Tubo/0xFC26
+
+- name: SK Earth Temple Room North - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_1/r0/l0/Tubo/0xFC27
+
+- name: SK Fire Sanctuary Room East - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_2/r0/l0/Tubo/0xFC25
+
+- name: SK Fire Sanctuary Room East - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_2/r0/l0/Tubo/0xFC26
+
+- name: SK Fire Sanctuary Room East - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_2/r0/l0/Tubo/0xFC27
+
+- name: SK Fire Sanctuary Room East - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_2/r0/l0/Tubo/0xFC28
+
+- name: SK Fire Sanctuary Room East - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_2/r0/l0/Tubo/0xFC29
+
+- name: SK Fire Sanctuary Room East - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_2/r0/l0/Tubo/0xFC2A
+
+- name: SK Fire Sanctuary Room East - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_2/r0/l0/Tubo/0xFC2B
+
+- name: SK Fire Sanctuary Room East - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_2/r0/l0/Tubo/0xFC2C
+
+- name: SK Fire Sanctuary Room East - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_2/r0/l0/Tubo/0xFC30
+
+- name: SK Fire Sanctuary Room East - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D003_2/r0/l0/Tubo/0xFC31
+
+- name: ET West Room - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r0/l0/Tubo/0xFC10
+
+- name: ET West Room - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r0/l0/Tubo/0xFC11
+
+- name: ET West Room - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r0/l0/Tubo/0xFC12
+
+- name: ET West Room - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r0/l0/Tubo/0xFC13
+
+- name: Earth Temple First Room - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r1/l0/Tubo/0x1435
+
+- name: Earth Temple First Room - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r1/l0/Tubo/0x1436
+
+- name: Earth Temple First Room - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r1/l0/Tubo/0xC44
+
+- name: Earth Temple First Room - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r1/l0/Tubo/0xC45
+
+- name: ET Hub Room - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r2/l0/Tubo/0x1C0F
+
+- name: ET Hub Room - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r2/l0/Tubo/0x1C10
+
+- name: ET Hub Room - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D200/r2/l0/Tubo/0x1C11
+
+- name: FS In Front of Boss Door - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r0/l0/Tubo/0xFC09
+
+- name: FS In Front of Boss Door - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r0/l0/Tubo/0xFC0A
+
+- name: FS In Front of Boss Door - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r0/l0/Tubo/0xFC0B
+
+- name: FS In Front of Boss Door - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r0/l0/Tubo/0xFC10
+
+- name: FS In Front of Boss Door - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r0/l0/Tubo/0xFC11
+
+- name: FS In Front of Boss Door - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r0/l0/Tubo/0xFC12
+
+- name: FS In Front of Boss Door - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r10/l0/Tubo/0xFC08
+
+- name: FS In Front of Boss Door - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r10/l0/Tubo/0xFC09
+
+- name: FS In Front of Boss Door - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r10/l0/Tubo/0xFC0E
+
+- name: FS In Front of Boss Door - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r10/l0/Tubo/0xFC0F
+
+- name: FS In Front of Boss Door - Pot 11
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r10/l0/Tubo/0xFC10
+
+- name: FS In Front of Boss Door - Pot 12
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r10/l0/Tubo/0xFC11
+
+- name: FS In Front of Boss Door - Pot 13
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r10/l0/Tubo/0xFC16
+
+- name: FS In Front of Boss Door - Pot 14
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r10/l0/Tubo/0xFC17
+
+- name: FS In Front of Boss Door - Pot 15
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r10/l0/Tubo/0xFC1A
+
+- name: FS West of Boss Door After Lava River - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r3/l0/Tubo/0xFC0C
+
+- name: FS West of Boss Door After Lava River - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201/r3/l0/Tubo/0xFC0D
+
+- name: FS First Magmanos Room - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r1/l0/Tubo/0xFC33
+
+- name: FS First Magmanos Room - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r1/l0/Tubo/0xFC34
+
+- name: FS First Magmanos Room - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r1/l0/Tubo/0xFC35
+
+- name: FS First Magmanos Room - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r1/l0/Tubo/0xFC38
+
+- name: FS First Magmanos Room - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r1/l0/Tubo/0xFC39
+
+- name: FS Second Trapped Mogma Room - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r11/l0/Tubo/0xFC01
+
+- name: FS Second Trapped Mogma Room - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r11/l0/Tubo/0xFC02
+
+- name: FS Second Trapped Mogma Room - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r2/l0/Tubo/0xFC0B
+
+- name: FS Second Trapped Mogma Room - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r2/l0/Tubo/0xFC0C
+
+- name: FS Second Trapped Mogma Room - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r2/l0/Tubo/0xFC0D
+
+- name: FS Second Trapped Mogma Room - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r2/l0/Tubo/0xFC0E
+
+- name: FS Under Magmanos Fight Room - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r5/l0/Tubo/0xFC1C
+
+- name: FS Under Magmanos Fight Room - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r5/l0/Tubo/0xFC1D
+
+- name: FS First Magmanos Room Balcony - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r6/l0/Tubo/0xFC1C
+
+- name: FS First Magmanos Room Balcony - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r6/l0/Tubo/0xFC1D
+
+- name: FS Water Fruit Room - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r7/l0/Tubo/0xFC0A
+
+- name: FS Water Fruit Room - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D201_1/r7/l0/Tubo/0xFC0B
+
+- name: LMF First Hub - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300/r1/l0/Tubo/0xFC0A
+
+- name: LMF First Hub - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300/r1/l0/Tubo/0xFC0B
+
+- name: LMF First Hub - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300/r1/l0/Tubo/0xFC0C
+
+- name: LMF First Hub - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300/r1/l0/Tubo/0xFC0D
+
+- name: LMF Sand Spike Maze - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r7/l0/Tubo/0xFC3B
+
+- name: LMF Sand Spike Maze - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r7/l0/Tubo/0xFC3C
+
+- name: LMF Sand Spike Maze - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r7/l0/Tubo/0xFC3D
+
+- name: LMF Sand Spike Maze - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r7/l0/Tubo/0xFC3E
+
+- name: LMF Sand Spike Maze - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r7/l0/Tubo/0xFC3F
+
+- name: LMF Sand Spike Maze - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r7/l0/Tubo/0xFC40
+
+- name: LMF Sand Spike Maze - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r7/l0/Tubo/0xFC41
+
+- name: LMF Sand Spike Maze - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r7/l0/Tubo/0xFC42
+
+- name: LMF Boss Key Room - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Tubo/0xFC4D
+
+- name: LMF Boss Key Room - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Tubo/0xFC4E
+
+- name: LMF Boss Key Room - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Tubo/0xFC4F
+
+- name: Sandship Captain's Cabin - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D301/r14/l3/Tubo/0xFC1F
+
+- name: Sandship Captain's Cabin - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D301/r14/l3/Tubo/0xFC20
+
+- name: Sandship Captain's Cabin - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D301/r14/l11/Tubo/0xFC1C
+
+- name: Sandship Captain's Cabin - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/D301/r14/l11/Tubo/0xFC1D
+
+- name: Central Skyloft - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x41C
+
+- name: Central Skyloft - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x41D
+
+- name: Central Skyloft - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x41E
+
+- name: Central Skyloft - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x41F
+
+- name: Central Skyloft - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x420
+
+- name: Central Skyloft - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x421
+
+- name: Central Skyloft - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x422
+
+- name: Central Skyloft - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x488
+
+- name: Central Skyloft - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x489
+
+- name: Central Skyloft - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x48A
+
+- name: Central Skyloft - Pot 11
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x48B
+
+- name: Central Skyloft - Pot 12
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x48C
+
+- name: Central Skyloft - Pot 13
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x48D
+
+- name: Central Skyloft - Pot 14
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x48E
+
+- name: Central Skyloft - Pot 15
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x48F
+
+- name: Central Skyloft - Pot 16
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x4DC
+
+- name: Central Skyloft - Pot 17
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Tubo/0x4DD
+
+- name: Knight Academy - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l1/Tubo/0xFC75
+
+- name: Knight Academy - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l1/Tubo/0xFC76
+
+- name: Knight Academy - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l1/Tubo/0xFC77
+
+- name: Knight Academy - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l1/Tubo/0xFC78
+    - stage/F001r/r0/l2/Tubo/0xFC78
+    - stage/F001r/r0/l4/Tubo/0xFC78
+
+- name: Knight Academy - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l2/Tubo/0xFC79
+    - stage/F001r/r0/l4/Tubo/0xFC79
+
+- name: Knight Academy - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l3/Tubo/0xFC81
+
+- name: Knight Academy - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l3/Tubo/0xFC82
+
+- name: Lumpy Pumpkin Exterior - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Tubo/0xFC5F
+
+- name: Lumpy Pumpkin Exterior - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Tubo/0xFC60
+
+- name: Lumpy Pumpkin Exterior - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Tubo/0xFC67
+
+- name: Lumpy Pumpkin Exterior - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Tubo/0xFC68
+
+- name: Lumpy Pumpkin Exterior - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Tubo/0xFC69
+
+- name: Lumpy Pumpkin Exterior - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Tubo/0xFC6A
+
+- name: Lumpy Pumpkin Exterior - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Tubo/0xFC6D
+
+- name: Bug Heaven - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC13
+
+- name: Bug Heaven - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC14
+
+- name: Bug Heaven - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC15
+
+- name: Bug Heaven - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC16
+
+- name: Bug Heaven - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC17
+
+- name: Bug Heaven - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC18
+
+- name: Bug Heaven - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC19
+
+- name: Bug Heaven - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC1B
+
+- name: Bug Heaven - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC1E
+
+- name: Bug Heaven - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC1F
+
+- name: Bug Heaven - Pot 11
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC23
+
+- name: Bug Heaven - Pot 12
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC83
+
+- name: Bug Heaven - Pot 13
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/Tubo/0xFC88
+
+- name: Volcano First Room - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F200/r1/l0/Tubo/0xFC13
+
+- name: Volcano First Room - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F200/r1/l0/Tubo/0xFC14
+
+- name: Volcano First Room - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F200/r1/l4/Tubo/0xFC40
+
+- name: Volcano First Room - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F200/r1/l4/Tubo/0xFC41
+
+- name: Volcano First Room - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F200/r1/l4/Tubo/0xFC42
+
+- name: Bokoblin Base Summit - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC34
+
+- name: Bokoblin Base Summit - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC35
+
+- name: Bokoblin Base Summit - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC36
+
+- name: Bokoblin Base Summit - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC37
+
+- name: Bokoblin Base Summit - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC38
+
+- name: Bokoblin Base Summit - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC39
+
+- name: Bokoblin Base Summit - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC3A
+
+- name: Bokoblin Base Summit - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC3B
+
+- name: Bokoblin Base Summit - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC3C
+
+- name: Bokoblin Base Summit - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC3D
+
+- name: Bokoblin Base Summit - Pot 11
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC3E
+
+- name: Bokoblin Base Summit - Pot 12
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_1/r0/l4/Tubo/0xFC3F
+
+- name: Bokoblin Base Summit - Pot 13
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC19
+
+- name: Bokoblin Base Summit - Pot 14
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC1A
+
+- name: Bokoblin Base Summit - Pot 15
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC1B
+
+- name: Bokoblin Base Summit - Pot 16
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC1C
+
+- name: Bokoblin Base Summit - Pot 17
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC1D
+
+- name: Bokoblin Base Summit - Pot 18
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC22
+
+- name: Bokoblin Base Summit - Pot 19
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC23
+
+- name: Bokoblin Base Summit - Pot 20
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC27
+
+- name: Bokoblin Base Summit - Pot 21
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC28
+
+- name: Bokoblin Base Summit - Pot 22
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC29
+
+- name: Bokoblin Base Summit - Pot 23
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC31
+
+- name: Bokoblin Base Summit - Pot 24
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_2/r0/l0/Tubo/0xFC32
+
+- name: Past Volcano Summit - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC16
+
+- name: Past Volcano Summit - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC17
+
+- name: Past Volcano Summit - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC18
+
+- name: Past Volcano Summit - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC19
+
+- name: Past Volcano Summit - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC1A
+
+- name: Past Volcano Summit - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC1B
+
+- name: Past Volcano Summit - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC1C
+
+- name: Past Volcano Summit - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC1D
+
+- name: Past Volcano Summit - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC1E
+
+- name: Past Volcano Summit - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC1F
+
+- name: Past Volcano Summit - Pot 11
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC20
+
+- name: Past Volcano Summit - Pot 12
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F201_3/r0/l0/Tubo/0xFC21
+
+- name: Bokoblin Base Prison - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202/r1/l1/Tubo/0x849
+
+- name: Bokoblin Base Prison - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202/r1/l1/Tubo/0x84A
+
+- name: Bokoblin Base Prison - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202/r1/l1/Tubo/0x84C
+
+- name: Bokoblin Base Prison - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202/r1/l1/Tubo/0x84D
+
+- name: Bokoblin Base Prison - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202/r1/l1/Tubo/0x84E
+
+- name: Bokoblin Base Prison - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202/r1/l1/Tubo/0x84F
+
+- name: Bokoblin Base Prison - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC05
+
+- name: Bokoblin Base Prison - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC06
+
+- name: Bokoblin Base Prison - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC07
+
+- name: Bokoblin Base Prison - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC08
+
+- name: Bokoblin Base Prison - Pot 11
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC0A
+
+- name: Bokoblin Base Prison - Pot 12
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC0B
+
+- name: Bokoblin Base Prison - Pot 13
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC0C
+
+- name: Bokoblin Base Prison - Pot 14
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC0D
+
+- name: Bokoblin Base Prison - Pot 15
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC0E
+
+- name: Bokoblin Base Prison - Pot 16
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC0F
+
+- name: Bokoblin Base Prison - Pot 17
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC10
+
+- name: Bokoblin Base Prison - Pot 18
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_1/r0/l0/Tubo/0xFC11
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC03
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC04
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC05
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC0A
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC0B
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC0C
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC0D
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC0E
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC0F
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC10
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 11
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC11
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 12
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_2/r0/l0/Tubo/0xFC12
+
+- name: Bokoblin Base Prison - Pot 19
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC05
+
+- name: Bokoblin Base Prison - Pot 20
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC06
+
+- name: Bokoblin Base Prison - Pot 21
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC07
+
+- name: Bokoblin Base Prison - Pot 22
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC08
+
+- name: Bokoblin Base Prison - Pot 23
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC0A
+
+- name: Bokoblin Base Prison - Pot 24
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC0B
+
+- name: Bokoblin Base Prison - Pot 25
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC0C
+
+- name: Bokoblin Base Prison - Pot 26
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC0D
+
+- name: Bokoblin Base Prison - Pot 27
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC0E
+
+- name: Bokoblin Base Prison - Pot 28
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC0F
+
+- name: Bokoblin Base Prison - Pot 29
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC10
+
+- name: Bokoblin Base Prison - Pot 30
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_3/r0/l0/Tubo/0xFC11
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 13
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC03
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 14
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC04
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 15
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC05
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 16
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC0A
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 17
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC0B
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 18
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC0C
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 19
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC0D
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 20
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC0E
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 21
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC0F
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 22
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC10
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 23
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC11
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 24
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F202_4/r0/l0/Tubo/0xFC12
+
+- name: Sand Slide Platform - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F210/r0/l0/Tubo/0xFC2D
+
+- name: Sand Slide Platform - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F210/r0/l0/Tubo/0xFC2F
+
+- name: Sand Slide Platform - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F210/r0/l0/Tubo/0xFC30
+
+- name: Sand Slide Platform - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F210/r0/l0/Tubo/0xFC31
+
+- name: Lanayru Mine Statues Area - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_1/r2/l0/Tubo/0xFC10
+
+- name: Lanayru Mine Statues Area - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_1/r2/l0/Tubo/0xFC11
+
+- name: Lanayru Mine Statues Area - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_1/r2/l0/Tubo/0xFC12
+
+- name: Lanayru Mine Statues Area - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_1/r2/l0/Tubo/0xFC16
+
+- name: Lanayru Mine Statues Area - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_1/r2/l0/Tubo/0xFC17
+
+- name: Lanayru Mine Statues Area - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_1/r2/l0/Tubo/0xFC18
+
+- name: Temple of Time South - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_4/r0/l1/Tubo/0xFC9B
+
+- name: Temple of Time South - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_4/r0/l1/Tubo/0xFC9C
+
+- name: Temple of Time South - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_4/r0/l1/Tubo/0xFC9D
+
+- name: Temple of Time South - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_4/r0/l2/Tubo/0xFC84
+
+- name: Temple of Time South - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_4/r0/l2/Tubo/0xFC85
+
+- name: Temple of Time South - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F300_4/r0/l2/Tubo/0xFCA1
+
+- name: Skipper's Retreat Shack - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F301_5/r0/l0/Tubo/0xFC03
+
+- name: Skipper's Retreat Shack - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F301_5/r0/l0/Tubo/0xFC04
+
+- name: Skipper's Retreat Shack - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F301_5/r0/l0/Tubo/0xFC05
+
+- name: Skipper's Retreat Shack - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F301_5/r0/l0/Tubo/0xFC06
+
+- name: Skipper's Retreat Shack - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F301_5/r0/l0/Tubo/0xFC14
+
+- name: Skipper's Retreat Shack - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F301_5/r0/l0/Tubo/0xFC15
+
+- name: Skipper's Retreat Shack - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F301_5/r0/l0/Tubo/0xFC16
+
+- name: Skipper's Retreat Shack - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F301_5/r0/l0/Tubo/0xFC17
+
+- name: Skipper's Retreat Shack - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F301_5/r0/l0/Tubo/0xFC18
+
+- name: Lanayru Caves - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l0/Tubo/0xFC1E
+
+- name: Lanayru Caves - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l0/Tubo/0xFC1F
+
+- name: Lanayru Caves - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l0/Tubo/0xFC20
+
+- name: Lanayru Caves - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l0/Tubo/0xFC21
+
+- name: Lanayru Caves - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l0/Tubo/0xFC22
+
+- name: Lanayru Caves - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l1/Tubo/0xFC59
+    - stage/F303/r0/l3/Tubo/0xFC59
+
+- name: Lanayru Caves - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l1/Tubo/0xFC5A
+    - stage/F303/r0/l3/Tubo/0xFC5A
+    - stage/F303/r0/l4/Tubo/0xFC5A
+
+- name: Lanayru Caves - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l1/Tubo/0xFC5B
+    - stage/F303/r0/l2/Tubo/0xFC5B
+    - stage/F303/r0/l3/Tubo/0xFC5B
+    - stage/F303/r0/l4/Tubo/0xFC5B
+
+- name: Lanayru Caves - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l2/Tubo/0xFC5C
+    - stage/F303/r0/l4/Tubo/0xFC5C
+
+- name: Lanayru Caves - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l2/Tubo/0xFC5D
+    - stage/F303/r0/l4/Tubo/0xFC5D
+
+- name: Lanayru Caves - Pot 11
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l2/Tubo/0xFC5E
+    - stage/F303/r0/l4/Tubo/0xFC5E
+
+- name: Lanayru Caves - Pot 12
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l2/Tubo/0xFC5F
+    - stage/F303/r0/l4/Tubo/0xFC5F
+
+- name: Lanayru Caves - Pot 13
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l2/Tubo/0xFC60
+
+- name: Temple of Hylia - Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC10
+
+- name: Temple of Hylia - Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC11
+
+- name: Temple of Hylia - Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC12
+
+- name: Temple of Hylia - Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC13
+
+- name: Temple of Hylia - Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC14
+
+- name: Temple of Hylia - Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC15
+
+- name: Temple of Hylia - Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC16
+
+- name: Temple of Hylia - Pot 8
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC18
+
+- name: Temple of Hylia - Pot 9
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC1C
+
+- name: Temple of Hylia - Pot 10
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC1D
+
+- name: Temple of Hylia - Pot 11
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC1E
+
+- name: Temple of Hylia - Pot 12
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F402/r2/l0/Tubo/0xFC1F
+
+- name: Temple of Hylia - Pot 13
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F404/r2/l0/Tubo/0xFC14
+
+- name: Temple of Hylia - Pot 14
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F404/r2/l0/Tubo/0xFC15
+
+- name: Temple of Hylia - Pot 15
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F404/r2/l0/Tubo/0xFC16
+
+- name: Temple of Hylia - Pot 16
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F404/r2/l0/Tubo/0xFC17

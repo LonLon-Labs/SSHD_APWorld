@@ -15,6 +15,11 @@
     Volcano East: Nothing # Use the bomb flowers to destroy the rocks.
     Bokoblin Base Prison: Nothing # Talk to the Gossip Stone.
   locations:
+    Volcano First Room - Pot 1: Nothing
+    Volcano First Room - Pot 2: Nothing
+    Volcano First Room - Pot 3: Nothing
+    Volcano First Room - Pot 4: Nothing
+    Volcano First Room - Pot 5: Nothing
     Eldin Volcano - Stamina Fruit in Rising Lava Room: Nothing # Run through the room and collect the item.
     Eldin Volcano - Chest behind Bombable Wall in First Room: Nothing # Use the bomb flowers.
     Eldin Volcano - Rupee behind Bombable Wall in First Room: Nothing # Use the bomb flowers.
@@ -289,6 +294,10 @@
     Mogma Turf: Nothing # Drop down.
     Mogma Turf Pyrup Maze: Nothing # Run round to maze.
   locations:
+    Sand Slide Platform - Pot 1: Nothing
+    Sand Slide Platform - Pot 2: Nothing
+    Sand Slide Platform - Pot 3: Nothing
+    Sand Slide Platform - Pot 4: Nothing
     Mogma Turf - Bonk Campfire above Sand Slide: Nothing # Bonk into campfire.
     Mogma Turf - Slingshot Skull on Hut above Sand Slide: Slingshot
     Mogma Turf - Bonk Dusty Bag in Right Hut above Sand Slide: Nothing # Bonk into wall.
@@ -354,6 +363,18 @@
     Volcano Summit: Nothing # Run into Volcano Summit.
     Outside Fire Sanctuary: shortcut_vs_flames or (Clawshots and 'Can_Collect_Water')
   locations:
+    Past Volcano Summit - Pot 1: Nothing
+    Past Volcano Summit - Pot 2: Nothing
+    Past Volcano Summit - Pot 3: Nothing
+    Past Volcano Summit - Pot 4: Nothing
+    Past Volcano Summit - Pot 5: Nothing
+    Past Volcano Summit - Pot 6: Nothing
+    Past Volcano Summit - Pot 7: Nothing
+    Past Volcano Summit - Pot 8: Nothing
+    Past Volcano Summit - Pot 9: Nothing
+    Past Volcano Summit - Pot 10: Nothing
+    Past Volcano Summit - Pot 11: Nothing
+    Past Volcano Summit - Pot 12: Nothing
     Volcano Summit - Item after Underground Tunnel near Gossip Stone: Mogma_Mitts and (shortcut_vs_flames or 'Can_Collect_Water')
     Volcano Summit - Underground Rupee 1: Mogma_Mitts and (shortcut_vs_flames or 'Can_Collect_Water')
     Volcano Summit - Underground Rupee 2: Mogma_Mitts and (shortcut_vs_flames or 'Can_Collect_Water')
@@ -378,6 +399,36 @@
   exits:
     Bokoblin Base Volcano East: Mogma_Mitts
   locations:
+    Bokoblin Base Prison - Pot 2: Nothing
+    Bokoblin Base Prison - Pot 1: Nothing
+    Bokoblin Base Prison - Pot 3: Nothing
+    Bokoblin Base Prison - Pot 4: Nothing
+    Bokoblin Base Prison - Pot 5: Nothing
+    Bokoblin Base Prison - Pot 6: Nothing
+    Bokoblin Base Prison - Pot 7: Nothing
+    Bokoblin Base Prison - Pot 8: Nothing
+    Bokoblin Base Prison - Pot 9: Nothing
+    Bokoblin Base Prison - Pot 10: Nothing
+    Bokoblin Base Prison - Pot 11: Nothing
+    Bokoblin Base Prison - Pot 12: Nothing
+    Bokoblin Base Prison - Pot 13: Nothing
+    Bokoblin Base Prison - Pot 14: Nothing
+    Bokoblin Base Prison - Pot 15: Nothing
+    Bokoblin Base Prison - Pot 16: Nothing
+    Bokoblin Base Prison - Pot 17: Nothing
+    Bokoblin Base Prison - Pot 18: Nothing
+    Bokoblin Base Prison - Pot 19: Nothing
+    Bokoblin Base Prison - Pot 20: Nothing
+    Bokoblin Base Prison - Pot 21: Nothing
+    Bokoblin Base Prison - Pot 22: Nothing
+    Bokoblin Base Prison - Pot 23: Nothing
+    Bokoblin Base Prison - Pot 24: Nothing
+    Bokoblin Base Prison - Pot 25: Nothing
+    Bokoblin Base Prison - Pot 26: Nothing
+    Bokoblin Base Prison - Pot 27: Nothing
+    Bokoblin Base Prison - Pot 28: Nothing
+    Bokoblin Base Prison - Pot 29: Nothing
+    Bokoblin Base Prison - Pot 30: Nothing
     Bokoblin Base - Plats' Gift: Nothing # Talk to Plats.
 
 - name: Bokoblin Base Volcano East
@@ -457,6 +508,30 @@
   exits:
     Bokoblin Base Outside Upper Eldin Cave: Nothing # Run out of cave.
   locations:
+    Bokoblin Base Upper Eldin Cave - Pot 1: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 2: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 3: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 4: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 5: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 6: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 7: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 8: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 9: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 10: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 11: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 12: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 13: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 14: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 15: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 16: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 17: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 18: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 19: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 20: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 21: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 22: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 23: Nothing
+    Bokoblin Base Upper Eldin Cave - Pot 24: Nothing
     Upper Eldin Cave - West Gossip Stone Treasure: (Goddess's_Harp and Ballad_of_the_Goddess) or gossip_stone_treasure_shuffle == off
     Upper Eldin Cave - West Gossip Stone Hint: (Goddess's_Harp and Ballad_of_the_Goddess) or gossip_stone_treasure_shuffle == off
 
@@ -473,6 +548,30 @@
     Bokoblin Base Hot Cave: Fireshield_Earrings
     Fire Dragon's Lair: Fireshield_Earrings
   locations:
+    Bokoblin Base Summit - Pot 1: Nothing
+    Bokoblin Base Summit - Pot 2: Nothing
+    Bokoblin Base Summit - Pot 3: Nothing
+    Bokoblin Base Summit - Pot 4: Nothing
+    Bokoblin Base Summit - Pot 5: Nothing
+    Bokoblin Base Summit - Pot 6: Nothing
+    Bokoblin Base Summit - Pot 7: Nothing
+    Bokoblin Base Summit - Pot 8: Nothing
+    Bokoblin Base Summit - Pot 9: Nothing
+    Bokoblin Base Summit - Pot 10: Nothing
+    Bokoblin Base Summit - Pot 11: Nothing
+    Bokoblin Base Summit - Pot 12: Nothing
+    Bokoblin Base Summit - Pot 13: Nothing
+    Bokoblin Base Summit - Pot 14: Nothing
+    Bokoblin Base Summit - Pot 15: Nothing
+    Bokoblin Base Summit - Pot 16: Nothing
+    Bokoblin Base Summit - Pot 17: Nothing
+    Bokoblin Base Summit - Pot 18: Nothing
+    Bokoblin Base Summit - Pot 19: Nothing
+    Bokoblin Base Summit - Pot 20: Nothing
+    Bokoblin Base Summit - Pot 21: Nothing
+    Bokoblin Base Summit - Pot 22: Nothing
+    Bokoblin Base Summit - Pot 23: Nothing
+    Bokoblin Base Summit - Pot 24: Nothing
     Bokoblin Base - First Chest in Volcano Summit: Fireshield_Earrings
     Bokoblin Base - Raise Sword: Fireshield_Earrings
     Bokoblin Base - Chest in Volcano Summit Alcove: Fireshield_Earrings and Sword

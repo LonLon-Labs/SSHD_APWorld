@@ -44,6 +44,12 @@
     Lanayru Mine Entry: "'Blow_Down_First_Mine_Statue'"
     Lanayru Mine End: Bomb_Bag or ('Blow_Down_First_Mine_Statue' and Hook_Beetle) or Can_use_Stamina_Potion_in_Sink_Sand or logic_brakeslide
   locations:
+    Lanayru Mine Statues Area - Pot 1: Nothing
+    Lanayru Mine Statues Area - Pot 2: Nothing
+    Lanayru Mine Statues Area - Pot 3: Nothing
+    Lanayru Mine Statues Area - Pot 4: Nothing
+    Lanayru Mine Statues Area - Pot 5: Nothing
+    Lanayru Mine Statues Area - Pot 6: Nothing
     Lanayru Mine - Blow Left Digging Robot's Wall after First Minecart Ride: Gust_Bellows
     Lanayru Mine - Blow Right Digging Robot's Wall after First Minecart Ride: Gust_Bellows
     Lanayru Mine - Chest behind Northeast Statue: Bomb_Bag or ('Blow_Down_First_Mine_Statue' and Hook_Beetle)
@@ -281,6 +287,12 @@
     Desert Gorge Statue: Nothing # Interact with the statue.
     Temple of Time West: Hook_Beetle or (Slingshot and logic_tot_slingshot)
   locations:
+    Temple of Time South - Pot 1: Nothing
+    Temple of Time South - Pot 2: Nothing
+    Temple of Time South - Pot 3: Nothing
+    Temple of Time South - Pot 4: Nothing
+    Temple of Time South - Pot 5: Nothing
+    Temple of Time South - Pot 6: Nothing
     Temple of Time - Northwest Rupee on Tree Root: Beetle
     Temple of Time - Northeast Rupee on Tree Root: Beetle
     Temple of Time - Southeast Rupee on Tree Root: Beetle
@@ -369,6 +381,19 @@
     Lanayru Mine Caves Platform: Nothing # Run up the ledge and exit towards the mine.
     Sand Oasis Highest Platform: Nothing # Run past the pillars towards the main desert.
   locations:
+    Lanayru Caves - Pot 1: Nothing
+    Lanayru Caves - Pot 2: Nothing
+    Lanayru Caves - Pot 3: Nothing
+    Lanayru Caves - Pot 4: Nothing
+    Lanayru Caves - Pot 5: Nothing
+    Lanayru Caves - Pot 6: Nothing
+    Lanayru Caves - Pot 7: Nothing
+    Lanayru Caves - Pot 8: Nothing
+    Lanayru Caves - Pot 9: Nothing
+    Lanayru Caves - Pot 10: Nothing
+    Lanayru Caves - Pot 11: Nothing
+    Lanayru Caves - Pot 12: Nothing
+    Lanayru Caves - Pot 13: Nothing
     Lanayru Caves - Chest near Golo: Nothing # Open the chest.
     Lanayru Caves - Golo's Gift: Nothing # Talk to Golo.
     Lanayru Caves - Gossip Stone Treasure in Center: (Goddess's_Harp and Ballad_of_the_Goddess) or gossip_stone_treasure_shuffle == off
@@ -510,6 +535,15 @@
   exits:
     Skipper's Retreat Top: Nothing # Open the door and exit the shack.
   locations:
+    Skipper's Retreat Shack - Pot 1: Nothing
+    Skipper's Retreat Shack - Pot 2: Nothing
+    Skipper's Retreat Shack - Pot 3: Nothing
+    Skipper's Retreat Shack - Pot 4: Nothing
+    Skipper's Retreat Shack - Pot 5: Nothing
+    Skipper's Retreat Shack - Pot 6: Nothing
+    Skipper's Retreat Shack - Pot 7: Nothing
+    Skipper's Retreat Shack - Pot 8: Nothing
+    Skipper's Retreat Shack - Pot 9: Nothing
     Skipper's Retreat Shack - Chest under Sand: Gust_Bellows
     Skipper's Retreat Shack - Skipper's Closet: Gust_Bellows
     Skipper's Retreat Shack - Blow Aeroplane: Gust_Bellows

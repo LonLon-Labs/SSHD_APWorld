@@ -350,6 +350,10 @@ b.eq fi_dbg_request_pre
 cmp w8, #107
 b.eq fi_dbg_request_post
 
+; Pot sanity: item drop when a pot breaks (x5 = pot actor)
+cmp w8, #108
+b.eq pot_spawn_custom_item
+
 ret ; this should never be reached
 
 ; Wrapper for custom_event_commands.

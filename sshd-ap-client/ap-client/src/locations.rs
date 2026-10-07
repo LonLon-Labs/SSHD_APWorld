@@ -302,6 +302,9 @@ pub struct CustomFlagPoller {
 }
 
 const FLAG_ARRAY_BYTES: usize = 26 * 8 * 2; // [[u16; 8]; 26]
+/// One page type of the extended (group 1) block: scene indexes 26-29, 4 pages
+/// of `[u16; 8]`. `ApExtFlags` is the scene pages followed by the dungeon pages.
+const EXT_FLAG_ARRAY_BYTES: usize = 4 * 8 * 2;
 
 impl CustomFlagPoller {
     pub fn new(flag_to_location: HashMap<u16, i64>) -> Self {
@@ -331,15 +334,29 @@ impl CustomFlagPoller {
 
         let sceneflags = mem.read_bytes(root_addr + offsets::SCENEFLAGS, FLAG_ARRAY_BYTES)?;
         let dungeonflags = mem.read_bytes(root_addr + offsets::DUNGEONFLAGS, FLAG_ARRAY_BYTES)?;
+        // Group 1 flags (pots) live in scene/dungeon indexes 26-29, which
+        // AP_IPC_ROOT publishes separately (IPC v10) rather than extending the
+        // 26-index arrays above.
+        let ext = mem.read_bytes(root_addr + offsets::EXT_FLAGS, EXT_FLAG_ARRAY_BYTES * 2)?;
+        let (ext_sceneflags, ext_dungeonflags) = ext.split_at(EXT_FLAG_ARRAY_BYTES);
 
         let is_first_poll = !self.initialized;
         let mut newly_checked = Vec::new();
 
         for (&flag_id, &location_code) in &self.flag_to_location {
             let d = custom_flag::decode(flag_id);
-            let array = if d.is_dungeonflag { &dungeonflags } else { &sceneflags };
-            let byte_offset = (d.scene_index as usize) * 16 + d.array_index * 2;
-            let u16_val = u16::from_le_bytes([array[byte_offset], array[byte_offset + 1]]);
+            let (array, scene_base) = match (d.group1, d.is_dungeonflag) {
+                (false, false) => (&sceneflags[..], 0u16),
+                (false, true) => (&dungeonflags[..], 0u16),
+                (true, false) => (ext_sceneflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
+                (true, true) => (ext_dungeonflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
+            };
+            let byte_offset = ((d.scene_index - scene_base) as usize) * 16 + d.array_index * 2;
+            let Some(bytes) = array.get(byte_offset..byte_offset + 2) else {
+                // Never index out of range on a bad flag id; skip it.
+                continue;
+            };
+            let u16_val = u16::from_le_bytes([bytes[0], bytes[1]]);
             let bit = ((u16_val >> d.bit_index) & 1) as u8;
 
             let previous = self.previous_state.insert(flag_id, bit);

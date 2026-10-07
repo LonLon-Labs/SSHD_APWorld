@@ -18,7 +18,7 @@ use std::mem::size_of;
 
 /// 8-byte discovery marker the client scans for exactly once.
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_SUPPORTED_VERSION: u16 = 9;
+pub const AP_IPC_SUPPORTED_VERSION: u16 = 10;
 
 // ─── Sub-structs (mirror commands.rs / item.rs) ────────────────────────────
 
@@ -82,7 +82,9 @@ pub struct ArchipelagoItemSlot {
     pub item_id_hi: u8,
 }
 
-pub const AP_ITEM_TABLE_MAX: usize = 512;
+/// Must match `AP_ITEM_TABLE_MAX` in the game's item.rs (all shuffles + pots
+/// is ~1231 locations).
+pub const AP_ITEM_TABLE_MAX: usize = 1280;
 
 #[repr(C, packed)]
 #[derive(Copy, Clone, Debug)]
@@ -245,6 +247,23 @@ pub struct ApStageInfo {
     pub in_actually_trigger_entrance: u8,
 }
 
+/// Live by-value copy of the extended custom flag pages (IPC version 10+):
+/// `FileMgr.FA.sceneflags[26..30]` and `FileMgr.FA.dungeonflags[26..30]`,
+/// 4 pages x 8 u16 = 64 bytes each. Page `n` is custom flag group 1,
+/// selector `n`. Mirrors `ApExtFlags` in ipc.rs.
+#[repr(C, packed)]
+#[derive(Copy, Clone, Debug)]
+pub struct ApExtFlags {
+    pub sceneflags:   [u8; 64],
+    pub dungeonflags: [u8; 64],
+}
+
+impl Default for ApExtFlags {
+    fn default() -> Self {
+        ApExtFlags { sceneflags: [0; 64], dungeonflags: [0; 64] }
+    }
+}
+
 #[repr(C, packed)]
 #[derive(Copy, Clone, Debug)]
 pub struct ApIpcRoot {
@@ -320,6 +339,9 @@ pub struct ApIpcRoot {
 
     // Live stage-loading state (IPC version 9+). Appended at the end.
     pub stage_info: ApStageInfo,
+
+    // Extended custom flag pages, group 1 (IPC version 10+). Appended at the end.
+    pub ext_flags: ApExtFlags,
 }
 
 impl Default for ApIpcRoot {
@@ -344,6 +366,7 @@ impl Default for ApIpcRoot {
             player_vitals:   ApPlayerVitals::default(),
             link_requests:   ApLinkRequests::default(),
             stage_info:      ApStageInfo::default(),
+            ext_flags:       ApExtFlags::default(),
         }
     }
 }
@@ -373,7 +396,8 @@ pub mod offsets {
     pub const PLAYER_VITALS: usize = ITEM_INFO_TABLE + size_of::<ApItemInfoTable>();
     pub const LINK_REQUESTS: usize = PLAYER_VITALS + size_of::<ApPlayerVitals>();
     pub const STAGE_INFO: usize = LINK_REQUESTS + size_of::<ApLinkRequests>();
-    pub const TOTAL_SIZE: usize = STAGE_INFO + size_of::<ApStageInfo>();
+    pub const EXT_FLAGS: usize = STAGE_INFO + size_of::<ApStageInfo>();
+    pub const TOTAL_SIZE: usize = EXT_FLAGS + size_of::<ApExtFlags>();
 
     pub fn item_buffer_slot(index: usize) -> usize {
         ITEM_BUFFER + index * size_of::<ArchipelagoItemSlot>()
@@ -406,32 +430,40 @@ pub const WARP_FLAG_TRIAL: u8 = 1 << 2;
 /// The trial value was explicitly specified.
 pub const WARP_FLAG_TRIAL_SET: u8 = 1 << 3;
 
-/// Decodes the 10-bit "custom flag" encoding used for the majority of
-/// location checks (see `flag::set_ap_custom_flag` in the game's `item.rs`,
-/// and `SSHDClient.py`'s `check_custom_flags` for the reference decode this
+/// Decodes the custom flag ID encoding used for the majority of location
+/// checks (see `decode_custom_flag` in the game's `item.rs`, which this
 /// mirrors bit-for-bit):
 ///
 /// - bits 0-6 (`0x7F`): flag number within the scene's flag array (0-127)
-/// - bits 7-8 (`0x180`): which of 4 dedicated "custom flag" scenes (0-3)
+/// - bits 7-8 (`0x180`): which of 4 dedicated "custom flag" pages (0-3)
 /// - bit 9 (`0x200`): 0 = sceneflag, 1 = dungeonflag
+/// - bit 10 (`0x400`): 0 = group 0, 1 = group 1 (extended pages)
 ///
-/// The 4 scene-index slots map to actual save-file scene indices 6, 13, 16,
-/// 19 — fixed scenes the randomizer reserves for custom-flag storage,
-/// unrelated to whatever scene the location physically lives in.
+/// Group 0's pages are save-file scene indices 6, 13, 16, 19 (the only
+/// indices no stage uses). Group 1's pages are indices 26-29, reserved
+/// padding in the save file's flag arrays that no stage maps to; they are
+/// NOT inside `ApIpcRoot.sceneflags`/`.dungeonflags` (26 indices) but in
+/// `ApIpcRoot.ext_flags`.
 pub mod custom_flag {
-    /// Real save-file scene indices the 2-bit scene selector maps to.
+    /// Real save-file scene indices the 2-bit selector maps to in group 0.
     pub const SCENE_INDEX_MAP: [u16; 4] = [6, 13, 16, 19];
+    /// First save-file scene index of group 1; selector `n` is `26 + n`.
+    pub const GROUP1_FIRST_SCENE_INDEX: u16 = 26;
+    /// Group bit in a full custom flag ID.
+    pub const GROUP1_BIT: u16 = 0x400;
 
     pub struct Decoded {
         /// `true` = dungeonflag, `false` = sceneflag — matches
         /// `FLAG_TYPE_DUNGEONFLAG` / `FLAG_TYPE_SCENEFLAG` in this crate.
         pub is_dungeonflag: bool,
+        /// `true` = group 1 (extended pages, read from `ext_flags`).
+        pub group1:         bool,
         /// Flag number (0-127) — this is the `flag_id` to pass to
         /// `check_global_sceneflag`/`check_global_dungeonflag` (and
         /// therefore to a `flag_request` with the matching `FLAG_TYPE_*`).
         pub flag_num:       u16,
-        /// Real save-file scene index (6, 13, 16, or 19) — this is the
-        /// `scene_index` to pass alongside `flag_num` above.
+        /// Real save-file scene index (6/13/16/19, or 26-29 for group 1) —
+        /// the `scene_index` to pass alongside `flag_num` above.
         pub scene_index:    u16,
         /// Which u16 within the scene's `[u16; 8]` array holds this flag —
         /// only needed if reading the batch scene arrays directly rather
@@ -445,10 +477,17 @@ pub mod custom_flag {
         let flag_num = flag_id & 0x7F;
         let scene_selector = ((flag_id >> 7) & 0x03) as usize;
         let is_dungeonflag = ((flag_id >> 9) & 0x01) != 0;
+        let group1 = flag_id & GROUP1_BIT != 0;
+        let scene_index = if group1 {
+            GROUP1_FIRST_SCENE_INDEX + scene_selector as u16
+        } else {
+            SCENE_INDEX_MAP[scene_selector]
+        };
         Decoded {
             is_dungeonflag,
+            group1,
             flag_num,
-            scene_index: SCENE_INDEX_MAP[scene_selector],
+            scene_index,
             array_index: (flag_num / 16) as usize,
             bit_index:   (flag_num % 16) as u32,
         }
@@ -496,10 +535,11 @@ mod tests {
         assert_eq!(size_of::<ApCheckStats>(), 12);
         assert_eq!(size_of::<ArchipelagoItemSlot>(), 4);
         assert_eq!(size_of::<ApItemInfoEntry>(), 98);
-        assert_eq!(size_of::<ApItemInfoTable>(), 8 + 98 * 512);
+        assert_eq!(size_of::<ApItemInfoTable>(), 8 + 98 * 1280);
         assert_eq!(size_of::<ApPlayerVitals>(), 10);
         assert_eq!(size_of::<ApLinkRequests>(), 2);
         assert_eq!(size_of::<ApStageInfo>(), 44);
+        assert_eq!(size_of::<ApExtFlags>(), 128);
     }
 
     #[test]
@@ -519,10 +559,11 @@ mod tests {
         assert_eq!(offsets::CURRENT_STAGE_NAME, 1087);
         assert_eq!(offsets::ITEM_BUFFER, 1095);
         assert_eq!(offsets::ITEM_INFO_TABLE, 1095 + 4 * 1024);
-        assert_eq!(offsets::PLAYER_VITALS, 1095 + 4 * 1024 + 8 + 98 * 512);
-        assert_eq!(offsets::LINK_REQUESTS, 1095 + 4 * 1024 + 8 + 98 * 512 + 10);
-        assert_eq!(offsets::STAGE_INFO, 1095 + 4 * 1024 + 8 + 98 * 512 + 10 + 2);
-        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 512 + 10 + 2 + 44);
+        assert_eq!(offsets::PLAYER_VITALS, 1095 + 4 * 1024 + 8 + 98 * 1280);
+        assert_eq!(offsets::LINK_REQUESTS, 1095 + 4 * 1024 + 8 + 98 * 1280 + 10);
+        assert_eq!(offsets::STAGE_INFO, 1095 + 4 * 1024 + 8 + 98 * 1280 + 10 + 2);
+        assert_eq!(offsets::EXT_FLAGS, 1095 + 4 * 1024 + 8 + 98 * 1280 + 10 + 2 + 44);
+        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 1280 + 10 + 2 + 44 + 128);
         assert_eq!(size_of::<ApIpcRoot>(), offsets::TOTAL_SIZE);
     }
 
@@ -532,10 +573,19 @@ mod tests {
         let flag_id: u16 = 5 | (2 << 7);
         let d = custom_flag::decode(flag_id);
         assert!(!d.is_dungeonflag);
+        assert!(!d.group1);
         assert_eq!(d.flag_num, 5);
         assert_eq!(d.scene_index, 16);
         assert_eq!(d.array_index, 0);
         assert_eq!(d.bit_index, 5);
+
+        // group 1: selector 3 (-> scene 29), dungeonflag, flag_num=100
+        let flag_id: u16 = 100 | (3 << 7) | (1 << 9) | custom_flag::GROUP1_BIT;
+        let d = custom_flag::decode(flag_id);
+        assert!(d.group1);
+        assert!(d.is_dungeonflag);
+        assert_eq!(d.scene_index, 29);
+        assert_eq!(d.flag_num, 100);
 
         // flag_num=100 (array_index=6, bit=4), scene_selector=0 (-> scene 6), dungeonflag
         let flag_id: u16 = 100 | (0 << 7) | (1 << 9);

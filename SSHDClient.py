@@ -609,7 +609,7 @@ STAGE_NAMES = {
     "F401": "Sealed Grounds Spiral",
     "F402": "Sealed Temple",
     "F403": "Ghirahim Boss Arena",
-    "F404": "Credits",
+    "F404": "Sealed Grounds Temple (Past)",
     "F405": "Sealed Grounds Spiral Cutscene (first cutscene)",
     "F407": "Sky Keep beaten CS",
 
@@ -4030,6 +4030,8 @@ class SSHDContext(CommonContext):
                             _fn = _fid & 0x7F
                             _si = _scene_idx_map.get((_fid >> 7) & 0x03, 6)
                             _fs = (_fid >> 9) & 0x01
+                            if (_fid >> 10) & 0x01:
+                                _si = 26 + ((_fid >> 7) & 0x03)
                             _already = self.previous_custom_flags.get(_fid, 0)
                             logger.debug(f"[TEAR-DEBUG]   flag_id={_fid} already_set={_already} scene={_si} u16={_fn//16} bit={_fn%16} space={'dungeon' if _fs else 'scene'} -> {_name}")
                     else:
@@ -6071,10 +6073,17 @@ class SSHDContext(CommonContext):
             flag_num = flag_id & 0x7F  # Lower 7 bits
             scene_idx_raw = (flag_id >> 7) & 0x03  # Bits 7-8
             flag_space_trigger = (flag_id >> 9) & 0x01  # Bit 9
+            # Bit 10 = extended group (pots): scene indexes 26-29, which are
+            # reserved padding in the save file's flag arrays (see item.rs).
+            group1 = (flag_id >> 10) & 0x01
             
-            # Transform scene index - these are the actual scene indices in the 26-scene array
-            scene_idx_map = {0: 6, 1: 13, 2: 16, 3: 19}
-            sceneindex = scene_idx_map.get(scene_idx_raw, 6)
+            # Transform scene index - these are the actual scene indices in the
+            # 256-index save file arrays (group 0: 6/13/16/19, group 1: 26-29)
+            if group1:
+                sceneindex = 26 + scene_idx_raw
+            else:
+                scene_idx_map = {0: 6, 1: 13, 2: 16, 3: 19}
+                sceneindex = scene_idx_map.get(scene_idx_raw, 6)
             
             # Calculate u16 position and bit position within that u16
             # Each u16 holds 16 flags (bits 0-15)

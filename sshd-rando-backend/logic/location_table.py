@@ -115,6 +115,10 @@ def get_disabled_shuffle_locations(
                 and "Closets" in location.types
             )
             or (
+                settings["pot_shuffle"].value == "off"
+                and "Pots" in location.types
+            )
+            or (
                 settings["hidden_item_shuffle"].value == "off"
                 and "Hidden Items" in location.types
             )

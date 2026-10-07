@@ -291,18 +291,13 @@ pub extern "C" fn setup_traps(item_actor: *mut item::dAcItem) -> u16 {
         if itemid == 216 || itemid == 217 || itemid == 218 {
             let params = item::unpack_custom_item_params(item_actor);
             if params.flag != 0x7F {
-                let scene_raw: u32 = match params.sceneindex {
-                    6 => 0,
-                    13 => 1,
-                    16 => 2,
-                    19 => 3,
-                    _ => 0,
-                };
+                // Full custom flag ID including the group bit, rebuilt straight
+                // from param2 so it can't drift from the selector tables.
                 let computed_flag_id =
-                    (params.flag & 0x7F) | (scene_raw << 7) | (params.flag_space_trigger << 9);
+                    item::custom_flag_id_from_item_param2((*item_actor).base.members.base.param2);
                 core::ptr::write_volatile(
                     core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
-                    computed_flag_id as u16,
+                    computed_flag_id,
                 );
             }
         }
@@ -569,8 +564,10 @@ pub extern "C" fn spawned_actor_traps(
             // false flag writes on the first item spawn after game boot
             if NEXT_CUSTOM_FLAG_PENDING != 0 {
                 if NEXT_CUSTOM_FLAG != 0x3FF {
+                    // Chests/closets/etc. are group 0 only; the 10-bit mask keeps
+                    // a group-1 ID from spilling into param2 bit 18.
                     ACTORBASE_PARAM2 &= 0xFFFC00FF; // clear bits 8-17
-                    ACTORBASE_PARAM2 |= (NEXT_CUSTOM_FLAG as u32) << 8;
+                    ACTORBASE_PARAM2 |= ((NEXT_CUSTOM_FLAG & 0x3FF) as u32) << 8;
                 }
                 NEXT_CUSTOM_FLAG_PENDING = 0;
             }

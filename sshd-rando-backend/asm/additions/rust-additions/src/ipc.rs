@@ -46,7 +46,7 @@ use static_assertions::assert_eq_size;
 /// a breaking change to `ApIpcRoot`'s layout so old/new clients don't
 /// silently misread each other).
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_VERSION: u16 = 9;
+pub const AP_IPC_VERSION: u16 = 10;
 
 /// Live BY-VALUE COPY of the player's health and stamina, refreshed every
 /// frame by `item::refresh_ipc_addresses()`. Lets the host client detect
@@ -118,6 +118,19 @@ pub struct ApStageInfo {
     pub in_actually_trigger_entrance: u8,
 }
 assert_eq_size!([u8; 44], ApStageInfo);
+
+/// Live BY-VALUE COPY of the extended Archipelago custom flag pages, i.e.
+/// `FileMgr.FA.sceneflags[26..30]` and `FileMgr.FA.dungeonflags[26..30]`
+/// (4 pages x 8 u16 = 64 bytes each). These indexes are reserved padding in
+/// the save file that no stage maps to (see item.rs
+/// `GROUP1_FIRST_SCENE_INDEX`). Page `n` of this copy is custom flag group 1,
+/// selector `n`. Added in IPC version 10.
+#[repr(C, packed(1))]
+pub struct ApExtFlags {
+    pub sceneflags:   [u8; 64],
+    pub dungeonflags: [u8; 64],
+}
+assert_eq_size!([u8; 128], ApExtFlags);
 
 #[repr(C, packed(1))]
 pub struct ApIpcRoot {
@@ -220,6 +233,10 @@ pub struct ApIpcRoot {
     // ── Rust-write / client-read: live stage-loading state (see
     //    `ApStageInfo`). Appended at the END. Added in IPC version 9.
     pub stage_info: ApStageInfo,
+
+    // ── Rust-write / client-read: extended custom flag pages (see
+    //    `ApExtFlags`). Appended at the END. Added in IPC version 10.
+    pub ext_flags: ApExtFlags,
 }
 
 #[no_mangle]
@@ -352,6 +369,11 @@ pub static mut AP_IPC_ROOT: ApIpcRoot = ApIpcRoot {
         stage_mgr_valid:              0,
         in_actually_trigger_entrance: 0,
     },
+
+    ext_flags: ApExtFlags {
+        sceneflags:   [0u8; 64],
+        dungeonflags: [0u8; 64],
+    },
 };
 
 // Self-check: catches accidental layout drift at compile time. Update this
@@ -370,9 +392,10 @@ assert_eq_size!(
         + 2
         + 8
         + (4 * 1024)
-        + (8 + 98 * 512)
+        + (8 + 98 * 1280)
         + 10
         + 2
-        + 44],
+        + 44
+        + 128],
     ApIpcRoot
 );

@@ -595,6 +595,7 @@ class SSHDWorld(World):
         # Shuffles
         "gratitude_crystal_shuffle": ("gratitude_crystal_shuffle", "toggle", None),
         "stamina_fruit_shuffle": ("stamina_fruit_shuffle", "toggle", None),
+        "pot_shuffle": ("pot_shuffle", "toggle", None),
         "npc_closet_shuffle": ("npc_closet_shuffle", "toggle_custom", {"randomized": 1, "vanilla": 0}),
         "hidden_item_shuffle": ("hidden_item_shuffle", "toggle", None),
         "rupee_shuffle": ("rupee_shuffle", "choice", {"vanilla": 0, "beginner": 1, "intermediate": 2, "advanced": 3}),
@@ -1094,6 +1095,7 @@ class SSHDWorld(World):
             "Gratitude Crystals":    "gratitude_crystal_shuffle",
             "Stamina Fruits":        "stamina_fruit_shuffle",
             "Hidden Items":          "hidden_item_shuffle",
+            "Pots":                  "pot_shuffle",
             "Goddess Chests":        "goddess_chest_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",
@@ -1355,6 +1357,7 @@ class SSHDWorld(World):
                         "Gratitude Crystals":    "gratitude_crystal_shuffle",
                         "Stamina Fruits":        "stamina_fruit_shuffle",
                         "Hidden Items":          "hidden_item_shuffle",
+                        "Pots":                  "pot_shuffle",
                         "Goddess Chests":        "goddess_chest_shuffle",
                         "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
                         "Underground Rupees":    "underground_rupee_shuffle",
@@ -3451,7 +3454,8 @@ class SSHDWorld(World):
         # sold_out_storyflag rather than a normal AP custom_flag (they never
         # get one - see the shop-restrictions comment above), so they get a
         # separate flag_id namespace here: bit 15 set, storyflag in the low
-        # bits. Real custom_flag_ids only ever use bits 0-9, so this can
+        # bits. Real custom_flag_ids only ever use bits 0-10 (bit 10 = extended
+        # group, used by pots), so this can
         # never collide. shop.rs's handle_shop_traps() writes
         # LAST_AP_ITEM_FLAG_ID with the same 0x8000 | storyflag encoding at
         # purchase time.
@@ -4105,6 +4109,7 @@ class SSHDWorld(World):
         # Shuffles
         settings_dict["gratitude_crystal_shuffle"] = "on" if self.options.gratitude_crystal_shuffle.value else "off"
         settings_dict["stamina_fruit_shuffle"] = "on" if self.options.stamina_fruit_shuffle.value else "off"
+        settings_dict["pot_shuffle"] = "on" if self.options.pot_shuffle.value else "off"
         settings_dict["npc_closet_shuffle"] = "randomized" if self.options.npc_closet_shuffle.value else "vanilla"
         settings_dict["hidden_item_shuffle"] = "on" if self.options.hidden_item_shuffle.value else "off"
         
@@ -4410,6 +4415,19 @@ class SSHDWorld(World):
         # BIRD_STATUE_UNLOCK_FLAG_RESERVED_COUNT in the sshd-rando backend), so
         # neither the patcher nor AP may hand them out to locations.
         custom_flags = [i for i in range(32, 1024) if (i & 0x7F) != 0x7F]
+
+        # Pots (Pot Shuffle, ~294 locations) overflow the 984 group 0 flags, so
+        # they use the extended group 1 pool instead: bit 10 set, selector 0-3 in
+        # bits 7-8 (scene indexes 26-29 in the save file), flag space bit 9 always
+        # 0. Local ID 0 means "no flag" in the game's item handler, so IDs start
+        # at 1: 4 * 127 - 1 = 507 IDs. The group 0 list above is untouched, so
+        # seeds without pots keep byte-identical assignments. Keep these constants
+        # in sync with CUSTOM_FLAG_GROUP1 / GROUP1_LOCAL_FLAGS in the sshd-rando
+        # backend (patches/checkpatchhandler.py), item.rs, ap-ipc and SSHDClient.py.
+        CUSTOM_FLAG_GROUP1 = 0x400
+        group1_flags = [
+            CUSTOM_FLAG_GROUP1 | i for i in range(1, 512) if (i & 0x7F) != 0x7F
+        ]
         
         custom_flag_to_location = {}
         
@@ -4421,16 +4439,39 @@ class SSHDWorld(World):
         
         # Sort locations consistently (by location code) to ensure deterministic assignment
         all_locations.sort(key=lambda loc: loc.address)
+
+        pot_locations = [
+            loc for loc in all_locations if "Pots" in LOCATION_TABLE[loc.name].types
+        ]
+        other_locations = [
+            loc for loc in all_locations if "Pots" not in LOCATION_TABLE[loc.name].types
+        ]
         
-        # Assign custom flags sequentially to ALL locations
-        for location in all_locations:
-            if custom_flags:
-                custom_flag_id = custom_flags.pop()
-                custom_flag_to_location[custom_flag_id] = location.address
-            else:
-                print(f"[__init__.py] ERROR: Ran out of custom flags! Location {location.name} could not be assigned.")
+        # Fail early with a clear message instead of producing a seed where some
+        # locations have no custom flag (every enabled location needs one).
+        from Options import OptionError
+        if len(other_locations) > len(custom_flags):
+            raise OptionError(
+                f"SSHD: {len(other_locations)} non-pot locations are enabled but "
+                f"only {len(custom_flags)} custom flags exist. Turn off some "
+                f"shuffles and generate again."
+            )
+        if len(pot_locations) > len(group1_flags):
+            raise OptionError(
+                f"SSHD: {len(pot_locations)} pot locations are enabled but only "
+                f"{len(group1_flags)} extended custom flags exist."
+            )
+
+        # Assign custom flags sequentially: pots from the extended pool, everything
+        # else from the original pool, each in location-code order.
+        for location in other_locations:
+            custom_flag_id = custom_flags.pop()
+            custom_flag_to_location[custom_flag_id] = location.address
+        for location in pot_locations:
+            custom_flag_id = group1_flags.pop()
+            custom_flag_to_location[custom_flag_id] = location.address
         
-        print(f"[__init__.py] Built custom flag mapping with {len(custom_flag_to_location)} flags for {len(all_locations)} locations")
+        print(f"[__init__.py] Built custom flag mapping with {len(custom_flag_to_location)} flags for {len(all_locations)} locations ({len(pot_locations)} pots in extended group)")
         return custom_flag_to_location
 
     
