@@ -1303,6 +1303,21 @@ LOCATION_TABLE: dict[str, SSHDLocation] = {
     "Lumpy Pumpkin Exterior - Pumpkin 33": SSHDLocation("Lumpy Pumpkin Exterior - Pumpkin 33", 2774301, "Lumpy Pumpkin Exterior", "Green Rupee", ['Pumpkins', 'Custom Flag']),
     "Lumpy Pumpkin Exterior - Pumpkin 34": SSHDLocation("Lumpy Pumpkin Exterior - Pumpkin 34", 2774302, "Lumpy Pumpkin Exterior", "Green Rupee", ['Pumpkins', 'Custom Flag']),
     "Lumpy Pumpkin Exterior - Pumpkin 35": SSHDLocation("Lumpy Pumpkin Exterior - Pumpkin 35", 2774303, "Lumpy Pumpkin Exterior", "Green Rupee", ['Pumpkins', 'Custom Flag']),
+    "Knight Academy - Big Pot 1": SSHDLocation("Knight Academy - Big Pot 1", 2774304, "Knight Academy", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Knight Academy - Big Pot 2": SSHDLocation("Knight Academy - Big Pot 2", 2774305, "Knight Academy", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Knight Academy - Big Pot 3": SSHDLocation("Knight Academy - Big Pot 3", 2774306, "Knight Academy", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Knight Academy - Big Pot 4": SSHDLocation("Knight Academy - Big Pot 4", 2774307, "Knight Academy", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Knight Academy - Big Pot 5": SSHDLocation("Knight Academy - Big Pot 5", 2774308, "Knight Academy", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Lumpy Pumpkin Exterior - Big Pot 1": SSHDLocation("Lumpy Pumpkin Exterior - Big Pot 1", 2774309, "Lumpy Pumpkin Exterior", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Lumpy Pumpkin Exterior - Big Pot 2": SSHDLocation("Lumpy Pumpkin Exterior - Big Pot 2", 2774310, "Lumpy Pumpkin Exterior", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Lumpy Pumpkin Exterior - Big Pot 3": SSHDLocation("Lumpy Pumpkin Exterior - Big Pot 3", 2774311, "Lumpy Pumpkin Exterior", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Bug Heaven - Big Pot 1": SSHDLocation("Bug Heaven - Big Pot 1", 2774312, "Bug Heaven", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Bug Heaven - Big Pot 2": SSHDLocation("Bug Heaven - Big Pot 2", 2774313, "Bug Heaven", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Bug Heaven - Big Pot 3": SSHDLocation("Bug Heaven - Big Pot 3", 2774314, "Bug Heaven", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Bug Heaven - Big Pot 4": SSHDLocation("Bug Heaven - Big Pot 4", 2774315, "Bug Heaven", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Bug Heaven - Big Pot 5": SSHDLocation("Bug Heaven - Big Pot 5", 2774316, "Bug Heaven", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Bug Heaven - Big Pot 6": SSHDLocation("Bug Heaven - Big Pot 6", 2774317, "Bug Heaven", "Green Rupee", ['Pots', 'Custom Flag']),
+    "Bug Heaven - Big Pot 7": SSHDLocation("Bug Heaven - Big Pot 7", 2774318, "Bug Heaven", "Green Rupee", ['Pots', 'Custom Flag']),
 }
 
 

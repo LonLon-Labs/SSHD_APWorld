@@ -10642,3 +10642,123 @@
     - Custom Flag
   Paths:
     - stage/F020/r0/l0/Pumpkin/0xFC66
+
+- name: Knight Academy - Big Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l0/BigTubo/0xFC46
+
+- name: Knight Academy - Big Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l0/BigTubo/0xFC47
+
+- name: Knight Academy - Big Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l0/BigTubo/0xFC48
+
+- name: Knight Academy - Big Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r6/l0/BigTubo/0xFC0B
+
+- name: Knight Academy - Big Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F001r/r6/l0/BigTubo/0xFC0C
+
+- name: Lumpy Pumpkin Exterior - Big Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/BigTubo/0xFC5E
+
+- name: Lumpy Pumpkin Exterior - Big Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/BigTubo/0xFC6B
+
+- name: Lumpy Pumpkin Exterior - Big Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/BigTubo/0xFC6C
+
+- name: Bug Heaven - Big Pot 1
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/BigTubo/0xFC12
+
+- name: Bug Heaven - Big Pot 2
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/BigTubo/0xFC1A
+
+- name: Bug Heaven - Big Pot 3
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/BigTubo/0xFC1D
+
+- name: Bug Heaven - Big Pot 4
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/BigTubo/0xFC24
+
+- name: Bug Heaven - Big Pot 5
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/BigTubo/0xFC25
+
+- name: Bug Heaven - Big Pot 6
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/BigTubo/0xFC84
+
+- name: Bug Heaven - Big Pot 7
+  original_item: Green Rupee
+  types:
+    - Pots
+    - Custom Flag
+  Paths:
+    - stage/F023/r0/l0/BigTubo/0xFC85

@@ -160,6 +160,9 @@
     Lumpy Pumpkin Exterior - Pot 5: Nothing
     Lumpy Pumpkin Exterior - Pot 6: Nothing
     Lumpy Pumpkin Exterior - Pot 7: Nothing
+    Lumpy Pumpkin Exterior - Big Pot 1: Nothing
+    Lumpy Pumpkin Exterior - Big Pot 2: Nothing
+    Lumpy Pumpkin Exterior - Big Pot 3: Nothing
     Lumpy Pumpkin - Slingshot Left Porch Lantern: Slingshot
     Lumpy Pumpkin - Slingshot Right Porch Lantern: Slingshot
     Lumpy Pumpkin - Slingshot Lantern Left of Main Door: Slingshot
@@ -379,6 +382,13 @@
     Bug Heaven - Pot 11: Nothing
     Bug Heaven - Pot 12: Nothing
     Bug Heaven - Pot 13: Nothing
+    Bug Heaven - Big Pot 1: Nothing
+    Bug Heaven - Big Pot 2: Nothing
+    Bug Heaven - Big Pot 3: Nothing
+    Bug Heaven - Big Pot 4: Nothing
+    Bug Heaven - Big Pot 5: Nothing
+    Bug Heaven - Big Pot 6: Nothing
+    Bug Heaven - Big Pot 7: Nothing
     Bug Heaven - 10 Bugs in 3 Minutes: (Bug_Net and (minigame_difficulty == vanilla or minigame_difficulty == hard)) or Big_Bug_Net
     Bug Heaven - Goddess Chest: Volcano_Summit_Goddess_Cube_at_Summit_Waterfall
     Bug Heaven - Stamina Fruit near Start: Nothing # Collect the freestanding item.

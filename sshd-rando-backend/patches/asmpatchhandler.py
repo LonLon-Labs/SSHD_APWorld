@@ -771,6 +771,23 @@ class ASMPatchHandler:
                 )
             init_rw_globals_dict[0x712E54B820] = list(pumpkin_table)  # PUMPKIN_TABLE_*
 
+        # Big Pot Shuffle: same position-keyed layout as the pumpkin table, placed right
+        # after it (BIG_POT_TABLE_MAGIC 0x712E54BCB0 / _COUNT 0x712E54BCB4 / _ENTRIES
+        # 0x712E54BCB8 in symbols.yaml, one contiguous block). All big pots have
+        # identical params, so the game finds each pot's item by its X/Z position.
+        # Nothing is written (magic stays zero) when no big pot has an item.
+        big_pot_entries = getattr(self, "big_pot_entries", [])
+        if big_pot_entries:
+            # Must match BIG_POT_TABLE_MAX in item.rs / symbols.yaml (12 bytes each)
+            assert len(big_pot_entries) <= 16, "Too many big pot table entries"
+            big_pot_table = bytearray(b"BGPT")  # 0x54504742 little endian
+            big_pot_table += struct.pack("<I", len(big_pot_entries))
+            for px_bits, pz_bits, item_word, custom_flag in big_pot_entries:
+                big_pot_table += struct.pack(
+                    "<IIHH", px_bits, pz_bits, item_word, custom_flag
+                )
+            init_rw_globals_dict[0x712E54BCB0] = list(big_pot_table)  # BIG_POT_TABLE_*
+
         # Apply additional symbol initializers provided by stage patch setup.
         global_symbol_values: dict[str, int] = getattr(self, "global_symbol_values", {})
         if "EXTRA_DEMISE_COUNT" in global_symbol_values:

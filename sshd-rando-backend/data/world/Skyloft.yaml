@@ -30,6 +30,9 @@
     Knight Academy - Pot 5: Nothing
     Knight Academy - Pot 6: Nothing
     Knight Academy - Pot 7: Nothing
+    Knight Academy - Big Pot 1: Nothing
+    Knight Academy - Big Pot 2: Nothing
+    Knight Academy - Big Pot 3: Nothing
     Knight Academy - Link's Closet: Nothing # Open the closet.
     Knight Academy - Fledge's Closet: Nothing # Open the closet.
     Knight Academy - Groose's Closet: Nothing # Open the closet.
@@ -70,6 +73,11 @@
   locations:
     Knight Academy - Crystal in Zelda's Room: Night
     Knight Academy - Zelda's Closet: Nothing # Open the closet door.
+    # Room 6 big pots (F001r r6). Placed in Zelda's Room, the strictest candidate region
+    # (Zelda's door can't be opened from the corridor in logic), so logic can never be
+    # more permissive than the game. Move to Knight Academy if confirmed in the corridor.
+    Knight Academy - Big Pot 4: Nothing
+    Knight Academy - Big Pot 5: Nothing
 
 - name: Knight Academy Upper North Door Interior
   allowed_time_of_day: All

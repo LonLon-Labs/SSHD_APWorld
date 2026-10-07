@@ -903,6 +903,54 @@ def patch_pumpkin(
     return (_f32_bits(pumpkin["posx"]), _f32_bits(pumpkin["posz"]), item_word, custom_flag)
 
 
+def patch_big_pot(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+) -> tuple[int, int, int, int] | None:
+    """Big pot shuffle (BigTubo, dAcOTuboBig_c; actor profile TuboBig).
+
+    All 15 big pots have identical params (params1 0xFFFFFFF0, params2
+    0xFFFFFFFF: no scene flag, no drop id), so there is nothing per-pot to
+    write into the BZS object. Like pumpkins, this leaves the object untouched
+    and returns a table entry keyed by the pot's position (X/Z as raw f32
+    bits). The entries are written to the BIG_POT_TABLE_* config block by
+    init_global_variables and looked up by pot_spawn_custom_item in item.rs.
+
+    Returns (px_bits, pz_bits, item_word, flag), or None to keep the vanilla
+    behavior (no drop). item_word: bits 0-8 item id, bits 9-12 trap nibble
+    (0xF = not a trap). flag: the low 10 bits of the group 1 custom flag.
+    """
+    id = int(object_id_str, 16)
+
+    big_pot: dict | None = next(
+        filter(lambda x: x["name"] == "BigTubo" and x["id"] == id, bzs["OBJ "]), None
+    )
+
+    if big_pot is None:
+        raise Exception(f"No big pot (BigTubo) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla drop
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return None
+
+    # Like pots, the game treats every big pot flag as an extended (group 1,
+    # bit 10) flag; only the low 10 bits are stored.
+    if not (custom_flag & 0x400):
+        raise Exception(
+            f"Big pot '{hex(id)}' was given group 0 custom flag {custom_flag:#x}; "
+            "big pots must use group 1 flags (bit 10 set)."
+        )
+    custom_flag &= 0x3FF
+
+    trap_nibble = (254 - trapid) if trapid else 0xF
+    if not (0 <= trap_nibble <= 0xF):
+        raise Exception(f"Big pot '{hex(id)}' has invalid trap id {trapid}.")
+    if not (0 <= itemid <= 0x1FF):
+        raise Exception(f"Big pot '{hex(id)}' has item id {itemid} that doesn't fit in 9 bits.")
+
+    item_word = (itemid & 0x1FF) | (trap_nibble << 9)
+    return (_f32_bits(big_pot["posx"]), _f32_bits(big_pot["posz"]), item_word, custom_flag)
+
+
 def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0x3FF):
 
     academy_bell: dict | None = next(
@@ -1300,6 +1348,10 @@ class StagePatchHandler:
         # keyed in the game by the pumpkin's position. Written to the PUMPKIN_TABLE_*
         # config block via init_global_variables (see patch_pumpkin).
         self.pumpkin_entries: list[tuple[int, int, int, int]] = []
+        # Big Pot Shuffle: (px_bits, pz_bits, item_word, flag) per patched big pot,
+        # keyed in the game by position. Written to the BIG_POT_TABLE_* config block
+        # via init_global_variables (see patch_big_pot). Max 16 entries.
+        self.big_pot_entries: list[tuple[int, int, int, int]] = []
         # Global symbol initializers consumed by ASM global init.
         # Format: {"type": "symbol", "symbol": <name>, "value": <int>}.
         self.global_patches: list[dict] = []
@@ -1641,6 +1693,26 @@ class StagePatchHandler:
                                         "the position-keyed pumpkin table needs unique positions."
                                     )
                             self.pumpkin_entries.append(pumpkin_entry)
+                    elif object_name == "BigTubo":
+                        big_pot_entry = patch_big_pot(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                        if big_pot_entry is not None:
+                            for existing in self.big_pot_entries:
+                                if existing[0] == big_pot_entry[0] and existing[1] == big_pot_entry[1]:
+                                    raise Exception(
+                                        f"Two big pots share the position {big_pot_entry[0]:#010x}/{big_pot_entry[1]:#010x}; "
+                                        "the position-keyed big pot table needs unique positions."
+                                    )
+                            if len(self.big_pot_entries) >= 16:
+                                raise Exception(
+                                    "More than 16 big pots have items; BIG_POT_TABLE_ENTRIES only holds 16."
+                                )
+                            self.big_pot_entries.append(big_pot_entry)
                     elif object_name == "Bell":
                         patch_academy_bell(
                             room_bzs["LAY "][f"l{layer}"],
