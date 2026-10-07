@@ -754,6 +754,23 @@ class ASMPatchHandler:
             for byte in (item_id & 0xFF, (item_id >> 8) & 0xFF)
         ]  # BIRD_STATUE_ITEM_IDS (32 x u16, little endian)
 
+        # Pumpkin Shuffle: position-keyed table directly after the Bird Statue tables
+        # (PUMPKIN_TABLE_MAGIC / _COUNT / _ENTRIES in symbols.yaml, one contiguous
+        # block). The pumpkin actor's params are wiped at runtime, so the game finds
+        # each pumpkin's item by its X/Z position instead. Nothing is written (magic
+        # stays zero, so the game ignores it) when no pumpkin has an item.
+        pumpkin_entries = getattr(self, "pumpkin_entries", [])
+        if pumpkin_entries:
+            # Must match PUMPKIN_TABLE_MAX in item.rs / symbols.yaml (12 bytes each)
+            assert len(pumpkin_entries) <= 96, "Too many pumpkin table entries"
+            pumpkin_table = bytearray(b"PUMP")
+            pumpkin_table += struct.pack("<I", len(pumpkin_entries))
+            for px_bits, pz_bits, item_word, custom_flag in pumpkin_entries:
+                pumpkin_table += struct.pack(
+                    "<IIHH", px_bits, pz_bits, item_word, custom_flag
+                )
+            init_rw_globals_dict[0x712E54B820] = list(pumpkin_table)  # PUMPKIN_TABLE_*
+
         # Apply additional symbol initializers provided by stage patch setup.
         global_symbol_values: dict[str, int] = getattr(self, "global_symbol_values", {})
         if "EXTRA_DEMISE_COUNT" in global_symbol_values:

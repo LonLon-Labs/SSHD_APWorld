@@ -46,7 +46,7 @@ use static_assertions::assert_eq_size;
 /// a breaking change to `ApIpcRoot`'s layout so old/new clients don't
 /// silently misread each other).
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_VERSION: u16 = 10;
+pub const AP_IPC_VERSION: u16 = 11;
 
 /// Live BY-VALUE COPY of the player's health and stamina, refreshed every
 /// frame by `item::refresh_ipc_addresses()`. Lets the host client detect
@@ -392,7 +392,7 @@ assert_eq_size!(
         + 2
         + 8
         + (4 * 1024)
-        + (8 + 98 * 1280)
+        + (8 + 98 * 1344)
         + 10
         + 2
         + 44

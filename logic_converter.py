@@ -818,6 +818,7 @@ class SSHDLogicConverter:
             "Stamina Fruits":        "stamina_fruit_shuffle",
             "Hidden Items":          "hidden_item_shuffle",
             "Pots":                  "pot_shuffle",
+            "Pumpkins":              "pumpkin_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",
         }
@@ -862,6 +863,7 @@ class SSHDLogicConverter:
             "Stamina Fruits":        "stamina_fruit_shuffle",
             "Hidden Items":          "hidden_item_shuffle",
             "Pots":                  "pot_shuffle",
+            "Pumpkins":              "pumpkin_shuffle",
             "Goddess Chests":        "goddess_chest_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",

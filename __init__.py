@@ -596,6 +596,7 @@ class SSHDWorld(World):
         "gratitude_crystal_shuffle": ("gratitude_crystal_shuffle", "toggle", None),
         "stamina_fruit_shuffle": ("stamina_fruit_shuffle", "toggle", None),
         "pot_shuffle": ("pot_shuffle", "toggle", None),
+        "pumpkin_shuffle": ("pumpkin_shuffle", "toggle", None),
         "npc_closet_shuffle": ("npc_closet_shuffle", "toggle_custom", {"randomized": 1, "vanilla": 0}),
         "hidden_item_shuffle": ("hidden_item_shuffle", "toggle", None),
         "rupee_shuffle": ("rupee_shuffle", "choice", {"vanilla": 0, "beginner": 1, "intermediate": 2, "advanced": 3}),
@@ -1096,6 +1097,7 @@ class SSHDWorld(World):
             "Stamina Fruits":        "stamina_fruit_shuffle",
             "Hidden Items":          "hidden_item_shuffle",
             "Pots":                  "pot_shuffle",
+            "Pumpkins":              "pumpkin_shuffle",
             "Goddess Chests":        "goddess_chest_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",
@@ -1358,6 +1360,7 @@ class SSHDWorld(World):
                         "Stamina Fruits":        "stamina_fruit_shuffle",
                         "Hidden Items":          "hidden_item_shuffle",
                         "Pots":                  "pot_shuffle",
+                        "Pumpkins":              "pumpkin_shuffle",
                         "Goddess Chests":        "goddess_chest_shuffle",
                         "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
                         "Underground Rupees":    "underground_rupee_shuffle",
@@ -4110,6 +4113,7 @@ class SSHDWorld(World):
         settings_dict["gratitude_crystal_shuffle"] = "on" if self.options.gratitude_crystal_shuffle.value else "off"
         settings_dict["stamina_fruit_shuffle"] = "on" if self.options.stamina_fruit_shuffle.value else "off"
         settings_dict["pot_shuffle"] = "on" if self.options.pot_shuffle.value else "off"
+        settings_dict["pumpkin_shuffle"] = "on" if self.options.pumpkin_shuffle.value else "off"
         settings_dict["npc_closet_shuffle"] = "randomized" if self.options.npc_closet_shuffle.value else "vanilla"
         settings_dict["hidden_item_shuffle"] = "on" if self.options.hidden_item_shuffle.value else "off"
         
@@ -4441,10 +4445,10 @@ class SSHDWorld(World):
         all_locations.sort(key=lambda loc: loc.address)
 
         pot_locations = [
-            loc for loc in all_locations if "Pots" in LOCATION_TABLE[loc.name].types
+            loc for loc in all_locations if any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins"))
         ]
         other_locations = [
-            loc for loc in all_locations if "Pots" not in LOCATION_TABLE[loc.name].types
+            loc for loc in all_locations if not any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins"))
         ]
         
         # Fail early with a clear message instead of producing a seed where some

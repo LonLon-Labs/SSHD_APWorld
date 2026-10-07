@@ -296,6 +296,10 @@ class PotShuffle(Toggle):
     """Shuffle pots. Breaking a pot can give a randomized item."""
     display_name = "Pot Shuffle"
 
+class PumpkinShuffle(Toggle):
+    """Shuffle pumpkins. Breaking a pumpkin in the Skyloft pumpkin patches or at Lumpy Pumpkin can give a randomized item."""
+    display_name = "Pumpkin Shuffle"
+
 class HiddenItemShuffle(Toggle):
     """Shuffle hidden items."""
     display_name = "Hidden Item Shuffle"
@@ -1948,6 +1952,7 @@ class SSHDOptions(PerGameCommonOptions):
     stamina_fruit_shuffle: StaminaFruitShuffle
     npc_closet_shuffle: NpcClosetShuffle
     pot_shuffle: PotShuffle
+    pumpkin_shuffle: PumpkinShuffle
     hidden_item_shuffle: HiddenItemShuffle
     rupee_shuffle: RupeeShuffle
     goddess_chest_shuffle: GoddessChestShuffle
@@ -2195,6 +2200,7 @@ sshd_option_groups = [
         StaminaFruitShuffle,
         NpcClosetShuffle,
         PotShuffle,
+        PumpkinShuffle,
         HiddenItemShuffle,
         RupeeShuffle,
         GoddessChestShuffle,

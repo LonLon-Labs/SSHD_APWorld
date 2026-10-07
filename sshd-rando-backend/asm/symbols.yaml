@@ -276,6 +276,19 @@ main:
     ## Size: 64 (32 x u16) - item id handed out when each statue is touched
     BIRD_STATUE_ITEM_IDS: 0x712e54b7e0
 
+    ## Pumpkin Shuffle. The pumpkin actor's params are wiped after creation, so each
+    ## patched pumpkin is looked up by its position instead. Directly after the Bird
+    ## Statue tables (free space up to RANDOM_MUSIC_DATA).
+    ## Size: 4 (u32) - must read 0x504D5550 ("PUMP", little endian) or the table is ignored
+    PUMPKIN_TABLE_MAGIC: 0x712e54b820
+    ## Size: 4 (u32) - number of valid entries (max 96)
+    PUMPKIN_TABLE_COUNT: 0x712e54b824
+    ## Size: 12 * 96 = 1152 - entries of { u32 px_bits, u32 pz_bits, u16 item_word, u16 flag }
+    ##   px_bits / pz_bits: the pumpkin's X / Z position as raw f32 bits (from the BZS)
+    ##   item_word: bits 0-8 item id, bits 9-12 trap nibble (0xF = not a trap)
+    ##   flag: low 10 bits = custom flag (group 1 / extended pages, 0x3FF = none)
+    PUMPKIN_TABLE_ENTRIES: 0x712e54b828
+
     ## Size: 7616 (0x1DC0) = 32*238
     RANDOM_MUSIC_DATA: 0x712e54c000
 

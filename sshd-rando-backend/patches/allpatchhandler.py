@@ -158,6 +158,9 @@ class AllPatchHandler:
         self.asm_patch_handler.bird_statue_arrays = (
             self.stage_patch_handler.get_bird_statue_arrays()
         )
+        self.asm_patch_handler.pumpkin_entries = (
+            self.stage_patch_handler.pumpkin_entries
+        )
         # Pass global symbol initializers collected during stage patch setup
         # (e.g. EXTRA_DEMISE_COUNT) so init_global_variables can emit them.
         self.asm_patch_handler.global_symbol_values = (

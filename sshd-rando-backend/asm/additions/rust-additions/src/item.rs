@@ -140,6 +140,11 @@ extern "C" {
     static mut BIRD_STATUE_CUSTOM_FLAGS: [u16; 32];
     static mut BIRD_STATUE_ITEM_IDS: [u16; 32];
 
+    // Pumpkin Shuffle (filled in by the patcher via init_global_variables)
+    static PUMPKIN_TABLE_MAGIC: u32;
+    static PUMPKIN_TABLE_COUNT: u32;
+    static PUMPKIN_TABLE_ENTRIES: [PumpkinEntry; PUMPKIN_TABLE_MAX];
+
     static mut SQUIRRELS_CAUGHT_THIS_PLAY_SESSION: bool;
     static TADTONE_SCENEFLAGS: [u8; 17];
 
@@ -1399,6 +1404,170 @@ pub extern "C" fn tgreact_spawn_custom_item(
     }
 }
 
+/// Actor id of `PUMPKIN` (dAcPumpkin_c), the Skyloft / Lumpy Pumpkin pumpkin
+/// patches. Pumpkin shuffle shares the pot drop hook below, but a pumpkin's
+/// params are wiped after the actor is created (params1 and the low 16 bits of
+/// params2), so its item can't be read from the actor like a pot's. It is
+/// looked up by position in a patcher-written table instead.
+const PUMPKIN_ACTORID: u16 = 0x1B5;
+
+/// Capacity of the pumpkin table (PUMPKIN_TABLE_* in symbols.yaml).
+const PUMPKIN_TABLE_MAX: usize = 96;
+
+/// "PUMP" as a little-endian u32; the patcher writes it in front of the table
+/// only when at least one pumpkin has an item.
+const PUMPKIN_TABLE_MAGIC_VALUE: u32 = 0x504D_5550;
+
+/// One patched pumpkin. Keep in sync with patch_pumpkin /
+/// init_global_variables in the patcher.
+///   px_bits / pz_bits: the pumpkin's X / Z position as raw f32 bits
+///   item_word:         bits 0-8 item id, bits 9-12 trap nibble (0xF = no
+/// trap)   flag:              low 10 bits of the group 1 custom flag (0x3FF =
+/// none)
+#[repr(C, packed(1))]
+#[derive(Copy, Clone)]
+pub struct PumpkinEntry {
+    pub px_bits:   u32,
+    pub pz_bits:   u32,
+    pub item_word: u16,
+    pub flag:      u16,
+}
+assert_eq_size!([u8; 12], PumpkinEntry);
+
+/// Marker written into a breaking pumpkin actor's own params2 (low 16 bits)
+/// once its item has dropped, so repeated calls for the same break can't drop
+/// a second item. It lives on the actor instance, not in global state, so a
+/// freshly created pumpkin (after a reload, or after losing the item) always
+/// drops again until its check is actually collected.
+const PUMPKIN_DROPPED_MARK: u32 = 0xA55A;
+
+/// Finds a pumpkin's table index from its X/Z position bits.
+fn find_pumpkin_entry(px_bits: u32, pz_bits: u32) -> Option<usize> {
+    unsafe {
+        if core::ptr::read_volatile(core::ptr::addr_of!(PUMPKIN_TABLE_MAGIC))
+            != PUMPKIN_TABLE_MAGIC_VALUE
+        {
+            return None;
+        }
+
+        let count = core::ptr::read_volatile(core::ptr::addr_of!(PUMPKIN_TABLE_COUNT)) as usize;
+        let count = if count < PUMPKIN_TABLE_MAX {
+            count
+        } else {
+            PUMPKIN_TABLE_MAX
+        };
+
+        for index in 0..count {
+            let entry =
+                core::ptr::read_unaligned(core::ptr::addr_of!(PUMPKIN_TABLE_ENTRIES[index]));
+            if entry.px_bits == px_bits && entry.pz_bits == pz_bits {
+                return Some(index);
+            }
+        }
+        None
+    }
+}
+
+/// Pumpkin shuffle: drops the randomized item for a breaking pumpkin.
+///
+/// Returns true if an item was dropped (or already dropped for this break),
+/// false if the pumpkin should keep its vanilla drop (not in the table, no
+/// custom flag, or its check was already collected).
+fn pumpkin_drop_custom_item(
+    pumpkin: *mut actor::dAcOBase,
+    vanilla_drop: u8,
+    roomid: u32,
+    pos: *mut math::Vec3f,
+) -> bool {
+    unsafe {
+        let px_bits = (*pumpkin).members.base.pos.x.to_bits();
+        let pz_bits = (*pumpkin).members.base.pos.z.to_bits();
+
+        // TEMP (pumpkin shuffle testing, remove once confirmed in-game)
+        debug::debug_print_num(c"pumpkin px %x".as_ptr(), px_bits as usize);
+        debug::debug_print_num(c"pumpkin pz %x".as_ptr(), pz_bits as usize);
+
+        let index = match find_pumpkin_entry(px_bits, pz_bits) {
+            Some(index) => index,
+            None => {
+                debug::debug_print_num(c"pumpkin not in table, vanilla drop %x".as_ptr(), 0);
+                return false;
+            },
+        };
+
+        let entry = core::ptr::read_unaligned(core::ptr::addr_of!(PUMPKIN_TABLE_ENTRIES[index]));
+        let local_flag = entry.flag & 0x3FF;
+        if local_flag == CUSTOM_FLAG_NONE {
+            return false;
+        }
+
+        // Pumpkins use custom flag group 1 (extended pages), like pots.
+        if check_ap_custom_flag(local_flag | CUSTOM_FLAG_GROUP1) {
+            return false;
+        }
+
+        // Already dropped for this very break (repeated per-frame call)
+        if (*pumpkin).members.base.param2 & 0xFFFF == PUMPKIN_DROPPED_MARK {
+            return true;
+        }
+
+        let item_id = entry.item_word & 0x1FF;
+        let trap_nibble = ((entry.item_word >> 9) & 0xF) as u32;
+
+        // Loftwing and the Bird Statue unlock items must keep their own item id:
+        // determineFinalItemid can remap them to rupee logic (same rule as
+        // give_item_with_archipelago_flag_and_trap).
+        let new_itemid = if item_id == 219 || bird_statue_unlock_flag_index(item_id).is_some() {
+            item_id
+        } else {
+            dAcItem__determineFinalItemid(item_id as u64) as u16
+        };
+
+        // Same param2 layout spawn_item_on_destroy expects from a patched pot:
+        // bits 8-17 flag, bit 18 velocity (item pops out), bits 19-22 trap id,
+        // bits 24-31 vanilla drop id.
+        let synthetic_param2: u32 = ((vanilla_drop as u32) << 24)
+            | (1 << 18)
+            | (trap_nibble << 19)
+            | ((local_flag as u32) << 8);
+
+        let drop_pos = if pos.is_null() {
+            (*pumpkin).members.base.pos
+        } else {
+            *pos
+        };
+
+        let item_actor = spawn_item_on_destroy(
+            roomid,
+            drop_pos,
+            (*pumpkin).members.base.rot.y,
+            new_itemid,
+            synthetic_param2,
+            true,
+        );
+
+        // TEMP (pumpkin shuffle testing): table index, then item id (0 on spawn
+        // failure)
+        debug::debug_print_num(c"pumpkin table index %x".as_ptr(), index);
+        debug::debug_print_num(
+            c"pumpkin dropped item %x".as_ptr(),
+            if item_actor.is_null() {
+                0
+            } else {
+                new_itemid as usize
+            },
+        );
+
+        if item_actor.is_null() {
+            return false;
+        }
+
+        (*pumpkin).members.base.param2 =
+            ((*pumpkin).members.base.param2 & 0xFFFF0000) | PUMPKIN_DROPPED_MARK;
+        true
+    }
+}
+
 /// Pot sanity: replaces the `bl checkParam2OnDestroy` calls that drop a pot's
 /// vanilla item. Two call sites reach it through a jumptable stub (landingpad
 /// #108) that passes the actor (x19) as a sixth argument:
@@ -1425,11 +1594,28 @@ pub extern "C" fn pot_spawn_custom_item(
     pot: *mut actor::dAcOBase,
 ) -> u32 {
     unsafe {
-        if !pot.is_null() && (*pot).basebase.members.actorid == actor::ACTORID::OBJ_TUBO as u16 {
+        let is_pot = !pot.is_null()
+            && ((*pot).basebase.members.actorid == actor::ACTORID::OBJ_TUBO as u16
+                || (*pot).basebase.members.actorid == PUMPKIN_ACTORID);
+
+        if is_pot {
             let param2 = (*pot).members.base.param2;
             let raw_flag = (param2 >> 8) & 0x3FF;
 
-            // Pots are the only actor using custom flag group 1 (extended pages).
+            // Pumpkin shuffle: the actor's params are wiped after creation, so look
+            // the item up by position in the patcher-written table instead. Calls
+            // with vanilla drop id 0xFF are the "delete without dropping anything"
+            // path, so they never drop.
+            if (*pot).basebase.members.actorid == PUMPKIN_ACTORID {
+                if param2_s0x18 != 0xFF && pumpkin_drop_custom_item(pot, param2_s0x18, roomid, pos)
+                {
+                    // Bit 0 set = "an item was dropped", same as vanilla
+                    return 1;
+                }
+                return checkParam2OnDestroy(param2_s0x18, roomid, pos, param_4, param_5);
+            }
+
+            // Pots use custom flag group 1 (extended pages).
             if raw_flag != 0x3FF
                 && param2_s0x18 != 0xFE
                 && !check_ap_custom_flag(raw_flag as u16 | CUSTOM_FLAG_GROUP1)
@@ -3313,8 +3499,8 @@ assert_eq_size!([u8; 12], ApCheckStats);
 // ============================================================================
 
 // Must hold every location that can carry a custom flag (all shuffles + pots
-// is ~1231). Mirrored in the client's ap-ipc crate and ItemSystemIntegration.
-pub const AP_ITEM_TABLE_MAX: usize = 1280;
+// + pumpkins is ~1304). Mirrored in the client's ap-ipc crate.
+pub const AP_ITEM_TABLE_MAX: usize = 1344;
 
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
@@ -3339,7 +3525,7 @@ pub struct ApItemInfoTable {
     pub _pad:    u16,
     pub entries: [ApItemInfoEntry; AP_ITEM_TABLE_MAX],
 }
-assert_eq_size!([u8; 8 + 98 * 1280], ApItemInfoTable);
+assert_eq_size!([u8; 8 + 98 * 1344], ApItemInfoTable);
 
 // The live instance of this struct now lives at AP_IPC_ROOT.item_info_table
 // (see ipc.rs) instead of a standalone static. Written once by the Python

@@ -7125,8 +7125,11 @@
 - name: Inventory Ruby and Amber Tablet text
   standard:
     "The <y<amber>> and <r<ruby>> tablet fragments\nopen the way to <r<Eldin Volcano>> and\n<y<Lanayru Desert>>."
-# Pot locations
+- name: Inventory Ruby Tablet text
+  standard:
+    "A fragment of the ancient tablet that leads\nto the surface. It opens the way to\n<r<Eldin Volcano>>."
 
+# Pot locations
 - name: Skyview Boss Room - Pot 1
   standard: Skyview Boss Room - Pot 1
   pretty: Skyview Boss Room - Pot 1
@@ -8597,6 +8600,369 @@
   pretty: Temple of Hylia - Pot 16
   cryptic: smashing <b<pots>> at a <b<goddess's temple>>
 
-- name: Inventory Ruby Tablet text
-  standard:
-    "A fragment of the ancient tablet that leads\nto the surface. It opens the way to\n<r<Eldin Volcano>>."
+# Pumpkin Locations
+
+- name: Skyloft Village - Pumpkin 1
+  standard: Skyloft Village - Pumpkin 1
+  pretty: Skyloft Village - Pumpkin 1
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 2
+  standard: Skyloft Village - Pumpkin 2
+  pretty: Skyloft Village - Pumpkin 2
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 3
+  standard: Skyloft Village - Pumpkin 3
+  pretty: Skyloft Village - Pumpkin 3
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 4
+  standard: Skyloft Village - Pumpkin 4
+  pretty: Skyloft Village - Pumpkin 4
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 5
+  standard: Skyloft Village - Pumpkin 5
+  pretty: Skyloft Village - Pumpkin 5
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 6
+  standard: Skyloft Village - Pumpkin 6
+  pretty: Skyloft Village - Pumpkin 6
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 7
+  standard: Skyloft Village - Pumpkin 7
+  pretty: Skyloft Village - Pumpkin 7
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 8
+  standard: Skyloft Village - Pumpkin 8
+  pretty: Skyloft Village - Pumpkin 8
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 9
+  standard: Skyloft Village - Pumpkin 9
+  pretty: Skyloft Village - Pumpkin 9
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 10
+  standard: Skyloft Village - Pumpkin 10
+  pretty: Skyloft Village - Pumpkin 10
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 11
+  standard: Skyloft Village - Pumpkin 11
+  pretty: Skyloft Village - Pumpkin 11
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 12
+  standard: Skyloft Village - Pumpkin 12
+  pretty: Skyloft Village - Pumpkin 12
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 13
+  standard: Skyloft Village - Pumpkin 13
+  pretty: Skyloft Village - Pumpkin 13
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 14
+  standard: Skyloft Village - Pumpkin 14
+  pretty: Skyloft Village - Pumpkin 14
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 15
+  standard: Skyloft Village - Pumpkin 15
+  pretty: Skyloft Village - Pumpkin 15
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 16
+  standard: Skyloft Village - Pumpkin 16
+  pretty: Skyloft Village - Pumpkin 16
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 17
+  standard: Skyloft Village - Pumpkin 17
+  pretty: Skyloft Village - Pumpkin 17
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 18
+  standard: Skyloft Village - Pumpkin 18
+  pretty: Skyloft Village - Pumpkin 18
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 19
+  standard: Skyloft Village - Pumpkin 19
+  pretty: Skyloft Village - Pumpkin 19
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 20
+  standard: Skyloft Village - Pumpkin 20
+  pretty: Skyloft Village - Pumpkin 20
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 21
+  standard: Skyloft Village - Pumpkin 21
+  pretty: Skyloft Village - Pumpkin 21
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 22
+  standard: Skyloft Village - Pumpkin 22
+  pretty: Skyloft Village - Pumpkin 22
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 23
+  standard: Skyloft Village - Pumpkin 23
+  pretty: Skyloft Village - Pumpkin 23
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 24
+  standard: Skyloft Village - Pumpkin 24
+  pretty: Skyloft Village - Pumpkin 24
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 25
+  standard: Skyloft Village - Pumpkin 25
+  pretty: Skyloft Village - Pumpkin 25
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 26
+  standard: Skyloft Village - Pumpkin 26
+  pretty: Skyloft Village - Pumpkin 26
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 27
+  standard: Skyloft Village - Pumpkin 27
+  pretty: Skyloft Village - Pumpkin 27
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 28
+  standard: Skyloft Village - Pumpkin 28
+  pretty: Skyloft Village - Pumpkin 28
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 29
+  standard: Skyloft Village - Pumpkin 29
+  pretty: Skyloft Village - Pumpkin 29
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 30
+  standard: Skyloft Village - Pumpkin 30
+  pretty: Skyloft Village - Pumpkin 30
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 31
+  standard: Skyloft Village - Pumpkin 31
+  pretty: Skyloft Village - Pumpkin 31
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 32
+  standard: Skyloft Village - Pumpkin 32
+  pretty: Skyloft Village - Pumpkin 32
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 33
+  standard: Skyloft Village - Pumpkin 33
+  pretty: Skyloft Village - Pumpkin 33
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 34
+  standard: Skyloft Village - Pumpkin 34
+  pretty: Skyloft Village - Pumpkin 34
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 35
+  standard: Skyloft Village - Pumpkin 35
+  pretty: Skyloft Village - Pumpkin 35
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 36
+  standard: Skyloft Village - Pumpkin 36
+  pretty: Skyloft Village - Pumpkin 36
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 37
+  standard: Skyloft Village - Pumpkin 37
+  pretty: Skyloft Village - Pumpkin 37
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 38
+  standard: Skyloft Village - Pumpkin 38
+  pretty: Skyloft Village - Pumpkin 38
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 1
+  standard: Lumpy Pumpkin Exterior - Pumpkin 1
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 1
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 2
+  standard: Lumpy Pumpkin Exterior - Pumpkin 2
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 2
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 3
+  standard: Lumpy Pumpkin Exterior - Pumpkin 3
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 3
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 4
+  standard: Lumpy Pumpkin Exterior - Pumpkin 4
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 4
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 5
+  standard: Lumpy Pumpkin Exterior - Pumpkin 5
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 5
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 6
+  standard: Lumpy Pumpkin Exterior - Pumpkin 6
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 6
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 7
+  standard: Lumpy Pumpkin Exterior - Pumpkin 7
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 7
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 8
+  standard: Lumpy Pumpkin Exterior - Pumpkin 8
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 8
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 9
+  standard: Lumpy Pumpkin Exterior - Pumpkin 9
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 9
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 10
+  standard: Lumpy Pumpkin Exterior - Pumpkin 10
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 10
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 11
+  standard: Lumpy Pumpkin Exterior - Pumpkin 11
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 11
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 12
+  standard: Lumpy Pumpkin Exterior - Pumpkin 12
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 12
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 13
+  standard: Lumpy Pumpkin Exterior - Pumpkin 13
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 13
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 14
+  standard: Lumpy Pumpkin Exterior - Pumpkin 14
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 14
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 15
+  standard: Lumpy Pumpkin Exterior - Pumpkin 15
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 15
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 16
+  standard: Lumpy Pumpkin Exterior - Pumpkin 16
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 16
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 17
+  standard: Lumpy Pumpkin Exterior - Pumpkin 17
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 17
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 18
+  standard: Lumpy Pumpkin Exterior - Pumpkin 18
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 18
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 19
+  standard: Lumpy Pumpkin Exterior - Pumpkin 19
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 19
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 20
+  standard: Lumpy Pumpkin Exterior - Pumpkin 20
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 20
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 21
+  standard: Lumpy Pumpkin Exterior - Pumpkin 21
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 21
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 22
+  standard: Lumpy Pumpkin Exterior - Pumpkin 22
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 22
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 23
+  standard: Lumpy Pumpkin Exterior - Pumpkin 23
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 23
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 24
+  standard: Lumpy Pumpkin Exterior - Pumpkin 24
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 24
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 25
+  standard: Lumpy Pumpkin Exterior - Pumpkin 25
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 25
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 26
+  standard: Lumpy Pumpkin Exterior - Pumpkin 26
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 26
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 27
+  standard: Lumpy Pumpkin Exterior - Pumpkin 27
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 27
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 28
+  standard: Lumpy Pumpkin Exterior - Pumpkin 28
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 28
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 29
+  standard: Lumpy Pumpkin Exterior - Pumpkin 29
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 29
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 30
+  standard: Lumpy Pumpkin Exterior - Pumpkin 30
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 30
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 31
+  standard: Lumpy Pumpkin Exterior - Pumpkin 31
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 31
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 32
+  standard: Lumpy Pumpkin Exterior - Pumpkin 32
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 32
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 33
+  standard: Lumpy Pumpkin Exterior - Pumpkin 33
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 33
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 34
+  standard: Lumpy Pumpkin Exterior - Pumpkin 34
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 34
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 35
+  standard: Lumpy Pumpkin Exterior - Pumpkin 35
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 35
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>

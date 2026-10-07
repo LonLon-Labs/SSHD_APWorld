@@ -10058,3 +10058,587 @@
     - Custom Flag
   Paths:
     - stage/F404/r2/l0/Tubo/0xFC17
+
+- name: Skyloft Village - Pumpkin 1
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x460
+
+- name: Skyloft Village - Pumpkin 2
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x461
+
+- name: Skyloft Village - Pumpkin 3
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x462
+
+- name: Skyloft Village - Pumpkin 4
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x463
+
+- name: Skyloft Village - Pumpkin 5
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x464
+
+- name: Skyloft Village - Pumpkin 6
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x465
+
+- name: Skyloft Village - Pumpkin 7
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x466
+
+- name: Skyloft Village - Pumpkin 8
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x467
+
+- name: Skyloft Village - Pumpkin 9
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x468
+
+- name: Skyloft Village - Pumpkin 10
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x469
+
+- name: Skyloft Village - Pumpkin 11
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x46A
+
+- name: Skyloft Village - Pumpkin 12
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x46B
+
+- name: Skyloft Village - Pumpkin 13
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x46C
+
+- name: Skyloft Village - Pumpkin 14
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x46D
+
+- name: Skyloft Village - Pumpkin 15
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x46E
+
+- name: Skyloft Village - Pumpkin 16
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x46F
+
+- name: Skyloft Village - Pumpkin 17
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x470
+
+- name: Skyloft Village - Pumpkin 18
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x471
+
+- name: Skyloft Village - Pumpkin 19
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x472
+
+- name: Skyloft Village - Pumpkin 20
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x473
+
+- name: Skyloft Village - Pumpkin 21
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x474
+
+- name: Skyloft Village - Pumpkin 22
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x475
+
+- name: Skyloft Village - Pumpkin 23
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x476
+
+- name: Skyloft Village - Pumpkin 24
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x477
+
+- name: Skyloft Village - Pumpkin 25
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x478
+
+- name: Skyloft Village - Pumpkin 26
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x479
+
+- name: Skyloft Village - Pumpkin 27
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x47A
+
+- name: Skyloft Village - Pumpkin 28
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x47B
+
+- name: Skyloft Village - Pumpkin 29
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x47C
+
+- name: Skyloft Village - Pumpkin 30
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x47D
+
+- name: Skyloft Village - Pumpkin 31
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x47E
+
+- name: Skyloft Village - Pumpkin 32
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x47F
+
+- name: Skyloft Village - Pumpkin 33
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x480
+
+- name: Skyloft Village - Pumpkin 34
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x481
+
+- name: Skyloft Village - Pumpkin 35
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x482
+
+- name: Skyloft Village - Pumpkin 36
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x483
+
+- name: Skyloft Village - Pumpkin 37
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x484
+
+- name: Skyloft Village - Pumpkin 38
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l0/Pumpkin/0x485
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 1
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC3A
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 2
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC3B
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 3
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC3C
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 4
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC3D
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 5
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC3E
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 6
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC3F
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 7
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC40
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 8
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC41
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 9
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC42
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 10
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC43
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 11
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC44
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 12
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC45
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 13
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC46
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 14
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC47
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 15
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC48
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 16
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC49
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 17
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC4A
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 18
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC4B
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 19
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC4C
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 20
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC4D
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 21
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC4E
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 22
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC4F
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 23
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC50
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 24
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC51
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 25
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC52
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 26
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC53
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 27
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC54
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 28
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC55
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 29
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC56
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 30
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC61
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 31
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC62
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 32
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC63
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 33
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC64
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 34
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC65
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 35
+  original_item: Green Rupee
+  types:
+    - Pumpkins
+    - Custom Flag
+  Paths:
+    - stage/F020/r0/l0/Pumpkin/0xFC66

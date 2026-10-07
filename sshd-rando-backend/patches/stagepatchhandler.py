@@ -1,5 +1,6 @@
 import hashlib
 import shutil
+import struct
 import time
 from constants.verificationconstants import BZS_FILE_HASHES
 from patches.stagepatchhelper import patch_additional_properties
@@ -847,6 +848,61 @@ def patch_pot(
     pot["params2"] = mask_shift_set(pot["params2"], 0x3FF, 8, custom_flag)
 
 
+def _f32_bits(value: float) -> int:
+    return struct.unpack("<I", struct.pack("<f", value))[0]
+
+
+def patch_pumpkin(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+) -> tuple[int, int, int, int] | None:
+    """Pumpkin shuffle (Pumpkin, dAcPumpkin_c).
+
+    Unlike pots, nothing is stored in the pumpkin's params: at runtime the
+    actor's params1 and the low 16 bits of params2 are wiped by shared actor
+    setup code, so anything written there never reaches the break routine. The
+    BZS object is left untouched and this returns a table entry instead, keyed
+    by the pumpkin's position (X/Z as raw f32 bits, which survive actor
+    creation unchanged). The entries are written to the PUMPKIN_TABLE_* config
+    block by init_global_variables and looked up by pot_spawn_custom_item in
+    item.rs when the pumpkin is broken.
+
+    Returns (px_bits, pz_bits, item_word, flag), or None to keep the vanilla
+    drop. item_word: bits 0-8 item id, bits 9-12 trap nibble (0xF = not a
+    trap). flag: the low 10 bits of the group 1 custom flag.
+    """
+    id = int(object_id_str, 16)
+
+    pumpkin: dict | None = next(
+        filter(lambda x: x["name"] == "Pumpkin" and x["id"] == id, bzs["OBJ "]), None
+    )
+
+    if pumpkin is None:
+        raise Exception(f"No pumpkin (Pumpkin) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla drop
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return None
+
+    # Like pots, the game treats every pumpkin flag as an extended (group 1,
+    # bit 10) flag; only the low 10 bits are stored.
+    if not (custom_flag & 0x400):
+        raise Exception(
+            f"Pumpkin '{hex(id)}' was given group 0 custom flag {custom_flag:#x}; "
+            "pumpkins must use group 1 flags (bit 10 set)."
+        )
+    custom_flag &= 0x3FF
+
+    # Need to check this as itemid is the itemid of the fake item model when trapid > 0
+    trap_nibble = (254 - trapid) if trapid else 0xF
+    if not (0 <= trap_nibble <= 0xF):
+        raise Exception(f"Pumpkin '{hex(id)}' has invalid trap id {trapid}.")
+    if not (0 <= itemid <= 0x1FF):
+        raise Exception(f"Pumpkin '{hex(id)}' has item id {itemid} that doesn't fit in 9 bits.")
+
+    item_word = (itemid & 0x1FF) | (trap_nibble << 9)
+    return (_f32_bits(pumpkin["posx"]), _f32_bits(pumpkin["posz"]), item_word, custom_flag)
+
+
 def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0x3FF):
 
     academy_bell: dict | None = next(
@@ -1240,6 +1296,10 @@ class StagePatchHandler:
         # (item id, AP custom flag). Written to the BIRD_STATUE_* Rust statics via
         # init_global_variables; the game hands out the item when the statue is touched.
         self.bird_statue_items: dict[int, tuple[int, int]] = {}
+        # Pumpkin Shuffle: (px_bits, pz_bits, item_word, flag) per patched pumpkin,
+        # keyed in the game by the pumpkin's position. Written to the PUMPKIN_TABLE_*
+        # config block via init_global_variables (see patch_pumpkin).
+        self.pumpkin_entries: list[tuple[int, int, int, int]] = []
         # Global symbol initializers consumed by ASM global init.
         # Format: {"type": "symbol", "symbol": <name>, "value": <int>}.
         self.global_patches: list[dict] = []
@@ -1565,6 +1625,22 @@ class StagePatchHandler:
                             trapid,
                             custom_flag,
                         )
+                    elif object_name == "Pumpkin":
+                        pumpkin_entry = patch_pumpkin(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                        if pumpkin_entry is not None:
+                            for existing in self.pumpkin_entries:
+                                if existing[0] == pumpkin_entry[0] and existing[1] == pumpkin_entry[1]:
+                                    raise Exception(
+                                        f"Two pumpkins share the position {pumpkin_entry[0]:#010x}/{pumpkin_entry[1]:#010x}; "
+                                        "the position-keyed pumpkin table needs unique positions."
+                                    )
+                            self.pumpkin_entries.append(pumpkin_entry)
                     elif object_name == "Bell":
                         patch_academy_bell(
                             room_bzs["LAY "][f"l{layer}"],

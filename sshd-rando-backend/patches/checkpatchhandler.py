@@ -40,8 +40,9 @@ AP_PLACEHOLDER_ITEMID = 216
 # Custom flag "group" bit (bit 10 of the full custom flag ID). Group 0 is the
 # original 10-bit space (scene indexes 6/13/16/19). Group 1 lives in the
 # extended save-file pages (scene indexes 26-29, scene space only) and is only
-# ever used by pots, whose params2 stores just the low 10 bits (the group is
-# implicit for a Tubo). Keep in sync with CUSTOM_FLAG_GROUP1 in item.rs, the
+# ever used by pots and pumpkins, whose params2 stores just the low 10 bits (the
+# group is implicit for a Tubo or Pumpkin). Keep in sync with CUSTOM_FLAG_GROUP1
+# in item.rs, the
 # ap-ipc crate, the Python client and _build_custom_flag_mapping in the APWorld.
 CUSTOM_FLAG_GROUP1 = 0x400
 
@@ -169,6 +170,16 @@ def determine_check_patches(
             # off the old group 0 draw is kept so existing seeds don't shift.
             if "Pots" in location.types and world.setting("pot_shuffle") != "off":
                 custom_flag = group1_flags.pop()
+            elif (
+                "Pumpkins" in location.types
+                and world.setting("pumpkin_shuffle") != "off"
+            ):
+                # Pumpkins share the extended group 1 pool with pots
+                custom_flag = group1_flags.pop()
+            elif "Pumpkins" in location.types:
+                # Unshuffled pumpkins are never patched. Pumpkin shuffle is new,
+                # so there are no existing seeds to keep stable: burn nothing.
+                custom_flag = 0x3FF
             elif "Pots" in location.types:
                 # Unshuffled pots are never patched, so their flag is never used.
                 # Keep burning a group 0 flag while any are left so existing
@@ -182,24 +193,30 @@ def determine_check_patches(
             # No custom flag needed
             custom_flag = 0x3FF
 
-        # Only pots can carry a group 1 flag (their params2 has no room for the
-        # group bit, so the game treats every pot flag as group 1), and every
-        # shuffled pot must carry one. A mismatch would make a check set another
-        # location's flag.
+        # Only pots and pumpkins can carry a group 1 flag (their params2 has no
+        # room for the group bit, so the game treats every pot/pumpkin flag as
+        # group 1), and every shuffled one must carry one. A mismatch would make
+        # a check set another location's flag.
         if custom_flag != 0x3FF:
             is_group1 = bool(custom_flag & CUSTOM_FLAG_GROUP1)
             is_pot = "Pots" in location.types
-            pots_off = world.setting("pot_shuffle") == "off"
-            if is_group1 and not is_pot:
+            is_pumpkin = "Pumpkins" in location.types
+            is_group1_type = is_pot or is_pumpkin
+            group1_off = (
+                world.setting("pot_shuffle") == "off"
+                if is_pot
+                else world.setting("pumpkin_shuffle") == "off"
+            )
+            if is_group1 and not is_group1_type:
                 raise Exception(
                     f'"{location.name}" has group 1 custom flag {custom_flag:#x} '
-                    "but isn't a pot."
+                    "but isn't a pot or pumpkin."
                 )
-            # With pots off the location is never patched, so its flag is unused
-            if is_pot and not pots_off and not is_group1:
+            # With the shuffle off the location is never patched, so its flag is unused
+            if is_group1_type and not group1_off and not is_group1:
                 raise Exception(
-                    f'Pot "{location.name}" has group 0 custom flag '
-                    f"{custom_flag:#x}; pots must use group 1."
+                    f'"{location.name}" has group 0 custom flag '
+                    f"{custom_flag:#x}; pots and pumpkins must use group 1."
                 )
 
         original_itemid = 0
@@ -220,6 +237,13 @@ def determine_check_patches(
 
         # Don't patch pots if they're off
         if "Pots" in location.types and world.setting("pot_shuffle") == "off":
+            continue
+
+        # Don't patch pumpkins if they're off
+        if (
+            "Pumpkins" in location.types
+            and world.setting("pumpkin_shuffle") == "off"
+        ):
             continue
 
         # Deal with traps

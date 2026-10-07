@@ -85,6 +85,17 @@
     - "off": "Pots will drop their vanilla items."
     - "on": "Breaking a pot can give a randomized item. Pots revert to their vanilla drop after the item has been collected."
 
+- name: pumpkin_shuffle
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Pumpkin Shuffle
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Pumpkins will drop their vanilla items."
+    - "on": "Breaking a pumpkin in the Skyloft pumpkin patches or at Lumpy Pumpkin can give a randomized item. Pumpkins revert to their vanilla drop after the item has been collected."
+
 - name: hidden_item_shuffle
   tracker_important: true
   default_option: "off"
