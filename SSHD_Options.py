@@ -300,6 +300,10 @@ class PumpkinShuffle(Toggle):
     """Shuffle pumpkins. Breaking a pumpkin in the Skyloft pumpkin patches or at Lumpy Pumpkin can give a randomized item."""
     display_name = "Pumpkin Shuffle"
 
+class BarrelShuffle(Toggle):
+    """Shuffle barrels. Breaking a barrel can give a randomized item. The exploding barrels in the Sand Sea are not included."""
+    display_name = "Barrel Shuffle"
+
 class HiddenItemShuffle(Toggle):
     """Shuffle hidden items."""
     display_name = "Hidden Item Shuffle"
@@ -1953,6 +1957,7 @@ class SSHDOptions(PerGameCommonOptions):
     npc_closet_shuffle: NpcClosetShuffle
     pot_shuffle: PotShuffle
     pumpkin_shuffle: PumpkinShuffle
+    barrel_shuffle: BarrelShuffle
     hidden_item_shuffle: HiddenItemShuffle
     rupee_shuffle: RupeeShuffle
     goddess_chest_shuffle: GoddessChestShuffle
@@ -2201,6 +2206,7 @@ sshd_option_groups = [
         NpcClosetShuffle,
         PotShuffle,
         PumpkinShuffle,
+        BarrelShuffle,
         HiddenItemShuffle,
         RupeeShuffle,
         GoddessChestShuffle,

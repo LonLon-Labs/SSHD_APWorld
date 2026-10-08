@@ -11,6 +11,15 @@
     Sandship Starboard Rooms: Bow and ('Open_Starboard_Windows' or shortcut_sandship_windows)
     Sandship Mast: "'Sandship_Raise_Timeshift_Stone' or 'Sandship_Freely_Usable_Timeshift_Stone'"
     Lanayru Sand Sea: Nothing # If stuck in the mast sequence, deathwarp to the start and climb down the ladder out of the dungeon.
+  locations:
+    Sandship Main Deck - Barrel 1: Nothing
+    Sandship Main Deck - Barrel 2: Nothing
+    Sandship Main Deck - Barrel 3: Nothing
+    Sandship Main Deck - Barrel 4: Nothing
+    Sandship Main Deck - Barrel 5: Nothing
+    Sandship Main Deck - Barrel 6: Nothing
+    Sandship Main Deck - Barrel 7: Nothing
+    Sandship Main Deck - Barrel 8: Nothing
 
 - name: Sandship Mast
   dungeon: Sandship
@@ -46,6 +55,7 @@
   locations:
     Sandship - Blow Ceiling Lamp below Scervo Fight: Gust_Bellows
     Sandship - Chest before 4-Door Corridor: "'Sandship_Freely_Usable_Timeshift_Stone'"
+    Sandship Before Ship's Bow - Barrel 1: Nothing
 
 - name: Sandship Ship's Bow
   dungeon: Sandship
@@ -64,6 +74,14 @@
   locations:
     Sandship - Blow Front Ceiling Lamp in 4-Door Corridor: Gust_Bellows
     Sandship - Blow Back Ceiling Lamp in 4-Door Corridor: Gust_Bellows
+    Sandship Corridor - Barrel 1: Nothing
+    Sandship Corridor - Barrel 2: Nothing
+    Sandship Corridor - Barrel 3: Nothing
+    Sandship Corridor - Barrel 4: Nothing
+    Sandship Corridor - Barrel 5: Nothing
+    Sandship Corridor - Barrel 6: Nothing
+    Sandship Corridor - Barrel 7: Nothing
+    Sandship Corridor - Barrel 8: Nothing
 
 - name: Sandship Starboard Rooms
   dungeon: Sandship
@@ -76,6 +94,8 @@
     Sandship Corridor: "'Sandship_Freely_Usable_Timeshift_Stone'"
   locations:
     Sandship - Blow Ceiling Lamp in Right Generator Room: Gust_Bellows and 'Open_Starboard_Windows' and 'Sandship_Freely_Usable_Timeshift_Stone'
+    Sandship Starboard Rooms - Barrel 1: Nothing
+    Sandship Starboard Rooms - Barrel 2: Nothing
 
 - name: Sandship Port Rooms
   dungeon: Sandship
@@ -85,6 +105,10 @@
     Sandship Corridor: Bow
   locations:
     Sandship - Blow Ceiling Lamp in Left Generator Room: Bow and Gust_Bellows
+    Sandship Port Rooms - Barrel 1: Nothing
+    Sandship Port Rooms - Barrel 2: Nothing
+    Sandship Port Rooms - Barrel 3: Nothing
+    Sandship Port Rooms - Barrel 4: Nothing
 
 - name: Sandship Before Boss Door
   dungeon: Sandship
@@ -103,6 +127,11 @@
     Sandship Treasure Room: Whip and 'Starboard_Generator'
     Sandship Brig Prison: (Whip and 'Starboard_Generator' and 'Port_Generator') or shortcut_sandship_brig_bars
     Sandship Starboard Rooms: shortcut_sandship_windows or 'Open_Starboard_Windows'
+  locations:
+    Sandship Brig - Barrel 1: Nothing
+    Sandship Brig - Barrel 2: Nothing
+    Sandship Brig - Barrel 3: Nothing
+    Sandship Brig - Barrel 4: Nothing
 
 - name: Sandship Treasure Room
   dungeon: Sandship
@@ -114,6 +143,8 @@
     Sandship - Treasure Room Third Chest: Nothing # Open the chest.
     Sandship - Treasure Room Fourth Chest: Nothing # Open the chest.
     Sandship - Treasure Room Fifth Chest: Nothing # Open the chest.
+    Sandship Treasure Room - Barrel 1: Nothing
+    Sandship Treasure Room - Barrel 2: Nothing
 
 - name: Sandship Brig Prison
   dungeon: Sandship
@@ -126,3 +157,8 @@
   locations:
     Sandship - Defeat Boss: Can_Defeat_Tentalus
     Sandship - Nayru's Flame: Can_Defeat_Tentalus and Goddess_Sword
+    Sandship Boss Room - Barrel 1: Nothing
+    Sandship Boss Room - Barrel 2: Nothing
+    Sandship Boss Room - Barrel 3: Nothing
+    Sandship Boss Room - Barrel 4: Nothing
+    Sandship Boss Room - Barrel 5: Nothing

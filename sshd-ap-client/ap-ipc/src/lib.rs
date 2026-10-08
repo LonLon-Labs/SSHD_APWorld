@@ -83,8 +83,8 @@ pub struct ArchipelagoItemSlot {
 }
 
 /// Must match `AP_ITEM_TABLE_MAX` in the game's item.rs (all shuffles + pots
-/// + pumpkins is ~1304 locations).
-pub const AP_ITEM_TABLE_MAX: usize = 1344;
+/// + pumpkins + barrels is ~1484 locations).
+pub const AP_ITEM_TABLE_MAX: usize = 1536;
 
 #[repr(C, packed)]
 #[derive(Copy, Clone, Debug)]
@@ -535,7 +535,7 @@ mod tests {
         assert_eq!(size_of::<ApCheckStats>(), 12);
         assert_eq!(size_of::<ArchipelagoItemSlot>(), 4);
         assert_eq!(size_of::<ApItemInfoEntry>(), 98);
-        assert_eq!(size_of::<ApItemInfoTable>(), 8 + 98 * 1344);
+        assert_eq!(size_of::<ApItemInfoTable>(), 8 + 98 * 1536);
         assert_eq!(size_of::<ApPlayerVitals>(), 10);
         assert_eq!(size_of::<ApLinkRequests>(), 2);
         assert_eq!(size_of::<ApStageInfo>(), 44);
@@ -559,11 +559,11 @@ mod tests {
         assert_eq!(offsets::CURRENT_STAGE_NAME, 1087);
         assert_eq!(offsets::ITEM_BUFFER, 1095);
         assert_eq!(offsets::ITEM_INFO_TABLE, 1095 + 4 * 1024);
-        assert_eq!(offsets::PLAYER_VITALS, 1095 + 4 * 1024 + 8 + 98 * 1344);
-        assert_eq!(offsets::LINK_REQUESTS, 1095 + 4 * 1024 + 8 + 98 * 1344 + 10);
-        assert_eq!(offsets::STAGE_INFO, 1095 + 4 * 1024 + 8 + 98 * 1344 + 10 + 2);
-        assert_eq!(offsets::EXT_FLAGS, 1095 + 4 * 1024 + 8 + 98 * 1344 + 10 + 2 + 44);
-        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 1344 + 10 + 2 + 44 + 128);
+        assert_eq!(offsets::PLAYER_VITALS, 1095 + 4 * 1024 + 8 + 98 * 1536);
+        assert_eq!(offsets::LINK_REQUESTS, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10);
+        assert_eq!(offsets::STAGE_INFO, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2);
+        assert_eq!(offsets::EXT_FLAGS, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44);
+        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128);
         assert_eq!(size_of::<ApIpcRoot>(), offsets::TOTAL_SIZE);
     }
 

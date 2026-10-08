@@ -150,6 +150,11 @@ extern "C" {
     static BIG_POT_TABLE_COUNT: u32;
     static BIG_POT_TABLE_ENTRIES: [PumpkinEntry; BIG_POT_TABLE_MAX];
 
+    // Barrel Shuffle (filled in by the patcher via init_global_variables)
+    static BARREL_TABLE_MAGIC: u32;
+    static BARREL_TABLE_COUNT: u32;
+    static BARREL_TABLE_ENTRIES: [PumpkinEntry; BARREL_TABLE_MAX];
+
     static mut SQUIRRELS_CAUGHT_THIS_PLAY_SESSION: bool;
     static TADTONE_SCENEFLAGS: [u8; 17];
 
@@ -1717,6 +1722,149 @@ fn big_pot_drop_custom_item(pot: *mut actor::dAcOBase, roomid: u32, pos: *mut ma
     }
 }
 
+/// Actor id of `OBJ_BARREL` (dAcOBarrel_c, profile 0x209).
+const BARREL_ACTORID: u16 = 0x209;
+
+/// Capacity of the barrel table (BARREL_TABLE_* in symbols.yaml). The game has
+/// 170 non-bomb barrels in the BZS files (165 distinct positions).
+const BARREL_TABLE_MAX: usize = 192;
+
+/// "RBRL" as a little-endian u32; the patcher writes it in front of the table
+/// only when at least one barrel has an item.
+const BARREL_TABLE_MAGIC_VALUE: u32 = 0x4C52_4252;
+
+/// Marker written into a breaking barrel actor's own params2 (low 16 bits)
+/// once its item has dropped. Vanilla barrel params2 low 24 bits are 0xFFFFFF,
+/// so the low 16 bits are free (the top byte is overwritten with 0xFF by the
+/// game itself after the first drop call). Lives on the actor instance.
+const BARREL_DROPPED_MARK: u32 = 0xBA77;
+
+/// Offsets into dAcOBarrel_c (see barrel.asm): byte that is non-zero when the
+/// barrel has a vanilla drop, and the byte that selects the rebirth path.
+const BARREL_HAS_DROP_OFFSET: usize = 0x135F;
+const BARREL_REBIRTH_OFFSET: usize = 0x1363;
+
+/// Finds a barrel's table index from its X/Z position bits. Entries use the
+/// same layout as PumpkinEntry.
+fn find_barrel_entry(px_bits: u32, pz_bits: u32) -> Option<usize> {
+    unsafe {
+        if core::ptr::read_volatile(core::ptr::addr_of!(BARREL_TABLE_MAGIC))
+            != BARREL_TABLE_MAGIC_VALUE
+        {
+            return None;
+        }
+
+        let count = core::ptr::read_volatile(core::ptr::addr_of!(BARREL_TABLE_COUNT)) as usize;
+        let count = if count < BARREL_TABLE_MAX {
+            count
+        } else {
+            BARREL_TABLE_MAX
+        };
+
+        for index in 0..count {
+            let entry = core::ptr::read_unaligned(core::ptr::addr_of!(BARREL_TABLE_ENTRIES[index]));
+            if entry.px_bits == px_bits && entry.pz_bits == pz_bits {
+                return Some(index);
+            }
+        }
+        None
+    }
+}
+
+/// Barrel shuffle: drops the randomized item for a breaking barrel.
+///
+/// Barrels have no usable per-barrel params (params2 low 24 bits are 0xFFFFFF
+/// everywhere), so the item is looked up by position in a patcher-written
+/// table. Barrels can be picked up and thrown, so the actor's starting
+/// position is tried first, then the current position.
+///
+/// Returns true if an item was dropped (or already dropped for this break),
+/// false if the barrel should keep its vanilla behavior.
+fn barrel_drop_custom_item(
+    barrel: *mut actor::dAcOBase,
+    roomid: u32,
+    pos: *mut math::Vec3f,
+) -> bool {
+    unsafe {
+        let px_bits = (*barrel).members.base.pos.x.to_bits();
+        let pz_bits = (*barrel).members.base.pos.z.to_bits();
+        let start_px_bits = (*barrel).members.starting_pos.x.to_bits();
+        let start_pz_bits = (*barrel).members.starting_pos.z.to_bits();
+
+        let index = match find_barrel_entry(start_px_bits, start_pz_bits)
+            .or_else(|| find_barrel_entry(px_bits, pz_bits))
+        {
+            Some(index) => index,
+            None => {
+                // TEMP (barrel shuffle testing, remove once confirmed in-game)
+                debug::debug_print_num(
+                    c"barrel not in table px %x".as_ptr(),
+                    start_px_bits as usize,
+                );
+                debug::debug_print_num(
+                    c"barrel not in table pz %x".as_ptr(),
+                    start_pz_bits as usize,
+                );
+                return false;
+            },
+        };
+
+        let entry = core::ptr::read_unaligned(core::ptr::addr_of!(BARREL_TABLE_ENTRIES[index]));
+        let local_flag = entry.flag & 0x3FF;
+        if local_flag == CUSTOM_FLAG_NONE {
+            return false;
+        }
+
+        // Barrels use custom flag group 1 (extended pages), like pots.
+        if check_ap_custom_flag(local_flag | CUSTOM_FLAG_GROUP1) {
+            return false;
+        }
+
+        // Already dropped for this very break (repeated per-frame call)
+        if (*barrel).members.base.param2 & 0xFFFF == BARREL_DROPPED_MARK {
+            return true;
+        }
+
+        let item_id = entry.item_word & 0x1FF;
+        let trap_nibble = ((entry.item_word >> 9) & 0xF) as u32;
+
+        // Loftwing and the Bird Statue unlock items must keep their own item id
+        // (same rule as pumpkins / big pots).
+        let new_itemid = if item_id == 219 || bird_statue_unlock_flag_index(item_id).is_some() {
+            item_id
+        } else {
+            dAcItem__determineFinalItemid(item_id as u64) as u16
+        };
+
+        // Same param2 layout spawn_item_on_destroy expects from a patched pot.
+        let synthetic_param2: u32 =
+            (0xFF << 24) | (1 << 18) | (trap_nibble << 19) | ((local_flag as u32) << 8);
+
+        let drop_pos = if pos.is_null() {
+            (*barrel).members.base.pos
+        } else {
+            *pos
+        };
+
+        let item_actor = spawn_item_on_destroy(
+            roomid,
+            drop_pos,
+            (*barrel).members.base.rot.y,
+            new_itemid,
+            synthetic_param2,
+            true,
+        );
+
+        if item_actor.is_null() {
+            return false;
+        }
+
+        (*barrel).members.base.param2 =
+            ((*barrel).members.base.param2 & 0xFFFF0000) | BARREL_DROPPED_MARK;
+        true
+    }
+}
+
 /// Pot sanity: replaces the `bl checkParam2OnDestroy` calls that drop a pot's
 /// vanilla item. Two call sites reach it through a jumptable stub (landingpad
 /// #108) that passes the actor (x19) as a sixth argument:
@@ -1746,7 +1894,8 @@ pub extern "C" fn pot_spawn_custom_item(
         let is_pot = !pot.is_null()
             && ((*pot).basebase.members.actorid == actor::ACTORID::OBJ_TUBO as u16
                 || (*pot).basebase.members.actorid == actor::ACTORID::OBJ_TUBO_BIG as u16
-                || (*pot).basebase.members.actorid == PUMPKIN_ACTORID);
+                || (*pot).basebase.members.actorid == PUMPKIN_ACTORID
+                || (*pot).basebase.members.actorid == BARREL_ACTORID);
 
         // TEMP (big pot shuffle testing, remove once confirmed in-game): log the
         // actor id of everything else that reaches this hook.
@@ -1772,6 +1921,23 @@ pub extern "C" fn pot_spawn_custom_item(
                     return 1;
                 }
                 return checkParam2OnDestroy(param2_s0x18, roomid, pos, param_4, param_5);
+            }
+
+            // Barrels: the item comes from the position-keyed table. barrel.asm NOPs
+            // the vanilla "has a drop" guard so barrels that drop nothing in vanilla
+            // reach this hook too; for barrels not in the table the guard is
+            // re-applied here (rebirth barrels, which have no guard, always keep
+            // the vanilla call).
+            if (*pot).basebase.members.actorid == BARREL_ACTORID {
+                if barrel_drop_custom_item(pot, roomid, pos) {
+                    // Bit 0 set = "an item was dropped", same as vanilla
+                    return 1;
+                }
+                let base = pot as *const u8;
+                if *base.add(BARREL_HAS_DROP_OFFSET) != 0 || *base.add(BARREL_REBIRTH_OFFSET) != 0 {
+                    return checkParam2OnDestroy(param2_s0x18, roomid, pos, param_4, param_5);
+                }
+                return 0;
             }
 
             // Big pots: vanilla drop id is always 0xFF (nothing drops), so unlike
@@ -3669,8 +3835,8 @@ assert_eq_size!([u8; 12], ApCheckStats);
 // ============================================================================
 
 // Must hold every location that can carry a custom flag (all shuffles + pots
-// + pumpkins is ~1304). Mirrored in the client's ap-ipc crate.
-pub const AP_ITEM_TABLE_MAX: usize = 1344;
+// + pumpkins + barrels is ~1484). Mirrored in the client's ap-ipc crate.
+pub const AP_ITEM_TABLE_MAX: usize = 1536;
 
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
@@ -3695,7 +3861,7 @@ pub struct ApItemInfoTable {
     pub _pad:    u16,
     pub entries: [ApItemInfoEntry; AP_ITEM_TABLE_MAX],
 }
-assert_eq_size!([u8; 8 + 98 * 1344], ApItemInfoTable);
+assert_eq_size!([u8; 8 + 98 * 1536], ApItemInfoTable);
 
 // The live instance of this struct now lives at AP_IPC_ROOT.item_info_table
 // (see ipc.rs) instead of a standalone static. Written once by the Python

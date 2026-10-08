@@ -4822,9 +4822,9 @@ class SSHDContext(CommonContext):
             # Read header (8 bytes) + first entry flag_id (2 bytes)
             header = self.memory.pm.read_bytes(addr, 10)
 
-            # count (u16 at offset 4) must be <= 512
+            # count (u16 at offset 4) must be <= AP_ITEM_TABLE_MAX (1536)
             count = int.from_bytes(header[4:6], 'little')
-            if count > 512:
+            if count > 1536:
                 return False
 
             # _pad (u16 at offset 6) must be 0
@@ -4833,11 +4833,12 @@ class SSHDContext(CommonContext):
                 return False
 
             # First entry flag_id: if count==0, should be 0xFFFF (uninit);
-            # if count>0, should be a valid id (< 1024) or 0xFFFF.
+            # if count>0, should be a valid id (< 2048: group 0 is < 1024, the
+            # extended group 1 pool for pots/pumpkins/barrels is 0x400-0x7FF) or 0xFFFF.
             flag0 = int.from_bytes(header[8:10], 'little')
             if count == 0 and flag0 != 0xFFFF:
                 return False
-            if count > 0 and flag0 > 1023 and flag0 != 0xFFFF:
+            if count > 0 and flag0 > 2047 and flag0 != 0xFFFF:
                 return False
 
             # Strongest check: AP_CHECK_STATS magic should be exactly 12 bytes
@@ -4992,7 +4993,7 @@ class SSHDContext(CommonContext):
           offset 0: magic [u8; 4] = "IT\\x00\\x01"
           offset 4: count (u16)
           offset 6: _pad (u16)
-          offset 8: entries[0..512], each 98 bytes:
+          offset 8: entries[0..1536], each 98 bytes:
             flag_id (u16) + item_name ([u16; 32] = 64 bytes) + player_name ([u16; 16] = 32 bytes)
         
         IMPORTANT: Entries are written BEFORE count to avoid a race condition.
@@ -5038,7 +5039,7 @@ class SSHDContext(CommonContext):
                 entry = struct.pack('<H', flag_id) + item_name_bytes + player_name_bytes
                 entries.append(entry)
             
-            count = min(len(entries), 512)
+            count = min(len(entries), 1536)  # must match AP_ITEM_TABLE_MAX in item.rs / ap-ipc
             
             # Write entries FIRST (offset +8, each 98 bytes)
             # This must happen before writing count to avoid a race where the
@@ -5082,7 +5083,7 @@ class SSHDContext(CommonContext):
         
         try:
             table_addr = self.memory.base_address + self._ap_item_info_offset
-            count = min(len(self.ap_item_info), 512)
+            count = min(len(self.ap_item_info), 1536)  # must match AP_ITEM_TABLE_MAX
             count_data = struct.pack('<HH', count, 0)
             self.memory.pm.write_bytes(table_addr + 4, count_data, len(count_data))
             self._ap_item_info_last_refresh = now

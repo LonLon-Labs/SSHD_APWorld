@@ -46,11 +46,21 @@ AP_PLACEHOLDER_ITEMID = 216
 # ap-ipc crate, the Python client and _build_custom_flag_mapping in the APWorld.
 CUSTOM_FLAG_GROUP1 = 0x400
 
-# Local IDs available to group 1: selector (bits 7-8) 0-3, bit 9 (flag space) is
-# always 0, bit within page 0-126. Local ID 0 means "no flag" to the game's item
-# handler, and every (i & 0x7F) == 0x7F is skipped, as in group 0. That leaves
-# 4 * 127 - 1 = 507 IDs.
-GROUP1_LOCAL_FLAGS = [i for i in range(1, 512) if (i & 0x7F) != 0x7F]
+# Local IDs available to group 1: selector (bits 7-8) 0-3, bit 9 (flag space)
+# 0 = scene flags / 1 = dungeon flags, bit within page 0-126. Both flag spaces
+# exist for save-file scene indexes 26-29 (verified in game: sceneflags and
+# dungeonflags at indexes 26-29 persist across save and reload).
+#   - scene space (bit 9 = 0): local ID 0 means "no flag" to the game's item
+#     handler, and every (i & 0x7F) == 0x7F is skipped, as in group 0. That
+#     leaves 4 * 127 - 1 = 507 IDs. These are the original group 1 IDs.
+#   - dungeon space (bit 9 = 1): 4 * 127 = 508 more IDs (added for barrel
+#     shuffle; local ID 0 is only reserved in scene space, since bit 9 is set).
+# The scene-space IDs come first so the patcher's low-end draw (pop() from the
+# reversed list) is unchanged for seeds that fit in the original 507 IDs. Keep
+# the AP world's group 1 pool (_build_custom_flag_mapping) in sync with this.
+GROUP1_LOCAL_FLAGS_SCENE = [i for i in range(1, 512) if (i & 0x7F) != 0x7F]
+GROUP1_LOCAL_FLAGS_DUNGEON = [i for i in range(512, 1024) if (i & 0x7F) != 0x7F]
+GROUP1_LOCAL_FLAGS = GROUP1_LOCAL_FLAGS_SCENE + GROUP1_LOCAL_FLAGS_DUNGEON
 
 # Story flag set by striking each Goddess Cube (matches GODDESS_CUBE_STORYFLAGS in
 # stagepatchhandler.py and GODDESS_CUBE_STORY_FLAGS in the apworld's Locations.py)
@@ -180,6 +190,15 @@ def determine_check_patches(
                 # Unshuffled pumpkins are never patched. Pumpkin shuffle is new,
                 # so there are no existing seeds to keep stable: burn nothing.
                 custom_flag = 0x3FF
+            elif (
+                "Barrels" in location.types
+                and world.setting("barrel_shuffle") != "off"
+            ):
+                # Barrels share the extended group 1 pool with pots and pumpkins
+                custom_flag = group1_flags.pop()
+            elif "Barrels" in location.types:
+                # Unshuffled barrels are never patched: burn nothing.
+                custom_flag = 0x3FF
             elif "Pots" in location.types:
                 # Unshuffled pots are never patched, so their flag is never used.
                 # Keep burning a group 0 flag while any are left so existing
@@ -201,22 +220,25 @@ def determine_check_patches(
             is_group1 = bool(custom_flag & CUSTOM_FLAG_GROUP1)
             is_pot = "Pots" in location.types
             is_pumpkin = "Pumpkins" in location.types
-            is_group1_type = is_pot or is_pumpkin
+            is_barrel = "Barrels" in location.types
+            is_group1_type = is_pot or is_pumpkin or is_barrel
             group1_off = (
                 world.setting("pot_shuffle") == "off"
                 if is_pot
+                else world.setting("barrel_shuffle") == "off"
+                if is_barrel
                 else world.setting("pumpkin_shuffle") == "off"
             )
             if is_group1 and not is_group1_type:
                 raise Exception(
                     f'"{location.name}" has group 1 custom flag {custom_flag:#x} '
-                    "but isn't a pot or pumpkin."
+                    "but isn't a pot, pumpkin or barrel."
                 )
             # With the shuffle off the location is never patched, so its flag is unused
             if is_group1_type and not group1_off and not is_group1:
                 raise Exception(
                     f'"{location.name}" has group 0 custom flag '
-                    f"{custom_flag:#x}; pots and pumpkins must use group 1."
+                    f"{custom_flag:#x}; pots, pumpkins and barrels must use group 1."
                 )
 
         original_itemid = 0

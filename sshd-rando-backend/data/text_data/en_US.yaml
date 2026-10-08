@@ -9041,3 +9041,813 @@
   standard: Bug Heaven - Big Pot 7
   pretty: Bug Heaven - Big Pot 7
   cryptic: smashing <g<giant pots>> in a <g<bug paradise>>
+
+- name: Central Skyloft - Barrel 1
+  standard: Central Skyloft - Barrel 1
+  pretty: Central Skyloft - Barrel 1
+  cryptic: smashing <b<barrels>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Barrel 2
+  standard: Central Skyloft - Barrel 2
+  pretty: Central Skyloft - Barrel 2
+  cryptic: smashing <b<barrels>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Barrel 3
+  standard: Central Skyloft - Barrel 3
+  pretty: Central Skyloft - Barrel 3
+  cryptic: smashing <b<barrels>> in the <b<sky's town square>>
+
+- name: Fire Node - Barrel 1
+  standard: Fire Node - Barrel 1
+  pretty: Fire Node - Barrel 1
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 2
+  standard: Fire Node - Barrel 2
+  pretty: Fire Node - Barrel 2
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 3
+  standard: Fire Node - Barrel 3
+  pretty: Fire Node - Barrel 3
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 4
+  standard: Fire Node - Barrel 4
+  pretty: Fire Node - Barrel 4
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 5
+  standard: Fire Node - Barrel 5
+  pretty: Fire Node - Barrel 5
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 6
+  standard: Fire Node - Barrel 6
+  pretty: Fire Node - Barrel 6
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 7
+  standard: Fire Node - Barrel 7
+  pretty: Fire Node - Barrel 7
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 8
+  standard: Fire Node - Barrel 8
+  pretty: Fire Node - Barrel 8
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 9
+  standard: Fire Node - Barrel 9
+  pretty: Fire Node - Barrel 9
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 10
+  standard: Fire Node - Barrel 10
+  pretty: Fire Node - Barrel 10
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 11
+  standard: Fire Node - Barrel 11
+  pretty: Fire Node - Barrel 11
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Knight Academy - Barrel 1
+  standard: Knight Academy - Barrel 1
+  pretty: Knight Academy - Barrel 1
+  cryptic: smashing <b<barrels>> at a <b<school for knights>>
+
+- name: LMF Armos Fight Room - Barrel 1
+  standard: LMF Armos Fight Room - Barrel 1
+  pretty: LMF Armos Fight Room - Barrel 1
+  cryptic: breaking <y<barrels>> near a <y<statue that wakes>>
+
+- name: LMF Armos Fight Room - Barrel 2
+  standard: LMF Armos Fight Room - Barrel 2
+  pretty: LMF Armos Fight Room - Barrel 2
+  cryptic: breaking <y<barrels>> near a <y<statue that wakes>>
+
+- name: LMF Big Hub South - Barrel 1
+  standard: LMF Big Hub South - Barrel 1
+  pretty: LMF Big Hub South - Barrel 1
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 2
+  standard: LMF Big Hub South - Barrel 2
+  pretty: LMF Big Hub South - Barrel 2
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 3
+  standard: LMF Big Hub South - Barrel 3
+  pretty: LMF Big Hub South - Barrel 3
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 4
+  standard: LMF Big Hub South - Barrel 4
+  pretty: LMF Big Hub South - Barrel 4
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 5
+  standard: LMF Big Hub South - Barrel 5
+  pretty: LMF Big Hub South - Barrel 5
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 6
+  standard: LMF Big Hub South - Barrel 6
+  pretty: LMF Big Hub South - Barrel 6
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 7
+  standard: LMF Big Hub South - Barrel 7
+  pretty: LMF Big Hub South - Barrel 7
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 8
+  standard: LMF Big Hub South - Barrel 8
+  pretty: LMF Big Hub South - Barrel 8
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 9
+  standard: LMF Big Hub South - Barrel 9
+  pretty: LMF Big Hub South - Barrel 9
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 10
+  standard: LMF Big Hub South - Barrel 10
+  pretty: LMF Big Hub South - Barrel 10
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 11
+  standard: LMF Big Hub South - Barrel 11
+  pretty: LMF Big Hub South - Barrel 11
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 12
+  standard: LMF Big Hub South - Barrel 12
+  pretty: LMF Big Hub South - Barrel 12
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 13
+  standard: LMF Big Hub South - Barrel 13
+  pretty: LMF Big Hub South - Barrel 13
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 14
+  standard: LMF Big Hub South - Barrel 14
+  pretty: LMF Big Hub South - Barrel 14
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 15
+  standard: LMF Big Hub South - Barrel 15
+  pretty: LMF Big Hub South - Barrel 15
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 16
+  standard: LMF Big Hub South - Barrel 16
+  pretty: LMF Big Hub South - Barrel 16
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Boss Key Room - Barrel 1
+  standard: LMF Boss Key Room - Barrel 1
+  pretty: LMF Boss Key Room - Barrel 1
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 2
+  standard: LMF Boss Key Room - Barrel 2
+  pretty: LMF Boss Key Room - Barrel 2
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 3
+  standard: LMF Boss Key Room - Barrel 3
+  pretty: LMF Boss Key Room - Barrel 3
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 4
+  standard: LMF Boss Key Room - Barrel 4
+  pretty: LMF Boss Key Room - Barrel 4
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 5
+  standard: LMF Boss Key Room - Barrel 5
+  pretty: LMF Boss Key Room - Barrel 5
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 6
+  standard: LMF Boss Key Room - Barrel 6
+  pretty: LMF Boss Key Room - Barrel 6
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 7
+  standard: LMF Boss Key Room - Barrel 7
+  pretty: LMF Boss Key Room - Barrel 7
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 8
+  standard: LMF Boss Key Room - Barrel 8
+  pretty: LMF Boss Key Room - Barrel 8
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 9
+  standard: LMF Boss Key Room - Barrel 9
+  pretty: LMF Boss Key Room - Barrel 9
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 10
+  standard: LMF Boss Key Room - Barrel 10
+  pretty: LMF Boss Key Room - Barrel 10
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 11
+  standard: LMF Boss Key Room - Barrel 11
+  pretty: LMF Boss Key Room - Barrel 11
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 12
+  standard: LMF Boss Key Room - Barrel 12
+  pretty: LMF Boss Key Room - Barrel 12
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 13
+  standard: LMF Boss Key Room - Barrel 13
+  pretty: LMF Boss Key Room - Barrel 13
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 14
+  standard: LMF Boss Key Room - Barrel 14
+  pretty: LMF Boss Key Room - Barrel 14
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF First Room - Barrel 1
+  standard: LMF First Room - Barrel 1
+  pretty: LMF First Room - Barrel 1
+  cryptic: breaking <y<barrels>> at the start of a <y<mining facility>>
+
+- name: LMF First Room - Barrel 2
+  standard: LMF First Room - Barrel 2
+  pretty: LMF First Room - Barrel 2
+  cryptic: breaking <y<barrels>> at the start of a <y<mining facility>>
+
+- name: LMF First Room - Barrel 3
+  standard: LMF First Room - Barrel 3
+  pretty: LMF First Room - Barrel 3
+  cryptic: breaking <y<barrels>> at the start of a <y<mining facility>>
+
+- name: LMF First Room - Barrel 4
+  standard: LMF First Room - Barrel 4
+  pretty: LMF First Room - Barrel 4
+  cryptic: breaking <y<barrels>> at the start of a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 1
+  standard: LMF First West Room - Barrel 1
+  pretty: LMF First West Room - Barrel 1
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 2
+  standard: LMF First West Room - Barrel 2
+  pretty: LMF First West Room - Barrel 2
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 3
+  standard: LMF First West Room - Barrel 3
+  pretty: LMF First West Room - Barrel 3
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 4
+  standard: LMF First West Room - Barrel 4
+  pretty: LMF First West Room - Barrel 4
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 5
+  standard: LMF First West Room - Barrel 5
+  pretty: LMF First West Room - Barrel 5
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 6
+  standard: LMF First West Room - Barrel 6
+  pretty: LMF First West Room - Barrel 6
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF Hop Across Boxes Room - Barrel 1
+  standard: LMF Hop Across Boxes Room - Barrel 1
+  pretty: LMF Hop Across Boxes Room - Barrel 1
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Hop Across Boxes Room - Barrel 2
+  standard: LMF Hop Across Boxes Room - Barrel 2
+  pretty: LMF Hop Across Boxes Room - Barrel 2
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Hop Across Boxes Room - Barrel 3
+  standard: LMF Hop Across Boxes Room - Barrel 3
+  pretty: LMF Hop Across Boxes Room - Barrel 3
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Hop Across Boxes Room - Barrel 4
+  standard: LMF Hop Across Boxes Room - Barrel 4
+  pretty: LMF Hop Across Boxes Room - Barrel 4
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Hop Across Boxes Room - Barrel 5
+  standard: LMF Hop Across Boxes Room - Barrel 5
+  pretty: LMF Hop Across Boxes Room - Barrel 5
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Hop Across Boxes Room - Barrel 6
+  standard: LMF Hop Across Boxes Room - Barrel 6
+  pretty: LMF Hop Across Boxes Room - Barrel 6
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Key Locked Room - Barrel 1
+  standard: LMF Key Locked Room - Barrel 1
+  pretty: LMF Key Locked Room - Barrel 1
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 2
+  standard: LMF Key Locked Room - Barrel 2
+  pretty: LMF Key Locked Room - Barrel 2
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 3
+  standard: LMF Key Locked Room - Barrel 3
+  pretty: LMF Key Locked Room - Barrel 3
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 4
+  standard: LMF Key Locked Room - Barrel 4
+  pretty: LMF Key Locked Room - Barrel 4
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 5
+  standard: LMF Key Locked Room - Barrel 5
+  pretty: LMF Key Locked Room - Barrel 5
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 6
+  standard: LMF Key Locked Room - Barrel 6
+  pretty: LMF Key Locked Room - Barrel 6
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 7
+  standard: LMF Key Locked Room - Barrel 7
+  pretty: LMF Key Locked Room - Barrel 7
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 8
+  standard: LMF Key Locked Room - Barrel 8
+  pretty: LMF Key Locked Room - Barrel 8
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 9
+  standard: LMF Key Locked Room - Barrel 9
+  pretty: LMF Key Locked Room - Barrel 9
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 10
+  standard: LMF Key Locked Room - Barrel 10
+  pretty: LMF Key Locked Room - Barrel 10
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: Lanayru Caves - Barrel 1
+  standard: Lanayru Caves - Barrel 1
+  pretty: Lanayru Caves - Barrel 1
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 2
+  standard: Lanayru Caves - Barrel 2
+  pretty: Lanayru Caves - Barrel 2
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 3
+  standard: Lanayru Caves - Barrel 3
+  pretty: Lanayru Caves - Barrel 3
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 4
+  standard: Lanayru Caves - Barrel 4
+  pretty: Lanayru Caves - Barrel 4
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 5
+  standard: Lanayru Caves - Barrel 5
+  pretty: Lanayru Caves - Barrel 5
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 6
+  standard: Lanayru Caves - Barrel 6
+  pretty: Lanayru Caves - Barrel 6
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 7
+  standard: Lanayru Caves - Barrel 7
+  pretty: Lanayru Caves - Barrel 7
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lightning Node - Barrel 1
+  standard: Lightning Node - Barrel 1
+  pretty: Lightning Node - Barrel 1
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 2
+  standard: Lightning Node - Barrel 2
+  pretty: Lightning Node - Barrel 2
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 3
+  standard: Lightning Node - Barrel 3
+  pretty: Lightning Node - Barrel 3
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 4
+  standard: Lightning Node - Barrel 4
+  pretty: Lightning Node - Barrel 4
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 5
+  standard: Lightning Node - Barrel 5
+  pretty: Lightning Node - Barrel 5
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 6
+  standard: Lightning Node - Barrel 6
+  pretty: Lightning Node - Barrel 6
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 7
+  standard: Lightning Node - Barrel 7
+  pretty: Lightning Node - Barrel 7
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 8
+  standard: Lightning Node - Barrel 8
+  pretty: Lightning Node - Barrel 8
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 9
+  standard: Lightning Node - Barrel 9
+  pretty: Lightning Node - Barrel 9
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 10
+  standard: Lightning Node - Barrel 10
+  pretty: Lightning Node - Barrel 10
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 11
+  standard: Lightning Node - Barrel 11
+  pretty: Lightning Node - Barrel 11
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Pirate Stronghold Dock - Barrel 1
+  standard: Pirate Stronghold Dock - Barrel 1
+  pretty: Pirate Stronghold Dock - Barrel 1
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 2
+  standard: Pirate Stronghold Dock - Barrel 2
+  pretty: Pirate Stronghold Dock - Barrel 2
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 3
+  standard: Pirate Stronghold Dock - Barrel 3
+  pretty: Pirate Stronghold Dock - Barrel 3
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 4
+  standard: Pirate Stronghold Dock - Barrel 4
+  pretty: Pirate Stronghold Dock - Barrel 4
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 5
+  standard: Pirate Stronghold Dock - Barrel 5
+  pretty: Pirate Stronghold Dock - Barrel 5
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 6
+  standard: Pirate Stronghold Dock - Barrel 6
+  pretty: Pirate Stronghold Dock - Barrel 6
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 7
+  standard: Pirate Stronghold Dock - Barrel 7
+  pretty: Pirate Stronghold Dock - Barrel 7
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 8
+  standard: Pirate Stronghold Dock - Barrel 8
+  pretty: Pirate Stronghold Dock - Barrel 8
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 9
+  standard: Pirate Stronghold Dock - Barrel 9
+  pretty: Pirate Stronghold Dock - Barrel 9
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 10
+  standard: Pirate Stronghold Dock - Barrel 10
+  pretty: Pirate Stronghold Dock - Barrel 10
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 11
+  standard: Pirate Stronghold Dock - Barrel 11
+  pretty: Pirate Stronghold Dock - Barrel 11
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 12
+  standard: Pirate Stronghold Dock - Barrel 12
+  pretty: Pirate Stronghold Dock - Barrel 12
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Interior - Barrel 1
+  standard: Pirate Stronghold Interior - Barrel 1
+  pretty: Pirate Stronghold Interior - Barrel 1
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 2
+  standard: Pirate Stronghold Interior - Barrel 2
+  pretty: Pirate Stronghold Interior - Barrel 2
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 3
+  standard: Pirate Stronghold Interior - Barrel 3
+  pretty: Pirate Stronghold Interior - Barrel 3
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 4
+  standard: Pirate Stronghold Interior - Barrel 4
+  pretty: Pirate Stronghold Interior - Barrel 4
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 5
+  standard: Pirate Stronghold Interior - Barrel 5
+  pretty: Pirate Stronghold Interior - Barrel 5
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 6
+  standard: Pirate Stronghold Interior - Barrel 6
+  pretty: Pirate Stronghold Interior - Barrel 6
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 7
+  standard: Pirate Stronghold Interior - Barrel 7
+  pretty: Pirate Stronghold Interior - Barrel 7
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 8
+  standard: Pirate Stronghold Interior - Barrel 8
+  pretty: Pirate Stronghold Interior - Barrel 8
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 9
+  standard: Pirate Stronghold Interior - Barrel 9
+  pretty: Pirate Stronghold Interior - Barrel 9
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 10
+  standard: Pirate Stronghold Interior - Barrel 10
+  pretty: Pirate Stronghold Interior - Barrel 10
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 11
+  standard: Pirate Stronghold Interior - Barrel 11
+  pretty: Pirate Stronghold Interior - Barrel 11
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 12
+  standard: Pirate Stronghold Interior - Barrel 12
+  pretty: Pirate Stronghold Interior - Barrel 12
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 13
+  standard: Pirate Stronghold Interior - Barrel 13
+  pretty: Pirate Stronghold Interior - Barrel 13
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 14
+  standard: Pirate Stronghold Interior - Barrel 14
+  pretty: Pirate Stronghold Interior - Barrel 14
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 15
+  standard: Pirate Stronghold Interior - Barrel 15
+  pretty: Pirate Stronghold Interior - Barrel 15
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 16
+  standard: Pirate Stronghold Interior - Barrel 16
+  pretty: Pirate Stronghold Interior - Barrel 16
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 17
+  standard: Pirate Stronghold Interior - Barrel 17
+  pretty: Pirate Stronghold Interior - Barrel 17
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: SK Sacred Power of Nayru Room - Barrel 1
+  standard: SK Sacred Power of Nayru Room - Barrel 1
+  pretty: SK Sacred Power of Nayru Room - Barrel 1
+  cryptic: breaking <b<barrels>> in a <b<sky fortress room of wisdom>>
+
+- name: SK Sacred Power of Nayru Room - Barrel 2
+  standard: SK Sacred Power of Nayru Room - Barrel 2
+  pretty: SK Sacred Power of Nayru Room - Barrel 2
+  cryptic: breaking <b<barrels>> in a <b<sky fortress room of wisdom>>
+
+- name: SK Sandship Room West - Barrel 1
+  standard: SK Sandship Room West - Barrel 1
+  pretty: SK Sandship Room West - Barrel 1
+  cryptic: breaking <b<barrels>> in a <b<sky fortress ship room>>
+
+- name: SK Sandship Room West - Barrel 2
+  standard: SK Sandship Room West - Barrel 2
+  pretty: SK Sandship Room West - Barrel 2
+  cryptic: breaking <b<barrels>> in a <b<sky fortress ship room>>
+
+- name: Sandship Before Ship's Bow - Barrel 1
+  standard: Sandship Before Ship's Bow - Barrel 1
+  pretty: Sandship Before Ship's Bow - Barrel 1
+  cryptic: breaking <b<barrels>> near the <b<bow of a ghost ship>>
+
+- name: Sandship Boss Room - Barrel 1
+  standard: Sandship Boss Room - Barrel 1
+  pretty: Sandship Boss Room - Barrel 1
+  cryptic: breaking <r<barrels>> while <r<escaping a sinking ship>>
+
+- name: Sandship Boss Room - Barrel 2
+  standard: Sandship Boss Room - Barrel 2
+  pretty: Sandship Boss Room - Barrel 2
+  cryptic: breaking <r<barrels>> while <r<escaping a sinking ship>>
+
+- name: Sandship Boss Room - Barrel 3
+  standard: Sandship Boss Room - Barrel 3
+  pretty: Sandship Boss Room - Barrel 3
+  cryptic: breaking <r<barrels>> while <r<escaping a sinking ship>>
+
+- name: Sandship Boss Room - Barrel 4
+  standard: Sandship Boss Room - Barrel 4
+  pretty: Sandship Boss Room - Barrel 4
+  cryptic: breaking <r<barrels>> while <r<escaping a sinking ship>>
+
+- name: Sandship Boss Room - Barrel 5
+  standard: Sandship Boss Room - Barrel 5
+  pretty: Sandship Boss Room - Barrel 5
+  cryptic: breaking <r<barrels>> while <r<escaping a sinking ship>>
+
+- name: Sandship Brig - Barrel 1
+  standard: Sandship Brig - Barrel 1
+  pretty: Sandship Brig - Barrel 1
+  cryptic: breaking <b<barrels>> in the <b<belly of a ghost ship>>
+
+- name: Sandship Brig - Barrel 2
+  standard: Sandship Brig - Barrel 2
+  pretty: Sandship Brig - Barrel 2
+  cryptic: breaking <b<barrels>> in the <b<belly of a ghost ship>>
+
+- name: Sandship Brig - Barrel 3
+  standard: Sandship Brig - Barrel 3
+  pretty: Sandship Brig - Barrel 3
+  cryptic: breaking <b<barrels>> in the <b<belly of a ghost ship>>
+
+- name: Sandship Brig - Barrel 4
+  standard: Sandship Brig - Barrel 4
+  pretty: Sandship Brig - Barrel 4
+  cryptic: breaking <b<barrels>> in the <b<belly of a ghost ship>>
+
+- name: Sandship Corridor - Barrel 1
+  standard: Sandship Corridor - Barrel 1
+  pretty: Sandship Corridor - Barrel 1
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 2
+  standard: Sandship Corridor - Barrel 2
+  pretty: Sandship Corridor - Barrel 2
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 3
+  standard: Sandship Corridor - Barrel 3
+  pretty: Sandship Corridor - Barrel 3
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 4
+  standard: Sandship Corridor - Barrel 4
+  pretty: Sandship Corridor - Barrel 4
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 5
+  standard: Sandship Corridor - Barrel 5
+  pretty: Sandship Corridor - Barrel 5
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 6
+  standard: Sandship Corridor - Barrel 6
+  pretty: Sandship Corridor - Barrel 6
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 7
+  standard: Sandship Corridor - Barrel 7
+  pretty: Sandship Corridor - Barrel 7
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 8
+  standard: Sandship Corridor - Barrel 8
+  pretty: Sandship Corridor - Barrel 8
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Main Deck - Barrel 1
+  standard: Sandship Main Deck - Barrel 1
+  pretty: Sandship Main Deck - Barrel 1
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 2
+  standard: Sandship Main Deck - Barrel 2
+  pretty: Sandship Main Deck - Barrel 2
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 3
+  standard: Sandship Main Deck - Barrel 3
+  pretty: Sandship Main Deck - Barrel 3
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 4
+  standard: Sandship Main Deck - Barrel 4
+  pretty: Sandship Main Deck - Barrel 4
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 5
+  standard: Sandship Main Deck - Barrel 5
+  pretty: Sandship Main Deck - Barrel 5
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 6
+  standard: Sandship Main Deck - Barrel 6
+  pretty: Sandship Main Deck - Barrel 6
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 7
+  standard: Sandship Main Deck - Barrel 7
+  pretty: Sandship Main Deck - Barrel 7
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 8
+  standard: Sandship Main Deck - Barrel 8
+  pretty: Sandship Main Deck - Barrel 8
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Port Rooms - Barrel 1
+  standard: Sandship Port Rooms - Barrel 1
+  pretty: Sandship Port Rooms - Barrel 1
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's port rooms>>
+
+- name: Sandship Port Rooms - Barrel 2
+  standard: Sandship Port Rooms - Barrel 2
+  pretty: Sandship Port Rooms - Barrel 2
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's port rooms>>
+
+- name: Sandship Port Rooms - Barrel 3
+  standard: Sandship Port Rooms - Barrel 3
+  pretty: Sandship Port Rooms - Barrel 3
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's port rooms>>
+
+- name: Sandship Port Rooms - Barrel 4
+  standard: Sandship Port Rooms - Barrel 4
+  pretty: Sandship Port Rooms - Barrel 4
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's port rooms>>
+
+- name: Sandship Starboard Rooms - Barrel 1
+  standard: Sandship Starboard Rooms - Barrel 1
+  pretty: Sandship Starboard Rooms - Barrel 1
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's starboard rooms>>
+
+- name: Sandship Starboard Rooms - Barrel 2
+  standard: Sandship Starboard Rooms - Barrel 2
+  pretty: Sandship Starboard Rooms - Barrel 2
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's starboard rooms>>
+
+- name: Sandship Treasure Room - Barrel 1
+  standard: Sandship Treasure Room - Barrel 1
+  pretty: Sandship Treasure Room - Barrel 1
+  cryptic: breaking <y<barrels>> by a <y<ship's treasure>>
+
+- name: Sandship Treasure Room - Barrel 2
+  standard: Sandship Treasure Room - Barrel 2
+  pretty: Sandship Treasure Room - Barrel 2
+  cryptic: breaking <y<barrels>> by a <y<ship's treasure>>
+
+- name: Shipyard End of Minecart Ride - Barrel 1
+  standard: Shipyard End of Minecart Ride - Barrel 1
+  pretty: Shipyard End of Minecart Ride - Barrel 1
+  cryptic: breaking <b<barrels>> at the <b<end of a minecart ride>>
+
+- name: Shipyard End of Minecart Ride - Barrel 2
+  standard: Shipyard End of Minecart Ride - Barrel 2
+  pretty: Shipyard End of Minecart Ride - Barrel 2
+  cryptic: breaking <b<barrels>> at the <b<end of a minecart ride>>
+
+- name: Shipyard End of Minecart Ride - Barrel 3
+  standard: Shipyard End of Minecart Ride - Barrel 3
+  pretty: Shipyard End of Minecart Ride - Barrel 3
+  cryptic: breaking <b<barrels>> at the <b<end of a minecart ride>>
+
+- name: Shipyard End of Minecart Ride - Barrel 4
+  standard: Shipyard End of Minecart Ride - Barrel 4
+  pretty: Shipyard End of Minecart Ride - Barrel 4
+  cryptic: breaking <b<barrels>> at the <b<end of a minecart ride>>

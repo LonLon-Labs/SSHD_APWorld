@@ -96,6 +96,17 @@
     - "off": "Pumpkins will drop their vanilla items."
     - "on": "Breaking a pumpkin in the Skyloft pumpkin patches or at Lumpy Pumpkin can give a randomized item. Pumpkins revert to their vanilla drop after the item has been collected."
 
+- name: barrel_shuffle
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Barrel Shuffle
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Barrels will drop their vanilla items."
+    - "on": "Breaking a barrel can give a randomized item. The exploding barrels in the Sand Sea are not included. Barrels revert to their vanilla drop after the item has been collected."
+
 - name: hidden_item_shuffle
   tracker_important: true
   default_option: "off"

@@ -951,6 +951,58 @@ def patch_big_pot(
     return (_f32_bits(big_pot["posx"]), _f32_bits(big_pot["posz"]), item_word, custom_flag)
 
 
+def patch_barrel(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+) -> tuple[int, int, int, int] | None:
+    """Barrel shuffle (Barrel, dAcOBarrel_c; actor profile OBJ_BARREL, 0x209).
+
+    Barrel params2 is 0xFFFFFF in the low 24 bits for every barrel and the drop
+    mode lives in params1, so there is nothing usable to write into the BZS
+    object. Like pumpkins and big pots, this leaves the object untouched and
+    returns a table entry keyed by the barrel's position (X/Z as raw f32 bits).
+    The entries are written to the BARREL_TABLE_* config block by
+    init_global_variables and looked up by pot_spawn_custom_item in item.rs.
+
+    The same physical barrel can appear on several layers of a room with the
+    same position (e.g. F001r and F303 layers 2/3/4); those share ONE table
+    entry and one location, so only one of them has to be passed here.
+
+    Returns (px_bits, pz_bits, item_word, flag), or None to keep the vanilla
+    behavior. item_word: bits 0-8 item id, bits 9-12 trap nibble (0xF = not a
+    trap). flag: the low 10 bits of the group 1 custom flag.
+    """
+    id = int(object_id_str, 16)
+
+    barrel: dict | None = next(
+        filter(lambda x: x["name"] == "Barrel" and x["id"] == id, bzs["OBJ "]), None
+    )
+
+    if barrel is None:
+        raise Exception(f"No barrel (Barrel) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla behavior
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return None
+
+    # Like pots, the game treats every barrel flag as an extended (group 1,
+    # bit 10) flag; only the low 10 bits are stored.
+    if not (custom_flag & 0x400):
+        raise Exception(
+            f"Barrel '{hex(id)}' was given group 0 custom flag {custom_flag:#x}; "
+            "barrels must use group 1 flags (bit 10 set)."
+        )
+    custom_flag &= 0x3FF
+
+    trap_nibble = (254 - trapid) if trapid else 0xF
+    if not (0 <= trap_nibble <= 0xF):
+        raise Exception(f"Barrel '{hex(id)}' has invalid trap id {trapid}.")
+    if not (0 <= itemid <= 0x1FF):
+        raise Exception(f"Barrel '{hex(id)}' has item id {itemid} that doesn't fit in 9 bits.")
+
+    item_word = (itemid & 0x1FF) | (trap_nibble << 9)
+    return (_f32_bits(barrel["posx"]), _f32_bits(barrel["posz"]), item_word, custom_flag)
+
+
 def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0x3FF):
 
     academy_bell: dict | None = next(
@@ -1352,6 +1404,10 @@ class StagePatchHandler:
         # keyed in the game by position. Written to the BIG_POT_TABLE_* config block
         # via init_global_variables (see patch_big_pot). Max 16 entries.
         self.big_pot_entries: list[tuple[int, int, int, int]] = []
+        # Barrel Shuffle: (px_bits, pz_bits, item_word, flag) per patched barrel,
+        # keyed in the game by position. Written to the BARREL_TABLE_* config block
+        # via init_global_variables (see patch_barrel). Max 192 entries.
+        self.barrel_entries: list[tuple[int, int, int, int]] = []
         # Global symbol initializers consumed by ASM global init.
         # Format: {"type": "symbol", "symbol": <name>, "value": <int>}.
         self.global_patches: list[dict] = []
@@ -1713,6 +1769,27 @@ class StagePatchHandler:
                                     "More than 16 big pots have items; BIG_POT_TABLE_ENTRIES only holds 16."
                                 )
                             self.big_pot_entries.append(big_pot_entry)
+                    elif object_name == "Barrel":
+                        barrel_entry = patch_barrel(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                        if barrel_entry is not None:
+                            for existing in self.barrel_entries:
+                                if existing[0] == barrel_entry[0] and existing[1] == barrel_entry[1]:
+                                    raise Exception(
+                                        f"Two barrels share the position {barrel_entry[0]:#010x}/{barrel_entry[1]:#010x}; "
+                                        "the position-keyed barrel table needs unique positions (the same "
+                                        "barrel on several layers must be one location)."
+                                    )
+                            if len(self.barrel_entries) >= 192:
+                                raise Exception(
+                                    "More than 192 barrels have items; BARREL_TABLE_ENTRIES only holds 192."
+                                )
+                            self.barrel_entries.append(barrel_entry)
                     elif object_name == "Bell":
                         patch_academy_bell(
                             room_bzs["LAY "][f"l{layer}"],

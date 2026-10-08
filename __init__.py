@@ -597,6 +597,7 @@ class SSHDWorld(World):
         "stamina_fruit_shuffle": ("stamina_fruit_shuffle", "toggle", None),
         "pot_shuffle": ("pot_shuffle", "toggle", None),
         "pumpkin_shuffle": ("pumpkin_shuffle", "toggle", None),
+        "barrel_shuffle": ("barrel_shuffle", "toggle", None),
         "npc_closet_shuffle": ("npc_closet_shuffle", "toggle_custom", {"randomized": 1, "vanilla": 0}),
         "hidden_item_shuffle": ("hidden_item_shuffle", "toggle", None),
         "rupee_shuffle": ("rupee_shuffle", "choice", {"vanilla": 0, "beginner": 1, "intermediate": 2, "advanced": 3}),
@@ -1098,6 +1099,7 @@ class SSHDWorld(World):
             "Hidden Items":          "hidden_item_shuffle",
             "Pots":                  "pot_shuffle",
             "Pumpkins":              "pumpkin_shuffle",
+            "Barrels":               "barrel_shuffle",
             "Goddess Chests":        "goddess_chest_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",
@@ -1361,6 +1363,7 @@ class SSHDWorld(World):
                         "Hidden Items":          "hidden_item_shuffle",
                         "Pots":                  "pot_shuffle",
                         "Pumpkins":              "pumpkin_shuffle",
+                        "Barrels":               "barrel_shuffle",
                         "Goddess Chests":        "goddess_chest_shuffle",
                         "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
                         "Underground Rupees":    "underground_rupee_shuffle",
@@ -4114,6 +4117,7 @@ class SSHDWorld(World):
         settings_dict["stamina_fruit_shuffle"] = "on" if self.options.stamina_fruit_shuffle.value else "off"
         settings_dict["pot_shuffle"] = "on" if self.options.pot_shuffle.value else "off"
         settings_dict["pumpkin_shuffle"] = "on" if self.options.pumpkin_shuffle.value else "off"
+        settings_dict["barrel_shuffle"] = "on" if self.options.barrel_shuffle.value else "off"
         settings_dict["npc_closet_shuffle"] = "randomized" if self.options.npc_closet_shuffle.value else "vanilla"
         settings_dict["hidden_item_shuffle"] = "on" if self.options.hidden_item_shuffle.value else "off"
         
@@ -4429,7 +4433,15 @@ class SSHDWorld(World):
         # in sync with CUSTOM_FLAG_GROUP1 / GROUP1_LOCAL_FLAGS in the sshd-rando
         # backend (patches/checkpatchhandler.py), item.rs, ap-ipc and SSHDClient.py.
         CUSTOM_FLAG_GROUP1 = 0x400
+        # Scene-space IDs (bit 9 = 0) and dungeon-space IDs (bit 9 = 1) for save-file
+        # scene indexes 26-29. The dungeon-space IDs come FIRST in the list: pop()
+        # takes from the end, so seeds that fit in the original 507 scene-space IDs
+        # keep byte-identical assignments and only overflow into dungeon space
+        # (508 more IDs, added for barrel shuffle). Keep in sync with
+        # GROUP1_LOCAL_FLAGS in the sshd-rando backend (patches/checkpatchhandler.py).
         group1_flags = [
+            CUSTOM_FLAG_GROUP1 | i for i in range(512, 1024) if (i & 0x7F) != 0x7F
+        ] + [
             CUSTOM_FLAG_GROUP1 | i for i in range(1, 512) if (i & 0x7F) != 0x7F
         ]
         
@@ -4445,10 +4457,10 @@ class SSHDWorld(World):
         all_locations.sort(key=lambda loc: loc.address)
 
         pot_locations = [
-            loc for loc in all_locations if any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins"))
+            loc for loc in all_locations if any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels"))
         ]
         other_locations = [
-            loc for loc in all_locations if not any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins"))
+            loc for loc in all_locations if not any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels"))
         ]
         
         # Fail early with a clear message instead of producing a seed where some

@@ -49,6 +49,7 @@
     Knight Academy - Deliver Kikwi to Owlan: Day and 'Retrieve_Oolo'
     Knight Academy - Deliver Cawlin's Letter: Day and Cawlins_Letter
     Knight Academy - Help Fledge Workout: Night and 'Obtain_Stamina_Potion'
+    Knight Academy - Barrel 1: Nothing
 
 - name: Knight Academy Chimney
   hint_region: Knight Academy
@@ -275,6 +276,9 @@
     Central Skyloft - Crystal on Waterfall Island: Night and Quick_Beetle and logic_precise_beetle
     Central Skyloft - Crystal near Bird Statue after Waterfall Cave: Night and Beetle and logic_precise_beetle
     Central Skyloft - Crystal in Loftwing Prison after Waterfall Cave: Night and Beetle and logic_precise_beetle
+    Central Skyloft - Barrel 1: Nothing
+    Central Skyloft - Barrel 2: Nothing
+    Central Skyloft - Barrel 3: Nothing
 
 - name: Bird Nest
   hint_region: Central Skyloft

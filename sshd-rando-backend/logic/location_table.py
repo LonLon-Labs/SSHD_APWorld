@@ -123,6 +123,10 @@ def get_disabled_shuffle_locations(
                 and "Pumpkins" in location.types
             )
             or (
+                settings["barrel_shuffle"].value == "off"
+                and "Barrels" in location.types
+            )
+            or (
                 settings["hidden_item_shuffle"].value == "off"
                 and "Hidden Items" in location.types
             )

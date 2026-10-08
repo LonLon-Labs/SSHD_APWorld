@@ -10762,3 +10762,1299 @@
     - Custom Flag
   Paths:
     - stage/F023/r0/l0/BigTubo/0xFC85
+
+- name: Central Skyloft - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l10/Barrel/0xFDE0
+
+- name: Central Skyloft - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l10/Barrel/0xFDE1
+
+- name: Central Skyloft - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F000/r0/l10/Barrel/0xFDE2
+
+- name: Fire Node - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC10
+
+- name: Fire Node - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC11
+
+- name: Fire Node - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC12
+
+- name: Fire Node - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC13
+
+- name: Fire Node - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC14
+
+- name: Fire Node - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC15
+
+- name: Fire Node - Barrel 7
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC16
+
+- name: Fire Node - Barrel 8
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC17
+
+- name: Fire Node - Barrel 9
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC19
+
+- name: Fire Node - Barrel 10
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC1A
+
+- name: Fire Node - Barrel 11
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_3/r0/l0/Barrel/0xFC1F
+
+- name: Knight Academy - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F001r/r0/l2/Barrel/0xFC7A
+
+- name: LMF Armos Fight Room - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r6/l0/Barrel/0xFC0F
+
+- name: LMF Armos Fight Room - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r6/l0/Barrel/0xFC10
+
+- name: LMF Big Hub South - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC10
+
+- name: LMF Big Hub South - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC11
+
+- name: LMF Big Hub South - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC1B
+
+- name: LMF Big Hub South - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC1C
+
+- name: LMF Big Hub South - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC54
+
+- name: LMF Big Hub South - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC55
+
+- name: LMF Big Hub South - Barrel 7
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC56
+
+- name: LMF Big Hub South - Barrel 8
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC57
+
+- name: LMF Big Hub South - Barrel 9
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC59
+
+- name: LMF Big Hub South - Barrel 10
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC5A
+
+- name: LMF Big Hub South - Barrel 11
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC5E
+
+- name: LMF Big Hub South - Barrel 12
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC5F
+
+- name: LMF Big Hub South - Barrel 13
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC64
+
+- name: LMF Big Hub South - Barrel 14
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC65
+
+- name: LMF Big Hub South - Barrel 15
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC66
+
+- name: LMF Big Hub South - Barrel 16
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r5/l0/Barrel/0xFC67
+
+- name: LMF Boss Key Room - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC2E
+
+- name: LMF Boss Key Room - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC2F
+
+- name: LMF Boss Key Room - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC30
+
+- name: LMF Boss Key Room - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC31
+
+- name: LMF Boss Key Room - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC32
+
+- name: LMF Boss Key Room - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC33
+
+- name: LMF Boss Key Room - Barrel 7
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC34
+
+- name: LMF Boss Key Room - Barrel 8
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC35
+
+- name: LMF Boss Key Room - Barrel 9
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC36
+
+- name: LMF Boss Key Room - Barrel 10
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC37
+
+- name: LMF Boss Key Room - Barrel 11
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC38
+
+- name: LMF Boss Key Room - Barrel 12
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC39
+
+- name: LMF Boss Key Room - Barrel 13
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC4B
+
+- name: LMF Boss Key Room - Barrel 14
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300_1/r8/l0/Barrel/0xFC4C
+
+- name: LMF First Room - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r0/l0/Barrel/0xFC17
+
+- name: LMF First Room - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r0/l0/Barrel/0xFC18
+
+- name: LMF First Room - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r0/l0/Barrel/0xFC1B
+
+- name: LMF First Room - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r0/l0/Barrel/0xFC1C
+
+- name: LMF First West Room - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r3/l0/Barrel/0xFC0E
+
+- name: LMF First West Room - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r3/l0/Barrel/0xFC0F
+
+- name: LMF First West Room - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r3/l0/Barrel/0xFC14
+
+- name: LMF First West Room - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r3/l0/Barrel/0xFC15
+
+- name: LMF First West Room - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r3/l0/Barrel/0xFC16
+
+- name: LMF First West Room - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r3/l0/Barrel/0xFC17
+
+- name: LMF Hop Across Boxes Room - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r4/l0/Barrel/0xFC2C
+
+- name: LMF Hop Across Boxes Room - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r4/l0/Barrel/0xFC2D
+
+- name: LMF Hop Across Boxes Room - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r4/l0/Barrel/0xFC2E
+
+- name: LMF Hop Across Boxes Room - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r4/l0/Barrel/0xFC2F
+
+- name: LMF Hop Across Boxes Room - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r4/l0/Barrel/0xFC30
+
+- name: LMF Hop Across Boxes Room - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r4/l0/Barrel/0xFC31
+
+- name: LMF Key Locked Room - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r2/l0/Barrel/0xFC00
+
+- name: LMF Key Locked Room - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r2/l0/Barrel/0xFC04
+
+- name: LMF Key Locked Room - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r2/l0/Barrel/0xFC05
+
+- name: LMF Key Locked Room - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r2/l0/Barrel/0xFC17
+
+- name: LMF Key Locked Room - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r2/l0/Barrel/0xFC18
+
+- name: LMF Key Locked Room - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r2/l0/Barrel/0xFC2B
+
+- name: LMF Key Locked Room - Barrel 7
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r2/l0/Barrel/0xFC37
+
+- name: LMF Key Locked Room - Barrel 8
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r2/l0/Barrel/0xFC38
+
+- name: LMF Key Locked Room - Barrel 9
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r2/l0/Barrel/0xFC3A
+
+- name: LMF Key Locked Room - Barrel 10
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D300/r2/l0/Barrel/0xFC3B
+
+- name: Lanayru Caves - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l0/Barrel/0xFC1A
+
+- name: Lanayru Caves - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l0/Barrel/0xFC1B
+
+- name: Lanayru Caves - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l0/Barrel/0xFC1C
+
+- name: Lanayru Caves - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l0/Barrel/0xFC1D
+
+- name: Lanayru Caves - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l2/Barrel/0xFC59
+
+- name: Lanayru Caves - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l2/Barrel/0xFC61
+
+- name: Lanayru Caves - Barrel 7
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F303/r0/l2/Barrel/0xFC62
+
+- name: Lightning Node - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC0C
+
+- name: Lightning Node - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC0D
+
+- name: Lightning Node - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC0E
+
+- name: Lightning Node - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC0F
+
+- name: Lightning Node - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC10
+
+- name: Lightning Node - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC11
+
+- name: Lightning Node - Barrel 7
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC12
+
+- name: Lightning Node - Barrel 8
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC14
+
+- name: Lightning Node - Barrel 9
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC15
+
+- name: Lightning Node - Barrel 10
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC16
+
+- name: Lightning Node - Barrel 11
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F300_2/r0/l0/Barrel/0xFC17
+
+- name: Pirate Stronghold Dock - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC0A
+
+- name: Pirate Stronghold Dock - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC0B
+
+- name: Pirate Stronghold Dock - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC0C
+
+- name: Pirate Stronghold Dock - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC0D
+
+- name: Pirate Stronghold Dock - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC0E
+
+- name: Pirate Stronghold Dock - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC0F
+
+- name: Pirate Stronghold Dock - Barrel 7
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC10
+
+- name: Pirate Stronghold Dock - Barrel 8
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC11
+
+- name: Pirate Stronghold Dock - Barrel 9
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC12
+
+- name: Pirate Stronghold Dock - Barrel 10
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC13
+
+- name: Pirate Stronghold Dock - Barrel 11
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC14
+
+- name: Pirate Stronghold Dock - Barrel 12
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_6/r0/l0/Barrel/0xFC15
+
+- name: Pirate Stronghold Interior - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r4/l0/Barrel/0x200C
+
+- name: Pirate Stronghold Interior - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r4/l0/Barrel/0x200D
+
+- name: Pirate Stronghold Interior - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r4/l0/Barrel/0x200E
+
+- name: Pirate Stronghold Interior - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r4/l0/Barrel/0x200F
+
+- name: Pirate Stronghold Interior - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r4/l0/Barrel/0x2010
+
+- name: Pirate Stronghold Interior - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r4/l0/Barrel/0x2011
+
+- name: Pirate Stronghold Interior - Barrel 7
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r4/l0/Barrel/0x2012
+
+- name: Pirate Stronghold Interior - Barrel 8
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r6/l0/Barrel/0x1814
+
+- name: Pirate Stronghold Interior - Barrel 9
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r6/l0/Barrel/0x1815
+
+- name: Pirate Stronghold Interior - Barrel 10
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r6/l0/Barrel/0x1816
+
+- name: Pirate Stronghold Interior - Barrel 11
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r6/l0/Barrel/0x1817
+
+- name: Pirate Stronghold Interior - Barrel 12
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r6/l0/Barrel/0x181B
+
+- name: Pirate Stronghold Interior - Barrel 13
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r6/l0/Barrel/0x181D
+
+- name: Pirate Stronghold Interior - Barrel 14
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r6/l0/Barrel/0x181E
+
+- name: Pirate Stronghold Interior - Barrel 15
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r6/l0/Barrel/0xFC18
+
+- name: Pirate Stronghold Interior - Barrel 16
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r6/l0/Barrel/0xFC19
+
+- name: Pirate Stronghold Interior - Barrel 17
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_2/r6/l0/Barrel/0xFC1A
+
+- name: SK Sacred Power of Nayru Room - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D003_3/r0/l0/Barrel/0xFC19
+
+- name: SK Sacred Power of Nayru Room - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D003_3/r0/l0/Barrel/0xFC1A
+
+- name: SK Sandship Room West - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D003_4/r0/l0/Barrel/0xFC34
+
+- name: SK Sandship Room West - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D003_4/r0/l0/Barrel/0xFC35
+
+- name: Sandship Before Ship's Bow - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r1/l0/Barrel/0xFC01
+
+- name: Sandship Boss Room - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301_1/r0/l0/Barrel/0xFC00
+
+- name: Sandship Boss Room - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301_1/r0/l0/Barrel/0xFC01
+
+- name: Sandship Boss Room - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301_1/r0/l0/Barrel/0xFC02
+
+- name: Sandship Boss Room - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301_1/r0/l0/Barrel/0xFC03
+
+- name: Sandship Boss Room - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301_1/r0/l0/Barrel/0xFC04
+
+- name: Sandship Brig - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r4/l0/Barrel/0xFC00
+
+- name: Sandship Brig - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r4/l0/Barrel/0xFC01
+
+- name: Sandship Brig - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r4/l0/Barrel/0xFC02
+
+- name: Sandship Brig - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r4/l0/Barrel/0xFC03
+
+- name: Sandship Corridor - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r3/l0/Barrel/0xFC03
+
+- name: Sandship Corridor - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r3/l0/Barrel/0xFC04
+
+- name: Sandship Corridor - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r3/l0/Barrel/0xFC06
+
+- name: Sandship Corridor - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r3/l0/Barrel/0xFC07
+
+- name: Sandship Corridor - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r3/l0/Barrel/0xFC08
+
+- name: Sandship Corridor - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r3/l0/Barrel/0xFC09
+
+- name: Sandship Corridor - Barrel 7
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r3/l0/Barrel/0xFC0A
+
+- name: Sandship Corridor - Barrel 8
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r3/l0/Barrel/0xFC0B
+
+- name: Sandship Main Deck - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r0/l0/Barrel/0x0012
+
+- name: Sandship Main Deck - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r0/l0/Barrel/0x0013
+
+- name: Sandship Main Deck - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r0/l0/Barrel/0x0014
+
+- name: Sandship Main Deck - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r0/l0/Barrel/0x0015
+
+- name: Sandship Main Deck - Barrel 5
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r0/l0/Barrel/0xFC1C
+
+- name: Sandship Main Deck - Barrel 6
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r0/l0/Barrel/0xFC1D
+
+- name: Sandship Main Deck - Barrel 7
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r0/l0/Barrel/0xFC1E
+
+- name: Sandship Main Deck - Barrel 8
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r0/l0/Barrel/0xFC1F
+
+- name: Sandship Port Rooms - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r7/l0/Barrel/0xFC01
+
+- name: Sandship Port Rooms - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r7/l0/Barrel/0xFC02
+
+- name: Sandship Port Rooms - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r7/l0/Barrel/0xFC03
+
+- name: Sandship Port Rooms - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r7/l0/Barrel/0xFC04
+
+- name: Sandship Starboard Rooms - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r5/l0/Barrel/0xFC02
+
+- name: Sandship Starboard Rooms - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r5/l0/Barrel/0xFC03
+
+- name: Sandship Treasure Room - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r9/l0/Barrel/0x240A
+
+- name: Sandship Treasure Room - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/D301/r9/l0/Barrel/0x240B
+
+- name: Shipyard End of Minecart Ride - Barrel 1
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_4/r0/l0/Barrel/0x0010
+
+- name: Shipyard End of Minecart Ride - Barrel 2
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_4/r0/l0/Barrel/0x0011
+
+- name: Shipyard End of Minecart Ride - Barrel 3
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_4/r0/l0/Barrel/0x0012
+
+- name: Shipyard End of Minecart Ride - Barrel 4
+  original_item: Green Rupee
+  types:
+    - Barrels
+    - Custom Flag
+  Paths:
+    - stage/F301_4/r0/l0/Barrel/0x0013

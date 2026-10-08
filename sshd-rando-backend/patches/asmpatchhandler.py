@@ -788,6 +788,24 @@ class ASMPatchHandler:
                 )
             init_rw_globals_dict[0x712E54BCB0] = list(big_pot_table)  # BIG_POT_TABLE_*
 
+        # Barrel Shuffle: same position-keyed layout as the pumpkin table, at
+        # BARREL_TABLE_MAGIC 0x712E54E000 / _COUNT 0x712E54E004 / _ENTRIES 0x712E54E008
+        # in symbols.yaml (after RANDOM_MUSIC_DATA; the gap after the big pot table is
+        # too small). Barrel params are unusable, so the game finds each barrel's item
+        # by its X/Z position. Nothing is written (magic stays zero) when no barrel has
+        # an item.
+        barrel_entries = getattr(self, "barrel_entries", [])
+        if barrel_entries:
+            # Must match BARREL_TABLE_MAX in item.rs / symbols.yaml (12 bytes each)
+            assert len(barrel_entries) <= 192, "Too many barrel table entries"
+            barrel_table = bytearray(b"RBRL")  # 0x4C524252 little endian
+            barrel_table += struct.pack("<I", len(barrel_entries))
+            for px_bits, pz_bits, item_word, custom_flag in barrel_entries:
+                barrel_table += struct.pack(
+                    "<IIHH", px_bits, pz_bits, item_word, custom_flag
+                )
+            init_rw_globals_dict[0x712E54E000] = list(barrel_table)  # BARREL_TABLE_*
+
         # Apply additional symbol initializers provided by stage patch setup.
         global_symbol_values: dict[str, int] = getattr(self, "global_symbol_values", {})
         if "EXTRA_DEMISE_COUNT" in global_symbol_values:

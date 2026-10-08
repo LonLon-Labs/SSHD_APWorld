@@ -166,9 +166,14 @@
   dungeon: Sky Keep
   exits:
     SK Sacred Power of Nayru Room: Bow and Clawshots and Practice_Sword
+  locations:
+    SK Sandship Room West - Barrel 1: Nothing
+    SK Sandship Room West - Barrel 2: Nothing
 
 - name: SK Sacred Power of Nayru Room
   exits:
     SK Sandship Room West: Nothing
   locations:
     Sky Keep - Sacred Power of Nayru: Nothing # Run into the floating item.
+    SK Sacred Power of Nayru Room - Barrel 1: Nothing
+    SK Sacred Power of Nayru Room - Barrel 2: Nothing
