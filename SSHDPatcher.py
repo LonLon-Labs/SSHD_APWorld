@@ -349,6 +349,22 @@ def generate_patches(
     # ---- Apply patches (requires ROM) ----
     print("[Patcher] Applying ROM patches (this reads from your ROM extract)...")
 
+    # Load custom Archipelago item model OARCs into cache before patching.
+    # Without this, the stage patcher references ArchipelagoItem(.arc/2.arc)
+    # but the files are missing from cache/oarc, so every Archipelago item
+    # falls back to the green rupee model when a custom model is selected.
+    try:
+        from rando.ArcPatcher import patch_archipelago_item_oarc
+        assets_dir_item = _CURRENT_DIR / "assets"
+        model_setting = ap_settings.get("archipelago_item_model", "archipelago_logo")
+        if isinstance(model_setting, int):
+            model_setting = {0: "letter", 1: "archipelago_logo", 2: "unofficial_archipelago_logo"}.get(
+                model_setting, "archipelago_logo"
+            )
+        patch_archipelago_item_oarc(None, assets_dir_item, model_setting)
+    except Exception as _item_e:
+        print(f"[Patcher] Warning: Could not load Archipelago item OARCs: {_item_e}")
+
     # Load key ring and skeleton key OARCs into cache before patching
     try:
         from rando.ArcPatcher import patch_key_item_oarcs
