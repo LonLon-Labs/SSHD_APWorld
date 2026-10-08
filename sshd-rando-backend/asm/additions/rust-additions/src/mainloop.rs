@@ -178,6 +178,10 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     // Archipelago - Check for items to give from the buffer
     item::archipelago_check_item_buffer();
 
+    // Key Rings / Skeleton Key - re-assert the forced small key counts of the
+    // dungeons (4 for a Key Ring, 5 for the Skeleton Key) every frame.
+    item::reapply_forced_dungeon_keys();
+
     // Decoupled Goddess Cubes - give a cube's item (with the item-get
     // animation) once its story flag has been set by striking it.
     item::handle_goddess_cube_items();

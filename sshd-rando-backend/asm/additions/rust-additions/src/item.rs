@@ -850,6 +850,116 @@ pub fn handle_goddess_cube_items() {
     }
 }
 
+// ============================================================================
+// Forced dungeon small-key counts (Key Rings / Skeleton Key)
+//
+// Ported from the old Python client (ItemSystemIntegration.py
+// `_ensure_dungeon_keys_set` / `reapply_forced_dungeon_keys`). A Key Ring
+// forces its dungeon's small key count (current + obtained nibbles) to 4, the
+// Skeleton Key forces every dungeon to 5, and the value is re-asserted every
+// frame so spending keys on doors never lowers it. A Key Ring arriving after
+// the Skeleton Key never downgrades a dungeon (high-water mark).
+//
+// State: FORCED_DUNGEON_KEYS is a high-water cache. It is (re)seeded from the
+// save file (obtained nibble >= 4 can only come from a forced count, real
+// dungeons contain at most 3 small keys), so no extra save flag is needed and
+// a reboot / reload keeps working. It is cleared on the title screen so a
+// different save file in the same session starts clean.
+// ============================================================================
+
+/// Scene indices (FA.dungeonflags) of the dungeons that have Key Rings. Index
+/// = Key Ring item id - 220 = Small Key item id - 200.
+const DUNGEON_KEY_SCENES: [usize; 7] = [
+    11, // Skyview Temple
+    17, // Lanayru Mining Facility
+    12, // Ancient Cistern
+    15, // Fire Sanctuary
+    18, // Sandship
+    20, // Sky Keep
+    9,  // Lanayru Caves
+];
+
+const KEY_RING_FORCED_COUNT: u16 = 4;
+const SKELETON_FORCED_COUNT: u16 = 5;
+
+static mut FORCED_DUNGEON_KEYS: [u16; 7] = [0; 7];
+
+fn dungeon_key_slot_for_scene(scene_index: usize) -> Option<usize> {
+    DUNGEON_KEY_SCENES.iter().position(|&s| s == scene_index)
+}
+
+/// Raise (never lower) the forced count of a dungeon.
+unsafe fn raise_forced_dungeon_key_count(slot: usize, count: u16) {
+    if count > FORCED_DUNGEON_KEYS[slot] {
+        FORCED_DUNGEON_KEYS[slot] = count;
+    }
+}
+
+/// Current forced key count of a dungeon (0 = not forced). Also picks up a
+/// forced count that is stored in the save file but not yet in the cache.
+unsafe fn forced_dungeon_key_count(slot: usize) -> u16 {
+    if !FILE_MGR.is_null() {
+        let key_word = (*FILE_MGR).FA.dungeonflags[DUNGEON_KEY_SCENES[slot]][1];
+        let obtained = (key_word >> 4) & 0xF;
+        if obtained >= SKELETON_FORCED_COUNT {
+            raise_forced_dungeon_key_count(slot, SKELETON_FORCED_COUNT);
+        } else if obtained >= KEY_RING_FORCED_COUNT {
+            raise_forced_dungeon_key_count(slot, KEY_RING_FORCED_COUNT);
+        }
+    }
+    FORCED_DUNGEON_KEYS[slot]
+}
+
+/// Write `count` into both nibbles (current + obtained) of a dungeon's key
+/// counter. The save file (FA) is per-scene so it is always safe to write;
+/// STATIC_DUNGEONFLAGS only holds the currently loaded dungeon, so it is only
+/// written when that dungeon is the current one.
+unsafe fn write_dungeon_key_count(scene_index: usize, count: u16) {
+    let key_bits = (count << 4) | count;
+
+    if !FILE_MGR.is_null() {
+        let old = (*FILE_MGR).FA.dungeonflags[scene_index][1];
+        let new = (old & 0xFF00) | key_bits;
+        if old != new {
+            (*FILE_MGR).FA.dungeonflags[scene_index][1] = new;
+        }
+    }
+
+    if !DUNGEONFLAG_MGR.is_null() && (*DUNGEONFLAG_MGR).sceneindex as usize == scene_index {
+        let old = STATIC_DUNGEONFLAGS[1];
+        let new = (old & 0xFF00) | key_bits;
+        if old != new {
+            STATIC_DUNGEONFLAGS[1] = new;
+        }
+    }
+}
+
+/// Re-assert every forced dungeon key count. Called once per frame from the
+/// main loop.
+pub fn reapply_forced_dungeon_keys() {
+    unsafe {
+        // Title screen / save selection: drop the cache so another save file
+        // doesn't inherit this one's forced counts.
+        if &CURRENT_STAGE_NAME[..4] == b"F000"
+            && (CURRENT_LAYER == 26 || CURRENT_LAYER == 28 || CURRENT_LAYER == 29)
+        {
+            FORCED_DUNGEON_KEYS = [0; 7];
+            return;
+        }
+
+        if FILE_MGR.is_null() {
+            return;
+        }
+
+        for slot in 0..DUNGEON_KEY_SCENES.len() {
+            let count = forced_dungeon_key_count(slot);
+            if count > 0 {
+                write_dungeon_key_count(DUNGEON_KEY_SCENES[slot], count);
+            }
+        }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
     const BK_TO_FLAGINDEX: [usize; 7] = [
@@ -882,21 +992,8 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
         20, // SK MAP - item id 213
     ];
 
-    // Key rings: one per dungeon, sets all small key flags for that dungeon
-    // Matches SK_TO_FLAGINDEX order (item ids 220-226 -> same scene indices as
-    // 200-206)
-    const KR_TO_FLAGINDEX: [usize; 7] = [
-        11, // SVT KR - item id 220
-        17, // LMF KR - item id 221
-        12, // AC KR - item id 222
-        15, // FS KR - item id 223
-        18, // SSH KR - item id 224
-        20, // SK KR - item id 225
-        9,  // Caves KR - item id 226
-    ];
-
-    const KEY_RING_FORCED_COUNT: u16 = 4;
-    const SKELETON_FORCED_COUNT: u16 = 5;
+    // Key rings (item ids 220-226) and the Skeleton Key (227) use
+    // DUNGEON_KEY_SCENES (same order / scene indices as SK_TO_FLAGINDEX).
 
     unsafe {
         let itemid = (*item_actor).itemid;
@@ -935,11 +1032,20 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
                 dungeon_item_scene_index = MAP_TO_FLAGINDEX[(itemid - 207) as usize];
             }
 
+            // A real Small Key for a dungeon that is under a forced Key Ring /
+            // Skeleton Key count must not bump the count (it would desync the
+            // forced 4/5 value), so it is swallowed.
+            let suppress_real_key = dungeon_item_mask == 0x0F
+                && match dungeon_key_slot_for_scene(dungeon_item_scene_index) {
+                    Some(slot) => forced_dungeon_key_count(slot) > 0,
+                    None => false,
+                };
+
             // Set the local flag if the item is in its vanilla scene.
             if current_scene_index == dungeon_item_scene_index {
                 if dungeon_item_mask != 0x0F {
                     STATIC_DUNGEONFLAGS[0] |= dungeon_item_mask;
-                } else {
+                } else if !suppress_real_key {
                     let mut current_key_count = STATIC_DUNGEONFLAGS[1] & 0xF;
                     let mut obtained_key_count = (STATIC_DUNGEONFLAGS[1] >> 4) & 0xF;
                     current_key_count += 1;
@@ -950,7 +1056,7 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
             // Otherwise, set the global flag.
             if dungeon_item_mask != 0x0F {
                 (*FILE_MGR).FA.dungeonflags[dungeon_item_scene_index][0] |= dungeon_item_mask;
-            } else {
+            } else if !suppress_real_key {
                 let mut current_key_count =
                     (*FILE_MGR).FA.dungeonflags[dungeon_item_scene_index][1] & 0xF;
                 let mut obtained_key_count =
@@ -962,33 +1068,19 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
             }
         }
 
-        // Key Ring: set all small keys for the specific dungeon to max
+        // Key Ring: force the specific dungeon's small keys to 4. From now on
+        // reapply_forced_dungeon_keys() re-asserts this every frame.
         if itemid >= 220 && itemid <= 226 {
-            let kr_idx = (itemid - 220) as usize;
-            let kr_scene_index = KR_TO_FLAGINDEX[kr_idx];
-            let key_bits = (KEY_RING_FORCED_COUNT << 4) | KEY_RING_FORCED_COUNT;
-
-            let current_scene_index = (*DUNGEONFLAG_MGR).sceneindex as usize;
-            // Update STATIC if currently inside this dungeon
-            if current_scene_index == kr_scene_index {
-                STATIC_DUNGEONFLAGS[1] = key_bits;
-            }
-            // Always update global save data
-            (*FILE_MGR).FA.dungeonflags[kr_scene_index][1] = key_bits;
+            let slot = (itemid - 220) as usize;
+            raise_forced_dungeon_key_count(slot, KEY_RING_FORCED_COUNT);
+            write_dungeon_key_count(DUNGEON_KEY_SCENES[slot], forced_dungeon_key_count(slot));
         }
 
-        // Skeleton Key: set all small keys for ALL dungeons to max
+        // Skeleton Key: force ALL dungeons' small keys to 5.
         if itemid == 227 {
-            let current_scene_index = (*DUNGEONFLAG_MGR).sceneindex as usize;
-            for kr_idx in 0..7usize {
-                let kr_scene_index = KR_TO_FLAGINDEX[kr_idx];
-                let key_bits = (SKELETON_FORCED_COUNT << 4) | SKELETON_FORCED_COUNT;
-                // Update STATIC if currently inside this dungeon
-                if current_scene_index == kr_scene_index {
-                    STATIC_DUNGEONFLAGS[1] = key_bits;
-                }
-                // Always update global save data
-                (*FILE_MGR).FA.dungeonflags[kr_scene_index][1] = key_bits;
+            for slot in 0..DUNGEON_KEY_SCENES.len() {
+                raise_forced_dungeon_key_count(slot, SKELETON_FORCED_COUNT);
+                write_dungeon_key_count(DUNGEON_KEY_SCENES[slot], forced_dungeon_key_count(slot));
             }
         }
 
