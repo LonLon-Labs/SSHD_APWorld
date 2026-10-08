@@ -10,6 +10,7 @@ from Options import (
     DefaultOnToggle,
     FreeText,
     ItemDict,
+    LocationSet,
     OptionGroup,
     PerGameCommonOptions,
     Range,
@@ -1916,6 +1917,15 @@ class SSHDBreathLink(Toggle):
     display_name = "Breath Link"
 
 
+class ExcludedLocations(LocationSet):
+    """
+    Alias of Archipelago's standard `exclude_locations`, accepted so YAMLs using the
+    sshd-rando config.yaml spelling work. Listed locations can only receive
+    filler/trap items, exactly like `exclude_locations`. Both options are merged.
+    """
+    display_name = "Excluded Locations"
+
+
 @dataclass
 class SSHDOptions(PerGameCommonOptions):
     """
@@ -1924,6 +1934,7 @@ class SSHDOptions(PerGameCommonOptions):
     # Core Logic
     logic_rules: LogicRules
     item_pool: ItemPool
+    excluded_locations: ExcludedLocations
     
     # Completion
     required_dungeon_count: RequiredDungeonCount

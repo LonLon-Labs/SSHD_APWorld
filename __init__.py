@@ -2389,6 +2389,7 @@ class SSHDWorld(World):
             loc for loc in self.multiworld.get_locations(self.player)
             if loc.address is not None
             and loc.item is None
+            and not self._is_user_excluded(loc)
             and getattr(loc, "sshd_region", loc.name.split(" - ")[0] if " - " in loc.name else "") == dungeon
         ]
     
@@ -2399,6 +2400,7 @@ class SSHDWorld(World):
             loc for loc in self.multiworld.get_locations(self.player)
             if loc.address is not None
             and loc.item is None
+            and not self._is_user_excluded(loc)
             and LOCATION_TABLE.get(loc.name, None) is not None
             and LOCATION_TABLE[loc.name].region in region_names
         ]
@@ -2419,6 +2421,7 @@ class SSHDWorld(World):
             loc for loc in self.multiworld.get_locations(self.player)
             if loc.address is not None
             and loc.item is None
+            and not self._is_user_excluded(loc)
             and loc.name not in dungeon_locs
         ]
     
@@ -2476,6 +2479,14 @@ class SSHDWorld(World):
             return collected
         
         def _get_valid_locations_for_mode(mode: str, dungeon: str) -> list:
+            """Valid unfilled locations for a shuffle mode and dungeon, minus any
+            location the player excluded in their YAML."""
+            return [
+                loc for loc in _get_valid_locations_for_mode_unfiltered(mode, dungeon)
+                if not self._is_user_excluded(loc)
+            ]
+
+        def _get_valid_locations_for_mode_unfiltered(mode: str, dungeon: str) -> list:
             """Get valid unfilled locations for a given shuffle mode and dungeon."""
             if mode in ("own_dungeon", "own_dungeon_restricted", "own_dungeon_unrestricted", "vanilla"):
                 # Restrict to the dungeon's own locations
@@ -2833,6 +2844,7 @@ class SSHDWorld(World):
                         loc for loc in self.multiworld.get_locations(self.player)
                         if loc.address is not None
                         and loc.item is None
+                        and not self._is_user_excluded(loc)
                         and loc.name in end_loc_names
                     ]
 
@@ -2955,6 +2967,7 @@ class SSHDWorld(World):
                         valid_locations = [
                             loc for loc in self.multiworld.get_locations(self.player)
                             if loc.address is not None and loc.item is None
+                            and not self._is_user_excluded(loc)
                             and LOCATION_TABLE.get(loc.name) is not None
                             and LOCATION_TABLE[loc.name].region in (
                                 "Lanayru Caves", "Lanayru Caves Past Locked Door"
@@ -3013,6 +3026,7 @@ class SSHDWorld(World):
                 valid_locations = [
                     loc for loc in self.multiworld.get_locations(self.player)
                     if loc.address is not None and loc.item is None
+                    and not self._is_user_excluded(loc)
                     and (loc.parent_region is None or loc.parent_region.name not in all_gated_regions)
                 ]
                 if not valid_locations:
@@ -3132,6 +3146,7 @@ class SSHDWorld(World):
                         loc for loc in self.multiworld.get_locations(self.player)
                         if loc.address is not None
                         and loc.item is None
+                        and not self._is_user_excluded(loc)
                         and LOCATION_TABLE.get(loc.name) is not None
                         and LOCATION_TABLE[loc.name].region == "Lanayru Caves"
                     ]
@@ -3141,6 +3156,7 @@ class SSHDWorld(World):
                         loc for loc in self.multiworld.get_locations(self.player)
                         if loc.address is not None
                         and loc.item is None
+                        and not self._is_user_excluded(loc)
                         and loc.name not in all_dungeon_locs
                     ]
                 else:
@@ -3184,6 +3200,7 @@ class SSHDWorld(World):
                         loc for loc in self.multiworld.get_locations(self.player)
                         if loc.address is not None
                         and loc.item is None
+                        and not self._is_user_excluded(loc)
                         and loc.name in vanilla_triforce_locs
                     ]
                 elif triforce_mode == "sky_keep":
@@ -3192,6 +3209,7 @@ class SSHDWorld(World):
                         loc for loc in self.multiworld.get_locations(self.player)
                         if loc.address is not None
                         and loc.item is None
+                        and not self._is_user_excluded(loc)
                         and LOCATION_TABLE.get(loc.name) is not None
                         and LOCATION_TABLE[loc.name].region == "Sky Keep"
                     ]
@@ -4057,6 +4075,42 @@ class SSHDWorld(World):
             traceback.print_exc()
             return None, None
     
+    def _get_user_excluded_location_names(self) -> list:
+        """
+        Names of locations the player excluded via the standard Archipelago
+        ``exclude_locations`` YAML option, limited to locations that are actually
+        randomized for this player. Sorted so generation stays deterministic.
+        """
+        from .Locations import LOCATION_TABLE
+        requested = self._user_excluded_set()
+        excluded_types = self._get_excluded_item_types()
+        names = []
+        for name in sorted(requested):
+            data = LOCATION_TABLE.get(name)
+            if data is None or data.code is None:
+                continue
+            if any(t in excluded_types for t in data.types):
+                continue  # not shuffled -> stays vanilla, nothing to exclude
+            names.append(name)
+        return names
+
+    def _user_excluded_set(self) -> set:
+        """Union of the player's `exclude_locations` and `excluded_locations` YAML options."""
+        cached = getattr(self, "_user_excluded_cache", None)
+        if cached is None:
+            cached = set()
+            for attr in ("exclude_locations", "excluded_locations"):
+                opt = getattr(self.options, attr, None)
+                if opt is not None:
+                    cached |= set(opt.value)
+            self._user_excluded_cache = cached
+        return cached
+
+    def _is_user_excluded(self, loc) -> bool:
+        """True if the player excluded this location in their YAML. Locked
+        (pre_fill) placements must never put progression items on these."""
+        return loc.name in self._user_excluded_set()
+
     def _collect_archipelago_settings(self) -> dict:
         """
         Collect Archipelago options as a dictionary for sshd-rando wrapper.
@@ -4395,6 +4449,11 @@ class SSHDWorld(World):
         # Configuration
         settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())
         
+        # Player-excluded locations (standard `exclude_locations` YAML option).
+        # generate_early() and the sshd-rando wrapper both read this key; it was
+        # never populated, so the exclusions were silently ignored.
+        settings_dict["excluded_locations"] = self._get_user_excluded_location_names()
+
         return settings_dict
 
     
