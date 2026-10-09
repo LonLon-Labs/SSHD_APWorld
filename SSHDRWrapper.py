@@ -204,8 +204,17 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
         # AP-specific goal requirement settings (not part of sshd-rando backend)
         'required_dungeon_count', 'dungeon_goal_count', 'required_triforce_pieces', 'require_triforce_pieces', 'require_dungeons',
         'require_greg', 'require_tim', 'require_all_progression_items',
-        # AP YAML settings (mapped to rando settings via _goal_requirement_data in __init__.py)
-        'randomize_dungeons', 'randomize_trials'
+    }
+
+    # AP option names that differ from the sshd-rando setting names.
+    # These MUST be translated, otherwise the setting silently stays at its
+    # default (off) in the rando config and the entrance shuffle never happens.
+    ap_to_rando_setting_names = {
+        'randomize_dungeons': 'randomize_dungeon_entrances',
+        'randomize_trials': 'randomize_trial_gate_entrances',
+    }
+    settings_dict = {
+        ap_to_rando_setting_names.get(k, k): v for k, v in settings_dict.items()
     }
     
     print(f"[SSHDRWrapper] Applying settings from settings_dict ({len(settings_dict)} total settings)")
