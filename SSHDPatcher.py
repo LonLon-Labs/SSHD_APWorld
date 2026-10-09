@@ -309,6 +309,13 @@ def generate_patches(
         raise RuntimeError("sshd-rando generation returned None world")
     world.config.output_dir = output_dir
 
+    # Seed + slot name stored in new save files and shown on file select
+    if patcher_data.get("ap_seed") is not None:
+        world.ap_seed = int(patcher_data["ap_seed"])
+    elif patcher_data.get("seed") is not None:
+        world.ap_seed = int(patcher_data["seed"])
+    world.ap_slot_name = patcher_data.get("ap_slot_name", "")
+
     # ---- Overlay multiworld items ----
     item_mapping = patcher_data.get("multiworld_item_mapping", {})
     if item_mapping:

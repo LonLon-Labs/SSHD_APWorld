@@ -366,3 +366,11 @@ main:
 
     ## This calls dAcItem__spawnItemWithParams but makes sure that bit 9 is left unchanged
     dAcItem__spawnRandoItemWithParams: 0x71005c2060
+
+    ## File select slot name display (apseed_ui.rs).
+    ## Pointer (Ghidra DAT_7102bf9a60) to a struct whose +0x138 holds the file select
+    ## title/caption text manager ("UI manager", +0x9c8 title label, +0x9e8 caption label).
+    UI_ROOT_PTR: 0x7102bfda60
+    ## FUN_7100bcb7b4(ui, which): looks up the label at ui+0x9e8 and pushes it to the
+    ## caption text boxes. which = 0 / 1 / 2 selects the text box set (0 = file select caption).
+    FileSelectText__update: 0x7100bcf7b4

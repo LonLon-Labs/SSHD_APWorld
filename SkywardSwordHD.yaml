@@ -294,6 +294,9 @@ Skyward Sword HD:
   npc_closet_shuffle: false             # Randomized NPC closets (false = vanilla items)
   hidden_item_shuffle: false            # Hidden Item checks can contain any item first time (false = always vanilla items)
   goddess_chest_shuffle: false          # Goddess Chest items can be randomized (false = not required to activate/open)
+  pot_shuffle: false                    # Pots can contain any item (false = only rupees, hearts, and seeds)
+  pumpkin_shuffle: false                # Pumpkins can contain any item (false = only vanilla items)
+  barrel_shuffle: false                 # Barrels can contain any item (false = only vanilla items)
 
   # Goddess Chest Unlock
   # locked_until_struck: Goddess Chests are activated by striking their goddess cube with a Skyward Strike (vanilla, default)

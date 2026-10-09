@@ -57,7 +57,10 @@ pub struct SaveFile {
     // group (see GROUP1_FIRST_SCENE_INDEX in item.rs). Keep the total size of
     // each array + its padding at 4096 bytes.
     pub dungeonflags:              [[u16; 8]; 30],
-    pub _1:                        [u8; 3616],
+    pub _1:                        [u8; 3568],
+    // Archipelago seed/slot block, stored in the unused tail of the dungeonflag
+    // array's 0x1000 byte reservation (indexes 253-255, never used by the game).
+    pub ap_save_data:              ApSaveData,
     pub sceneflags:                [[u16; 8]; 30],
     pub _2:                        [u8; 0xE20],
     pub tboxflags:                 [[u8; 4]; 26],
@@ -94,9 +97,26 @@ pub struct SaveFile {
 }
 assert_eq_size!([u8; 21440], SaveFile);
 
+/// Seed and slot name of the multiworld a save file belongs to. Written when
+/// a new file is created (see flag::handle_startflags).
+#[repr(C, packed(1))]
+#[derive(Copy, Clone)]
+pub struct ApSaveData {
+    pub magic:     [u8; 4], // b"APSD"
+    pub seed:      [u8; 8], // u64 LE
+    pub slot_name: [u16; 17],
+    pub _pad:      [u8; 2],
+}
+assert_eq_size!([u8; 48], ApSaveData);
+
+pub const AP_SAVE_MAGIC: [u8; 4] = *b"APSD";
+
 // IMPORTANT: when using vanilla code, the start point must be declared in
 // symbols.yaml and then added to this extern block.
 extern "C" {
+    static FILE_MGR: *mut FileMgr;
+    static RANDOMIZER_SETTINGS: crate::settings::RandomizerSettings;
+
     // Functions
     fn debugPrint_128(string: *const c_char, fstr: *const c_char, ...);
 }
@@ -108,3 +128,98 @@ extern "C" {
 ////////////////////////
 // ADD FUNCTIONS HERE //
 ////////////////////////
+
+/// Seed the installed patch was generated for (0 = unknown).
+pub fn patched_seed() -> u64 {
+    unsafe { u64::from_le_bytes(core::ptr::addr_of!(RANDOMIZER_SETTINGS.ap_seed).read_unaligned()) }
+}
+
+/// Slot name of the installed patch (UTF-16, NUL padded; all zero = unknown).
+pub fn patched_slot_name() -> [u16; 17] {
+    unsafe { core::ptr::addr_of!(RANDOMIZER_SETTINGS.ap_slot_name).read_unaligned() }
+}
+
+// Save manager buffer layout (see FUN_7100dfcc14): slot i's SaveFile is at
+// *all_save_files + i * SLOT_STRIDE + SLOT_SAVEFILE_OFFSET.
+pub const SLOT_COUNT: usize = 4;
+const SLOT_STRIDE: usize = 0x53C0;
+const SLOT_SAVEFILE_OFFSET: usize = 0x20;
+
+/// Reads file `slot`'s APSD block straight from the save manager's buffer of
+/// all four saves, without loading the file. The block may not have the APSD
+/// magic (empty slot or a save from before per-save seeds).
+pub fn slot_ap_save_data(slot: usize) -> Option<ApSaveData> {
+    unsafe {
+        if FILE_MGR.is_null() || slot >= SLOT_COUNT {
+            return None;
+        }
+        let all = core::ptr::addr_of!((*FILE_MGR).all_save_files).read_unaligned() as *const u8;
+        if all.is_null() {
+            return None;
+        }
+        let save_file = all.add(slot * SLOT_STRIDE + SLOT_SAVEFILE_OFFSET);
+        let ap_offset = core::mem::offset_of!(SaveFile, ap_save_data);
+        Some((save_file.add(ap_offset) as *const ApSaveData).read_unaligned())
+    }
+}
+
+/// Seed stored in the loaded save file (0 = none stored).
+pub fn save_seed() -> u64 {
+    unsafe {
+        if FILE_MGR.is_null() {
+            return 0;
+        }
+        let data = core::ptr::addr_of!((*FILE_MGR).FA.ap_save_data).read_unaligned();
+        if data.magic != AP_SAVE_MAGIC {
+            return 0;
+        }
+        u64::from_le_bytes(data.seed)
+    }
+}
+
+/// True if the loaded save belongs to the installed patch's seed. Patches
+/// without a seed (0) never block anything.
+pub fn save_seed_matches() -> bool {
+    let patched = patched_seed();
+    patched == 0 || save_seed() == patched
+}
+
+/// Saves created before per-save seeds existed carry no APSD block. Adopt the
+/// installed patch's seed + slot name for them the first time they are in the
+/// world, so they keep working. Does nothing for saves that already have a
+/// block (even another seed's) or for patches without a seed.
+pub fn adopt_patch_seed_if_missing() {
+    unsafe {
+        if FILE_MGR.is_null() || patched_seed() == 0 {
+            return;
+        }
+        let data = core::ptr::addr_of!((*FILE_MGR).FA.ap_save_data).read_unaligned();
+        if data.magic == AP_SAVE_MAGIC {
+            return;
+        }
+        write_save_seed();
+    }
+}
+
+/// Stamp the installed patch's seed + slot name into the loaded save file.
+pub fn write_save_seed() {
+    unsafe {
+        if FILE_MGR.is_null() {
+            return;
+        }
+        let data = ApSaveData {
+            magic:     AP_SAVE_MAGIC,
+            seed:      core::ptr::addr_of!(RANDOMIZER_SETTINGS.ap_seed).read_unaligned(),
+            slot_name: core::ptr::addr_of!(RANDOMIZER_SETTINGS.ap_slot_name).read_unaligned(),
+            _pad:      [0; 2],
+        };
+        // Skip the write when the block already holds exactly this data:
+        // handle_startflags runs repeatedly while a new file is being created.
+        let existing = core::ptr::addr_of!((*FILE_MGR).FA.ap_save_data).read_unaligned();
+        let (existing_name, new_name) = (existing.slot_name, data.slot_name);
+        if existing.magic == data.magic && existing.seed == data.seed && existing_name == new_name {
+            return;
+        }
+        core::ptr::addr_of_mut!((*FILE_MGR).FA.ap_save_data).write_unaligned(data);
+    }
+}

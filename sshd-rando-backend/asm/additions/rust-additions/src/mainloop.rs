@@ -3,6 +3,7 @@
 #![allow(unused)]
 
 use crate::actor;
+use crate::apseed_ui;
 use crate::cheats;
 use crate::color;
 use crate::commands;
@@ -174,6 +175,10 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     // Archipelago - Refresh IPC-exposed addresses (sceneflags/dungeonflags)
     // for the external client's batch location-check polling.
     item::refresh_ipc_addresses();
+
+    // File select slot name display: drop the caption override once the file
+    // select screen has been left.
+    apseed_ui::tick();
 
     // Archipelago - Check for items to give from the buffer
     item::archipelago_check_item_buffer();

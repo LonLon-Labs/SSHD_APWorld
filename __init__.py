@@ -3757,6 +3757,8 @@ class SSHDWorld(World):
                 },
                 "seed": self.multiworld.seed,
                 "sshdr_seed": getattr(self, '_sshdr_resolved_seed', f"AP{self.multiworld.seed}P{self.player}"),
+                "ap_seed": int(self.multiworld.seed),
+                "ap_slot_name": self.player_name,
             }
             
             # Create the .apsshd patch file
@@ -3914,6 +3916,10 @@ class SSHDWorld(World):
             from .SSHDRWrapper import inject_custom_flags_into_world
             inject_custom_flags_into_world(world, self._custom_flag_mapping, self.multiworld, self.player)
             print(f"[__init__.py] ✓ Injected {len(self._custom_flag_mapping)} custom flags")
+
+            # Seed + slot name stored in new save files and shown on file select
+            world.ap_seed = int(self.multiworld.seed)
+            world.ap_slot_name = self.player_name
 
             # Let Fi's text tell the player the dungeon goal count (None = goal disabled)
             world.ap_dungeon_goal_count = (

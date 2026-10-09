@@ -1,6 +1,7 @@
 #![no_std]
 #![feature(ptr_from_ref)]
 #![feature(split_array)]
+#![feature(offset_of)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(unused)]
@@ -15,6 +16,7 @@ use static_assertions::assert_eq_size;
 
 mod actor;
 mod ammo;
+mod apseed_ui;
 mod cheats;
 mod color;
 mod commands;

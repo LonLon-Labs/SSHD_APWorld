@@ -67,6 +67,11 @@ const LOAD_TIMEOUT: Duration = Duration::from_secs(15);
 const LOAD_RETRY: Duration = Duration::from_secs(3);
 const STALL_NOTICE: Duration = Duration::from_secs(10);
 const SLOT_SIZE: usize = std::mem::size_of::<ap_ipc::ArchipelagoItemSlot>();
+/// `ArchipelagoItemSlot.flags` bit 0 (mirrors `AP_SLOT_FLAG_FORCE` in the
+/// game's item.rs): deliver even if the save's seed doesn't match.
+pub const AP_SLOT_FLAG_FORCE: u8 = 1;
+/// How long after entering seed-mismatch mode before `!getitem`s are watched.
+const CHEAT_ARM_DELAY: Duration = Duration::from_secs(3);
 
 type GetRx = oneshot::Receiver<Result<HashMap<String, serde_json::Value>, archipelago_rs::Error>>;
 
@@ -135,6 +140,12 @@ pub struct DeliveryTracker {
     native_locations: HashSet<i64>,
     /// This client's own slot number, to tell own-world items from other players'.
     own_slot: i64,
+    /// Seed-mismatch ("cheat") mode: next received index to examine for
+    /// `!getitem` items. `None` until armed.
+    cheat_next: Option<usize>,
+    /// When cheat mode may start (a short settle time after entering it, so a
+    /// server's initial item sync isn't mistaken for new `!getitem`s).
+    cheat_arm_at: Option<Instant>,
 }
 
 impl DeliveryTracker {
@@ -158,6 +169,8 @@ impl DeliveryTracker {
             stall_logged: false,
             native_locations: HashSet::new(),
             own_slot: -1,
+            cheat_next: None,
+            cheat_arm_at: None,
         }
     }
 
@@ -327,6 +340,102 @@ impl DeliveryTracker {
         {
             self.prefix_history.pop_front();
         }
+    }
+
+    /// Leave seed-mismatch mode (the loaded save matches the patch again).
+    pub fn cheat_reset(&mut self) {
+        self.cheat_next = None;
+        self.cheat_arm_at = None;
+    }
+
+    /// Used INSTEAD of `tick` while the loaded save's seed doesn't match the
+    /// patch. Regular items (other players', own finds) are never delivered and
+    /// the normal delivery index is left alone. Only items that arrive while in
+    /// this mode from the server's cheat console (`!getitem`: location -1) are
+    /// written to the buffer, flagged so the game delivers them anyway.
+    pub fn tick_cheats(&mut self, mem: &mut impl ProcessMemory, root_addr: usize, received: &[ReceivedItem]) -> Tick {
+        let mut out = Tick::default();
+        if !self.is_ready() {
+            return out;
+        }
+        if let Err(e) = self.tick_cheats_inner(mem, root_addr, received, &mut out) {
+            out.verbose(format!("[Delivery] cheat item memory error: {e}"));
+        }
+        out
+    }
+
+    fn tick_cheats_inner(
+        &mut self,
+        mem: &mut impl ProcessMemory,
+        root_addr: usize,
+        received: &[ReceivedItem],
+        out: &mut Tick,
+    ) -> Result<(), MemError> {
+        let now = Instant::now();
+        let arm_at = *self.cheat_arm_at.get_or_insert(now + CHEAT_ARM_DELAY);
+        let mut next = match self.cheat_next {
+            Some(n) => n,
+            None => {
+                if now < arm_at {
+                    return Ok(());
+                }
+                // Everything received so far is not a new !getitem.
+                received.len()
+            },
+        };
+        if next > received.len() {
+            next = received.len(); // list was reset by a re-sync
+        }
+        self.cheat_next = Some(next);
+        if next >= received.len() {
+            return Ok(());
+        }
+
+        // The game only delivers with a save loaded.
+        let vitals_raw = mem.read_bytes(root_addr + offsets::PLAYER_VITALS, std::mem::size_of::<ApPlayerVitals>())?;
+        let vitals: ApPlayerVitals = ap_ipc::bytes::read(&vitals_raw);
+        if vitals.save_loaded == 0 {
+            return Ok(());
+        }
+
+        let buffer_addr = root_addr + offsets::ITEM_BUFFER;
+        let mut buffer = mem.read_bytes(buffer_addr, ARCHIPELAGO_BUFFER_SIZE * SLOT_SIZE)?;
+
+        while next < received.len() {
+            let item = &received[next];
+            if item.location().id() != -1 {
+                next += 1; // not a !getitem
+                continue;
+            }
+            let ap_code = item.item().id();
+            let prior_copies = if ap_code == items::PROGRESSIVE_LOFTWING_CODE {
+                received[..next].iter().filter(|r| r.item().id() == ap_code).count()
+            } else {
+                0
+            };
+            let Some(original_id) = items::progressive_tier_original_id(ap_code, prior_copies) else {
+                next += 1; // event-only / unknown code
+                continue;
+            };
+            let Some(slot) = (1..ARCHIPELAGO_BUFFER_SIZE).find(|&i| buffer[i * SLOT_SIZE] == 0) else {
+                break; // buffer full; retry next tick
+            };
+            let raw = ap_ipc::bytes::write(&ap_ipc::ArchipelagoItemSlot {
+                item_id:    (original_id & 0xFF) as u8,
+                flags:      AP_SLOT_FLAG_FORCE,
+                _reserved:  0,
+                item_id_hi: (original_id >> 8) as u8,
+            });
+            mem.write_bytes(buffer_addr + slot * SLOT_SIZE, &raw)?;
+            buffer[slot * SLOT_SIZE] = (original_id & 0xFF) as u8;
+            out.gui(format!(
+                "[Cheat] {} queued (seed mismatch: only !getitem items are delivered to this save).",
+                item.item()
+            ));
+            next += 1;
+        }
+        self.cheat_next = Some(next);
+        Ok(())
     }
 
     /// Advances delivery by one poll tick.

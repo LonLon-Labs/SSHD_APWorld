@@ -323,6 +323,8 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
     // mark_checked) by ANY of the four check mechanisms, so none of them
     // re-poll or re-report something another one already handled.
     let mut reported_locations: HashSet<i64> = HashSet::new();
+    // Last seed-gate state (None until first read), so changes are logged once.
+    let mut last_seed_gate: Option<crate::SeedStatus> = None;
 
     vlog!("Looking for a supported emulator ({SUPPORTED_EMULATOR_NAMES:?})...");
 
@@ -813,6 +815,39 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                     }
                 }
 
+                // Seed gate (IPC v12+): the game publishes whether the loaded save
+                // belongs to the seed of the installed patch. While it doesn't (or no
+                // save is loaded) nothing is delivered and no location is reported,
+                // so a save from another multiworld can't send or receive items.
+                let seed_ok = match crate::read_seed_status(mem, root_addr) {
+                    Ok(status) => {
+                        if last_seed_gate != Some(status) {
+                            if status.seed_match {
+                                log!(&output, "[Seed] Loaded save matches the patched seed; syncing items and checks.");
+                            } else if status.save_has_seed {
+                                log!(
+                                    &output,
+                                    "[Seed] This save file belongs to a different seed ({:#x}) than the installed patch ({:#x}). \
+                                     Item and location sync is paused.",
+                                    status.save_seed,
+                                    status.patched_seed
+                                );
+                            } else {
+                                vlog!(
+                                    "[Seed] No matching save loaded (patched seed {:#x}, save has seed: false); sync paused.",
+                                    status.patched_seed
+                                );
+                            }
+                            last_seed_gate = Some(status);
+                        }
+                        status.seed_match
+                    },
+                    Err(e) => {
+                        vlog!("[IPC] seed status read failed: {e}");
+                        false
+                    },
+                };
+
                 // Item delivery -- crash-safe, paced, resumable (see delivery.rs).
                 if let Some(client) = conn.client_mut() {
                     if let Some(line) = sync.delivery.poll_load(client) {
@@ -824,7 +859,13 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                     }
                 }
                 let tick = match conn.client() {
-                    Some(client) => sync.delivery.tick(mem, root_addr, client.received_items()),
+                    Some(client) if seed_ok => {
+                        sync.delivery.cheat_reset();
+                        sync.delivery.tick(mem, root_addr, client.received_items())
+                    },
+                    // Seed mismatch / no matching save: regular items are held back,
+                    // but `!getitem` (cheat console) items are still delivered.
+                    Some(client) => sync.delivery.tick_cheats(mem, root_addr, client.received_items()),
                     None => delivery::Tick::default(),
                 };
                 for line in tick.logs {
@@ -849,6 +890,9 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                 match sync.link_monitor.poll(mem, root_addr) {
                     Ok(signals) => {
                         for signal in signals {
+                            if !seed_ok {
+                                continue; // wrong/no save: don't send links for it
+                            }
                             let tag = match signal {
                                 LinkSignal::Death => "DeathLink",
                                 LinkSignal::Breath => "BreathLink",
@@ -901,6 +945,7 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                 let mut newly_checked_all: Vec<i64> = Vec::new();
                 let already_checked = |code: i64| reported_locations.contains(&code);
 
+                if seed_ok {
                 if let Some(poller) = sync.location_poller.as_mut() {
                     match poller.poll(mem, root_addr, &already_checked) {
                         Ok(codes) => newly_checked_all.extend(codes),
@@ -926,6 +971,7 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                 match boss_defeats::poll(mem, root_addr, &already_checked) {
                     Ok(codes) => newly_checked_all.extend(codes),
                     Err(e) => vlog!("[IPC] boss defeat poll failed: {e}"),
+                }
                 }
 
                 if !newly_checked_all.is_empty() {

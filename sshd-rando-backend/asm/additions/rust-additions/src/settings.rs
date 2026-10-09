@@ -33,8 +33,11 @@ pub struct RandomizerSettings {
     pub bird_statues_need_unlock:  u8, /* 1 = flying up from a statue also needs its
                                         * unlock flag (scene 6), see
                                         * lyt::require_sailcloth_and_loftwing_to_fly_to_sky */
+    pub _pad:                      [u8; 2],
+    pub ap_seed:                   [u8; 8], // u64 LE, 0 = unknown
+    pub ap_slot_name:              [u16; 17], // UTF-16, null terminated
 }
-assert_eq_size!([u8; 0x6], RandomizerSettings);
+assert_eq_size!([u8; 50], RandomizerSettings);
 
 // IMPORTANT: when using vanilla code, the start point must be declared in
 // symbols.yaml and then added to this extern block.

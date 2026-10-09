@@ -169,6 +169,47 @@ mov x5, x19
 mov w8, #108
 b additions_jumptable
 
+; File select slot name display stubs (apseed_ui.rs, hooks in
+; rando_changes/apseed-slot-name.asm).
+;
+; File select state + cursor (landingpad index 109). Replaces
+; `ldr w8, [x0, #0x29e8]` at runtime 0x7100c18af0 (Ghidra 0x7100c14af0, just
+; after the prologue of the file select state function FUN_7100c14ad0, so lr is
+; already saved). x0 (the file select scene object) is preserved.
+.offset 0x7100659c20
+stp x0, x30, [sp, #-16]!
+mov w8, #109
+bl additions_jumptable
+ldp x0, x30, [sp], #16
+ldr w8, [x0, #0x29e8]
+ret
+
+; Label lookup (landingpad index 110). Replaces `mov x22, x1` at runtime
+; 0x7100dbb790 (Ghidra 0x7100db7790, after the prologue of FUN_7100db7770).
+; x0 (message file index), x1 (label) and x3 are live there and preserved.
+.offset 0x7100659c40
+stp x0, x1, [sp, #-32]!
+stp x3, x30, [sp, #16]
+mov w8, #110
+bl additions_jumptable
+ldp x3, x30, [sp, #16]
+ldp x0, x1, [sp], #32
+mov x22, x1
+ret
+
+; Label getter epilogue (landingpad index 111). Replaces `mov x0, x19` at runtime
+; 0x7100dbb9a0 (Ghidra 0x7100db79a0), the epilogue shared by every return path of
+; FUN_7100db7770; x19 is the string pointer it returns (0 when the caller gave its
+; own buffer). The Rust hook returns the pointer to use in x0. The function's
+; real lr is restored from its stack frame right after, so bl clobbering x30 is fine.
+.offset 0x7100659c68
+stp x19, x30, [sp, #-16]!
+mov x0, x19
+mov w8, #111
+bl additions_jumptable
+ldp x19, x30, [sp], #16
+ret
+
 ; Actually branches to the rust additions landingpad
 ; additions_jumptable
 .offset 0x710065a070 ; uses 10 instructions

@@ -18,7 +18,7 @@ use std::mem::size_of;
 
 /// 8-byte discovery marker the client scans for exactly once.
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_SUPPORTED_VERSION: u16 = 11;
+pub const AP_IPC_SUPPORTED_VERSION: u16 = 12;
 
 // ─── Sub-structs (mirror commands.rs / item.rs) ────────────────────────────
 
@@ -264,6 +264,17 @@ impl Default for ApExtFlags {
     }
 }
 
+/// Seed gating info (IPC version 12+). Mirrors `ApSeedInfo` in ipc.rs.
+#[repr(C, packed)]
+#[derive(Copy, Clone, Debug, Default)]
+pub struct ApSeedInfo {
+    pub patched_seed:  [u8; 8],
+    pub save_seed:     [u8; 8],
+    pub save_has_seed: u8,
+    pub seed_match:    u8,
+    pub _pad:          [u8; 6],
+}
+
 #[repr(C, packed)]
 #[derive(Copy, Clone, Debug)]
 pub struct ApIpcRoot {
@@ -342,6 +353,9 @@ pub struct ApIpcRoot {
 
     // Extended custom flag pages, group 1 (IPC version 10+). Appended at the end.
     pub ext_flags: ApExtFlags,
+
+    // Seed gating info (IPC version 12+). Appended at the end.
+    pub seed_info: ApSeedInfo,
 }
 
 impl Default for ApIpcRoot {
@@ -367,6 +381,7 @@ impl Default for ApIpcRoot {
             link_requests:   ApLinkRequests::default(),
             stage_info:      ApStageInfo::default(),
             ext_flags:       ApExtFlags::default(),
+            seed_info:       ApSeedInfo::default(),
         }
     }
 }
@@ -397,7 +412,8 @@ pub mod offsets {
     pub const LINK_REQUESTS: usize = PLAYER_VITALS + size_of::<ApPlayerVitals>();
     pub const STAGE_INFO: usize = LINK_REQUESTS + size_of::<ApLinkRequests>();
     pub const EXT_FLAGS: usize = STAGE_INFO + size_of::<ApStageInfo>();
-    pub const TOTAL_SIZE: usize = EXT_FLAGS + size_of::<ApExtFlags>();
+    pub const SEED_INFO: usize = EXT_FLAGS + size_of::<ApExtFlags>();
+    pub const TOTAL_SIZE: usize = SEED_INFO + size_of::<ApSeedInfo>();
 
     pub fn item_buffer_slot(index: usize) -> usize {
         ITEM_BUFFER + index * size_of::<ArchipelagoItemSlot>()
@@ -540,6 +556,7 @@ mod tests {
         assert_eq!(size_of::<ApLinkRequests>(), 2);
         assert_eq!(size_of::<ApStageInfo>(), 44);
         assert_eq!(size_of::<ApExtFlags>(), 128);
+        assert_eq!(size_of::<ApSeedInfo>(), 24);
     }
 
     #[test]
@@ -563,7 +580,7 @@ mod tests {
         assert_eq!(offsets::LINK_REQUESTS, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10);
         assert_eq!(offsets::STAGE_INFO, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2);
         assert_eq!(offsets::EXT_FLAGS, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44);
-        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128);
+        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24);
         assert_eq!(size_of::<ApIpcRoot>(), offsets::TOTAL_SIZE);
     }
 

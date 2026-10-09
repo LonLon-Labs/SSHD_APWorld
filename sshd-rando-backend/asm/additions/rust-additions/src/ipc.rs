@@ -46,7 +46,7 @@ use static_assertions::assert_eq_size;
 /// a breaking change to `ApIpcRoot`'s layout so old/new clients don't
 /// silently misread each other).
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_VERSION: u16 = 11;
+pub const AP_IPC_VERSION: u16 = 12;
 
 /// Live BY-VALUE COPY of the player's health and stamina, refreshed every
 /// frame by `item::refresh_ipc_addresses()`. Lets the host client detect
@@ -131,6 +131,21 @@ pub struct ApExtFlags {
     pub dungeonflags: [u8; 64],
 }
 assert_eq_size!([u8; 128], ApExtFlags);
+
+/// Seed gating info (IPC version 12). `patched_seed` is the seed the installed
+/// patch was made for, `save_seed` the one stored in the loaded save file (0 =
+/// none). `seed_match` is 1 only when a save is loaded and it belongs to the
+/// installed patch; the client must not send checks or deliver items
+/// otherwise.
+#[repr(C, packed(1))]
+pub struct ApSeedInfo {
+    pub patched_seed:  [u8; 8],
+    pub save_seed:     [u8; 8],
+    pub save_has_seed: u8,
+    pub seed_match:    u8,
+    pub _pad:          [u8; 6],
+}
+assert_eq_size!([u8; 24], ApSeedInfo);
 
 #[repr(C, packed(1))]
 pub struct ApIpcRoot {
@@ -237,6 +252,9 @@ pub struct ApIpcRoot {
     // ── Rust-write / client-read: extended custom flag pages (see
     //    `ApExtFlags`). Appended at the END. Added in IPC version 10.
     pub ext_flags: ApExtFlags,
+
+    // Appended at the END. Added in IPC version 12.
+    pub seed_info: ApSeedInfo,
 }
 
 #[no_mangle]
@@ -374,6 +392,14 @@ pub static mut AP_IPC_ROOT: ApIpcRoot = ApIpcRoot {
         sceneflags:   [0u8; 64],
         dungeonflags: [0u8; 64],
     },
+
+    seed_info: ApSeedInfo {
+        patched_seed:  [0; 8],
+        save_seed:     [0; 8],
+        save_has_seed: 0,
+        seed_match:    0,
+        _pad:          [0; 6],
+    },
 };
 
 // Self-check: catches accidental layout drift at compile time. Update this
@@ -396,6 +422,7 @@ assert_eq_size!(
         + 10
         + 2
         + 44
-        + 128],
+        + 128
+        + 24],
     ApIpcRoot
 );

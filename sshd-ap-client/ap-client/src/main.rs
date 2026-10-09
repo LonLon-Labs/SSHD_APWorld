@@ -145,6 +145,33 @@ pub(crate) fn flag_request_get(
     ipc_requests::flag_request(mem, root_addr, flag_type, ap_ipc::FLAG_OP_GET, flag_id, 0, scene_index)
 }
 
+/// Seed gating state published by the game in `AP_IPC_ROOT.seed_info`
+/// (IPC version 12+). Item delivery and location checks must only run while
+/// `seed_match` is true, i.e. a save file is loaded AND it belongs to the
+/// seed of the installed patch.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct SeedStatus {
+    pub patched_seed:  u64,
+    pub save_seed:     u64,
+    pub save_has_seed: bool,
+    pub seed_match:    bool,
+}
+
+/// Reads `AP_IPC_ROOT.seed_info`. Shared by `run_headless` and `worker.rs`.
+pub(crate) fn read_seed_status(mem: &mut impl ProcessMemory, root_addr: usize) -> Result<SeedStatus, MemError> {
+    let raw = mem.read_bytes(root_addr + offsets::SEED_INFO, std::mem::size_of::<ap_ipc::ApSeedInfo>())?;
+    let info: ap_ipc::ApSeedInfo = ap_ipc::bytes::read(&raw);
+    // Copy out of the packed struct before use.
+    let (patched, saved) = (info.patched_seed, info.save_seed);
+    let (has_seed, matched) = (info.save_has_seed, info.seed_match);
+    Ok(SeedStatus {
+        patched_seed:  u64::from_le_bytes(patched),
+        save_seed:     u64::from_le_bytes(saved),
+        save_has_seed: has_seed != 0,
+        seed_match:    matched != 0,
+    })
+}
+
 /// Parsed startup arguments. Supports two forms so this binary works both
 /// as a quick manual test tool and as something the Archipelago Launcher
 /// can invoke:
@@ -311,6 +338,8 @@ fn run_headless(args: StartupArgs) {
     // or re-report something another one already handled.
     let mut reported_locations: HashSet<i64> = HashSet::new();
     let mut loop_tick: u64 = 0;
+    // Last seed-gate state, so transitions are logged once.
+    let mut last_seed_ok = false;
 
     // DeathLink / BreathLink state, matching worker.rs: tags the slot asked
     // for (plus any the player enabled some other way, which headless mode
@@ -468,10 +497,27 @@ fn run_headless(args: StartupArgs) {
             }
         }
 
+        // ── 1a. Seed gate: only send/receive for a save that matches the patch ──
+        let seed_ok = match read_seed_status(&mut mem, root_addr) {
+            Ok(s) => s.seed_match,
+            Err(e) => {
+                eprintln!("[IPC] seed status read failed: {e}");
+                false
+            },
+        };
+        if seed_ok != last_seed_ok {
+            last_seed_ok = seed_ok;
+            if seed_ok {
+                println!("[Seed] Loaded save matches the patched seed; item/location sync active.");
+            } else {
+                println!("[Seed] No save loaded, or its seed differs from the patch; item/location sync paused.");
+            }
+        }
+
         // ── 1b. Apply any received items not yet queued into item_buffer ──
         // Runs every loop tick (not just when a new ReceivedItems event
         // fires) so a "buffer full" retry actually gets retried.
-        if let Some(client) = connection.client() {
+        if let Some(client) = connection.client().filter(|_| seed_ok) {
             let received_items = client.received_items();
             while next_item_index < received_items.len() {
                 let received = &received_items[next_item_index];
@@ -534,6 +580,7 @@ fn run_headless(args: StartupArgs) {
         // links.rs for latching and echo suppression. Polled even with both
         // tags off so the latches stay current.
         match link_monitor.poll(&mut mem, root_addr) {
+            Ok(signals) if !seed_ok => drop(signals), // wrong/no save: nothing to send
             Ok(signals) => {
                 for signal in signals {
                     let tag = match signal {
@@ -590,6 +637,9 @@ fn run_headless(args: StartupArgs) {
         let mut newly_checked_all: Vec<i64> = Vec::new();
         let already_checked = |code: i64| reported_locations.contains(&code);
 
+        if !seed_ok {
+            // Save belongs to another seed (or none is loaded): skip all location checks.
+        } else {
         if let Some(poller) = location_poller.as_mut() {
             match poller.poll(&mut mem, root_addr, &already_checked) {
                 Ok(codes) => newly_checked_all.extend(codes),
@@ -615,6 +665,7 @@ fn run_headless(args: StartupArgs) {
         match boss_defeats::poll(&mut mem, root_addr, &already_checked) {
             Ok(codes) => newly_checked_all.extend(codes),
             Err(e) => eprintln!("[IPC] boss defeat poll failed: {e}"),
+        }
         }
 
         if !newly_checked_all.is_empty() {

@@ -354,6 +354,21 @@ b.eq fi_dbg_request_post
 cmp w8, #108
 b.eq pot_spawn_custom_item
 
+; File select slot name display (apseed_ui.rs): file select state + cursor
+; (x0 = file select scene object)
+cmp w8, #109
+b.eq apseed_ui_fs_hook
+
+; File select slot name display: label getter entry
+; (x0 = message file index, x1 = label)
+cmp w8, #110
+b.eq apseed_ui_label_hook
+
+; File select slot name display: label getter epilogue
+; (x0 = string pointer about to be returned; returns the pointer to use)
+cmp w8, #111
+b.eq apseed_ui_label_ret_hook
+
 ret ; this should never be reached
 
 ; Wrapper for custom_event_commands.

@@ -3601,6 +3601,10 @@ pub extern "C" fn reset_ap_item_receive_batch() {
 /// which holds the magic signature).
 static mut AP_SLOT_RETRIES: [u32; ARCHIPELAGO_BUFFER_SIZE] = [0u32; ARCHIPELAGO_BUFFER_SIZE];
 
+/// `ArchipelagoItemSlot.flags` bit 0: deliver this item even if the loaded
+/// save's seed doesn't match the patch (client sets it for `!getitem` items).
+pub const AP_SLOT_FLAG_FORCE: u8 = 1;
+
 /// Returns true if we are still in the post-stage-transition cooldown
 /// and should NOT process buffer items this frame.
 #[inline]
@@ -3625,6 +3629,10 @@ fn ap_stage_cooldown_active() -> bool {
 #[no_mangle]
 pub extern "C" fn archipelago_check_item_buffer() {
     unsafe {
+        // Items from another seed's save may only be delivered when the client
+        // marks the slot AP_SLOT_FLAG_FORCE (used for `!getitem` test items).
+        let seed_ok = crate::savefile::save_seed_matches();
+
         // Wait for the stage to finish loading before we attempt any spawns.
         if ap_stage_cooldown_active() {
             return;
@@ -3653,6 +3661,16 @@ pub extern "C" fn archipelago_check_item_buffer() {
 
             // Skip empty slots
             if item_id_lo == 0 {
+                continue;
+            }
+
+            // Never deliver regular items into a save that belongs to another
+            // seed; only slots the client explicitly forced (cheat items).
+            if !seed_ok
+                && core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).flags))
+                    & AP_SLOT_FLAG_FORCE
+                    == 0
+            {
                 continue;
             }
 
@@ -4069,6 +4087,22 @@ pub extern "C" fn refresh_ipc_addresses() {
         // entrance, night, trial, fade frames, ...) for the client's
         // `/stage_info` command.
         crate::entrance::refresh_stage_info();
+
+        // Seed info for the client's send/receive gating. A save without a
+        // stored seed (created before this feature) adopts the installed
+        // patch's seed once Link is in the world.
+        if player_valid {
+            crate::savefile::adopt_patch_seed_if_missing();
+        }
+        let patched = crate::savefile::patched_seed();
+        let saved = crate::savefile::save_seed();
+        crate::ipc::AP_IPC_ROOT.seed_info = crate::ipc::ApSeedInfo {
+            patched_seed:  patched.to_le_bytes(),
+            save_seed:     saved.to_le_bytes(),
+            save_has_seed: (saved != 0) as u8,
+            seed_match:    (save_loaded && crate::savefile::save_seed_matches()) as u8,
+            _pad:          [0; 6],
+        };
     }
 }
 

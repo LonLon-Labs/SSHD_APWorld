@@ -659,7 +659,14 @@ class ASMPatchHandler:
                 archipelago_item_model,
                 goddess_chest_unlock_mode,
                 1 if world.setting("bird_statues_need_unlock") == "on" else 0,
-            ],  # RANDOMIZER_SETTINGS
+                0,
+                0,
+            ]
+            + list(struct.pack("<Q", int(getattr(world, "ap_seed", 0) or 0) & 0xFFFFFFFFFFFFFFFF))
+            + list(
+                (str(getattr(world, "ap_slot_name", "") or "")[:16] + "\0" * 17)[:17]
+                .encode("utf-16-le")
+            ),  # RANDOMIZER_SETTINGS (+8: ap_seed u64, +16: ap_slot_name [u16; 17])
             0x712E5FF020: [
                 0xFF,
                 0xFF,

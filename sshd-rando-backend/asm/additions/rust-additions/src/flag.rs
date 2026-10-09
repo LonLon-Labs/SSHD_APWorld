@@ -844,6 +844,10 @@ pub extern "C" fn handle_startflags() {
         // amiibo
         (*FILE_MGR).game_options |= 1;
 
+        // Archipelago: remember which multiworld (seed + slot name) this new
+        // file belongs to.
+        savefile::write_save_seed();
+
         ((*(*STORYFLAG_MGR).funcs).do_commit)(STORYFLAG_MGR);
         ((*(*ITEMFLAG_MGR).funcs).do_commit)(ITEMFLAG_MGR);
 
