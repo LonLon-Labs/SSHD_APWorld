@@ -217,6 +217,7 @@ def generate_patches(
     patcher_data: dict,
     extract_path: Path,
     output_dir: Path,
+    other_mods_path: Optional[Path] = None,
 ) -> Tuple[Optional[Path], Optional[Path]]:
     """
     Generate romfs/exefs mod files from patcher_data + user's ROM extract.
@@ -225,6 +226,8 @@ def generate_patches(
         patcher_data: Dict loaded from patcher_data.json inside .apsshd
         extract_path: Path to the extracted SSHD ROM (contains romfs/ and exefs/)
         output_dir: Temporary directory for generation output
+        other_mods_path: Optional folder containing the mods listed in the YAML's
+            other_mods. Overrides the YAML's other_mods_path when given.
 
     Returns:
         (romfs_path, exefs_path) on success, or (None, None) on failure.
@@ -241,6 +244,14 @@ def generate_patches(
     os.environ["SSHD_AP_EXTRACT_PATH"] = str(extract_path.resolve())
     os.environ["SSHD_AP_USERDATA_PATH"] = str(extract_path.resolve().parent)
 
+    # Other mods: point the backend at the folder holding the mods the YAML asked for.
+    # (Must happen before filepathconstants is reloaded below.)
+    from SSHDRWrapper import configure_other_mods_environment
+    _mods_settings = dict(patcher_data.get("ap_settings", {}))
+    if other_mods_path is not None:
+        _mods_settings["other_mods_path"] = str(other_mods_path)
+    configure_other_mods_environment(_mods_settings, extract_path)
+
     # Force reload filepathconstants if already imported so new env vars apply
     import importlib
     if "filepathconstants" in sys.modules:
@@ -253,8 +264,10 @@ def generate_patches(
         create_sshd_rando_config,
         overlay_multiworld_items,
         inject_custom_flags_into_world,
+        sync_other_mods_constants,
     )
     _initialize_sshd_rando()
+    sync_other_mods_constants()
 
     from logic.generate import generate
     from logic.config import write_config_to_file
@@ -1056,6 +1069,12 @@ def main():
         help="Create a new .apsshd with ROM patches included (for sharing with others).",
     )
     parser.add_argument(
+        "--other-mods-path",
+        help="Folder containing the mods listed in the YAML's other_mods. "
+             "Defaults to the YAML's other_mods_path, then <extract parent>/other_mods.",
+        default=None,
+    )
+    parser.add_argument(
         "--nogui",
         action="store_true",
         help="Run in CLI mode without the GUI.",
@@ -1118,7 +1137,10 @@ def main():
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        romfs_path, exefs_path = generate_patches(patcher_data, extract_path, temp_dir)
+        romfs_path, exefs_path = generate_patches(
+            patcher_data, extract_path, temp_dir,
+            other_mods_path=Path(args.other_mods_path) if args.other_mods_path else None,
+        )
 
         if romfs_path is None or exefs_path is None:
             print("\nERROR: Patch generation failed.")

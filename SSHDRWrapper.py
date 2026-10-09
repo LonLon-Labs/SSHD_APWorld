@@ -68,6 +68,90 @@ SSHD_RANDO_PATH = None
 
 CURRENT_DIR = Path(__file__).parent
 
+
+# ---------------------------------------------------------------------------
+# Other mods
+#
+# Players can merge other mods (folders containing a romfs/) into the output.
+# The YAML carries the mod folder names (``other_mods``) and, optionally, the
+# folder that holds them (``other_mods_path``, filled in by the sshd-rando GUI).
+# The backend reads the folder from filepathconstants.OTHER_MODS_PATH, which is
+# driven by the SSHD_AP_OTHER_MODS_PATH env var set here.
+# ---------------------------------------------------------------------------
+
+OTHER_MODS_ENV_VAR = "SSHD_AP_OTHER_MODS_PATH"
+
+
+def normalize_other_mods(settings_dict: Dict[str, Any]) -> list:
+    """Return the cleaned, de-duplicated list of mod folder names from settings."""
+    raw = settings_dict.get("other_mods") or []
+    if isinstance(raw, str):
+        raw = [raw]
+    mods = []
+    for name in raw:
+        name = str(name).strip()
+        if name and name not in mods:
+            mods.append(name)
+    return mods
+
+
+def configure_other_mods_environment(settings_dict: Dict[str, Any], extract_path: Path) -> None:
+    """
+    Point the backend at the folder containing the requested other mods.
+
+    Must be called BEFORE filepathconstants is imported/reloaded. Resolution order:
+      1. ``other_mods_path`` from the YAML, if it is an existing directory
+      2. <parent of extract_path>/other_mods (the backend's default location)
+    Does nothing (and clears any stale override) when no mods are requested.
+    """
+    os.environ.pop(OTHER_MODS_ENV_VAR, None)
+
+    mods = normalize_other_mods(settings_dict)
+    if not mods:
+        return
+
+    chosen = Path(extract_path).resolve().parent / "other_mods"
+    configured = str(settings_dict.get("other_mods_path", "") or "").strip()
+    if configured:
+        try:
+            candidate = Path(configured).expanduser()
+            if candidate.is_dir():
+                chosen = candidate.resolve()
+            else:
+                print(
+                    f"[SSHDRWrapper] WARNING: other_mods_path '{configured}' is not a folder on this "
+                    f"machine; falling back to {chosen}"
+                )
+        except (OSError, ValueError) as e:
+            print(f"[SSHDRWrapper] WARNING: other_mods_path is not usable ({e!r}); falling back to {chosen}")
+
+    os.environ[OTHER_MODS_ENV_VAR] = str(chosen)
+    print(f"[SSHDRWrapper] Other mods {mods} will be read from: {chosen}")
+
+
+def sync_other_mods_constants() -> None:
+    """
+    Push the current filepathconstants OTHER_MODS_PATH / COMBINED_MODS_PATH into
+    backend modules that imported them by value (``from filepathconstants import``).
+    Reloading filepathconstants alone does not update those copies, which matters
+    when several worlds are generated in one process with different mod folders.
+    """
+    fpc = sys.modules.get("filepathconstants")
+    if fpc is None:
+        return
+    for name in ("OTHER_MODS_PATH", "COMBINED_MODS_PATH"):
+        new_value = getattr(fpc, name, None)
+        if not isinstance(new_value, Path):
+            continue
+        for module in list(sys.modules.values()):
+            if module is None or module is fpc:
+                continue
+            try:
+                if isinstance(module.__dict__.get(name), Path):
+                    module.__dict__[name] = new_value
+            except Exception:
+                pass
+
 # Flag to track if sshd-rando has been initialized (checked lazily, not at import time)
 _sshd_rando_initialized = False
 
@@ -312,6 +396,14 @@ def create_sshd_rando_config(settings_dict: Dict[str, Any], output_dir: Path, se
             if mixed_pools:
                 print(f"[SSHDRWrapper] Processing mixed_entrance_pools from config.yaml ({len(mixed_pools)} pools)")
                 setting_map.mixed_entrance_pools = mixed_pools
+
+    # Handle other_mods (mod folder names to merge into the output).
+    # write_config_to_file() puts these in the config yaml that generate() reloads,
+    # which is where the patch handlers read world.setting_map.other_mods from.
+    other_mods = normalize_other_mods(settings_dict)
+    if other_mods:
+        print(f"[SSHDRWrapper] Processing other_mods ({len(other_mods)} mods): {other_mods}")
+        setting_map.other_mods = other_mods
     
     # Handle starting_sword (add Progressive Sword based on level)
     # Always add to setting_map.starting_inventory so that
@@ -453,6 +545,7 @@ def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, see
     # SSHD_AP_USERDATA_PATH → overrides userdata_path (cache, output, config dirs)
     os.environ["SSHD_AP_EXTRACT_PATH"] = str(extract_path)
     os.environ["SSHD_AP_USERDATA_PATH"] = str(extract_path.parent)
+    configure_other_mods_environment(settings_dict, extract_path)
     print(f"[SSHDRWrapper] Extract path: {extract_path}")
     print(f"[SSHDRWrapper] Userdata path: {extract_path.parent}")
     
@@ -464,6 +557,7 @@ def generate_sshd_rando_mod(settings_dict: Dict[str, Any], output_dir: Path, see
     
     # Initialize sshd-rando imports (lazy load)
     _initialize_sshd_rando()
+    sync_other_mods_constants()
     from logic.generate import generate
     from patches.allpatchhandler import AllPatchHandler
     from logic.config import write_config_to_file

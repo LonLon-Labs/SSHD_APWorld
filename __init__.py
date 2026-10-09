@@ -4466,6 +4466,16 @@ class SSHDWorld(World):
         
         # Configuration
         settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())
+
+        # Other mods to merge into the output (folder names inside the other_mods
+        # folder). Purely a patching concern: it never affects logic or the seed.
+        other_mods = []
+        for mod_name in list(self.options.other_mods.value or []):
+            mod_name = str(mod_name).strip()
+            if mod_name and mod_name not in other_mods:
+                other_mods.append(mod_name)
+        settings_dict["other_mods"] = other_mods
+        settings_dict["other_mods_path"] = (self.options.other_mods_path.value or "").strip()
         
         # Player-excluded locations (standard `exclude_locations` YAML option).
         # generate_early() and the sshd-rando wrapper both read this key; it was

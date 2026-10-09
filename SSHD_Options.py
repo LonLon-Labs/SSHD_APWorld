@@ -12,6 +12,7 @@ from Options import (
     ItemDict,
     LocationSet,
     OptionGroup,
+    OptionList,
     PerGameCommonOptions,
     Range,
     Toggle,
@@ -1768,6 +1769,31 @@ class SshdrSeed(FreeText):
     display_name = "SSHD-Rando Seed"
     default = ""
 
+
+class OtherMods(OptionList):
+    """
+    Names of other mods to merge into the randomizer output, as a YAML list.
+    Each entry is the name of a folder inside your other_mods folder that contains
+    that mod's romfs folder. The sshd-rando GUI fills this in for you when you
+    tick mods in its Advanced tab and generate a YAML.
+    Mods that modify the exefs folder are not supported.
+    This feature is EXPERIMENTAL. Mods that edit the same files as each other
+    (and that can't be combined) will cause patching to fail.
+    """
+    display_name = "Other Mods"
+    default = []
+
+
+class OtherModsPath(FreeText):
+    """
+    Folder that contains the mod folders listed in Other Mods.
+    Leave blank to use the other_mods folder next to your extract path
+    (e.g. C:\\ProgramData\\Archipelago\\other_mods on Windows).
+    The sshd-rando GUI fills this in with its own other_mods folder.
+    """
+    display_name = "Other Mods Path"
+    default = ""
+
 # === Cheats ===
 
 class CheatInfiniteHealth(Toggle):
@@ -2162,6 +2188,8 @@ class SSHDOptions(PerGameCommonOptions):
     # Configuration
     extract_path: ExtractPath
     sshdr_seed: SshdrSeed
+    other_mods: OtherMods
+    other_mods_path: OtherModsPath
     
     # Cheats
     cheat_infinite_health: CheatInfiniteHealth
@@ -2430,5 +2458,7 @@ sshd_option_groups = [
     OptionGroup("Configuration", [
         ExtractPath,
         SshdrSeed,
+        OtherMods,
+        OtherModsPath,
     ]),
 ]

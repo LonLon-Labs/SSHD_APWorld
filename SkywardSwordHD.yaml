@@ -54,6 +54,14 @@ Skyward Sword HD:
   # On macOS: /Users/user/Library/Application Support/Archipelago/sshd_extract
   extract_path: ""
 
+  # Other mods to merge into the randomizer output (EXPERIMENTAL).
+  # other_mods is a list of folder names; each folder holds that mod's romfs folder.
+  # other_mods_path is the folder containing those mod folders. Leave it blank to use
+  # the other_mods folder next to your extract path. The sshd-rando GUI fills both in.
+  # Mods that modify exefs are not supported.
+  other_mods: []
+  other_mods_path: ""
+
 
 
   # ====================================================================================
