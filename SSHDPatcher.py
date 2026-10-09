@@ -316,6 +316,16 @@ def generate_patches(
         world.ap_seed = int(patcher_data["seed"])
     world.ap_slot_name = patcher_data.get("ap_slot_name", "")
 
+    # Fi's text tells the player the dungeon goal count (None = goal disabled)
+    world.ap_dungeon_goal_count = patcher_data.get("ap_dungeon_goal_count")
+
+    # Sync required-dungeon flags so Fi's text matches AP's selection
+    ap_required = patcher_data.get("ap_required_dungeons")
+    if ap_required is not None:
+        for name, dun in world.dungeons.items():
+            dun.required = name in ap_required
+        print(f"[Patcher] Synced required dungeons to AP selection: {ap_required}")
+
     # ---- Overlay multiworld items ----
     item_mapping = patcher_data.get("multiworld_item_mapping", {})
     if item_mapping:

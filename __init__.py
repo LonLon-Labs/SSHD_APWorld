@@ -3759,6 +3759,18 @@ class SSHDWorld(World):
                 "sshdr_seed": getattr(self, '_sshdr_resolved_seed', f"AP{self.multiworld.seed}P{self.player}"),
                 "ap_seed": int(self.multiworld.seed),
                 "ap_slot_name": self.player_name,
+                # Fi's dungeon goal text (None = goal disabled) and the AP-selected
+                # required dungeons, so the standalone patcher matches generate-time patching.
+                "ap_dungeon_goal_count": (
+                    self.options.dungeon_goal_count.value
+                    if self.options.dungeon_goal_requirement.value
+                    else None
+                ),
+                "ap_required_dungeons": (
+                    list(self._ap_required_dungeons)
+                    if getattr(self, '_ap_required_dungeons', None) is not None
+                    else None
+                ),
             }
             
             # Create the .apsshd patch file
