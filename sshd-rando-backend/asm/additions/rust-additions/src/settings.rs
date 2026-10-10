@@ -33,7 +33,11 @@ pub struct RandomizerSettings {
     pub bird_statues_need_unlock:  u8, /* 1 = flying up from a statue also needs its
                                         * unlock flag (scene 6), see
                                         * lyt::require_sailcloth_and_loftwing_to_fly_to_sky */
-    pub _pad:                      [u8; 2],
+    pub triforce_door_pieces:      u8, /* 1 or 2 = the Temple of Hylia door opens once this many
+                                        * Triforce pieces are owned
+                                        * (flag::handle_triforce_door_flag);
+                                        * 0 = nothing to do */
+    pub _pad:                      [u8; 1],
     pub ap_seed:                   [u8; 8], // u64 LE, 0 = unknown
     pub ap_slot_name:              [u16; 17], // UTF-16, null terminated
 }

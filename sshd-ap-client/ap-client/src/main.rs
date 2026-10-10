@@ -43,6 +43,7 @@ mod boss_defeats;
 mod cheat_sync;
 mod colors;
 mod delivery;
+mod filelog;
 mod go_mode;
 mod goddess_chests;
 mod goddess_cubes;
@@ -222,6 +223,11 @@ fn parse_args() -> StartupArgs {
 
 fn main() -> iced::Result {
     colors::enable_ansi();
+    // Mirror all terminal output (stdout + stderr) into a timestamped file in
+    // `...\Archipelago\logs\sshd`, like the Python client did. Must come after
+    // `enable_ansi` (which configures the original console) and before
+    // anything prints.
+    filelog::init("sshd_client");
     let args = parse_args();
 
     if args.headless {

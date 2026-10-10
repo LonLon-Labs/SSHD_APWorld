@@ -4153,6 +4153,14 @@ class SSHDWorld(World):
         settings_dict["dungeon_goal_count"] = str(self.options.dungeon_goal_count.value)
         settings_dict["required_triforce_pieces"] = str(self.options.required_triforce_pieces.value)
         settings_dict["require_triforce_pieces"] = "on" if self.options.require_triforce_pieces.value else "off"
+        # Backend 'triforce_required' mirrors the Triforce Required toggle as-is. The number of pieces
+        # the Temple of Hylia doors need is sent separately as 'triforce_door_pieces' (any N of the 3):
+        # it follows Required Triforce Pieces when Require Triforce Pieces is on, otherwise all 3.
+        settings_dict["triforce_required"] = "on" if self.options.triforce_required.value else "off"
+        door_pieces = 3
+        if self.options.require_triforce_pieces.value and self.options.required_triforce_pieces.value < 3:
+            door_pieces = max(0, int(self.options.required_triforce_pieces.value))
+        settings_dict["triforce_door_pieces"] = str(door_pieces)
         settings_dict["require_dungeons"] = "on" if self.options.dungeon_goal_requirement.value else "off"
         settings_dict["require_greg"] = "on" if self.options.require_greg.value else "off"
         settings_dict["require_tim"] = "on" if self.options.require_tim.value else "off"

@@ -750,6 +750,24 @@
     - "off": "You will not start with any extra Bird Statues unlocked."
     - "on": "Only applies when Bird Statues Need to be Unlocked is on. You start with one Bird Statue unlocked in each of Faron, Eldin and Lanayru, and those unlock items are removed from the item pool."
 
+- name: triforce_required
+  default_option: "on"
+  pretty_name: Triforce Required
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "The double doors in Temple of Hylia are unlocked from the start. You do not need the Triforce of Courage, Power and Wisdom to reach the end of the game."
+    - "on": "You will need the Triforce of Courage, Power and Wisdom to unlock the double doors in Temple of Hylia at the end of the game."
+
+- name: triforce_door_pieces
+  default_option: 3
+  pretty_name: Triforce Pieces for Temple of Hylia Doors
+  pretty_options:
+    - 0-3
+  options:
+    - 0-3: "Only applies when Triforce Required is on. Choose how many of the three Triforce pieces (any combination of Courage, Power and Wisdom) are needed to unlock the double doors in Temple of Hylia. 0 unlocks them from the start and 3 requires the complete Triforce."
+
 - name: skip_horde
   default_option: "off"
   pretty_name: Skip The Horde Fight

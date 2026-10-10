@@ -118,7 +118,7 @@ Skyward Sword HD:
   # ========================================
   # CHEATS
   # ========================================
-  # These cheats are applied in real-time by the client via memory writes.
+  # These cheats are enabled in the rust backend by the Archipelago client when connected.
   # They do NOT affect randomizer logic or seed generation.
 
   # Infinite Health

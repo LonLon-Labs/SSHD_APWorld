@@ -437,6 +437,51 @@ pub fn refresh_cached_story_state() {
     }
 }
 
+/// Temple of Hylia door: sceneflag 50 of the Sealed Grounds scene (index 10)
+/// is the "Unlocked Horde Door from Temple of Hylia" flag that startflags.yaml
+/// sets for a complete Triforce. When the seed needs only 1 or 2 Triforce
+/// pieces (`needed`), set it as soon as that many of the three pieces are
+/// owned. Called every frame from the main loop (never from a game hook, see
+/// `refresh_cached_story_state`).
+pub fn handle_triforce_door_flag(needed: u8) {
+    unsafe {
+        if needed == 0 || needed > 3 {
+            return;
+        }
+        if STORYFLAG_MGR.is_null()
+            || (*STORYFLAG_MGR).funcs.is_null()
+            || ITEMFLAG_MGR.is_null()
+            || (*ITEMFLAG_MGR).funcs.is_null()
+            || SCENEFLAG_MGR.is_null()
+            || FILE_MGR.is_null()
+        {
+            return;
+        }
+
+        let mut owned: u8 = 0;
+        for piece in [
+            ITEMFLAGS::TRIFORCE_OF_COURAGE,
+            ITEMFLAGS::TRIFORCE_OF_POWER,
+            ITEMFLAGS::TRIFORCE_OF_WISDOM,
+        ] {
+            if check_itemflag(piece) != 0 {
+                owned += 1;
+            }
+        }
+        if owned < needed {
+            return;
+        }
+
+        if check_global_sceneflag(10, 50) == 0 {
+            set_global_sceneflag(10, 50);
+        }
+        // The scene currently loaded reads the local copy, so update it too.
+        if (*SCENEFLAG_MGR).sceneindex == 10 && check_local_sceneflag(50) == 0 {
+            set_local_sceneflag(50);
+        }
+    }
+}
+
 /// True if the player owns the Sailcloth (cached; see `HAS_SAILCLOTH`).
 pub fn has_sailcloth_cached() -> bool {
     unsafe { core::ptr::read_volatile(core::ptr::addr_of!(HAS_SAILCLOTH)) != 0 }

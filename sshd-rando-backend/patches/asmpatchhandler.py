@@ -645,6 +645,17 @@ class ASMPatchHandler:
         elif sky_keep_goal.name.endswith("Farore"):
             sky_keep_beaten_sceneflag = 64
 
+        # Temple of Hylia door: when only 1 or 2 Triforce pieces are needed, the game opens the door
+        # itself (flag::handle_triforce_door_flag). 0 = nothing to do (vanilla all-3 or no requirement).
+        triforce_door_dynamic = 0
+        if world.setting("triforce_required") == "on":
+            try:
+                _door_pieces = int(str(world.setting("triforce_door_pieces")))
+            except (TypeError, ValueError):
+                _door_pieces = 3
+            if _door_pieces in (1, 2):
+                triforce_door_dynamic = _door_pieces
+
         init_rw_globals_dict = {
             0x712E54B6BC: [
                 daytime_sky_color_index,
@@ -659,7 +670,7 @@ class ASMPatchHandler:
                 archipelago_item_model,
                 goddess_chest_unlock_mode,
                 1 if world.setting("bird_statues_need_unlock") == "on" else 0,
-                0,
+                triforce_door_dynamic,
                 0,
             ]
             + list(struct.pack("<Q", int(getattr(world, "ap_seed", 0) or 0) & 0xFFFFFFFFFFFFFFFF))

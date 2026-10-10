@@ -39,7 +39,7 @@
 
 use iced::alignment::{Horizontal, Vertical};
 use iced::keyboard::{self, key::Named};
-use iced::widget::{button, column, container, rich_text, row, scrollable, span, text, text_input, tooltip, Column, Space};
+use iced::widget::{button, checkbox, column, container, rich_text, row, scrollable, span, text, text_input, tooltip, Column, Space};
 use iced::{Color, Element, Length, Subscription, Task, Theme};
 
 use crate::colors::{self, LogSpan, SpanColor};
@@ -97,6 +97,33 @@ fn save_connection(server: &str, slot: &str) {
     }
     if let Some(path) = saved_connection_path() {
         let _ = std::fs::write(path, format!("{server}\n{slot}\n"));
+    }
+}
+
+fn settings_path() -> Option<std::path::PathBuf> {
+    config_dir().map(|dir| dir.join("settings.txt"))
+}
+
+/// Whether the person turned on "Auto-connect" (reconnect to the last
+/// remembered server + slot on launch). Defaults to OFF: any failure to
+/// read the settings file (missing, unreadable, garbled) means "off".
+fn load_auto_connect_setting() -> bool {
+    let Some(path) = settings_path() else { return false };
+    let Ok(contents) = std::fs::read_to_string(path) else { return false };
+    contents.lines().any(|line| {
+        let line = line.trim();
+        line.eq_ignore_ascii_case("auto_connect=true") || line.eq_ignore_ascii_case("auto_connect=1")
+    })
+}
+
+/// Persists the "Auto-connect" checkbox. Best-effort, like `save_connection`.
+fn save_auto_connect_setting(enabled: bool) {
+    let Some(dir) = config_dir() else { return };
+    if std::fs::create_dir_all(&dir).is_err() {
+        return;
+    }
+    if let Some(path) = settings_path() {
+        let _ = std::fs::write(path, format!("auto_connect={enabled}\n"));
     }
 }
 
@@ -158,6 +185,11 @@ pub struct App {
     /// Consumed the first time `worker` becomes available, if the
     /// startup flags had both a server and a slot name.
     auto_connect: bool,
+    /// The "Auto-connect" checkbox: whether the remembered server + slot
+    /// from the last successful connection are connected to automatically
+    /// on launch. Persisted in `settings.txt`; defaults to off. (Explicit
+    /// `--connect`/`--name` arguments still connect on launch regardless.)
+    auto_connect_enabled: bool,
     /// Commands submitted before `worker` became available (the window
     /// between the app opening and the worker stream's first `Ready`
     /// event) — queued here rather than dropped, and flushed in order
@@ -171,6 +203,7 @@ pub enum Message {
     ServerChanged(String),
     SlotChanged(String),
     PasswordChanged(String),
+    AutoConnectToggled(bool),
     Connect,
     Disconnect,
     CommandChanged(String),
@@ -202,11 +235,14 @@ impl App {
         // whatever was remembered from the last successful connection —
         // see `save_connection` — so the person doesn't have to retype
         // the server and slot name every time they reopen the client.
+        let auto_connect_enabled = load_auto_connect_setting();
         let mut auto_connect = flags.auto_connect;
         let (server, slot) = if !flags.server.is_empty() || !flags.slot.is_empty() {
             (flags.server, flags.slot)
         } else if let Some((saved_server, saved_slot)) = load_saved_connection() {
-            auto_connect = true;
+            // Still pre-fill the remembered connection, but only connect
+            // automatically if the "Auto-connect" checkbox is on.
+            auto_connect = auto_connect_enabled;
             (saved_server, saved_slot)
         } else {
             (String::new(), String::new())
@@ -234,6 +270,7 @@ impl App {
 
             worker: None,
             auto_connect,
+            auto_connect_enabled,
             pending_commands: Vec::new(),
         };
         (app, Task::none())
@@ -254,6 +291,11 @@ impl App {
             Message::PasswordChanged(v) => {
                 self.password = v;
                 self.command_focused = false;
+                Task::none()
+            },
+            Message::AutoConnectToggled(enabled) => {
+                self.auto_connect_enabled = enabled;
+                save_auto_connect_setting(enabled);
                 Task::none()
             },
             Message::Connect => {
@@ -378,8 +420,13 @@ impl App {
                 .padding(8)
                 .style(theme::field_input)
                 .width(Length::FillPortion(1)),
+            checkbox("Auto-connect", self.auto_connect_enabled)
+                .on_toggle(Message::AutoConnectToggled)
+                .size(18.0)
+                .text_size(14.0),
         ]
         .spacing(10)
+        .align_y(Vertical::Center)
         .padding(iced::Padding { top: 0.0, right: 12.0, bottom: 12.0, left: 12.0 });
 
         // ── 2. Progress strip (kvui: MDLinearProgressIndicator) ─────────

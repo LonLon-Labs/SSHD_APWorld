@@ -199,6 +199,15 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     // Goddess Sword storyflag (907) into the chest unlock flag (95).
     handle_goddess_chest_unlock_flag();
 
+    // Temple of Hylia door - when the seed needs only 1 or 2 Triforce pieces,
+    // open it as soon as that many are owned (skipped on the title screen).
+    unsafe {
+        let door_pieces = RANDOMIZER_SETTINGS.triforce_door_pieces;
+        if door_pieces != 0 && CURRENT_LAYER != 28 {
+            flag::handle_triforce_door_flag(door_pieces);
+        }
+    }
+
     // Ensure silent realm vessel state is valid even if gate/event flow paths
     // were skipped by AP progression timing.
     item::archipelago_silent_realm_tear_fix();

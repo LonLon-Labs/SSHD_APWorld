@@ -94,7 +94,9 @@ version = "0.1.0"
 dependencies = [
  "ap-ipc",
  "archipelago_rs",
+ "chrono",
  "iced",
+ "libc",
  "oneshot",
  "process-memory",
  "serde",
