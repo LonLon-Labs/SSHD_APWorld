@@ -184,12 +184,33 @@ main:
 
     dLytHelp__stateNoneUpdate: 0x7100c3fc0c
 
+    # Requests an event from the event manager (FUN_7100b70290 in Ghidra main-new).
+    # Args: (owner actor, *const Event, 0). Used to start Fi's "talk_sword_sprit" event.
+    startEventRequest: 0x7100b70290
+
+    # Fi proactive alert chooser (FUN_7100dc0600 in Ghidra, runtime = Ghidra + 0x4000):
+    # returns the alert id Fi should speak (0xffff = none). Called from the player
+    # update FUN_7100a69ccc.
+    fiProactiveAlertChooser: 0x7100dc4600
+
 
     # Misc
     DAT_7102c01000: 0x7102c01000
+
+    # DEBUG (Fi can't-drop investigation, remove with the diagnostic): globals
+    # tested by the early-outs of the player update FUN_7100a69ccc.
+    # (runtime = Ghidra + 0x4000)
+    DAT_7102bf98fe: 0x7102bfd8fe
+    DAT_710182ded8: 0x7101831ed8
+    DAT_710192fb58: 0x7101933b58
+    DAT_710166cc10: 0x7101670c10
     BOOT_PTR: 0x7102bfda58
 
     dLytSaveMgr__sSavePrompts: 0x710166d9a0
+
+    # u32 stamped into the Fi controller (+0x1170) after a Fi event is requested
+    # (Ghidra DAT_7102bf9974 + 0x4000)
+    FI_EVENT_TIMESTAMP: 0x7102bfd974
 
     CURRENT_SKY_COLOR: 0x7101838838
     DAYTIME_SKY_COLOR: 0x7101838a40
@@ -235,8 +256,67 @@ main:
     ## Size: 50 (who knows how many settings we'll get in the future)
     RANDOMIZER_SETTINGS: 0x712e54b6c0
 
+    ## Decoupled Goddess Cubes. Lives in the same patcher-written config area as
+    ## RANDOMIZER_SETTINGS (free space up to RANDOM_MUSIC_DATA); the game only reads it.
+    ## Size: 4 (u32) - must read 0x45425543 ("CUBE", little endian) or the tables are ignored
+    GODDESS_CUBE_MAGIC: 0x712e54b700
+    ## Size: 64 (32 x u16) - AP custom flag for each cube (0x3FF = none).
+    ## Indexed in the same order as GODDESS_CUBE_STORYFLAGS (item.rs / stagepatchhandler.py).
+    GODDESS_CUBE_CUSTOM_FLAGS: 0x712e54b710
+    ## Size: 64 (32 x u16) - item id handed out when each cube is struck
+    GODDESS_CUBE_ITEM_IDS: 0x712e54b750
+
+    ## Bird Statues Give Items. Same layout as the Goddess Cube tables, directly after them
+    ## (free space up to RANDOM_MUSIC_DATA).
+    ## Size: 4 (u32) - must read 0x44524942 ("BIRD", little endian) or the tables are ignored
+    BIRD_STATUE_MAGIC: 0x712e54b790
+    ## Size: 64 (32 x u16) - AP custom flag for each statue (0x3FF = none).
+    ## Indexed in the same order as BIRD_STATUES (item.rs / BIRD_STATUE_LOCATION_NAMES).
+    BIRD_STATUE_CUSTOM_FLAGS: 0x712e54b7a0
+    ## Size: 64 (32 x u16) - item id handed out when each statue is touched
+    BIRD_STATUE_ITEM_IDS: 0x712e54b7e0
+
+    ## Pumpkin Shuffle. The pumpkin actor's params are wiped after creation, so each
+    ## patched pumpkin is looked up by its position instead. Directly after the Bird
+    ## Statue tables (free space up to RANDOM_MUSIC_DATA).
+    ## Size: 4 (u32) - must read 0x504D5550 ("PUMP", little endian) or the table is ignored
+    PUMPKIN_TABLE_MAGIC: 0x712e54b820
+    ## Size: 4 (u32) - number of valid entries (max 96)
+    PUMPKIN_TABLE_COUNT: 0x712e54b824
+    ## Size: 12 * 96 = 1152 - entries of { u32 px_bits, u32 pz_bits, u16 item_word, u16 flag }
+    ##   px_bits / pz_bits: the pumpkin's X / Z position as raw f32 bits (from the BZS)
+    ##   item_word: bits 0-8 item id, bits 9-12 trap nibble (0xF = not a trap)
+    ##   flag: low 10 bits = custom flag (group 1 / extended pages, 0x3FF = none)
+    PUMPKIN_TABLE_ENTRIES: 0x712e54b828
+
+    ## Big Pot Shuffle. Big pots (TuboBig) have no per-pot params at all (params2 is
+    ## 0xFFFFFFFF in every one), so like pumpkins each patched big pot is looked up by
+    ## its position. Directly after the Pumpkin table (0x712e54b828 + 96*12 = 0x712e54bca8;
+    ## free space up to RANDOM_MUSIC_DATA).
+    ## Size: 4 (u32) - must read 0x54504742 ("BGPT", little endian) or the table is ignored
+    BIG_POT_TABLE_MAGIC: 0x712e54bcb0
+    ## Size: 4 (u32) - number of valid entries (max 16; the game has 15 big pots)
+    BIG_POT_TABLE_COUNT: 0x712e54bcb4
+    ## Size: 12 * 16 = 192 - same entry layout as the Pumpkin table:
+    ##   { u32 px_bits, u32 pz_bits, u16 item_word, u16 flag }
+    BIG_POT_TABLE_ENTRIES: 0x712e54bcb8
+
     ## Size: 7616 (0x1DC0) = 32*238
     RANDOM_MUSIC_DATA: 0x712e54c000
+
+    ## Barrel Shuffle. Barrel params are not usable at runtime (params2 low 24 bits are
+    ## 0xFFFFFF in every barrel), so each patched barrel is looked up by its position
+    ## like pumpkins / big pots. The 0x288 bytes left after the Big Pot table are too
+    ## small for ~162 entries, so this table sits right after RANDOM_MUSIC_DATA
+    ## (0x712e54c000 + 0x1DC0 = 0x712e54ddc0), in the same extension segment.
+    ## UNVERIFIED: that the segment is mapped and unused up to 0x712e54e910.
+    ## Size: 4 (u32) - must read 0x4C524252 ("RBRL", little endian) or the table is ignored
+    BARREL_TABLE_MAGIC: 0x712e54e000
+    ## Size: 4 (u32) - number of valid entries (max 192)
+    BARREL_TABLE_COUNT: 0x712e54e004
+    ## Size: 12 * 192 = 2304 - same entry layout as the Pumpkin table:
+    ##   { u32 px_bits, u32 pz_bits, u16 item_word, u16 flag }
+    BARREL_TABLE_ENTRIES: 0x712e54e008
 
     # Writable
     ## Size: 1
@@ -286,3 +366,11 @@ main:
 
     ## This calls dAcItem__spawnItemWithParams but makes sure that bit 9 is left unchanged
     dAcItem__spawnRandoItemWithParams: 0x71005c2060
+
+    ## File select slot name display (apseed_ui.rs).
+    ## Pointer (Ghidra DAT_7102bf9a60) to a struct whose +0x138 holds the file select
+    ## title/caption text manager ("UI manager", +0x9c8 title label, +0x9e8 caption label).
+    UI_ROOT_PTR: 0x7102bfda60
+    ## FUN_7100bcb7b4(ui, which): looks up the label at ui+0x9e8 and pushes it to the
+    ## caption text boxes. which = 0 / 1 / 2 selects the text box set (0 = file select caption).
+    FileSelectText__update: 0x7100bcf7b4

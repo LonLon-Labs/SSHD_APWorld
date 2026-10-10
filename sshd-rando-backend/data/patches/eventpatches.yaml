@@ -290,6 +290,397 @@
       param3: 3
       param4: Item 227 Text
 
+  - name: Statue Unlock 300 Entry
+    type: entryadd
+    entry:
+      name: "003_300"
+      value: Show Item 300 Text
+  - name: Item 300 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 300 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 300 Text
+
+  - name: Statue Unlock 301 Entry
+    type: entryadd
+    entry:
+      name: "003_301"
+      value: Show Item 301 Text
+  - name: Item 301 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 301 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 301 Text
+
+  - name: Statue Unlock 302 Entry
+    type: entryadd
+    entry:
+      name: "003_302"
+      value: Show Item 302 Text
+  - name: Item 302 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 302 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 302 Text
+
+  - name: Statue Unlock 303 Entry
+    type: entryadd
+    entry:
+      name: "003_303"
+      value: Show Item 303 Text
+  - name: Item 303 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 303 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 303 Text
+
+  - name: Statue Unlock 304 Entry
+    type: entryadd
+    entry:
+      name: "003_304"
+      value: Show Item 304 Text
+  - name: Item 304 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 304 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 304 Text
+
+  - name: Statue Unlock 305 Entry
+    type: entryadd
+    entry:
+      name: "003_305"
+      value: Show Item 305 Text
+  - name: Item 305 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 305 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 305 Text
+
+  - name: Statue Unlock 306 Entry
+    type: entryadd
+    entry:
+      name: "003_306"
+      value: Show Item 306 Text
+  - name: Item 306 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 306 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 306 Text
+
+  - name: Statue Unlock 307 Entry
+    type: entryadd
+    entry:
+      name: "003_307"
+      value: Show Item 307 Text
+  - name: Item 307 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 307 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 307 Text
+
+  - name: Statue Unlock 308 Entry
+    type: entryadd
+    entry:
+      name: "003_308"
+      value: Show Item 308 Text
+  - name: Item 308 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 308 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 308 Text
+
+  - name: Statue Unlock 309 Entry
+    type: entryadd
+    entry:
+      name: "003_309"
+      value: Show Item 309 Text
+  - name: Item 309 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 309 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 309 Text
+
+  - name: Statue Unlock 310 Entry
+    type: entryadd
+    entry:
+      name: "003_310"
+      value: Show Item 310 Text
+  - name: Item 310 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 310 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 310 Text
+
+  - name: Statue Unlock 311 Entry
+    type: entryadd
+    entry:
+      name: "003_311"
+      value: Show Item 311 Text
+  - name: Item 311 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 311 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 311 Text
+
+  - name: Statue Unlock 312 Entry
+    type: entryadd
+    entry:
+      name: "003_312"
+      value: Show Item 312 Text
+  - name: Item 312 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 312 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 312 Text
+
+  - name: Statue Unlock 313 Entry
+    type: entryadd
+    entry:
+      name: "003_313"
+      value: Show Item 313 Text
+  - name: Item 313 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 313 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 313 Text
+
+  - name: Statue Unlock 314 Entry
+    type: entryadd
+    entry:
+      name: "003_314"
+      value: Show Item 314 Text
+  - name: Item 314 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 314 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 314 Text
+
+  - name: Statue Unlock 315 Entry
+    type: entryadd
+    entry:
+      name: "003_315"
+      value: Show Item 315 Text
+  - name: Item 315 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 315 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 315 Text
+
+  - name: Statue Unlock 316 Entry
+    type: entryadd
+    entry:
+      name: "003_316"
+      value: Show Item 316 Text
+  - name: Item 316 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 316 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 316 Text
+
+  - name: Statue Unlock 317 Entry
+    type: entryadd
+    entry:
+      name: "003_317"
+      value: Show Item 317 Text
+  - name: Item 317 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 317 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 317 Text
+
+  - name: Statue Unlock 318 Entry
+    type: entryadd
+    entry:
+      name: "003_318"
+      value: Show Item 318 Text
+  - name: Item 318 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 318 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 318 Text
+
+  - name: Statue Unlock 319 Entry
+    type: entryadd
+    entry:
+      name: "003_319"
+      value: Show Item 319 Text
+  - name: Item 319 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 319 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 319 Text
+
+  - name: Statue Unlock 320 Entry
+    type: entryadd
+    entry:
+      name: "003_320"
+      value: Show Item 320 Text
+  - name: Item 320 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 320 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 320 Text
+
+  - name: Statue Unlock 321 Entry
+    type: entryadd
+    entry:
+      name: "003_321"
+      value: Show Item 321 Text
+  - name: Item 321 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 321 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 321 Text
+
+  - name: Statue Unlock 322 Entry
+    type: entryadd
+    entry:
+      name: "003_322"
+      value: Show Item 322 Text
+  - name: Item 322 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 322 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 322 Text
+
   - name: Give Scrapper Storyflag
     type: flowadd
     flow:
@@ -1128,7 +1519,302 @@
     type: flowpatch
     index: 2
     flow:
-      next: Display Fi Call Text
+      next: Check Fi Cant Drop Pending
+  # Fi "can't drop down" message. Started from code (see
+  # event::start_fi_cant_drop_event) when the player steps into a light pillar
+  # with no droppable Bird Statue; the normal Fi call menu is skipped.
+  - name: Check Fi Cant Drop Pending
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Cant Drop Switch
+      param3: 82 # custom command: is a Fi can't-drop-down message pending (0/1)
+  - name: Fi Cant Drop Switch
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7 # use result from previous check
+    cases:
+      - Display Fi Call Text # 0: normal Fi call menu
+      - Check Fi Cant Drop Is Sailcloth # 1: a can't-drop-down message is pending
+  # Only plain 0/1 switches below: pick no-statue vs Sailcloth, then one of the
+  # 10 Sailcloth texts as a 3-bit binary tree (command 85 = bit N of the variant).
+  - name: Check Fi Cant Drop Is Sailcloth
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Cant Drop Is Sailcloth Switch
+      param3: 84 # custom command: 1 if no Sailcloth (checked live), else 0
+  - name: Fi Cant Drop Is Sailcloth Switch
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Bird Statue Text # 0: has the Sailcloth, no droppable Bird Statue
+      - Fi Variant Bit3 Check # 1: no Sailcloth
+  - name: Fi Variant Bit3 Check
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit3 Switch
+      param1: 3
+      param3: 85
+  - name: Fi Variant Bit3 Switch
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Fi Variant Bit2 Check # variants 0-7 (Text 1-8)
+      - Fi Variant Bit0 Check C # variants 8-9 (Text 9-10)
+  - name: Fi Variant Bit0 Check C
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit0 Switch C
+      param1: 0
+      param3: 85
+  - name: Fi Variant Bit0 Switch C
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Sailcloth Text 9
+      - Show Fi No Sailcloth Text 10
+  - name: Fi Variant Bit2 Check
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit2 Switch
+      param1: 2
+      param3: 85
+  - name: Fi Variant Bit2 Switch
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Fi Variant Bit1 Check A
+      - Fi Variant Bit1 Check B
+  - name: Fi Variant Bit1 Check A
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit1 Switch A
+      param1: 1
+      param3: 85
+  - name: Fi Variant Bit1 Switch A
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Fi Variant Bit0 Check A0
+      - Fi Variant Bit0 Check A1
+  - name: Fi Variant Bit1 Check B
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit1 Switch B
+      param1: 1
+      param3: 85
+  - name: Fi Variant Bit1 Switch B
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Fi Variant Bit0 Check B0
+      - Fi Variant Bit0 Check B1
+  - name: Fi Variant Bit0 Check A0
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit0 Switch A0
+      param1: 0
+      param3: 85
+  - name: Fi Variant Bit0 Switch A0
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Sailcloth Text 1
+      - Show Fi No Sailcloth Text 2
+  - name: Fi Variant Bit0 Check A1
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit0 Switch A1
+      param1: 0
+      param3: 85
+  - name: Fi Variant Bit0 Switch A1
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Sailcloth Text 3
+      - Show Fi No Sailcloth Text 4
+  - name: Fi Variant Bit0 Check B0
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit0 Switch B0
+      param1: 0
+      param3: 85
+  - name: Fi Variant Bit0 Switch B0
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Sailcloth Text 5
+      - Show Fi No Sailcloth Text 6
+  - name: Fi Variant Bit0 Check B1
+    type: flowadd
+    flow:
+      type: type3
+      next: Fi Variant Bit0 Switch B1
+      param1: 0
+      param3: 85
+  - name: Fi Variant Bit0 Switch B1
+    type: switchadd
+    flow:
+      subType: 6
+      param2: 0
+      param3: 7
+    cases:
+      - Show Fi No Sailcloth Text 7
+      - Show Fi No Sailcloth Text 8
+  - name: Fi No Sailcloth Text 1
+    type: textadd
+    textboxtype: 2 # Fi text box background
+  - name: Show Fi No Sailcloth Text 1
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 1
+  - name: Fi No Sailcloth Text 2
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 2
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 2
+  - name: Fi No Sailcloth Text 3
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 3
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 3
+  - name: Fi No Sailcloth Text 4
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 4
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 4
+  - name: Fi No Sailcloth Text 5
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 5
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 5
+  - name: Fi No Sailcloth Text 6
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 6
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 6
+  - name: Fi No Sailcloth Text 7
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 7
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 7
+  - name: Fi No Sailcloth Text 8
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 8
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 8
+  - name: Fi No Sailcloth Text 9
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 9
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 9
+  - name: Fi No Sailcloth Text 10
+    type: textadd
+    textboxtype: 2
+  - name: Show Fi No Sailcloth Text 10
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Sailcloth Text 10
+  - name: Fi No Bird Statue Text
+    type: textadd
+    textboxtype: 2 # Fi text box background
+  - name: Show Fi No Bird Statue Text
+    type: flowadd
+    flow:
+      type: type1
+      next: Fi Cant Drop Voidout
+      param3: 68
+      param4: Fi No Bird Statue Text
+  - name: Fi Cant Drop Voidout
+    type: flowadd
+    flow:
+      type: type3
+      next: -1
+      param3: 83 # custom command: mark the Fi message finished (no-Sailcloth messages then void out from the main loop)
   - name: Display Fi Call Text
     type: flowadd
     flow:

@@ -89,9 +89,16 @@ def get_disabled_shuffle_locations(
             )
             or (
                 settings["goddess_chest_shuffle"].value == "off"
+                and "Goddess Chests" in location.types
+            )
+            or (
+                # Goddess Cubes only hold randomized items when they are
+                # decoupled from their chests. Otherwise they are just
+                # dummy logic items linked to Goddess Chests.
+                "Goddess Cube" in location.types
                 and (
-                    "Goddess Chests" in location.types
-                    or "Goddess Cube" in location.types
+                    settings["decouple_goddess_cubes_and_chests"].value == "off"
+                    and settings["goddess_chest_shuffle"].value == "off"
                 )
             )
             or (
@@ -106,6 +113,18 @@ def get_disabled_shuffle_locations(
             or (
                 settings["npc_closet_shuffle"].value == "vanilla"
                 and "Closets" in location.types
+            )
+            or (
+                settings["pot_shuffle"].value == "off"
+                and "Pots" in location.types
+            )
+            or (
+                settings["pumpkin_shuffle"].value == "off"
+                and "Pumpkins" in location.types
+            )
+            or (
+                settings["barrel_shuffle"].value == "off"
+                and "Barrels" in location.types
             )
             or (
                 settings["hidden_item_shuffle"].value == "off"
@@ -145,6 +164,10 @@ def get_disabled_shuffle_locations(
             or (
                 settings["gossip_stone_treasure_shuffle"].value == "off"
                 and "Gossip Stone Treasures" in location.types
+            )
+            or (
+                settings["bird_statues_give_items"].value == "off"
+                and "Bird Statues" in location.types
             )
         )
     ]

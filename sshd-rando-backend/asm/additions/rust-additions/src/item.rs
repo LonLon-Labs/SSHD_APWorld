@@ -116,6 +116,7 @@ extern "C" {
     static SCENEFLAG_MGR: *mut flag::SceneflagMgr;
 
     static mut STATIC_DUNGEONFLAGS: [u16; 8];
+    static mut STATIC_TBOXFLAGS: [u8; 4];
     static mut CURRENT_STAGE_NAME: [u8; 8];
     static mut CURRENT_LAYER: u8;
 
@@ -128,6 +129,31 @@ extern "C" {
     static mut NEXT_CUSTOM_FLAG_PENDING: u8;
 
     static mut CREST_CUSTOM_FLAGS: [u16; 3];
+
+    // Decoupled Goddess Cubes (filled in by the patcher via init_global_variables)
+    static GODDESS_CUBE_MAGIC: u32;
+    static mut GODDESS_CUBE_CUSTOM_FLAGS: [u16; 32];
+    static mut GODDESS_CUBE_ITEM_IDS: [u16; 32];
+
+    // Bird Statues Give Items (filled in by the patcher via init_global_variables)
+    static BIRD_STATUE_MAGIC: u32;
+    static mut BIRD_STATUE_CUSTOM_FLAGS: [u16; 32];
+    static mut BIRD_STATUE_ITEM_IDS: [u16; 32];
+
+    // Pumpkin Shuffle (filled in by the patcher via init_global_variables)
+    static PUMPKIN_TABLE_MAGIC: u32;
+    static PUMPKIN_TABLE_COUNT: u32;
+    static PUMPKIN_TABLE_ENTRIES: [PumpkinEntry; PUMPKIN_TABLE_MAX];
+
+    // Big Pot Shuffle (filled in by the patcher via init_global_variables)
+    static BIG_POT_TABLE_MAGIC: u32;
+    static BIG_POT_TABLE_COUNT: u32;
+    static BIG_POT_TABLE_ENTRIES: [PumpkinEntry; BIG_POT_TABLE_MAX];
+
+    // Barrel Shuffle (filled in by the patcher via init_global_variables)
+    static BARREL_TABLE_MAGIC: u32;
+    static BARREL_TABLE_COUNT: u32;
+    static BARREL_TABLE_ENTRIES: [PumpkinEntry; BARREL_TABLE_MAX];
 
     static mut SQUIRRELS_CAUGHT_THIS_PLAY_SESSION: bool;
     static TADTONE_SCENEFLAGS: [u8; 17];
@@ -189,7 +215,7 @@ static mut TRIAL_WARP_PENDING: bool = false;
 // Deferred AP reward: stored when the trial completes inside the realm, then
 // spawned as an item pickup once the player reloads into the overworld.
 static mut PENDING_TRIAL_CUSTOM_FLAG: u16 = 0xFFFF;
-static mut PENDING_TRIAL_ITEMID: u8 = 0;
+static mut PENDING_TRIAL_ITEMID: u16 = 0;
 
 #[no_mangle]
 pub extern "C" fn archipelago_silent_realm_tear_fix() {
@@ -211,7 +237,7 @@ pub extern "C" fn archipelago_silent_realm_tear_fix() {
             // the overworld after trial completion.
             if PENDING_TRIAL_CUSTOM_FLAG != 0xFFFF {
                 let item_ptr = give_item_with_archipelago_flag(
-                    PENDING_TRIAL_ITEMID,
+                    PENDING_TRIAL_ITEMID as u16,
                     PENDING_TRIAL_CUSTOM_FLAG,
                 );
                 if !item_ptr.is_null() {
@@ -276,7 +302,8 @@ pub extern "C" fn archipelago_silent_realm_tear_fix() {
                     actor::find_actor_by_type(actor::ACTORID::OBJ_WARP, core::ptr::null_mut())
                         as *mut actor::dAcOWarp;
                 PENDING_TRIAL_ITEMID = if !warp_actor.is_null() {
-                    ((*warp_actor).base.basebase.members.param1 >> 24) as u8
+                    // Trial gate item id: params1 bits 23-31 (9 bits).
+                    (((*warp_actor).base.basebase.members.param1 >> 23) & 0x1FF) as u16
                 } else {
                     0 // fallback (should not happen — warp actor is always
                       // present)
@@ -309,16 +336,26 @@ pub extern "C" fn archipelago_silent_realm_tear_fix() {
     }
 }
 
+// Item ids are 9 bits wide in the game (item actor param1 & 0x1FF), but most
+// placement carriers (actor params) only had an 8-bit field for them. Each
+// carrier now stores the low 8 bits where it always did and the 9th bit in a
+// spare bit, which this combines. Keep the bit positions in sync with the
+// patch_* functions in patches/stagepatchhandler.py.
+#[inline(always)]
+fn item_id_9bit(low8: u32, bit8: u32) -> u16 {
+    ((low8 & 0xFF) | ((bit8 & 1) << 8)) as u16
+}
+
 // IMPORTANT: when adding functions here that need to get called from the game,
 // add `#[no_mangle]` and add a .global *symbolname* to
 // additions/rust-additions.asm
 #[no_mangle]
-pub extern "C" fn give_item(itemid: u8) {
+pub extern "C" fn give_item(itemid: u16) {
     give_item_with_sceneflag(itemid, 0xFF);
 }
 
 #[no_mangle]
-pub extern "C" fn give_item_with_sceneflag(itemid: u8, sceneflag: u8) -> *mut dAcItem {
+pub extern "C" fn give_item_with_sceneflag(itemid: u16, sceneflag: u8) -> *mut dAcItem {
     unsafe {
         // Safety: ROOM_MGR can be null during scene transitions.
         if ROOM_MGR.is_null() {
@@ -353,7 +390,27 @@ pub extern "C" fn give_item_with_sceneflag(itemid: u8, sceneflag: u8) -> *mut dA
 }
 
 #[no_mangle]
-pub extern "C" fn give_item_with_archipelago_flag(itemid: u8, custom_flag: u16) -> *mut dAcItem {
+pub extern "C" fn give_item_with_archipelago_flag(itemid: u16, custom_flag: u16) -> *mut dAcItem {
+    give_item_with_archipelago_flag_and_trap(itemid, custom_flag, NO_TRAP_ID)
+}
+
+/// `trap_id` value meaning "this item is not a trap" (the same 0xF sentinel
+/// the item actor's param2 bits 4-7 use for non-trap items).
+const NO_TRAP_ID: u8 = 0xF;
+
+/// Like `give_item_with_archipelago_flag`, but when `trap_id` is not
+/// `NO_TRAP_ID` the spawned item actor is a real trap: `setup_traps` sees
+/// param2 bits 0-3 = 0xF (trappable) and bits 4-7 = the trap id, turns the
+/// item into a Rupoor for the frowny face/sound, and `update_traps` fires the
+/// effect. Pass a Rupoor (34) as `itemid` for traps so the model matches.
+/// `trap_id` is the 0-4 trap index (the same value the AP item buffer derives
+/// with `254 - item_id`).
+#[no_mangle]
+pub extern "C" fn give_item_with_archipelago_flag_and_trap(
+    itemid: u16,
+    custom_flag: u16,
+    trap_id: u8,
+) -> *mut dAcItem {
     unsafe {
         // Safety: ROOM_MGR can be null during scene transitions.
         if ROOM_MGR.is_null() {
@@ -363,7 +420,15 @@ pub extern "C" fn give_item_with_archipelago_flag(itemid: u8, custom_flag: u16) 
         NUMBER_OF_ITEMS = 0;
         ITEM_GET_BOTTLE_POUCH_SLOT = 0xFFFFFFFF;
 
-        let new_itemid = dAcItem__determineFinalItemid(itemid as u64);
+        // Loftwing and the Bird Statue unlock items must keep their own item id:
+        // determineFinalItemid can remap them to rupee logic (wrong model, and the
+        // unlock flag would never be set). Same rule as the AP item buffer.
+        let new_itemid = if itemid == 219 || bird_statue_unlock_flag_index(itemid as u16).is_some()
+        {
+            itemid as u64
+        } else {
+            dAcItem__determineFinalItemid(itemid as u64)
+        };
 
         // Decode custom_flag from eventpatchhandler.py encoding:
         // Bits 0-6: flag (0-127)
@@ -391,8 +456,22 @@ pub extern "C" fn give_item_with_archipelago_flag(itemid: u8, custom_flag: u16) 
             _ => 0,  // Other items don't use original_itemid encoding
         };
 
-        let param2: u32 =
-            (flag << 8) | (scene_selector << 15) | (flag_space << 17) | (original_itemid << 18);
+        // Pots (group 1) can't also carry an original item id: the group marker
+        // occupies the same param2 bits, and dropped items never revert to one.
+        let original_field: u32 = if custom_flag & CUSTOM_FLAG_GROUP1 != 0 {
+            GROUP1_PARAM2_MARK
+        } else {
+            original_itemid << 18
+        };
+
+        let mut param2: u32 =
+            (flag << 8) | (scene_selector << 15) | (flag_space << 17) | original_field;
+
+        // Trap: bits 0-3 = 0xF marks the actor trappable, bits 4-7 = trap id.
+        // Non-traps leave both nibbles 0 so setup_traps ignores them.
+        if trap_id != NO_TRAP_ID {
+            param2 |= 0xF | ((trap_id as u32 & 0xF) << 4);
+        }
 
         // Spawn item with param1 for display, param2 for custom flag.
         // sceneflag=0xFF in bits 10-17 is REQUIRED: check_and_modify_item_actor's
@@ -509,30 +588,86 @@ pub extern "C" fn hide_appearing_chest(tbox: *mut dAcTbox) {
     }
 }
 
-/// Decode a 10-bit AP custom flag and set the corresponding global
+// ---------------------------------------------------------------------------
+// Archipelago custom flag IDs
+//
+// A custom flag ID is a u16:
+//   bits 0-6  : bit within a 128-bit flag page
+//   bits 7-8  : page selector (0-3)
+//   bit  9    : flag space (0 = sceneflags, 1 = dungeonflags)
+//   bit  10   : group (0 = original pages, 1 = extended pages)
+// Actors only have room for the low 10 bits in param2 bits 8-17. The group
+// is implicit for actors that can only ever be one group (pots are group 1),
+// and is carried on the spawned item actor as GROUP1_PARAM2_MARK.
+//
+// Group 0 uses scene indexes 6/13/16/19, the only indexes no stage maps to.
+// Group 1 uses indexes 26-29, which no stage maps to either: they exist only
+// as reserved padding in the save file's flag arrays (see savefile.rs).
+// Keep this in sync with the tables in ap-ipc, the Python client and
+// _build_custom_flag_mapping in the APWorld.
+// ---------------------------------------------------------------------------
+
+/// Sentinel for "no custom flag" in the low 10 bits (also: selector 3, bit
+/// 127).
+pub const CUSTOM_FLAG_NONE: u16 = 0x3FF;
+/// Group bit in a full (u16) custom flag ID.
+pub const CUSTOM_FLAG_GROUP1: u16 = 0x400;
+/// Marker stored in an item actor's param2 bits 18-23 meaning "this custom
+/// flag belongs to group 1". Bits 18-23 normally hold the original item id
+/// (values 0-5) or 0x3F for actors spawned with param2 = 0xFFFFFFFF, so 0x20
+/// (only bit 23 set) never occurs for group 0.
+pub const GROUP1_PARAM2_MARK: u32 = 0x20 << 18;
+const PARAM2_ORIGINAL_ITEM_FIELD: u32 = 0x3F << 18;
+
+const GROUP0_SCENE_INDEXES: [u16; 4] = [6, 13, 16, 19];
+pub const GROUP1_FIRST_SCENE_INDEX: u16 = 26;
+
+/// Splits a custom flag ID into (flag_space, scene_index, bit).
+#[inline]
+pub fn decode_custom_flag(custom_flag: u16) -> (u16, u16, u16) {
+    let bit = custom_flag & 0x7F;
+    let selector = (custom_flag >> 7) & 0x3;
+    let flag_space = (custom_flag >> 9) & 0x1;
+    let sceneindex = if custom_flag & CUSTOM_FLAG_GROUP1 != 0 {
+        GROUP1_FIRST_SCENE_INDEX + selector
+    } else {
+        GROUP0_SCENE_INDEXES[selector as usize]
+    };
+    (flag_space, sceneindex, bit)
+}
+
+/// True if an item actor's param2 carries the group 1 marker.
+#[inline]
+pub fn param2_is_group1(param2: u32) -> bool {
+    (param2 & PARAM2_ORIGINAL_ITEM_FIELD) == GROUP1_PARAM2_MARK
+}
+
+/// The full custom flag ID (including the group bit) stored in an item
+/// actor's param2. Returns the low 10 bits unchanged for the sentinel.
+#[inline]
+pub fn custom_flag_id_from_item_param2(param2: u32) -> u16 {
+    let local = ((param2 >> 8) & 0x3FF) as u16;
+    if local != CUSTOM_FLAG_NONE && param2_is_group1(param2) {
+        local | CUSTOM_FLAG_GROUP1
+    } else {
+        local
+    }
+}
+
+/// Decode a custom flag ID and set the corresponding global
 /// sceneflag or dungeonflag.  Also pre-sets LAST_AP_ITEM_FLAG_ID so the
 /// item-216 textbox can look up the correct item/player name.
-/// Does nothing when `custom_flag == 0x3FF` (no custom flag assigned).
+/// Does nothing when the low 10 bits are the 0x3FF sentinel (no custom flag).
 unsafe fn set_ap_custom_flag(custom_flag: u16) {
-    if custom_flag == 0x3FF {
+    if custom_flag & 0x3FF == CUSTOM_FLAG_NONE {
         return;
     }
 
-    let flag_val = (custom_flag & 0x7F) as u32;
-    let scene_selector = ((custom_flag >> 7) & 0x3) as u32;
-    let flag_space = ((custom_flag >> 9) & 0x1) as u32;
-
-    let sceneindex: u16 = match scene_selector {
-        0 => 6,
-        1 => 13,
-        2 => 16,
-        3 => 19,
-        _ => 6,
-    };
+    let (flag_space, sceneindex, flag_val) = decode_custom_flag(custom_flag);
 
     match flag_space {
-        0 => flag::set_global_sceneflag(sceneindex, flag_val as u16),
-        1 => flag::set_global_dungeonflag(sceneindex, flag_val as u16),
+        0 => flag::set_global_sceneflag(sceneindex, flag_val),
+        1 => flag::set_global_dungeonflag(sceneindex, flag_val),
         _ => {},
     }
 
@@ -557,8 +692,11 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
 
         // Goddess Sword Reward
         if flag::check_local_sceneflag(50) == 0 {
-            let goddess_sword_reward: u8 =
-                ((*crest_actor).base.basebase.members.param1 >> 0x18) as u8;
+            // Item id: params1 bits 24-31 + params2 bit 22 (9th bit).
+            let goddess_sword_reward: u16 = item_id_9bit(
+                (*crest_actor).base.basebase.members.param1 >> 0x18,
+                (*crest_actor).base.members.base.param2 >> 22,
+            );
             // Directly set the AP custom flag in game memory so the AP client
             // detects this location as checked.  This is more reliable than
             // the NEXT_CUSTOM_FLAG→param2 chain for crest items because all
@@ -575,7 +713,11 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
 
         // Longsword Reward
         if flag::check_local_sceneflag(51) == 0 {
-            let longsword_reward: u8 = ((*crest_actor).base.basebase.members.param1 >> 0x10) as u8;
+            // Item id: params1 bits 16-23 + params2 bit 21 (9th bit).
+            let longsword_reward: u16 = item_id_9bit(
+                (*crest_actor).base.basebase.members.param1 >> 0x10,
+                (*crest_actor).base.members.base.param2 >> 21,
+            );
             let cf = core::ptr::read_volatile(core::ptr::addr_of!(CREST_CUSTOM_FLAGS[1]));
             set_ap_custom_flag(cf);
             give_item(longsword_reward);
@@ -588,11 +730,232 @@ pub extern "C" fn handle_crest_hit_give_item(crest_actor: *mut actor::dAcOSwSwor
 
         // White Sword Reward
         if flag::check_local_sceneflag(52) == 0 {
-            let whitesword_reward: u8 = ((*crest_actor).base.members.base.param2 >> 0x18) as u8;
+            // Item id: params2 bits 24-31 + bit 23 (9th bit).
+            let whitesword_reward: u16 = item_id_9bit(
+                (*crest_actor).base.members.base.param2 >> 0x18,
+                (*crest_actor).base.members.base.param2 >> 23,
+            );
             let cf = core::ptr::read_volatile(core::ptr::addr_of!(CREST_CUSTOM_FLAGS[2]));
             set_ap_custom_flag(cf);
             give_item(whitesword_reward);
             flag::set_local_sceneflag(52);
+        }
+    }
+}
+
+/// Story flags set by striking each of the 27 Goddess Cubes, in ascending
+/// order. Must match GODDESS_CUBE_STORYFLAGS in stagepatchhandler.py, which
+/// indexes the GODDESS_CUBE_CUSTOM_FLAGS / GODDESS_CUBE_ITEM_IDS tables
+/// written by the patcher.
+const GODDESS_CUBE_STORYFLAGS: [u16; 27] = [
+    227, 228, 229, 230, 231, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247,
+    248, 249, 250, 251, 252, 254, 255, 256,
+];
+
+static mut GODDESS_CUBE_TICK: u32 = 0;
+
+/// "CUBE" as a little-endian u32; the patcher writes it next to the cube
+/// tables only when decoupled cubes have items. Anything else means the tables
+/// weren't patched in (or the bytes aren't ours), so the handler must not act
+/// on them.
+const GODDESS_CUBE_MAGIC_VALUE: u32 = 0x4542_5543;
+
+/// Decode a custom flag ID and check the corresponding global
+/// sceneflag or dungeonflag (the counterpart of `set_ap_custom_flag`).
+unsafe fn check_ap_custom_flag(custom_flag: u16) -> bool {
+    let (flag_space, sceneindex, flag_val) = decode_custom_flag(custom_flag);
+
+    match flag_space {
+        0 => flag::check_global_sceneflag(sceneindex, flag_val) != 0,
+        1 => flag::check_global_dungeonflag(sceneindex, flag_val) != 0,
+        _ => false,
+    }
+}
+
+/// Decoupled Goddess Cubes: when a cube's story flag gets set (by striking
+/// it), give that cube's randomized item with the normal item-get animation
+/// and mark the location as checked through its AP custom flag.
+///
+/// Does nothing for cubes whose custom flag is 0x3FF, which is every cube
+/// unless the "Decouple Goddess Cubes and Chests" setting is on. Called every
+/// frame from the main loop but only does real work every few frames.
+pub fn handle_goddess_cube_items() {
+    unsafe {
+        // Cheapest check first: no patched tables, nothing to do. Also keeps
+        // zeroed/garbage memory from being read as custom flags and item ids.
+        if core::ptr::read_volatile(core::ptr::addr_of!(GODDESS_CUBE_MAGIC))
+            != GODDESS_CUBE_MAGIC_VALUE
+        {
+            return;
+        }
+
+        GODDESS_CUBE_TICK = GODDESS_CUBE_TICK.wrapping_add(1);
+        if GODDESS_CUBE_TICK % 10 != 0 {
+            return;
+        }
+
+        // Same safety conditions as item delivery from the AP buffer
+        if ap_stage_cooldown_active() {
+            return;
+        }
+        if &CURRENT_STAGE_NAME[..4] == b"F000" && (CURRENT_LAYER == 26 || CURRENT_LAYER == 29) {
+            return;
+        }
+        if PLAYER_PTR.is_null() || ROOM_MGR.is_null() {
+            return;
+        }
+
+        for index in 0..GODDESS_CUBE_STORYFLAGS.len() {
+            let custom_flag =
+                core::ptr::read_volatile(core::ptr::addr_of!(GODDESS_CUBE_CUSTOM_FLAGS[index]));
+            if custom_flag == 0x3FF {
+                continue;
+            }
+            if flag::check_storyflag(GODDESS_CUBE_STORYFLAGS[index]) == 0 {
+                continue;
+            }
+            // Already given (the custom flag is set once the location is checked)
+            if check_ap_custom_flag(custom_flag) {
+                continue;
+            }
+
+            // Wait until Link can actually receive the item, then try again
+            if player_is_busy() {
+                return;
+            }
+
+            let item_id =
+                core::ptr::read_volatile(core::ptr::addr_of!(GODDESS_CUBE_ITEM_IDS[index]));
+            // Trap pseudo-items (250..=254, trap id = 254 - item id) are given as a
+            // real trap actor: a Rupoor carrying the trap id, so the effect fires
+            // instead of showing the generic Archipelago item.
+            let item_actor = if (250..=254).contains(&item_id) {
+                give_item_with_archipelago_flag_and_trap(34, custom_flag, (254 - item_id) as u8)
+            } else {
+                give_item_with_archipelago_flag(item_id, custom_flag)
+            };
+            if item_actor.is_null() {
+                return;
+            }
+            (*item_actor).prevent_timed_despawn = 1;
+
+            // Mark the location as checked right away, which also pre-sets
+            // LAST_AP_ITEM_FLAG_ID so the item textbox shows the right item/player.
+            // This is also what keeps us from spawning the item again next frame.
+            set_ap_custom_flag(custom_flag);
+
+            // One cube per call so two items never spawn in the same frame
+            return;
+        }
+    }
+}
+
+// ============================================================================
+// Forced dungeon small-key counts (Key Rings / Skeleton Key)
+//
+// Ported from the old Python client (ItemSystemIntegration.py
+// `_ensure_dungeon_keys_set` / `reapply_forced_dungeon_keys`). A Key Ring
+// forces its dungeon's small key count (current + obtained nibbles) to 4, the
+// Skeleton Key forces every dungeon to 5, and the value is re-asserted every
+// frame so spending keys on doors never lowers it. A Key Ring arriving after
+// the Skeleton Key never downgrades a dungeon (high-water mark).
+//
+// State: FORCED_DUNGEON_KEYS is a high-water cache. It is (re)seeded from the
+// save file (obtained nibble >= 4 can only come from a forced count, real
+// dungeons contain at most 3 small keys), so no extra save flag is needed and
+// a reboot / reload keeps working. It is cleared on the title screen so a
+// different save file in the same session starts clean.
+// ============================================================================
+
+/// Scene indices (FA.dungeonflags) of the dungeons that have Key Rings. Index
+/// = Key Ring item id - 220 = Small Key item id - 200.
+const DUNGEON_KEY_SCENES: [usize; 7] = [
+    11, // Skyview Temple
+    17, // Lanayru Mining Facility
+    12, // Ancient Cistern
+    15, // Fire Sanctuary
+    18, // Sandship
+    20, // Sky Keep
+    9,  // Lanayru Caves
+];
+
+const KEY_RING_FORCED_COUNT: u16 = 4;
+const SKELETON_FORCED_COUNT: u16 = 5;
+
+static mut FORCED_DUNGEON_KEYS: [u16; 7] = [0; 7];
+
+fn dungeon_key_slot_for_scene(scene_index: usize) -> Option<usize> {
+    DUNGEON_KEY_SCENES.iter().position(|&s| s == scene_index)
+}
+
+/// Raise (never lower) the forced count of a dungeon.
+unsafe fn raise_forced_dungeon_key_count(slot: usize, count: u16) {
+    if count > FORCED_DUNGEON_KEYS[slot] {
+        FORCED_DUNGEON_KEYS[slot] = count;
+    }
+}
+
+/// Current forced key count of a dungeon (0 = not forced). Also picks up a
+/// forced count that is stored in the save file but not yet in the cache.
+unsafe fn forced_dungeon_key_count(slot: usize) -> u16 {
+    if !FILE_MGR.is_null() {
+        let key_word = (*FILE_MGR).FA.dungeonflags[DUNGEON_KEY_SCENES[slot]][1];
+        let obtained = (key_word >> 4) & 0xF;
+        if obtained >= SKELETON_FORCED_COUNT {
+            raise_forced_dungeon_key_count(slot, SKELETON_FORCED_COUNT);
+        } else if obtained >= KEY_RING_FORCED_COUNT {
+            raise_forced_dungeon_key_count(slot, KEY_RING_FORCED_COUNT);
+        }
+    }
+    FORCED_DUNGEON_KEYS[slot]
+}
+
+/// Write `count` into both nibbles (current + obtained) of a dungeon's key
+/// counter. The save file (FA) is per-scene so it is always safe to write;
+/// STATIC_DUNGEONFLAGS only holds the currently loaded dungeon, so it is only
+/// written when that dungeon is the current one.
+unsafe fn write_dungeon_key_count(scene_index: usize, count: u16) {
+    let key_bits = (count << 4) | count;
+
+    if !FILE_MGR.is_null() {
+        let old = (*FILE_MGR).FA.dungeonflags[scene_index][1];
+        let new = (old & 0xFF00) | key_bits;
+        if old != new {
+            (*FILE_MGR).FA.dungeonflags[scene_index][1] = new;
+        }
+    }
+
+    if !DUNGEONFLAG_MGR.is_null() && (*DUNGEONFLAG_MGR).sceneindex as usize == scene_index {
+        let old = STATIC_DUNGEONFLAGS[1];
+        let new = (old & 0xFF00) | key_bits;
+        if old != new {
+            STATIC_DUNGEONFLAGS[1] = new;
+        }
+    }
+}
+
+/// Re-assert every forced dungeon key count. Called once per frame from the
+/// main loop.
+pub fn reapply_forced_dungeon_keys() {
+    unsafe {
+        // Title screen / save selection: drop the cache so another save file
+        // doesn't inherit this one's forced counts.
+        if &CURRENT_STAGE_NAME[..4] == b"F000"
+            && (CURRENT_LAYER == 26 || CURRENT_LAYER == 28 || CURRENT_LAYER == 29)
+        {
+            FORCED_DUNGEON_KEYS = [0; 7];
+            return;
+        }
+
+        if FILE_MGR.is_null() {
+            return;
+        }
+
+        for slot in 0..DUNGEON_KEY_SCENES.len() {
+            let count = forced_dungeon_key_count(slot);
+            if count > 0 {
+                write_dungeon_key_count(DUNGEON_KEY_SCENES[slot], count);
+            }
         }
     }
 }
@@ -629,21 +992,8 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
         20, // SK MAP - item id 213
     ];
 
-    // Key rings: one per dungeon, sets all small key flags for that dungeon
-    // Matches SK_TO_FLAGINDEX order (item ids 220-226 -> same scene indices as
-    // 200-206)
-    const KR_TO_FLAGINDEX: [usize; 7] = [
-        11, // SVT KR - item id 220
-        17, // LMF KR - item id 221
-        12, // AC KR - item id 222
-        15, // FS KR - item id 223
-        18, // SSH KR - item id 224
-        20, // SK KR - item id 225
-        9,  // Caves KR - item id 226
-    ];
-
-    const KEY_RING_FORCED_COUNT: u16 = 4;
-    const SKELETON_FORCED_COUNT: u16 = 5;
+    // Key rings (item ids 220-226) and the Skeleton Key (227) use
+    // DUNGEON_KEY_SCENES (same order / scene indices as SK_TO_FLAGINDEX).
 
     unsafe {
         let itemid = (*item_actor).itemid;
@@ -682,11 +1032,20 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
                 dungeon_item_scene_index = MAP_TO_FLAGINDEX[(itemid - 207) as usize];
             }
 
+            // A real Small Key for a dungeon that is under a forced Key Ring /
+            // Skeleton Key count must not bump the count (it would desync the
+            // forced 4/5 value), so it is swallowed.
+            let suppress_real_key = dungeon_item_mask == 0x0F
+                && match dungeon_key_slot_for_scene(dungeon_item_scene_index) {
+                    Some(slot) => forced_dungeon_key_count(slot) > 0,
+                    None => false,
+                };
+
             // Set the local flag if the item is in its vanilla scene.
             if current_scene_index == dungeon_item_scene_index {
                 if dungeon_item_mask != 0x0F {
                     STATIC_DUNGEONFLAGS[0] |= dungeon_item_mask;
-                } else {
+                } else if !suppress_real_key {
                     let mut current_key_count = STATIC_DUNGEONFLAGS[1] & 0xF;
                     let mut obtained_key_count = (STATIC_DUNGEONFLAGS[1] >> 4) & 0xF;
                     current_key_count += 1;
@@ -697,7 +1056,7 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
             // Otherwise, set the global flag.
             if dungeon_item_mask != 0x0F {
                 (*FILE_MGR).FA.dungeonflags[dungeon_item_scene_index][0] |= dungeon_item_mask;
-            } else {
+            } else if !suppress_real_key {
                 let mut current_key_count =
                     (*FILE_MGR).FA.dungeonflags[dungeon_item_scene_index][1] & 0xF;
                 let mut obtained_key_count =
@@ -709,33 +1068,19 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
             }
         }
 
-        // Key Ring: set all small keys for the specific dungeon to max
+        // Key Ring: force the specific dungeon's small keys to 4. From now on
+        // reapply_forced_dungeon_keys() re-asserts this every frame.
         if itemid >= 220 && itemid <= 226 {
-            let kr_idx = (itemid - 220) as usize;
-            let kr_scene_index = KR_TO_FLAGINDEX[kr_idx];
-            let key_bits = (KEY_RING_FORCED_COUNT << 4) | KEY_RING_FORCED_COUNT;
-
-            let current_scene_index = (*DUNGEONFLAG_MGR).sceneindex as usize;
-            // Update STATIC if currently inside this dungeon
-            if current_scene_index == kr_scene_index {
-                STATIC_DUNGEONFLAGS[1] = key_bits;
-            }
-            // Always update global save data
-            (*FILE_MGR).FA.dungeonflags[kr_scene_index][1] = key_bits;
+            let slot = (itemid - 220) as usize;
+            raise_forced_dungeon_key_count(slot, KEY_RING_FORCED_COUNT);
+            write_dungeon_key_count(DUNGEON_KEY_SCENES[slot], forced_dungeon_key_count(slot));
         }
 
-        // Skeleton Key: set all small keys for ALL dungeons to max
+        // Skeleton Key: force ALL dungeons' small keys to 5.
         if itemid == 227 {
-            let current_scene_index = (*DUNGEONFLAG_MGR).sceneindex as usize;
-            for kr_idx in 0..7usize {
-                let kr_scene_index = KR_TO_FLAGINDEX[kr_idx];
-                let key_bits = (SKELETON_FORCED_COUNT << 4) | SKELETON_FORCED_COUNT;
-                // Update STATIC if currently inside this dungeon
-                if current_scene_index == kr_scene_index {
-                    STATIC_DUNGEONFLAGS[1] = key_bits;
-                }
-                // Always update global save data
-                (*FILE_MGR).FA.dungeonflags[kr_scene_index][1] = key_bits;
+            for slot in 0..DUNGEON_KEY_SCENES.len() {
+                raise_forced_dungeon_key_count(slot, SKELETON_FORCED_COUNT);
+                write_dungeon_key_count(DUNGEON_KEY_SCENES[slot], forced_dungeon_key_count(slot));
             }
         }
 
@@ -794,18 +1139,23 @@ pub extern "C" fn unpack_custom_item_params(item_actor: *mut dAcItem) -> Unpacke
     unsafe {
         let param2: u32 = (*item_actor).base.members.base.param2;
         let flag: u32 = (param2 & (0x00007F00)) >> 8;
-        let mut sceneindex: u32 = (param2 & (0x00018000)) >> 15;
+        let selector: u32 = (param2 & (0x00018000)) >> 15;
         let flag_space_trigger: u32 = (param2 & (0x00020000)) >> 17;
-        let mut original_itemid: u32 = (param2 & (0x00FC0000)) >> 18;
+        let is_group1 = param2_is_group1(param2);
+        // Group 1 items carry GROUP1_PARAM2_MARK in bits 18-23 instead of an
+        // original item id.
+        let mut original_itemid: u32 = if is_group1 {
+            0
+        } else {
+            (param2 & PARAM2_ORIGINAL_ITEM_FIELD) >> 18
+        };
 
-        // Transform the scene index into one of the unused ones
-        match sceneindex {
-            0 => sceneindex = 6,
-            1 => sceneindex = 13,
-            2 => sceneindex = 16,
-            3 => sceneindex = 19,
-            _ => {},
-        }
+        // Transform the selector into one of the unused scene indexes
+        let sceneindex: u32 = if is_group1 {
+            (GROUP1_FIRST_SCENE_INDEX as u32) + selector
+        } else {
+            GROUP0_SCENE_INDEXES[selector as usize] as u32
+        };
 
         // Transform the original_itemid into its proper itemid
         match original_itemid {
@@ -949,7 +1299,9 @@ pub extern "C" fn activation_checks_for_goddess_walls() -> bool {
 pub extern "C" fn give_squirrel_item(musasabi_tag: *mut actor::dTgMusasabi) {
     unsafe {
         if SQUIRRELS_CAUGHT_THIS_PLAY_SESSION && (*musasabi_tag).unused == 0 {
-            let itemid: u8 = ((*musasabi_tag).base.members.param2 & 0xFF) as u8;
+            // Item id: params2 bits 0-7 + bit 18 (9th bit).
+            let squirrel_param2 = (*musasabi_tag).base.members.param2;
+            let itemid: u16 = item_id_9bit(squirrel_param2 & 0xFF, squirrel_param2 >> 18);
             // Bits 8-17 hold either a 10-bit AP custom flag (3-part tgreact
             // encoding: flag[0-6] | scene_sel[7-8] | flag_space[9]) or the
             // sentinel 0x3FF meaning no flag.
@@ -971,10 +1323,10 @@ pub extern "C" fn give_squirrel_item(musasabi_tag: *mut actor::dTgMusasabi) {
                     _ => flag::check_global_dungeonflag(sceneindex, flag_num) != 0,
                 };
                 if !already_given {
-                    give_item_with_archipelago_flag(itemid, raw_flag as u16);
+                    give_item_with_archipelago_flag(itemid as u16, raw_flag as u16);
                 }
             } else {
-                give_item(flag::ITEMFLAGS::RED_RUPEE as u8);
+                give_item(flag::ITEMFLAGS::RED_RUPEE as u16);
             }
 
             // Keep track of if the item has already been given this session
@@ -992,6 +1344,88 @@ pub extern "C" fn give_squirrel_item(musasabi_tag: *mut actor::dTgMusasabi) {
             (*musasabi_tag).has_spawned_squirrels = false;
         }
     }
+}
+
+/// Shared "drop a randomized item where an actor was destroyed" helper, used
+/// by TgReacts and pots.
+///
+/// `param2` is the destroyed actor's param2 in the TgReact layout:
+///   bits 8-17  : AP custom flag (copied into the item so collecting it sets
+/// it)   bit 18     : velocity flag (item pops out instead of just appearing)
+///   bits 19-22 : trap id (0xF = not a trap)
+///   bits 24-31 : vanilla drop id (only used to give seeds a bit more push)
+/// `itemid` must already be resolved with `dAcItem__determineFinalItemid`.
+/// Returns null if the item actor could not be spawned.
+unsafe fn spawn_item_on_destroy(
+    roomid: u32,
+    pos: math::Vec3f,
+    rot_y: u16,
+    itemid: u16,
+    param2: u32,
+    group1: bool,
+) -> *mut dAcItem {
+    let item_actor_param1: u32 = (itemid as u32) | 0xFF1FFE00;
+
+    let mut actor_pos = pos;
+    let actor_pos_ptr: *mut math::Vec3f = &mut actor_pos as *mut math::Vec3f;
+
+    let mut facing_angle = rot_y;
+    if facing_angle == 0 {
+        facing_angle = (*PLAYER_PTR)
+            .obj_base_members
+            .base
+            .rot
+            .y
+            .wrapping_sub(0x8000);
+    }
+
+    let mut item_rot = math::Vec3s {
+        x: 0,
+        y: facing_angle,
+        z: 0,
+    };
+    let item_rot_ptr: *mut math::Vec3s = &mut item_rot as *mut math::Vec3s;
+
+    let trapid = (param2 >> 19) & 0xF;
+
+    let item_actor: *mut dAcItem = actor::spawn_actor(
+        actor::ACTORID::ITEM,
+        roomid,
+        item_actor_param1,
+        actor_pos_ptr,
+        item_rot_ptr,
+        core::ptr::null_mut(),
+        0xFF00000F
+            | (param2 & 0x3FF00)
+            | (trapid << 4)
+            | if group1 { GROUP1_PARAM2_MARK } else { 0 },
+    ) as *mut dAcItem;
+
+    if item_actor.is_null() {
+        return item_actor;
+    }
+
+    let mut forward_speed = 0.0;
+    let mut velocity_y = 0.0;
+
+    if (param2 >> 18) & 1 == 1 {
+        forward_speed = 12.0;
+        velocity_y = 19.5;
+    }
+
+    // Give items that are normally Deku Seeds a bit of an extra push xD
+    if ((param2 >> 24) & 0xFF) == 0x0D {
+        forward_speed += 2.0;
+        velocity_y += 3.0;
+    }
+
+    (*item_actor).base.members.forward_speed = forward_speed;
+    (*item_actor).base.members.velocity.x = 0.0;
+    (*item_actor).base.members.velocity.y = velocity_y;
+    (*item_actor).base.members.velocity.z = 0.0;
+    (*item_actor).prevent_timed_despawn = 1;
+
+    item_actor
 }
 
 #[no_mangle]
@@ -1031,65 +1465,28 @@ pub extern "C" fn tgreact_spawn_custom_item(
                 _ => {},
             }
 
-            let new_itemid = dAcItem__determineFinalItemid(((tgreact_param1 >> 8) & 0xFF) as u64);
+            // Item id: params1 bits 8-15 + params2 bit 23 (9th bit).
+            let new_itemid = dAcItem__determineFinalItemid(item_id_9bit(
+                (tgreact_param1 >> 8) & 0xFF,
+                param2 >> 23,
+            ) as u64);
 
             // If the tgreact would give hearts in vanilla and the randomized item is a
             // heart, behave like the flag has already been set. This allows 3
             // hearts to spawn instead
             if flag_is_on == 0 && (((param2 >> 24) & 0xFF) != 6 || new_itemid != 6) {
-                let item_actor_param1: u32 = (new_itemid as u32) | 0xFF1FFE00;
-
-                let mut actor_pos = (*tgreact).members.base.pos;
-                let actor_pos_ptr: *mut math::Vec3f = &mut actor_pos as *mut math::Vec3f;
-
-                let mut facing_angle = (*tgreact).members.base.rot.y;
-
-                if facing_angle == 0 {
-                    facing_angle = (*PLAYER_PTR).obj_base_members.base.rot.y - 0x8000;
-                }
-
-                let mut item_rot = math::Vec3s {
-                    x: 0,
-                    y: facing_angle,
-                    z: 0,
-                };
-                let item_rot_ptr: *mut math::Vec3s = &mut item_rot as *mut math::Vec3s;
-
-                let trapid = (param2 >> 19) & 0xF;
-
-                let item_actor: *mut dAcItem = actor::spawn_actor(
-                    actor::ACTORID::ITEM,
+                let item_actor = spawn_item_on_destroy(
                     roomid,
-                    item_actor_param1,
-                    actor_pos_ptr,
-                    item_rot_ptr,
-                    core::ptr::null_mut(),
-                    0xFF00000F | (param2 & 0x3FF00) | (trapid << 4),
-                ) as *mut dAcItem;
+                    (*tgreact).members.base.pos,
+                    (*tgreact).members.base.rot.y,
+                    new_itemid as u16,
+                    param2,
+                    false,
+                );
 
                 if item_actor.is_null() {
                     return param2_s0x18.into();
                 }
-
-                let mut forward_speed = 0.0;
-                let mut velocity_y = 0.0;
-
-                if (param2 >> 18) & 1 == 1 {
-                    forward_speed = 12.0;
-                    velocity_y = 19.5;
-                }
-
-                // Give items that are normally Deku Seeds a bit of an extra push xD
-                if ((param2 >> 24) & 0xFF) == 0x0D {
-                    forward_speed += 2.0;
-                    velocity_y += 3.0;
-                }
-
-                (*item_actor).base.members.forward_speed = forward_speed;
-                (*item_actor).base.members.velocity.x = 0.0;
-                (*item_actor).base.members.velocity.y = velocity_y;
-                (*item_actor).base.members.velocity.z = 0.0;
-                (*item_actor).prevent_timed_despawn = 1;
                 param2_s0x18 = 0xFF;
                 (*tgreact).members.base.param2 |= 0x3FF00;
             }
@@ -1109,13 +1506,590 @@ pub extern "C" fn tgreact_spawn_custom_item(
     }
 }
 
+/// Actor id of `PUMPKIN` (dAcPumpkin_c), the Skyloft / Lumpy Pumpkin pumpkin
+/// patches. Pumpkin shuffle shares the pot drop hook below, but a pumpkin's
+/// params are wiped after the actor is created (params1 and the low 16 bits of
+/// params2), so its item can't be read from the actor like a pot's. It is
+/// looked up by position in a patcher-written table instead.
+const PUMPKIN_ACTORID: u16 = 0x1B5;
+
+/// Capacity of the pumpkin table (PUMPKIN_TABLE_* in symbols.yaml).
+const PUMPKIN_TABLE_MAX: usize = 96;
+
+/// "PUMP" as a little-endian u32; the patcher writes it in front of the table
+/// only when at least one pumpkin has an item.
+const PUMPKIN_TABLE_MAGIC_VALUE: u32 = 0x504D_5550;
+
+/// One patched pumpkin. Keep in sync with patch_pumpkin /
+/// init_global_variables in the patcher.
+///   px_bits / pz_bits: the pumpkin's X / Z position as raw f32 bits
+///   item_word:         bits 0-8 item id, bits 9-12 trap nibble (0xF = no
+/// trap)   flag:              low 10 bits of the group 1 custom flag (0x3FF =
+/// none)
+#[repr(C, packed(1))]
+#[derive(Copy, Clone)]
+pub struct PumpkinEntry {
+    pub px_bits:   u32,
+    pub pz_bits:   u32,
+    pub item_word: u16,
+    pub flag:      u16,
+}
+assert_eq_size!([u8; 12], PumpkinEntry);
+
+/// Marker written into a breaking pumpkin actor's own params2 (low 16 bits)
+/// once its item has dropped, so repeated calls for the same break can't drop
+/// a second item. It lives on the actor instance, not in global state, so a
+/// freshly created pumpkin (after a reload, or after losing the item) always
+/// drops again until its check is actually collected.
+const PUMPKIN_DROPPED_MARK: u32 = 0xA55A;
+
+/// Finds a pumpkin's table index from its X/Z position bits.
+fn find_pumpkin_entry(px_bits: u32, pz_bits: u32) -> Option<usize> {
+    unsafe {
+        if core::ptr::read_volatile(core::ptr::addr_of!(PUMPKIN_TABLE_MAGIC))
+            != PUMPKIN_TABLE_MAGIC_VALUE
+        {
+            return None;
+        }
+
+        let count = core::ptr::read_volatile(core::ptr::addr_of!(PUMPKIN_TABLE_COUNT)) as usize;
+        let count = if count < PUMPKIN_TABLE_MAX {
+            count
+        } else {
+            PUMPKIN_TABLE_MAX
+        };
+
+        for index in 0..count {
+            let entry =
+                core::ptr::read_unaligned(core::ptr::addr_of!(PUMPKIN_TABLE_ENTRIES[index]));
+            if entry.px_bits == px_bits && entry.pz_bits == pz_bits {
+                return Some(index);
+            }
+        }
+        None
+    }
+}
+
+/// Pumpkin shuffle: drops the randomized item for a breaking pumpkin.
+///
+/// Returns true if an item was dropped (or already dropped for this break),
+/// false if the pumpkin should keep its vanilla drop (not in the table, no
+/// custom flag, or its check was already collected).
+fn pumpkin_drop_custom_item(
+    pumpkin: *mut actor::dAcOBase,
+    vanilla_drop: u8,
+    roomid: u32,
+    pos: *mut math::Vec3f,
+) -> bool {
+    unsafe {
+        let px_bits = (*pumpkin).members.base.pos.x.to_bits();
+        let pz_bits = (*pumpkin).members.base.pos.z.to_bits();
+
+        // TEMP (pumpkin shuffle testing, remove once confirmed in-game)
+        debug::debug_print_num(c"pumpkin px %x".as_ptr(), px_bits as usize);
+        debug::debug_print_num(c"pumpkin pz %x".as_ptr(), pz_bits as usize);
+
+        let index = match find_pumpkin_entry(px_bits, pz_bits) {
+            Some(index) => index,
+            None => {
+                debug::debug_print_num(c"pumpkin not in table, vanilla drop %x".as_ptr(), 0);
+                return false;
+            },
+        };
+
+        let entry = core::ptr::read_unaligned(core::ptr::addr_of!(PUMPKIN_TABLE_ENTRIES[index]));
+        let local_flag = entry.flag & 0x3FF;
+        if local_flag == CUSTOM_FLAG_NONE {
+            return false;
+        }
+
+        // Pumpkins use custom flag group 1 (extended pages), like pots.
+        if check_ap_custom_flag(local_flag | CUSTOM_FLAG_GROUP1) {
+            return false;
+        }
+
+        // Already dropped for this very break (repeated per-frame call)
+        if (*pumpkin).members.base.param2 & 0xFFFF == PUMPKIN_DROPPED_MARK {
+            return true;
+        }
+
+        let item_id = entry.item_word & 0x1FF;
+        let trap_nibble = ((entry.item_word >> 9) & 0xF) as u32;
+
+        // Loftwing and the Bird Statue unlock items must keep their own item id:
+        // determineFinalItemid can remap them to rupee logic (same rule as
+        // give_item_with_archipelago_flag_and_trap).
+        let new_itemid = if item_id == 219 || bird_statue_unlock_flag_index(item_id).is_some() {
+            item_id
+        } else {
+            dAcItem__determineFinalItemid(item_id as u64) as u16
+        };
+
+        // Same param2 layout spawn_item_on_destroy expects from a patched pot:
+        // bits 8-17 flag, bit 18 velocity (item pops out), bits 19-22 trap id,
+        // bits 24-31 vanilla drop id.
+        let synthetic_param2: u32 = ((vanilla_drop as u32) << 24)
+            | (1 << 18)
+            | (trap_nibble << 19)
+            | ((local_flag as u32) << 8);
+
+        let drop_pos = if pos.is_null() {
+            (*pumpkin).members.base.pos
+        } else {
+            *pos
+        };
+
+        let item_actor = spawn_item_on_destroy(
+            roomid,
+            drop_pos,
+            (*pumpkin).members.base.rot.y,
+            new_itemid,
+            synthetic_param2,
+            true,
+        );
+
+        // TEMP (pumpkin shuffle testing): table index, then item id (0 on spawn
+        // failure)
+        debug::debug_print_num(c"pumpkin table index %x".as_ptr(), index);
+        debug::debug_print_num(
+            c"pumpkin dropped item %x".as_ptr(),
+            if item_actor.is_null() {
+                0
+            } else {
+                new_itemid as usize
+            },
+        );
+
+        if item_actor.is_null() {
+            return false;
+        }
+
+        (*pumpkin).members.base.param2 =
+            ((*pumpkin).members.base.param2 & 0xFFFF0000) | PUMPKIN_DROPPED_MARK;
+        true
+    }
+}
+
+/// Capacity of the big pot table (BIG_POT_TABLE_* in symbols.yaml). The game
+/// has 15 big pots (F001r 5, F020 3, F023 7).
+const BIG_POT_TABLE_MAX: usize = 16;
+
+/// "BGPT" as a little-endian u32; the patcher writes it in front of the table
+/// only when at least one big pot has an item.
+const BIG_POT_TABLE_MAGIC_VALUE: u32 = 0x5450_4742;
+
+/// Marker written into a breaking big pot actor's own params2 (low 16 bits)
+/// once its item has dropped. Vanilla big pot params2 is 0xFFFFFFFF, so the
+/// low 16 bits are free. Lives on the actor instance, so a freshly created big
+/// pot drops again until its check is actually collected.
+const BIG_POT_DROPPED_MARK: u32 = 0xB16B;
+
+/// Finds a big pot's table index from its X/Z position bits. Entries use the
+/// same layout as PumpkinEntry.
+fn find_big_pot_entry(px_bits: u32, pz_bits: u32) -> Option<usize> {
+    unsafe {
+        if core::ptr::read_volatile(core::ptr::addr_of!(BIG_POT_TABLE_MAGIC))
+            != BIG_POT_TABLE_MAGIC_VALUE
+        {
+            return None;
+        }
+
+        let count = core::ptr::read_volatile(core::ptr::addr_of!(BIG_POT_TABLE_COUNT)) as usize;
+        let count = if count < BIG_POT_TABLE_MAX {
+            count
+        } else {
+            BIG_POT_TABLE_MAX
+        };
+
+        for index in 0..count {
+            let entry =
+                core::ptr::read_unaligned(core::ptr::addr_of!(BIG_POT_TABLE_ENTRIES[index]));
+            if entry.px_bits == px_bits && entry.pz_bits == pz_bits {
+                return Some(index);
+            }
+        }
+        None
+    }
+}
+
+/// Big pot shuffle: drops the randomized item for a breaking big pot
+/// (TuboBig, dAcOTuboBig_c).
+///
+/// Big pots have no per-pot params (params2 is 0xFFFFFFFF in all 15), so the
+/// item is looked up by position in a patcher-written table. The current
+/// position is tried first, then the actor's starting position in case the pot
+/// was moved before it broke.
+///
+/// Returns true if an item was dropped (or already dropped for this break),
+/// false if the pot should keep its vanilla behavior (nothing).
+fn big_pot_drop_custom_item(pot: *mut actor::dAcOBase, roomid: u32, pos: *mut math::Vec3f) -> bool {
+    unsafe {
+        let px_bits = (*pot).members.base.pos.x.to_bits();
+        let pz_bits = (*pot).members.base.pos.z.to_bits();
+        let start_px_bits = (*pot).members.starting_pos.x.to_bits();
+        let start_pz_bits = (*pot).members.starting_pos.z.to_bits();
+
+        // TEMP (big pot shuffle testing, remove once confirmed in-game)
+        debug::debug_print_num(c"big pot px %x".as_ptr(), px_bits as usize);
+        debug::debug_print_num(c"big pot pz %x".as_ptr(), pz_bits as usize);
+        debug::debug_print_num(c"big pot start px %x".as_ptr(), start_px_bits as usize);
+        debug::debug_print_num(c"big pot start pz %x".as_ptr(), start_pz_bits as usize);
+
+        let index = match find_big_pot_entry(px_bits, pz_bits)
+            .or_else(|| find_big_pot_entry(start_px_bits, start_pz_bits))
+        {
+            Some(index) => index,
+            None => {
+                debug::debug_print_num(c"big pot not in table %x".as_ptr(), 0);
+                return false;
+            },
+        };
+
+        let entry = core::ptr::read_unaligned(core::ptr::addr_of!(BIG_POT_TABLE_ENTRIES[index]));
+        let local_flag = entry.flag & 0x3FF;
+        if local_flag == CUSTOM_FLAG_NONE {
+            return false;
+        }
+
+        // Big pots use custom flag group 1 (extended pages), like pots.
+        if check_ap_custom_flag(local_flag | CUSTOM_FLAG_GROUP1) {
+            return false;
+        }
+
+        // Already dropped for this very break (repeated per-frame call)
+        if (*pot).members.base.param2 & 0xFFFF == BIG_POT_DROPPED_MARK {
+            return true;
+        }
+
+        let item_id = entry.item_word & 0x1FF;
+        let trap_nibble = ((entry.item_word >> 9) & 0xF) as u32;
+
+        // Loftwing and the Bird Statue unlock items must keep their own item id
+        // (same rule as pumpkins / give_item_with_archipelago_flag_and_trap).
+        let new_itemid = if item_id == 219 || bird_statue_unlock_flag_index(item_id).is_some() {
+            item_id
+        } else {
+            dAcItem__determineFinalItemid(item_id as u64) as u16
+        };
+
+        // Same param2 layout spawn_item_on_destroy expects from a patched pot:
+        // bits 8-17 flag, bit 18 velocity (item pops out), bits 19-22 trap id,
+        // bits 24-31 vanilla drop id (0xFF = none).
+        let synthetic_param2: u32 =
+            (0xFF << 24) | (1 << 18) | (trap_nibble << 19) | ((local_flag as u32) << 8);
+
+        let drop_pos = if pos.is_null() {
+            (*pot).members.base.pos
+        } else {
+            *pos
+        };
+
+        let item_actor = spawn_item_on_destroy(
+            roomid,
+            drop_pos,
+            (*pot).members.base.rot.y,
+            new_itemid,
+            synthetic_param2,
+            true,
+        );
+
+        // TEMP (big pot shuffle testing)
+        debug::debug_print_num(c"big pot table index %x".as_ptr(), index);
+        debug::debug_print_num(
+            c"big pot dropped item %x".as_ptr(),
+            if item_actor.is_null() {
+                0
+            } else {
+                new_itemid as usize
+            },
+        );
+
+        if item_actor.is_null() {
+            return false;
+        }
+
+        (*pot).members.base.param2 =
+            ((*pot).members.base.param2 & 0xFFFF0000) | BIG_POT_DROPPED_MARK;
+        true
+    }
+}
+
+/// Actor id of `OBJ_BARREL` (dAcOBarrel_c, profile 0x209).
+const BARREL_ACTORID: u16 = 0x209;
+
+/// Capacity of the barrel table (BARREL_TABLE_* in symbols.yaml). The game has
+/// 170 non-bomb barrels in the BZS files (165 distinct positions).
+const BARREL_TABLE_MAX: usize = 192;
+
+/// "RBRL" as a little-endian u32; the patcher writes it in front of the table
+/// only when at least one barrel has an item.
+const BARREL_TABLE_MAGIC_VALUE: u32 = 0x4C52_4252;
+
+/// Marker written into a breaking barrel actor's own params2 (low 16 bits)
+/// once its item has dropped. Vanilla barrel params2 low 24 bits are 0xFFFFFF,
+/// so the low 16 bits are free (the top byte is overwritten with 0xFF by the
+/// game itself after the first drop call). Lives on the actor instance.
+const BARREL_DROPPED_MARK: u32 = 0xBA77;
+
+/// Offsets into dAcOBarrel_c (see barrel.asm): byte that is non-zero when the
+/// barrel has a vanilla drop, and the byte that selects the rebirth path.
+const BARREL_HAS_DROP_OFFSET: usize = 0x135F;
+const BARREL_REBIRTH_OFFSET: usize = 0x1363;
+
+/// Finds a barrel's table index from its X/Z position bits. Entries use the
+/// same layout as PumpkinEntry.
+fn find_barrel_entry(px_bits: u32, pz_bits: u32) -> Option<usize> {
+    unsafe {
+        if core::ptr::read_volatile(core::ptr::addr_of!(BARREL_TABLE_MAGIC))
+            != BARREL_TABLE_MAGIC_VALUE
+        {
+            return None;
+        }
+
+        let count = core::ptr::read_volatile(core::ptr::addr_of!(BARREL_TABLE_COUNT)) as usize;
+        let count = if count < BARREL_TABLE_MAX {
+            count
+        } else {
+            BARREL_TABLE_MAX
+        };
+
+        for index in 0..count {
+            let entry = core::ptr::read_unaligned(core::ptr::addr_of!(BARREL_TABLE_ENTRIES[index]));
+            if entry.px_bits == px_bits && entry.pz_bits == pz_bits {
+                return Some(index);
+            }
+        }
+        None
+    }
+}
+
+/// Barrel shuffle: drops the randomized item for a breaking barrel.
+///
+/// Barrels have no usable per-barrel params (params2 low 24 bits are 0xFFFFFF
+/// everywhere), so the item is looked up by position in a patcher-written
+/// table. Barrels can be picked up and thrown, so the actor's starting
+/// position is tried first, then the current position.
+///
+/// Returns true if an item was dropped (or already dropped for this break),
+/// false if the barrel should keep its vanilla behavior.
+fn barrel_drop_custom_item(
+    barrel: *mut actor::dAcOBase,
+    roomid: u32,
+    pos: *mut math::Vec3f,
+) -> bool {
+    unsafe {
+        let px_bits = (*barrel).members.base.pos.x.to_bits();
+        let pz_bits = (*barrel).members.base.pos.z.to_bits();
+        let start_px_bits = (*barrel).members.starting_pos.x.to_bits();
+        let start_pz_bits = (*barrel).members.starting_pos.z.to_bits();
+
+        let index = match find_barrel_entry(start_px_bits, start_pz_bits)
+            .or_else(|| find_barrel_entry(px_bits, pz_bits))
+        {
+            Some(index) => index,
+            None => {
+                // TEMP (barrel shuffle testing, remove once confirmed in-game)
+                debug::debug_print_num(
+                    c"barrel not in table px %x".as_ptr(),
+                    start_px_bits as usize,
+                );
+                debug::debug_print_num(
+                    c"barrel not in table pz %x".as_ptr(),
+                    start_pz_bits as usize,
+                );
+                return false;
+            },
+        };
+
+        let entry = core::ptr::read_unaligned(core::ptr::addr_of!(BARREL_TABLE_ENTRIES[index]));
+        let local_flag = entry.flag & 0x3FF;
+        if local_flag == CUSTOM_FLAG_NONE {
+            return false;
+        }
+
+        // Barrels use custom flag group 1 (extended pages), like pots.
+        if check_ap_custom_flag(local_flag | CUSTOM_FLAG_GROUP1) {
+            return false;
+        }
+
+        // Already dropped for this very break (repeated per-frame call)
+        if (*barrel).members.base.param2 & 0xFFFF == BARREL_DROPPED_MARK {
+            return true;
+        }
+
+        let item_id = entry.item_word & 0x1FF;
+        let trap_nibble = ((entry.item_word >> 9) & 0xF) as u32;
+
+        // Loftwing and the Bird Statue unlock items must keep their own item id
+        // (same rule as pumpkins / big pots).
+        let new_itemid = if item_id == 219 || bird_statue_unlock_flag_index(item_id).is_some() {
+            item_id
+        } else {
+            dAcItem__determineFinalItemid(item_id as u64) as u16
+        };
+
+        // Same param2 layout spawn_item_on_destroy expects from a patched pot.
+        let synthetic_param2: u32 =
+            (0xFF << 24) | (1 << 18) | (trap_nibble << 19) | ((local_flag as u32) << 8);
+
+        let drop_pos = if pos.is_null() {
+            (*barrel).members.base.pos
+        } else {
+            *pos
+        };
+
+        let item_actor = spawn_item_on_destroy(
+            roomid,
+            drop_pos,
+            (*barrel).members.base.rot.y,
+            new_itemid,
+            synthetic_param2,
+            true,
+        );
+
+        if item_actor.is_null() {
+            return false;
+        }
+
+        (*barrel).members.base.param2 =
+            ((*barrel).members.base.param2 & 0xFFFF0000) | BARREL_DROPPED_MARK;
+        true
+    }
+}
+
+/// Pot sanity: replaces the `bl checkParam2OnDestroy` calls that drop a pot's
+/// vanilla item. Two call sites reach it through a jumptable stub (landingpad
+/// #108) that passes the actor (x19) as a sixth argument:
+///   - runtime 0x7100eca45c: the shared object base-class update, which is
+///     what drops items for almost every pot (314 of 318 have param1 bits
+///     14-15 set and never enter the Rebirth state). It serves many actor
+///     types, so the actor id is checked here.
+///   - runtime 0x71009b96a4: dAcOtubo_c's Rebirth state (4 pots in D301).
+///
+/// Patched pots carry the TgReact param2 layout, except the item id is stored
+/// in param2 bits 0-7 (+ bit 23 as the 9th bit), since a pot's param1 has no
+/// room. Anything that isn't a pot, pots whose custom flag is 0x3FF
+/// (unpatched, the vanilla value), ammo pots (vanilla drop id 0xFE) and pots
+/// whose check was already collected keep the vanilla drop. After spawning,
+/// the actor's custom flag is set to 0x3FF in memory so the repeated per-frame
+/// call (and the second call site) can't drop a second item.
+#[no_mangle]
+pub extern "C" fn pot_spawn_custom_item(
+    param2_s0x18: u8,
+    roomid: u32,
+    pos: *mut math::Vec3f,
+    param_4: u32,
+    param_5: *mut c_void,
+    pot: *mut actor::dAcOBase,
+) -> u32 {
+    unsafe {
+        let is_pot = !pot.is_null()
+            && ((*pot).basebase.members.actorid == actor::ACTORID::OBJ_TUBO as u16
+                || (*pot).basebase.members.actorid == actor::ACTORID::OBJ_TUBO_BIG as u16
+                || (*pot).basebase.members.actorid == PUMPKIN_ACTORID
+                || (*pot).basebase.members.actorid == BARREL_ACTORID);
+
+        // TEMP (big pot shuffle testing, remove once confirmed in-game): log the
+        // actor id of everything else that reaches this hook.
+        if !pot.is_null() && !is_pot {
+            debug::debug_print_num(
+                c"pot hook other actor %x".as_ptr(),
+                (*pot).basebase.members.actorid as usize,
+            );
+        }
+
+        if is_pot {
+            let param2 = (*pot).members.base.param2;
+            let raw_flag = (param2 >> 8) & 0x3FF;
+
+            // Pumpkin shuffle: the actor's params are wiped after creation, so look
+            // the item up by position in the patcher-written table instead. Calls
+            // with vanilla drop id 0xFF are the "delete without dropping anything"
+            // path, so they never drop.
+            if (*pot).basebase.members.actorid == PUMPKIN_ACTORID {
+                if param2_s0x18 != 0xFF && pumpkin_drop_custom_item(pot, param2_s0x18, roomid, pos)
+                {
+                    // Bit 0 set = "an item was dropped", same as vanilla
+                    return 1;
+                }
+                return checkParam2OnDestroy(param2_s0x18, roomid, pos, param_4, param_5);
+            }
+
+            // Barrels: the item comes from the position-keyed table. barrel.asm NOPs
+            // the vanilla "has a drop" guard so barrels that drop nothing in vanilla
+            // reach this hook too; for barrels not in the table the guard is
+            // re-applied here (rebirth barrels, which have no guard, always keep
+            // the vanilla call).
+            if (*pot).basebase.members.actorid == BARREL_ACTORID {
+                if barrel_drop_custom_item(pot, roomid, pos) {
+                    // Bit 0 set = "an item was dropped", same as vanilla
+                    return 1;
+                }
+                let base = pot as *const u8;
+                if *base.add(BARREL_HAS_DROP_OFFSET) != 0 || *base.add(BARREL_REBIRTH_OFFSET) != 0 {
+                    return checkParam2OnDestroy(param2_s0x18, roomid, pos, param_4, param_5);
+                }
+                return 0;
+            }
+
+            // Big pots: vanilla drop id is always 0xFF (nothing drops), so unlike
+            // pumpkins there is no 0xFF guard here; the item comes from the
+            // position-keyed table.
+            if (*pot).basebase.members.actorid == actor::ACTORID::OBJ_TUBO_BIG as u16 {
+                if big_pot_drop_custom_item(pot, roomid, pos) {
+                    // Bit 0 set = "an item was dropped", same as vanilla
+                    return 1;
+                }
+                return checkParam2OnDestroy(param2_s0x18, roomid, pos, param_4, param_5);
+            }
+
+            // Pots use custom flag group 1 (extended pages).
+            if raw_flag != 0x3FF
+                && param2_s0x18 != 0xFE
+                && !check_ap_custom_flag(raw_flag as u16 | CUSTOM_FLAG_GROUP1)
+            {
+                let new_itemid =
+                    dAcItem__determineFinalItemid(item_id_9bit(param2 & 0xFF, param2 >> 23) as u64)
+                        as u16;
+
+                let drop_pos = if pos.is_null() {
+                    (*pot).members.base.pos
+                } else {
+                    *pos
+                };
+
+                let item_actor = spawn_item_on_destroy(
+                    roomid,
+                    drop_pos,
+                    (*pot).members.base.rot.y,
+                    new_itemid,
+                    param2,
+                    true,
+                );
+
+                if !item_actor.is_null() {
+                    (*pot).members.base.param2 |= 0x3FF00;
+                    // Bit 0 set = "an item was dropped", same as vanilla
+                    return 1;
+                }
+            }
+        }
+
+        checkParam2OnDestroy(param2_s0x18, roomid, pos, param_4, param_5)
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn academy_bell_give_custom_item() {
     unsafe {
         let bell_actor: *mut actor::dAcObell;
         asm!("mov {0:x}, x19", out(reg) bell_actor);
 
-        let itemid = (*bell_actor).base.basebase.members.param1 & 0xFF;
+        // Item id: params1 bits 0-7 + params2 bit 18 (9th bit).
+        let itemid = item_id_9bit(
+            (*bell_actor).base.basebase.members.param1 & 0xFF,
+            (*bell_actor).base.members.base.param2 >> 18,
+        ) as u32;
         let param1 = 0x19FC00 | itemid; // item will set sceneflag 127 on collection
         asm!("mov w1, {0:w}", in(reg) param1);
 
@@ -1207,6 +2181,8 @@ pub extern "C" fn fix_freestanding_item_y_offset(item_actor: *mut dAcItem) {
                 19 | 90 | 91 | 98 | 116 | 125 => y_offset = 23.0,
                 // Clawshots | Spiral Charge | Loftwing | Mogma Mitts | Life Tree Seedling
                 20 | 21 | 219 | 99 | 197 => y_offset = 25.0,
+                // Bird Statue Unlocks
+                300..=325 => y_offset = 5.0,
                 // AC BK | FS BK
                 25 | 26 => y_offset = 30.0,
                 // SSH BK, ET Key, SVT BK, ET BK | Amber Tablet
@@ -1342,8 +2318,8 @@ pub extern "C" fn fix_freestanding_item_horizontal_offset(item_actor: *mut dAcIt
                     angle_change_x = 0x0500;
                     angle_change_y = 0x2400;
                 },
-                // Spiral Charge | Loftwing
-                21 | 219 => {
+                // Spiral Charge | Loftwing | Bird Statue Unlocks
+                21 | 219 | 300..=325 => {
                     h_offset = 27.0;
                     angle_change_y = 0x3000;
                     angle_change_z = 0x0300;
@@ -1540,7 +2516,7 @@ pub extern "C" fn fix_freestanding_item_horizontal_offset(item_actor: *mut dAcIt
 }
 
 #[no_mangle]
-pub extern "C" fn check_and_open_trial_gates(collected_item: flag::ITEMFLAGS) {
+pub extern "C" fn check_and_open_trial_gates(collected_item: u16) {
     unsafe {
         // Don't try to open any trial gates if the setting isn't on
         if RANDOMIZER_SETTINGS.skip_harp_playing == 0 {
@@ -1556,7 +2532,10 @@ pub extern "C" fn check_and_open_trial_gates(collected_item: flag::ITEMFLAGS) {
             flag::ITEMFLAGS::FARON_SONG_OF_THE_HERO_PART,
             flag::ITEMFLAGS::SONG_OF_THE_HERO,
         ];
-        if !relevant_items.iter().any(|&item| item == collected_item) {
+        if !relevant_items
+            .iter()
+            .any(|&item| item as u16 == collected_item)
+        {
             return;
         }
 
@@ -1610,17 +2589,238 @@ pub extern "C" fn check_and_open_trial_gates(collected_item: flag::ITEMFLAGS) {
     }
 }
 
+// Bird Statue unlock items. Each one owns a scene flag in scene 6 (an index
+// the game does not use) whose number is returned here. Keep this in sync with
+// ALL_BIRD_STATUE_UNLOCK_ITEMS in constants/itemconstants.py and the
+// Archipelago custom flag pool, which reserves the same flags (IDs 0-31) so
+// nothing else ever writes to them.
+pub const BIRD_STATUE_UNLOCK_SCENE_INDEX: u16 = 6;
+// Scale applied to the SaveObjectA statue model when it is used as an item.
+const BIRD_STATUE_ITEM_MODEL_SCALE: f32 = 0.2;
+// Bird Statue unlock items occupy ids 300..=325 (26 items, one per statue).
+// The flag index is `id - 300`, matching the item's index in
+// ALL_BIRD_STATUE_UNLOCK_ITEMS. Keep these in sync with data/items.yaml and
+// custom-items.asm.
+pub const BIRD_STATUE_UNLOCK_FIRST_ITEM_ID: u16 = 300;
+pub const BIRD_STATUE_UNLOCK_LAST_ITEM_ID: u16 = 325;
+
+// ---------------------------------------------------------------------------
+// Bird Statues Give Items
+//
+// Each of the 26 surface Bird Statues is a location. Touching one sets a flag
+// (a scene flag for most, a story flag 800-807 for some); the three region
+// entrance statues have their flag preset by the randomizer, so they trigger
+// on first being in their region instead. Once the flag reads set, the item
+// the patcher stored for that statue is given with the normal item-get
+// animation (or as a real trap actor), exactly like decoupled Goddess Cubes.
+// ---------------------------------------------------------------------------
+
+/// "BIRD" as a little-endian u32; the patcher writes it next to the statue
+/// tables only when at least one statue has an item.
+const BIRD_STATUE_MAGIC_VALUE: u32 = 0x4452_4942;
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum BirdStatueRegion {
+    Faron,
+    Eldin,
+    Lanayru,
+}
+
+#[derive(Copy, Clone)]
+enum BirdStatueTrigger {
+    /// Global scene flag: (scene index, flag)
+    Scene(u16, u16),
+    /// Story flag
+    Story(u16),
+    /// Region entrance statue: triggers while the player is in its region
+    Entrance,
+}
+
+#[derive(Copy, Clone)]
+struct BirdStatue {
+    trigger: BirdStatueTrigger,
+    region:  BirdStatueRegion,
+}
+
+const fn statue(trigger: BirdStatueTrigger, region: BirdStatueRegion) -> BirdStatue {
+    BirdStatue { trigger, region }
+}
+
+/// Same order as BIRD_STATUE_LOCATION_NAMES in stagepatchhandler.py (and the
+/// AP location codes 2773911..=2773936). Flags match bird_statue_data.yaml.
+const BIRD_STATUES: [BirdStatue; 26] = {
+    use BirdStatueRegion::*;
+    use BirdStatueTrigger::*;
+    [
+        statue(Entrance, Faron),       // Sealed Grounds
+        statue(Scene(10, 31), Faron),  // Behind the Temple
+        statue(Story(800), Faron),     // Faron Woods Entry
+        statue(Story(801), Faron),     // In the Woods
+        statue(Story(802), Faron),     // Viewing Platform
+        statue(Scene(1, 103), Faron),  // Deep Woods
+        statue(Scene(1, 104), Faron),  // Forest Temple
+        statue(Story(803), Faron),     // The Great Tree
+        statue(Scene(2, 32), Faron),   // Lake Floria
+        statue(Scene(2, 33), Faron),   // Floria Waterfall
+        statue(Entrance, Eldin),       // Volcano Entrance
+        statue(Story(805), Eldin),     // Volcano East
+        statue(Story(806), Eldin),     // Volcano Ascent
+        statue(Story(807), Eldin),     // Temple Entrance
+        statue(Entrance, Lanayru),     // Lanayru Mine Entry
+        statue(Scene(7, 66), Lanayru), // Desert Entrance
+        statue(Scene(7, 51), Lanayru), // West Desert
+        statue(Scene(7, 77), Lanayru), // Desert Gorge
+        statue(Scene(7, 78), Lanayru), // Temple of Time
+        statue(Scene(7, 67), Lanayru), // North Desert
+        statue(Scene(7, 2), Lanayru),  // Stone Cache
+        statue(Scene(8, 10), Lanayru), // Ancient Harbour
+        statue(Scene(8, 28), Lanayru), // Skipper's Retreat
+        statue(Scene(8, 85), Lanayru), // Shipyard
+        statue(Scene(8, 84), Lanayru), // Pirate Stronghold
+        statue(Scene(9, 12), Lanayru), // Lanayru Gorge
+    ]
+};
+
+/// Which surface region the current stage belongs to (same stage list the AP
+/// client used to use for statue detection).
+unsafe fn current_bird_statue_region() -> Option<BirdStatueRegion> {
+    match &CURRENT_STAGE_NAME[..4] {
+        b"F100" | b"F101" | b"F102" | b"F103" | b"F400" | b"F401" => Some(BirdStatueRegion::Faron),
+        b"F200" | b"F201" | b"F210" | b"F211" | b"D201" => Some(BirdStatueRegion::Eldin),
+        b"F300" | b"F301" | b"F302" => Some(BirdStatueRegion::Lanayru),
+        _ => None,
+    }
+}
+
+static mut BIRD_STATUE_TICK: u32 = 0;
+
+/// Bird Statues Give Items: when a statue has been touched, give its
+/// randomized item with the normal item-get animation and mark the location as
+/// checked through its AP custom flag.
+///
+/// Does nothing unless the patcher wrote the statue tables (the "Bird Statues
+/// Give Items" setting is on). Called every frame from the main loop but only
+/// does real work every few frames.
+pub fn handle_bird_statue_items() {
+    unsafe {
+        if core::ptr::read_volatile(core::ptr::addr_of!(BIRD_STATUE_MAGIC))
+            != BIRD_STATUE_MAGIC_VALUE
+        {
+            return;
+        }
+
+        BIRD_STATUE_TICK = BIRD_STATUE_TICK.wrapping_add(1);
+        // Offset from the goddess cube handler (every 10th tick) so the two never
+        // try to spawn an item in the same frame.
+        if BIRD_STATUE_TICK % 10 != 5 {
+            return;
+        }
+
+        if ap_stage_cooldown_active() {
+            return;
+        }
+        if &CURRENT_STAGE_NAME[..4] == b"F000" && (CURRENT_LAYER == 26 || CURRENT_LAYER == 29) {
+            return;
+        }
+        if PLAYER_PTR.is_null() || ROOM_MGR.is_null() {
+            return;
+        }
+
+        // Every surface statue lives in one of the three regions
+        let region = match current_bird_statue_region() {
+            Some(region) => region,
+            None => return,
+        };
+
+        for index in 0..BIRD_STATUES.len() {
+            let custom_flag =
+                core::ptr::read_volatile(core::ptr::addr_of!(BIRD_STATUE_CUSTOM_FLAGS[index]));
+            if custom_flag == 0x3FF {
+                continue;
+            }
+
+            let statue = &BIRD_STATUES[index];
+            if statue.region != region {
+                continue;
+            }
+            let touched = match statue.trigger {
+                BirdStatueTrigger::Entrance => true,
+                BirdStatueTrigger::Scene(scene, flag) => {
+                    flag::check_global_sceneflag(scene, flag) != 0
+                },
+                BirdStatueTrigger::Story(flag) => flag::check_storyflag(flag) != 0,
+            };
+            if !touched {
+                continue;
+            }
+            // Already given (the custom flag is set once the location is checked)
+            if check_ap_custom_flag(custom_flag) {
+                continue;
+            }
+
+            // Wait until Link can actually receive the item, then try again
+            if player_is_busy() {
+                return;
+            }
+
+            let item_id =
+                core::ptr::read_volatile(core::ptr::addr_of!(BIRD_STATUE_ITEM_IDS[index]));
+            // Trap pseudo-items (250..=254, trap id = 254 - item id) are given as a
+            // real trap actor: a Rupoor carrying the trap id.
+            let item_actor = if (250..=254).contains(&item_id) {
+                give_item_with_archipelago_flag_and_trap(34, custom_flag, (254 - item_id) as u8)
+            } else {
+                give_item_with_archipelago_flag(item_id, custom_flag)
+            };
+            if item_actor.is_null() {
+                return;
+            }
+            (*item_actor).prevent_timed_despawn = 1;
+
+            // Mark the location as checked right away, which also pre-sets
+            // LAST_AP_ITEM_FLAG_ID so the item textbox shows the right item/player
+            // and keeps us from spawning the item again next time.
+            set_ap_custom_flag(custom_flag);
+
+            // One statue per call so two items never spawn in the same frame
+            return;
+        }
+    }
+}
+
+/// Unlock flag index for a Bird Statue unlock item (ids 300..=325, in the
+/// same order as ALL_BIRD_STATUE_UNLOCK_ITEMS, so the flag is `id - 300`).
+pub fn bird_statue_unlock_flag_index(item_id: u16) -> Option<u16> {
+    match item_id {
+        BIRD_STATUE_UNLOCK_FIRST_ITEM_ID..=BIRD_STATUE_UNLOCK_LAST_ITEM_ID => {
+            Some(item_id - BIRD_STATUE_UNLOCK_FIRST_ITEM_ID)
+        },
+        _ => None,
+    }
+}
+
 #[no_mangle]
-pub extern "C" fn after_item_collection_hook(collected_item: flag::ITEMFLAGS) -> flag::ITEMFLAGS {
+// NOTE: `collected_item` is a raw item id (u16), NOT `flag::ITEMFLAGS`. Custom
+// item ids (Bird Statue unlocks 300..=325, key rings, ...) are not variants of
+// that enum, and a repr(u16) enum with out-of-range values is undefined
+// behavior: rustc attaches a valid-range to it, so the optimizer can delete
+// the `300..=325` branch below and the unlock flag is never set.
+pub extern "C" fn after_item_collection_hook(collected_item: u16) -> u16 {
     unsafe {
         fix::fix_ammo_counts(collected_item);
         check_and_open_trial_gates(collected_item);
-        if collected_item == flag::ITEMFLAGS::LOFTWING {
+        if collected_item == flag::ITEMFLAGS::LOFTWING as u16 {
             flag::set_storyflag(27);
         }
 
+        // Bird Statue unlock items set their own unlock flag. The statue landing
+        // map reads these flags when "Bird Statues Need to be Unlocked" is on.
+        if let Some(flag_index) = bird_statue_unlock_flag_index(collected_item) {
+            flag::set_global_sceneflag(BIRD_STATUE_UNLOCK_SCENE_INDEX, flag_index);
+        }
+
         // Replaced code
-        asm!("mov w8, {0:w}", in(reg) ((collected_item as u16) - 2));
+        asm!("mov w8, {0:w}", in(reg) (collected_item.wrapping_sub(2)));
 
         return collected_item;
     }
@@ -1638,6 +2838,7 @@ pub extern "C" fn resolve_progressive_item_models(
             model_name = match item_id {
                 15 => c"Demo11_01".as_ptr(),
                 21 | 219 => c"GetBirdStatue".as_ptr(),
+                300..=325 => c"SaveObjectA".as_ptr(),
                 214 => c"Onp".as_ptr(),
                 215 => c"DesertRobot".as_ptr(),
                 216 => {
@@ -1666,6 +2867,9 @@ pub extern "C" fn resolve_progressive_item_models(
             model_name = match item_id {
                 15 => c"GetStole".as_ptr(),
                 21 | 219 => c"GetBirdStatue".as_ptr(),
+                // The Bird Statue unlock items use the statue's own model
+                // (SaveObjectA is already in ObjectPack).
+                300..=325 => c"SaveObjectA".as_ptr(),
                 // Randomly pick which of the two tadtone models is used for fun :p
                 214 if (s_rng & 1) == 0 => c"OnpA".as_ptr(),
                 214 => c"OnpB".as_ptr(),
@@ -1916,6 +3120,9 @@ pub extern "C" fn change_model_scale(item_actor: *mut dAcItem, world_matrix: *mu
         let mut scale = match (*item_actor).final_determined_itemid {
             214 => 0.5f32, // Tadtone
             215 => 0.3f32, // Scrapper
+            // Bird Statue Unlock items: the SaveObjectA statue model is far
+            // bigger than a normal item model, so scale it way down.
+            300..=325 => BIRD_STATUE_ITEM_MODEL_SCALE,
             _ => 1.0f32,
         };
 
@@ -1929,6 +3136,17 @@ pub extern "C" fn change_model_scale(item_actor: *mut dAcItem, world_matrix: *mu
 
             if current_player_action == player::PLAYER_ACTIONS::ITEM_GET {
                 (*world_matrix).yw += -20.0;
+            }
+        }
+
+        // Change Bird Statue Unlock item height during item get
+        if ((*item_actor).itemid >= BIRD_STATUE_UNLOCK_FIRST_ITEM_ID
+            && (*item_actor).itemid <= BIRD_STATUE_UNLOCK_LAST_ITEM_ID)
+        {
+            let current_player_action = (*PLAYER_PTR).current_action;
+
+            if current_player_action == player::PLAYER_ACTIONS::ITEM_GET {
+                (*world_matrix).yw += -45.0;
             }
         }
 
@@ -2035,7 +3253,8 @@ pub extern "C" fn get_silent_realm_item_glow_color(item_id: u32) -> u32 {
 #[no_mangle]
 pub extern "C" fn give_tadtone_random_item(tadtone_actor: *const actor::dAcOClef) {
     unsafe {
-        let itemid = (*tadtone_actor).base.members.base.rot.z & 0xFF;
+        // Item id: rot.z (a full 16 bits; the patcher writes the whole 9-bit id).
+        let itemid: u16 = ((*tadtone_actor).base.members.base.rot.z as u16) & 0x1FF;
         let tadtone_group_index: u8 =
             ((((*tadtone_actor).base.basebase.members.param1 >> 3) & 0x1F) - 1) as u8;
 
@@ -2048,10 +3267,7 @@ pub extern "C" fn give_tadtone_random_item(tadtone_actor: *const actor::dAcOClef
             NEXT_CUSTOM_FLAG_PENDING = 1;
         }
 
-        give_item_with_sceneflag(
-            itemid as u8,
-            TADTONE_SCENEFLAGS[tadtone_group_index as usize],
-        );
+        give_item_with_sceneflag(itemid, TADTONE_SCENEFLAGS[tadtone_group_index as usize]);
     }
 }
 
@@ -2078,7 +3294,8 @@ pub extern "C" fn spawn_tree_of_life_item() -> *mut dAcItem {
         let item_actor: *mut dAcItem = actor::spawn_actor(
             actor::ACTORID::ITEM,
             (*ROOM_MGR).roomid.into(),
-            0xFF9C0200 | (52 << 10) | (tree_param1 >> 24),
+            // Item id: params1 bits 23-31 (9 bits).
+            0xFF9C0200 | (52 << 10) | (tree_param1 >> 23),
             ACTOR_PARAM_POS,
             core::ptr::null_mut(),
             core::ptr::null_mut(),
@@ -2105,7 +3322,11 @@ pub extern "C" fn setup_gossip_stone_item_params(
     unsafe {
         let sceneflag: u32 = (*hrphint_actor).basebase.members.param1 & 0xFF;
         let trapid: u32 = (*hrphint_actor).members.base.param2 & 0xF;
-        let itemid: u32 = ((*hrphint_actor).members.base.param2 >> 4) & 0xFF;
+        // Item id: params2 bits 4-11 + bit 22 (9th bit).
+        let itemid: u32 = item_id_9bit(
+            ((*hrphint_actor).members.base.param2 >> 4) & 0xFF,
+            (*hrphint_actor).members.base.param2 >> 22,
+        ) as u32;
         // Bits 12-21 hold a 10-bit AP custom flag
         // (flag[0-6]|scene_sel[7-8]|flag_space[9]) or the sentinel 0x3FF
         // meaning no AP flag (use vanilla sceneflag).
@@ -2157,41 +3378,52 @@ pub extern "C" fn setup_gossip_stone_item_params(
 // Byte 0: Item ID (0 = empty slot)
 // Byte 1: Flags (0x01 = show animation, 0x02 = play jingle)
 // Bytes 2-3: Reserved
-const ARCHIPELAGO_BUFFER_SIZE: usize = 1024;
+pub const ARCHIPELAGO_BUFFER_SIZE: usize = 1024;
 
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
 pub struct ArchipelagoItemSlot {
-    pub item_id:   u8,
-    pub flags:     u8,
-    pub _reserved: [u8; 2],
+    /// Low byte of the item id. A slot is pending when this is non-zero, so
+    /// ids whose low byte is 0 (256, 512) can't be delivered.
+    pub item_id:    u8,
+    pub flags:      u8,
+    /// Must stay untouched: the Python client's buffer access test writes
+    /// here.
+    pub _reserved:  u8,
+    /// High byte of the item id (the item actor's id field is 9 bits wide).
+    pub item_id_hi: u8,
 }
 assert_eq_size!([u8; 4], ArchipelagoItemSlot);
 
 const fn build_archipelago_item_buffer() -> [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] {
     let mut buffer = [ArchipelagoItemSlot {
-        item_id:   0,
-        flags:     0,
-        _reserved: [0, 0],
+        item_id:    0,
+        flags:      0,
+        _reserved:  0,
+        item_id_hi: 0,
     }; ARCHIPELAGO_BUFFER_SIZE];
 
+    // Slot 0 is never used as a real item slot (loops below start at index 1).
+    // This used to double as a magic signature for an external per-buffer
+    // scan; that scan no longer happens (see ipc.rs — the whole IPC surface
+    // is now found via ONE scan for AP_IPC_ROOT.magic), but the sentinel
+    // value is left in place since it's harmless and avoids touching this
+    // const-eval'd buffer any further than necessary.
     buffer[0] = ArchipelagoItemSlot {
-        item_id:   0x41,
-        flags:     0x50,
-        _reserved: [0x00, 0x01],
+        item_id:    0x41,
+        flags:      0x50,
+        _reserved:  0x00,
+        item_id_hi: 0x01,
     };
 
     buffer
 }
 
-// Static buffer for Archipelago item queue
-// This will be written to by the Python client and read by the game
-// Magic signature at the start: "AP" in ASCII (0x4150), followed by version
-// 0x0001 This allows Python to find the real buffer by searching for this
-// signature Format: [magic_high, magic_low, version_high, version_low,
-// ...actual slots...]
-#[no_mangle]
-pub static mut ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] =
+// Initial value for the item queue. The live instance of this buffer now
+// lives at AP_IPC_ROOT.item_buffer (see ipc.rs) instead of a standalone
+// static, so the external client only needs ONE scan (for AP_IPC_ROOT's
+// magic) to find every mailbox, this one included.
+pub const EMPTY_ARCHIPELAGO_ITEM_BUFFER: [ArchipelagoItemSlot; ARCHIPELAGO_BUFFER_SIZE] =
     build_archipelago_item_buffer();
 
 #[inline(always)]
@@ -2345,16 +3577,33 @@ static mut AP_RECEIVED_ITEMS_THIS_BATCH: u32 = 0;
 
 const AP_RECEIVE_BATCH_LIMIT: u32 = 50;
 
+// Reload / warp handling.
+//
+// `entrance::reload_current_stage()` (Left Stick + R + Y) and
+// `warp_to_stage()` call `reset_ap_item_receive_batch()` at the moment the
+// reload is TRIGGERED. This resets the 50-item batch so delivery resumes after
+// a reload, and it ALSO starts a cooldown. Without the cooldown, the very next
+// frame the buffer loop could spawn item actors into the old scene while it is
+// fading out / being torn down (a same-stage reload doesn't change
+// CURRENT_STAGE_NAME, so the stage-change cooldown below never applied). That
+// was the crash on "stage stalled at 50 items, then reload".
+const AP_RELOAD_COOLDOWN_FRAMES: u32 = 150;
+
 #[no_mangle]
 pub extern "C" fn reset_ap_item_receive_batch() {
     unsafe {
         AP_RECEIVED_ITEMS_THIS_BATCH = 0;
+        AP_STAGE_COOLDOWN = AP_RELOAD_COOLDOWN_FRAMES;
     }
 }
 
 /// Per-slot retry counters — one for each buffer slot (excluding slot 0
 /// which holds the magic signature).
 static mut AP_SLOT_RETRIES: [u32; ARCHIPELAGO_BUFFER_SIZE] = [0u32; ARCHIPELAGO_BUFFER_SIZE];
+
+/// `ArchipelagoItemSlot.flags` bit 0: deliver this item even if the loaded
+/// save's seed doesn't match the patch (client sets it for `!getitem` items).
+pub const AP_SLOT_FLAG_FORCE: u8 = 1;
 
 /// Returns true if we are still in the post-stage-transition cooldown
 /// and should NOT process buffer items this frame.
@@ -2368,6 +3617,7 @@ fn ap_stage_cooldown_active() -> bool {
             AP_STAGE_COOLDOWN = STAGE_COOLDOWN_FRAMES;
             AP_RECEIVED_ITEMS_THIS_BATCH = 0;
         }
+
         if AP_STAGE_COOLDOWN > 0 {
             AP_STAGE_COOLDOWN -= 1;
             return true;
@@ -2379,6 +3629,10 @@ fn ap_stage_cooldown_active() -> bool {
 #[no_mangle]
 pub extern "C" fn archipelago_check_item_buffer() {
     unsafe {
+        // Items from another seed's save may only be delivered when the client
+        // marks the slot AP_SLOT_FLAG_FORCE (used for `!getitem` test items).
+        let seed_ok = crate::savefile::save_seed_matches();
+
         // Wait for the stage to finish loading before we attempt any spawns.
         if ap_stage_cooldown_active() {
             return;
@@ -2402,13 +3656,28 @@ pub extern "C" fn archipelago_check_item_buffer() {
             // Use volatile read because Python writes to this buffer via
             // cross-process WriteProcessMemory.  Without volatile the
             // compiler could hoist or elide loads across frames.
-            let slot_ptr = ARCHIPELAGO_ITEM_BUFFER.as_mut_ptr().add(i);
-            let item_id_val = core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).item_id));
+            let slot_ptr = crate::ipc::AP_IPC_ROOT.item_buffer.as_mut_ptr().add(i);
+            let item_id_lo = core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).item_id));
 
             // Skip empty slots
-            if item_id_val == 0 {
+            if item_id_lo == 0 {
                 continue;
             }
+
+            // Never deliver regular items into a save that belongs to another
+            // seed; only slots the client explicitly forced (cheat items).
+            if !seed_ok
+                && core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).flags))
+                    & AP_SLOT_FLAG_FORCE
+                    == 0
+            {
+                continue;
+            }
+
+            // The clients write the whole 4-byte slot in one go, so the high
+            // byte is already valid once the low byte is non-zero.
+            let item_id_hi = core::ptr::read_volatile(core::ptr::addr_of!((*slot_ptr).item_id_hi));
+            let item_id_val: u16 = ((item_id_hi as u16) << 8) | (item_id_lo as u16);
 
             // Item pending — check if the player is in a state where we can
             // safely deliver it.  If not, leave the slot and retry next frame.
@@ -2427,7 +3696,7 @@ pub extern "C" fn archipelago_check_item_buffer() {
             // TRAP_ID and fire the runtime effect (e.g., Groose spawn).
             let is_buffer_trap = (250..=254).contains(&item_id_val);
             let trap_id = if is_buffer_trap {
-                (254u8 - item_id_val) as u32
+                (254u16 - item_id_val) as u32
             } else {
                 0xFu32
             };
@@ -2439,11 +3708,14 @@ pub extern "C" fn archipelago_check_item_buffer() {
             let item_id = item_id_val as u64;
             let final_id = if is_buffer_trap {
                 34u16
-            } else if item_id_val == 219 {
-                // Loftwing must remain item 219 for AP delivery. Vanilla
-                // determineFinalItemid can remap this to rupee logic,
-                // which forces GetRupee visuals instead of GetBirdStatue.
-                219u16
+            } else if item_id_val == 219
+                || bird_statue_unlock_flag_index(item_id_val as u16).is_some()
+            {
+                // Loftwing and the Bird Statue Unlock items must keep their own
+                // item id for AP delivery. Vanilla determineFinalItemid can remap
+                // them to rupee logic, which forces GetRupee visuals instead of
+                // GetBirdStatue (and would never set the unlock flag).
+                item_id_val as u16
             } else {
                 dAcItem__determineFinalItemid(item_id) as u16
             };
@@ -2519,7 +3791,8 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 // Spawn succeeded — clear the buffer slot and reset retries.
                 core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).item_id), 0u8);
                 core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).flags), 0u8);
-                (*slot_ptr)._reserved = [0, 0];
+                (*slot_ptr)._reserved = 0;
+                (*slot_ptr).item_id_hi = 0;
                 AP_SLOT_RETRIES[i] = 0;
                 AP_RECEIVED_ITEMS_THIS_BATCH += 1;
             } else {
@@ -2532,7 +3805,8 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 if AP_SLOT_RETRIES[i] >= MAX_RETRY_FRAMES {
                     core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).item_id), 0u8);
                     core::ptr::write_volatile(core::ptr::addr_of_mut!((*slot_ptr).flags), 0u8);
-                    (*slot_ptr)._reserved = [0, 0];
+                    (*slot_ptr)._reserved = 0;
+                    (*slot_ptr).item_id_hi = 0;
                     AP_SLOT_RETRIES[i] = 0;
                 }
             }
@@ -2636,10 +3910,12 @@ unsafe fn ap_set_dungeon_item_flags(itemid: u16) {
     }
 }
 
-// Get the address of the Archipelago buffer for the Python client
+// Get the address of the Archipelago buffer. Kept for any in-game callers;
+// the external client no longer needs this — it reaches the buffer via
+// AP_IPC_ROOT.item_buffer (see ipc.rs) after one scan for AP_IPC_ROOT.magic.
 #[no_mangle]
 pub extern "C" fn get_archipelago_buffer_address() -> *mut ArchipelagoItemSlot {
-    unsafe { ARCHIPELAGO_ITEM_BUFFER.as_mut_ptr() }
+    unsafe { crate::ipc::AP_IPC_ROOT.item_buffer.as_mut_ptr() }
 }
 
 // ============================================================================
@@ -2649,7 +3925,8 @@ pub extern "C" fn get_archipelago_buffer_address() -> *mut ArchipelagoItemSlot {
 
 #[repr(C, packed(1))]
 pub struct ApCheckStats {
-    pub magic:          [u8; 4], // "CS\x00\x01" — signature for Python to find
+    pub magic:          [u8; 4], /* legacy per-struct signature; kept for layout compat only —
+                                  * discovery is now via AP_IPC_ROOT.magic (see ipc.rs) */
     pub normal_checked: u16,
     pub normal_total:   u16,
     pub ap_checked:     u16,
@@ -2657,14 +3934,9 @@ pub struct ApCheckStats {
 }
 assert_eq_size!([u8; 12], ApCheckStats);
 
-#[no_mangle]
-pub static mut AP_CHECK_STATS: ApCheckStats = ApCheckStats {
-    magic:          [0x43, 0x53, 0x00, 0x01], // "CS\x00\x01"
-    normal_checked: 0,
-    normal_total:   0,
-    ap_checked:     0,
-    ap_total:       0,
-};
+// The live instance of this struct now lives at AP_IPC_ROOT.check_stats
+// (see ipc.rs) instead of a standalone static. Written by the Python
+// client, read by lyt.rs via `crate::ipc::AP_IPC_ROOT.check_stats`.
 
 // ============================================================================
 // Archipelago Item Info Table (for item 216 textbox — item name + player name)
@@ -2672,7 +3944,9 @@ pub static mut AP_CHECK_STATS: ApCheckStats = ApCheckStats {
 // event flow triggers to inject dynamic text into the textbox.
 // ============================================================================
 
-pub const AP_ITEM_TABLE_MAX: usize = 512;
+// Must hold every location that can carry a custom flag (all shuffles + pots
+// + pumpkins + barrels is ~1484). Mirrored in the client's ap-ipc crate.
+pub const AP_ITEM_TABLE_MAX: usize = 1536;
 
 #[repr(C, packed(1))]
 #[derive(Copy, Clone)]
@@ -2683,7 +3957,7 @@ pub struct ApItemInfoEntry {
 }
 assert_eq_size!([u8; 98], ApItemInfoEntry);
 
-const EMPTY_AP_ENTRY: ApItemInfoEntry = ApItemInfoEntry {
+pub const EMPTY_AP_ENTRY: ApItemInfoEntry = ApItemInfoEntry {
     flag_id:     0xFFFF,
     item_name:   [0u16; 32],
     player_name: [0u16; 16],
@@ -2691,20 +3965,18 @@ const EMPTY_AP_ENTRY: ApItemInfoEntry = ApItemInfoEntry {
 
 #[repr(C, packed(1))]
 pub struct ApItemInfoTable {
-    pub magic:   [u8; 4], // "IT\x00\x01"
-    pub count:   u16,     // number of valid entries
+    pub magic:   [u8; 4], /* legacy per-struct signature; kept for layout compat only —
+                           * discovery is now via AP_IPC_ROOT.magic (see ipc.rs) */
+    pub count:   u16, // number of valid entries
     pub _pad:    u16,
     pub entries: [ApItemInfoEntry; AP_ITEM_TABLE_MAX],
 }
-assert_eq_size!([u8; 8 + 98 * 512], ApItemInfoTable);
+assert_eq_size!([u8; 8 + 98 * 1536], ApItemInfoTable);
 
-#[no_mangle]
-pub static mut AP_ITEM_INFO_TABLE: ApItemInfoTable = ApItemInfoTable {
-    magic:   [0x49, 0x54, 0x00, 0x01], // "IT\x00\x01"
-    count:   0,
-    _pad:    0,
-    entries: [EMPTY_AP_ENTRY; AP_ITEM_TABLE_MAX],
-};
+// The live instance of this struct now lives at AP_IPC_ROOT.item_info_table
+// (see ipc.rs) instead of a standalone static. Written once by the Python
+// client on connect, read by event.rs via
+// `crate::ipc::AP_IPC_ROOT.item_info_table`.
 
 // Tracks which item-216 location was most recently picked up.
 // Set in setup_traps() (stateWait*GetDemoUpdate, BEFORE the event fires) and
@@ -2714,6 +3986,125 @@ pub static mut AP_ITEM_INFO_TABLE: ApItemInfoTable = ApItemInfoTable {
 // cmd 81 already cleared it.
 #[no_mangle]
 pub static mut LAST_AP_ITEM_FLAG_ID: u16 = 0xFFFF;
+
+/// Refreshes `AP_IPC_ROOT.sceneflags` / `.dungeonflags` / `.tboxflags` /
+/// `.static_tboxflags` / `.current_scene_index` / `.current_stage_name`
+/// with live BY-VALUE COPIES (not addresses -- see ipc.rs's field docs
+/// for why) of the save file's sceneflags/dungeonflags/tboxflags arrays,
+/// the in-RAM STATIC_TBOXFLAGS working copy, the current scene index, and
+/// the current stage code. Called once per frame from `mainloop.rs` so
+/// the external client can batch-read these arrays directly out of
+/// AP_IPC_ROOT's own memory (which it already reads/writes reliably for
+/// item_buffer/check_stats/etc.) instead of issuing one flag_request
+/// round trip per flag.
+#[no_mangle]
+pub extern "C" fn refresh_ipc_addresses() {
+    unsafe {
+        if !FILE_MGR.is_null() {
+            let scene_ptr = core::ptr::addr_of!((*FILE_MGR).FA.sceneflags) as *const [u8; 416];
+            crate::ipc::AP_IPC_ROOT.sceneflags = core::ptr::read_unaligned(scene_ptr);
+
+            let dungeon_ptr = core::ptr::addr_of!((*FILE_MGR).FA.dungeonflags) as *const [u8; 416];
+            crate::ipc::AP_IPC_ROOT.dungeonflags = core::ptr::read_unaligned(dungeon_ptr);
+
+            let tbox_ptr = core::ptr::addr_of!((*FILE_MGR).FA.tboxflags) as *const [u8; 104];
+            crate::ipc::AP_IPC_ROOT.tboxflags = core::ptr::read_unaligned(tbox_ptr);
+
+            // Extended custom flag pages (group 1): scene/dungeon indexes 26-29.
+            let ext_scene_ptr =
+                core::ptr::addr_of!((*FILE_MGR).FA.sceneflags[GROUP1_FIRST_SCENE_INDEX as usize])
+                    as *const [u8; 64];
+            crate::ipc::AP_IPC_ROOT.ext_flags.sceneflags = core::ptr::read_unaligned(ext_scene_ptr);
+
+            let ext_dungeon_ptr =
+                core::ptr::addr_of!((*FILE_MGR).FA.dungeonflags[GROUP1_FIRST_SCENE_INDEX as usize])
+                    as *const [u8; 64];
+            crate::ipc::AP_IPC_ROOT.ext_flags.dungeonflags =
+                core::ptr::read_unaligned(ext_dungeon_ptr);
+        }
+
+        // STATIC_TBOXFLAGS doesn't depend on FILE_MGR (it's a fixed .bss
+        // symbol, always valid once the binary is loaded), so this copy
+        // isn't gated on the FILE_MGR null-check above.
+        crate::ipc::AP_IPC_ROOT.static_tboxflags = STATIC_TBOXFLAGS;
+
+        // SCENEFLAG_MGR can be null very early (before a save file/scene
+        // is loaded) even when FILE_MGR is already set up, so guard it
+        // separately rather than assuming FILE_MGR non-null implies it.
+        crate::ipc::AP_IPC_ROOT.current_scene_index = if SCENEFLAG_MGR.is_null() {
+            0xFFFF
+        } else {
+            (*SCENEFLAG_MGR).sceneindex
+        };
+
+        // Mirror the current stage code by value so the client can gate
+        // stage-specific polling (e.g. Beedle's Airshop purchase
+        // detection) on the player's actual location, the same way the
+        // old Python client's `current_stage` did.
+        crate::ipc::AP_IPC_ROOT.current_stage_name =
+            core::ptr::read_volatile(core::ptr::addr_of!(CURRENT_STAGE_NAME));
+
+        // Mirror the player's health and stamina by value so the client can
+        // detect deaths / stamina exhaustion for DeathLink / BreathLink.
+        // Health comes from the save file; stamina comes from the live
+        // player struct, using the same per-stage offset overrides as
+        // `cheats::handle_infinite_stamina`.
+        let save_loaded = !FILE_MGR.is_null();
+        let player_valid = !PLAYER_PTR.is_null();
+
+        let (current_health, health_capacity) = if save_loaded {
+            (
+                core::ptr::read_unaligned(core::ptr::addr_of!((*FILE_MGR).FA.current_health)),
+                core::ptr::read_unaligned(core::ptr::addr_of!((*FILE_MGR).FA.health_capacity)),
+            )
+        } else {
+            (0u16, 0u16)
+        };
+
+        let stamina = if player_valid {
+            let stage = &CURRENT_STAGE_NAME[..5];
+            let stamina_ptr: *const u32 = if stage == b"F103\0" {
+                (PLAYER_PTR as *const u8).offset(-0x7FA8isize) as *const u32
+            } else if stage == b"B301\0" {
+                (PLAYER_PTR as *const u8).add(0x5CD8) as *const u32
+            } else {
+                core::ptr::addr_of!((*PLAYER_PTR).stamina_amount)
+            };
+            core::ptr::read_unaligned(stamina_ptr)
+        } else {
+            0u32
+        };
+
+        crate::ipc::AP_IPC_ROOT.player_vitals = crate::ipc::ApPlayerVitals {
+            current_health,
+            health_capacity,
+            stamina,
+            save_loaded: save_loaded as u8,
+            player_valid: player_valid as u8,
+        };
+
+        // Mirror the current/next stage-loading state (stage, room, layer,
+        // entrance, night, trial, fade frames, ...) for the client's
+        // `/stage_info` command.
+        crate::entrance::refresh_stage_info();
+
+        // Seed info for the client's send/receive gating. A save without a
+        // stored seed (created before this feature) adopts the installed
+        // patch's seed once Link is in the world.
+        if player_valid {
+            crate::savefile::adopt_patch_seed_if_missing();
+        }
+        let patched = crate::savefile::patched_seed();
+        let saved = crate::savefile::save_seed();
+        crate::ipc::AP_IPC_ROOT.seed_info = crate::ipc::ApSeedInfo {
+            patched_seed:  patched.to_le_bytes(),
+            save_seed:     saved.to_le_bytes(),
+            save_has_seed: (saved != 0) as u8,
+            seed_match:    (save_loaded && crate::savefile::save_seed_matches()) as u8,
+            _pad:          [0; 6],
+        };
+    }
+}
 
 /// Look up the table index for a given custom_flag_id.
 /// Returns the index into AP_ITEM_INFO_TABLE.entries, or usize::MAX if not
@@ -2725,7 +4116,7 @@ pub static mut LAST_AP_ITEM_FLAG_ID: u16 = 0xFFFF;
 /// values from the initial zeroed static.
 pub fn lookup_ap_item_index(flag_id: u16) -> usize {
     unsafe {
-        let count_ptr = core::ptr::addr_of!(AP_ITEM_INFO_TABLE.count);
+        let count_ptr = core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.item_info_table.count);
         let count = core::ptr::read_volatile(count_ptr) as usize;
         let limit = if count < AP_ITEM_TABLE_MAX {
             count
@@ -2733,7 +4124,8 @@ pub fn lookup_ap_item_index(flag_id: u16) -> usize {
             AP_ITEM_TABLE_MAX
         };
         for i in 0..limit {
-            let flag_ptr = core::ptr::addr_of!(AP_ITEM_INFO_TABLE.entries[i].flag_id);
+            let flag_ptr =
+                core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.item_info_table.entries[i].flag_id);
             if core::ptr::read_volatile(flag_ptr) == flag_id {
                 return i;
             }

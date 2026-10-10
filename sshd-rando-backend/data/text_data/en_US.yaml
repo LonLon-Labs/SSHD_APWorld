@@ -140,6 +140,84 @@
 - name: Item 213 Text
   standard: "You got the <s<Sky Keep>> Map!"
 
+- name: Item 300 Text
+  standard: "You got the <y<Behind the Temple Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 301 Text
+  standard: "You got the <y<Faron Woods Entry Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 302 Text
+  standard: "You got the <y<In the Woods Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 303 Text
+  standard: "You got the <y<Viewing Platform Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 304 Text
+  standard: "You got the <y<Deep Woods Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 305 Text
+  standard: "You got the <y<Forest Temple Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 306 Text
+  standard: "You got the <y<The Great Tree Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 307 Text
+  standard: "You got the <y<Lake Floria Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 308 Text
+  standard: "You got the <y<Floria Waterfall Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 309 Text
+  standard: "You got the <y<Volcano East Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 310 Text
+  standard: "You got the <y<Volcano Ascent Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 311 Text
+  standard: "You got the <y<Temple Entrance Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 312 Text
+  standard: "You got the <y<Desert Entrance Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 313 Text
+  standard: "You got the <y<West Desert Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 314 Text
+  standard: "You got the <y<Desert Gorge Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 315 Text
+  standard: "You got the <y<Temple of Time Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 316 Text
+  standard: "You got the <y<North Desert Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 317 Text
+  standard: "You got the <y<Stone Cache Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 318 Text
+  standard: "You got the <y<Ancient Harbour Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 319 Text
+  standard: "You got the <y<Skipper's Retreat Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 320 Text
+  standard: "You got the <y<Shipyard Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 321 Text
+  standard: "You got the <y<Pirate Stronghold Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 322 Text
+  standard: "You got the <y<Lanayru Gorge Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 323 Text
+  standard: "You got the <y<Sealed Grounds Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 324 Text
+  standard: "You got the <y<Volcano Entrance Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 325 Text
+  standard: "You got the <y<Lanayru Mine Entry Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
 - name: Item 220 Text
   standard: "You got the <g<Skyview Temple>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
@@ -425,6 +503,162 @@
   standard: Loftwing
   pretty: the <Loftwing>
   cryptic: the <r<Loftwing>>
+  plurality: Singular
+
+- name: Behind the Temple Statue Unlock
+  standard: Behind the Temple Statue Unlock
+  pretty: the <Behind the Temple Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Faron Woods Entry Statue Unlock
+  standard: Faron Woods Entry Statue Unlock
+  pretty: the <Faron Woods Entry Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: In the Woods Statue Unlock
+  standard: In the Woods Statue Unlock
+  pretty: the <In the Woods Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Viewing Platform Statue Unlock
+  standard: Viewing Platform Statue Unlock
+  pretty: the <Viewing Platform Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Deep Woods Statue Unlock
+  standard: Deep Woods Statue Unlock
+  pretty: the <Deep Woods Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Forest Temple Statue Unlock
+  standard: Forest Temple Statue Unlock
+  pretty: the <Forest Temple Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: The Great Tree Statue Unlock
+  standard: The Great Tree Statue Unlock
+  pretty: the <Great Tree Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Lake Floria Statue Unlock
+  standard: Lake Floria Statue Unlock
+  pretty: the <Lake Floria Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Floria Waterfall Statue Unlock
+  standard: Floria Waterfall Statue Unlock
+  pretty: the <Floria Waterfall Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Volcano East Statue Unlock
+  standard: Volcano East Statue Unlock
+  pretty: the <Volcano East Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Volcano Ascent Statue Unlock
+  standard: Volcano Ascent Statue Unlock
+  pretty: the <Volcano Ascent Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Temple Entrance Statue Unlock
+  standard: Temple Entrance Statue Unlock
+  pretty: the <Temple Entrance Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Desert Entrance Statue Unlock
+  standard: Desert Entrance Statue Unlock
+  pretty: the <Desert Entrance Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: West Desert Statue Unlock
+  standard: West Desert Statue Unlock
+  pretty: the <West Desert Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Desert Gorge Statue Unlock
+  standard: Desert Gorge Statue Unlock
+  pretty: the <Desert Gorge Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Temple of Time Statue Unlock
+  standard: Temple of Time Statue Unlock
+  pretty: the <Temple of Time Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: North Desert Statue Unlock
+  standard: North Desert Statue Unlock
+  pretty: the <North Desert Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Stone Cache Statue Unlock
+  standard: Stone Cache Statue Unlock
+  pretty: the <Stone Cache Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Ancient Harbour Statue Unlock
+  standard: Ancient Harbour Statue Unlock
+  pretty: the <Ancient Harbour Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Skipper's Retreat Statue Unlock
+  standard: Skipper's Retreat Statue Unlock
+  pretty: the <Skipper's Retreat Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Shipyard Statue Unlock
+  standard: Shipyard Statue Unlock
+  pretty: the <Shipyard Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Pirate Stronghold Statue Unlock
+  standard: Pirate Stronghold Statue Unlock
+  pretty: the <Pirate Stronghold Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Lanayru Gorge Statue Unlock
+  standard: Lanayru Gorge Statue Unlock
+  pretty: the <Lanayru Gorge Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Sealed Grounds Statue Unlock
+  standard: Sealed Grounds Statue Unlock
+  pretty: the <Sealed Grounds Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Volcano Entrance Statue Unlock
+  standard: Volcano Entrance Statue Unlock
+  pretty: the <Volcano Entrance Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Lanayru Mine Entry Statue Unlock
+  standard: Lanayru Mine Entry Statue Unlock
+  pretty: the <Lanayru Mine Entry Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
   plurality: Singular
 
 - name: Ancient Cistern Boss Key
@@ -2554,6 +2788,136 @@
   standard: Inside the Thunderhead - Mogma Mitts Island Second Goddess Chest
   pretty: Inside the Thunderhead - Mogma Mitts Island Second Goddess Chest
   cryptic: a <s<goddess cube>> in a <ye<desert gorge>>
+
+- name: Sealed Grounds - Sealed Grounds Bird Statue
+  standard: Sealed Grounds - Sealed Grounds Bird Statue
+  pretty: Sealed Grounds - Sealed Grounds Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Sealed Grounds - Behind the Temple Bird Statue
+  standard: Sealed Grounds - Behind the Temple Bird Statue
+  pretty: Sealed Grounds - Behind the Temple Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Faron Woods - Faron Woods Entry Bird Statue
+  standard: Faron Woods - Faron Woods Entry Bird Statue
+  pretty: Faron Woods - Faron Woods Entry Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Faron Woods - In the Woods Bird Statue
+  standard: Faron Woods - In the Woods Bird Statue
+  pretty: Faron Woods - In the Woods Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Faron Woods - Viewing Platform Bird Statue
+  standard: Faron Woods - Viewing Platform Bird Statue
+  pretty: Faron Woods - Viewing Platform Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Deep Woods - Deep Woods Bird Statue
+  standard: Deep Woods - Deep Woods Bird Statue
+  pretty: Deep Woods - Deep Woods Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Deep Woods - Forest Temple Bird Statue
+  standard: Deep Woods - Forest Temple Bird Statue
+  pretty: Deep Woods - Forest Temple Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Faron Woods - Great Tree Bird Statue
+  standard: Faron Woods - Great Tree Bird Statue
+  pretty: Faron Woods - Great Tree Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Lake Floria - Lake Floria Bird Statue
+  standard: Lake Floria - Lake Floria Bird Statue
+  pretty: Lake Floria - Lake Floria Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Floria Waterfall - Floria Waterfall Bird Statue
+  standard: Floria Waterfall - Floria Waterfall Bird Statue
+  pretty: Floria Waterfall - Floria Waterfall Bird Statue
+  cryptic: a <r<winged guardian>> among the <g<woods>>
+
+- name: Eldin Volcano - Volcano Entrance Bird Statue
+  standard: Eldin Volcano - Volcano Entrance Bird Statue
+  pretty: Eldin Volcano - Volcano Entrance Bird Statue
+  cryptic: a <r<winged guardian>> on the <r<burning mountain>>
+
+- name: Eldin Volcano - Volcano East Bird Statue
+  standard: Eldin Volcano - Volcano East Bird Statue
+  pretty: Eldin Volcano - Volcano East Bird Statue
+  cryptic: a <r<winged guardian>> on the <r<burning mountain>>
+
+- name: Eldin Volcano - Volcano Ascent Bird Statue
+  standard: Eldin Volcano - Volcano Ascent Bird Statue
+  pretty: Eldin Volcano - Volcano Ascent Bird Statue
+  cryptic: a <r<winged guardian>> on the <r<burning mountain>>
+
+- name: Eldin Volcano - Temple Entrance Bird Statue
+  standard: Eldin Volcano - Temple Entrance Bird Statue
+  pretty: Eldin Volcano - Temple Entrance Bird Statue
+  cryptic: a <r<winged guardian>> on the <r<burning mountain>>
+
+- name: Lanayru Mine - Mine Entry Bird Statue
+  standard: Lanayru Mine - Mine Entry Bird Statue
+  pretty: Lanayru Mine - Mine Entry Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Desert - Desert Entrance Bird Statue
+  standard: Lanayru Desert - Desert Entrance Bird Statue
+  pretty: Lanayru Desert - Desert Entrance Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Desert - West Desert Bird Statue
+  standard: Lanayru Desert - West Desert Bird Statue
+  pretty: Lanayru Desert - West Desert Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Desert - Desert Gorge Bird Statue
+  standard: Lanayru Desert - Desert Gorge Bird Statue
+  pretty: Lanayru Desert - Desert Gorge Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Temple of Time - Temple of Time Bird Statue
+  standard: Temple of Time - Temple of Time Bird Statue
+  pretty: Temple of Time - Temple of Time Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Desert - North Desert Bird Statue
+  standard: Lanayru Desert - North Desert Bird Statue
+  pretty: Lanayru Desert - North Desert Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Desert - Stone Cache Bird Statue
+  standard: Lanayru Desert - Stone Cache Bird Statue
+  pretty: Lanayru Desert - Stone Cache Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Ancient Harbour - Ancient Harbour Bird Statue
+  standard: Ancient Harbour - Ancient Harbour Bird Statue
+  pretty: Ancient Harbour - Ancient Harbour Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Skipper's Retreat - Skipper's Retreat Bird Statue
+  standard: Skipper's Retreat - Skipper's Retreat Bird Statue
+  pretty: Skipper's Retreat - Skipper's Retreat Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Shipyard - Shipyard Bird Statue
+  standard: Shipyard - Shipyard Bird Statue
+  pretty: Shipyard - Shipyard Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Pirate Stronghold - Pirate Stronghold Bird Statue
+  standard: Pirate Stronghold - Pirate Stronghold Bird Statue
+  pretty: Pirate Stronghold - Pirate Stronghold Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Lanayru Gorge - Lanayru Gorge Bird Statue
+  standard: Lanayru Gorge - Lanayru Gorge Bird Statue
+  pretty: Lanayru Gorge - Lanayru Gorge Bird Statue
+  cryptic: a <r<winged guardian>> in the <y<sands>>
 
 - name: Sealed Grounds - Bonk Wall between Pillars near Bird Statue
   standard: Sealed Grounds - Bonk Wall between Pillars near Bird Statue
@@ -6456,6 +6820,39 @@
 - name: Fi require Sailcloth to Amiibo Warp
   standard: "Master, I unfortunately cannot allow you to\nuse the amiibo without the <y<Sailcloth>>."
 
+- name: Fi No Bird Statue Text
+  standard: "Master, you have not yet unlocked a <y<Bird\nStatue>> in this region, so you cannot drop down."
+
+- name: Fi No Sailcloth Text 1
+  standard: "Master, you cannot make the descent\nwithout the <y<Sailcloth>>. You must find it\nbefore you can drop down."
+
+- name: Fi No Sailcloth Text 2
+  standard: "Master, you will break your legs without\nthe <y<Sailcloth>>. You must find it before\nyou can drop down."
+
+- name: Fi No Sailcloth Text 3
+  standard: "Master, do a backflip lol"
+
+- name: Fi No Sailcloth Text 4
+  standard: "Master, dost thou have a death wish?\nClearly you must have the <y<Sailcloth>> to\ndrop down."
+
+- name: Fi No Sailcloth Text 5
+  standard: "Master, you do not have the <y<Sailcloth>>.\nDropping down without it would be...\nill advised."
+
+- name: Fi No Sailcloth Text 6
+  standard: "Master, the batteries in your <y<Sailcloth>>\nare depleted."
+
+- name: Fi No Sailcloth Text 7
+  standard: "Master, with that line of thinking, one would\npresume you wish to meet the goddess Hylia,\nyou must find your <y<Sailcloth>> to drop down."
+
+- name: Fi No Sailcloth Text 8
+  standard: "<slowtext>Master, a drop from this height would\nterminate you<pause 5>.<pause 5>.<pause 5>. I-I mean your quest.\nHave you tried finding your <y<Sailcloth>>?"
+
+- name: Fi No Sailcloth Text 9
+  standard: "Master, I calculate a 99% probability of this\nbreaking every bone in your body, finding the\n<y<Sailcloth>> drastically lowers this percentage."
+
+- name: Fi No Sailcloth Text 10
+  standard: "<slowtext>Master, you do not possess the skills\nto deploy a Water Bucket at the last second.\nSuggested alternative: Find the <y<Sailcloth>>."
+
 - name: Forced Required Dungeons Text
   standard: "Welcome to your new adventure, Master. I have\n<r<important information>> about your journey."
 
@@ -6731,3 +7128,2726 @@
 - name: Inventory Ruby Tablet text
   standard:
     "A fragment of the ancient tablet that leads\nto the surface. It opens the way to\n<r<Eldin Volcano>>."
+
+# Pot locations
+- name: Skyview Boss Room - Pot 1
+  standard: Skyview Boss Room - Pot 1
+  pretty: Skyview Boss Room - Pot 1
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: Skyview Boss Room - Pot 2
+  standard: Skyview Boss Room - Pot 2
+  pretty: Skyview Boss Room - Pot 2
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: Skyview Boss Room - Pot 3
+  standard: Skyview Boss Room - Pot 3
+  pretty: Skyview Boss Room - Pot 3
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: Skyview Boss Room - Pot 4
+  standard: Skyview Boss Room - Pot 4
+  pretty: Skyview Boss Room - Pot 4
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: Skyview Boss Room - Pot 5
+  standard: Skyview Boss Room - Pot 5
+  pretty: Skyview Boss Room - Pot 5
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: Skyview Boss Room - Pot 6
+  standard: Skyview Boss Room - Pot 6
+  pretty: Skyview Boss Room - Pot 6
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: Skyview Boss Room - Pot 7
+  standard: Skyview Boss Room - Pot 7
+  pretty: Skyview Boss Room - Pot 7
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: Skyview Boss Room - Pot 8
+  standard: Skyview Boss Room - Pot 8
+  pretty: Skyview Boss Room - Pot 8
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: Skyview Boss Room - Pot 9
+  standard: Skyview Boss Room - Pot 9
+  pretty: Skyview Boss Room - Pot 9
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: Skyview Boss Room - Pot 10
+  standard: Skyview Boss Room - Pot 10
+  pretty: Skyview Boss Room - Pot 10
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: Skyview Boss Room - Pot 11
+  standard: Skyview Boss Room - Pot 11
+  pretty: Skyview Boss Room - Pot 11
+  cryptic: smashing <g<pottery>> before the <g<spider queen>>
+
+- name: LMF After Sand Drain - Pot 1
+  standard: LMF After Sand Drain - Pot 1
+  pretty: LMF After Sand Drain - Pot 1
+  cryptic: breaking <y<jars>> in the <y<drained sands>>
+
+- name: LMF After Sand Drain - Pot 2
+  standard: LMF After Sand Drain - Pot 2
+  pretty: LMF After Sand Drain - Pot 2
+  cryptic: breaking <y<jars>> in the <y<drained sands>>
+
+- name: LMF After Sand Drain - Pot 3
+  standard: LMF After Sand Drain - Pot 3
+  pretty: LMF After Sand Drain - Pot 3
+  cryptic: breaking <y<jars>> in the <y<drained sands>>
+
+- name: LMF After Sand Drain - Pot 4
+  standard: LMF After Sand Drain - Pot 4
+  pretty: LMF After Sand Drain - Pot 4
+  cryptic: breaking <y<jars>> in the <y<drained sands>>
+
+- name: LMF After Sand Drain - Pot 5
+  standard: LMF After Sand Drain - Pot 5
+  pretty: LMF After Sand Drain - Pot 5
+  cryptic: breaking <y<jars>> in the <y<drained sands>>
+
+- name: LMF After Sand Drain - Pot 6
+  standard: LMF After Sand Drain - Pot 6
+  pretty: LMF After Sand Drain - Pot 6
+  cryptic: breaking <y<jars>> in the <y<drained sands>>
+
+- name: Waterfall Cave - Pot 1
+  standard: Waterfall Cave - Pot 1
+  pretty: Waterfall Cave - Pot 1
+  cryptic: breaking <b<jars>> behind a <b<waterfall>>
+
+- name: Waterfall Cave - Pot 2
+  standard: Waterfall Cave - Pot 2
+  pretty: Waterfall Cave - Pot 2
+  cryptic: breaking <b<jars>> behind a <b<waterfall>>
+
+- name: Waterfall Cave - Pot 3
+  standard: Waterfall Cave - Pot 3
+  pretty: Waterfall Cave - Pot 3
+  cryptic: breaking <b<jars>> behind a <b<waterfall>>
+
+- name: SK Earth Temple Room North - Pot 1
+  standard: SK Earth Temple Room North - Pot 1
+  pretty: SK Earth Temple Room North - Pot 1
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r+<earthen>> room
+
+- name: SK Earth Temple Room North - Pot 2
+  standard: SK Earth Temple Room North - Pot 2
+  pretty: SK Earth Temple Room North - Pot 2
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r+<earthen>> room
+
+- name: SK Earth Temple Room North - Pot 3
+  standard: SK Earth Temple Room North - Pot 3
+  pretty: SK Earth Temple Room North - Pot 3
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r+<earthen>> room
+
+- name: SK Earth Temple Room North - Pot 4
+  standard: SK Earth Temple Room North - Pot 4
+  pretty: SK Earth Temple Room North - Pot 4
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r+<earthen>> room
+
+- name: SK Earth Temple Room North - Pot 5
+  standard: SK Earth Temple Room North - Pot 5
+  pretty: SK Earth Temple Room North - Pot 5
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r+<earthen>> room
+
+- name: SK Earth Temple Room North - Pot 6
+  standard: SK Earth Temple Room North - Pot 6
+  pretty: SK Earth Temple Room North - Pot 6
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r+<earthen>> room
+
+- name: SK Earth Temple Room North - Pot 7
+  standard: SK Earth Temple Room North - Pot 7
+  pretty: SK Earth Temple Room North - Pot 7
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r+<earthen>> room
+
+- name: SK Fire Sanctuary Room East - Pot 1
+  standard: SK Fire Sanctuary Room East - Pot 1
+  pretty: SK Fire Sanctuary Room East - Pot 1
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r<fiery>> room
+
+- name: SK Fire Sanctuary Room East - Pot 2
+  standard: SK Fire Sanctuary Room East - Pot 2
+  pretty: SK Fire Sanctuary Room East - Pot 2
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r<fiery>> room
+
+- name: SK Fire Sanctuary Room East - Pot 3
+  standard: SK Fire Sanctuary Room East - Pot 3
+  pretty: SK Fire Sanctuary Room East - Pot 3
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r<fiery>> room
+
+- name: SK Fire Sanctuary Room East - Pot 4
+  standard: SK Fire Sanctuary Room East - Pot 4
+  pretty: SK Fire Sanctuary Room East - Pot 4
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r<fiery>> room
+
+- name: SK Fire Sanctuary Room East - Pot 5
+  standard: SK Fire Sanctuary Room East - Pot 5
+  pretty: SK Fire Sanctuary Room East - Pot 5
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r<fiery>> room
+
+- name: SK Fire Sanctuary Room East - Pot 6
+  standard: SK Fire Sanctuary Room East - Pot 6
+  pretty: SK Fire Sanctuary Room East - Pot 6
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r<fiery>> room
+
+- name: SK Fire Sanctuary Room East - Pot 7
+  standard: SK Fire Sanctuary Room East - Pot 7
+  pretty: SK Fire Sanctuary Room East - Pot 7
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r<fiery>> room
+
+- name: SK Fire Sanctuary Room East - Pot 8
+  standard: SK Fire Sanctuary Room East - Pot 8
+  pretty: SK Fire Sanctuary Room East - Pot 8
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r<fiery>> room
+
+- name: SK Fire Sanctuary Room East - Pot 9
+  standard: SK Fire Sanctuary Room East - Pot 9
+  pretty: SK Fire Sanctuary Room East - Pot 9
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r<fiery>> room
+
+- name: SK Fire Sanctuary Room East - Pot 10
+  standard: SK Fire Sanctuary Room East - Pot 10
+  pretty: SK Fire Sanctuary Room East - Pot 10
+  cryptic: smashing <s<pots>> in a <s<floating fortress's>> <r<fiery>> room
+
+- name: ET West Room - Pot 1
+  standard: ET West Room - Pot 1
+  pretty: ET West Room - Pot 1
+  cryptic: smashing <r+<pots>> in a <r+<rocky temple>>
+
+- name: ET West Room - Pot 2
+  standard: ET West Room - Pot 2
+  pretty: ET West Room - Pot 2
+  cryptic: smashing <r+<pots>> in a <r+<rocky temple>>
+
+- name: ET West Room - Pot 3
+  standard: ET West Room - Pot 3
+  pretty: ET West Room - Pot 3
+  cryptic: smashing <r+<pots>> in a <r+<rocky temple>>
+
+- name: ET West Room - Pot 4
+  standard: ET West Room - Pot 4
+  pretty: ET West Room - Pot 4
+  cryptic: smashing <r+<pots>> in a <r+<rocky temple>>
+
+- name: Earth Temple First Room - Pot 1
+  standard: Earth Temple First Room - Pot 1
+  pretty: Earth Temple First Room - Pot 1
+  cryptic: smashing <r+<pots>> at the <r+<temple's>> door
+
+- name: Earth Temple First Room - Pot 2
+  standard: Earth Temple First Room - Pot 2
+  pretty: Earth Temple First Room - Pot 2
+  cryptic: smashing <r+<pots>> at the <r+<temple's>> door
+
+- name: Earth Temple First Room - Pot 3
+  standard: Earth Temple First Room - Pot 3
+  pretty: Earth Temple First Room - Pot 3
+  cryptic: smashing <r+<pots>> at the <r+<temple's>> door
+
+- name: Earth Temple First Room - Pot 4
+  standard: Earth Temple First Room - Pot 4
+  pretty: Earth Temple First Room - Pot 4
+  cryptic: smashing <r+<pots>> at the <r+<temple's>> door
+
+- name: ET Hub Room - Pot 1
+  standard: ET Hub Room - Pot 1
+  pretty: ET Hub Room - Pot 1
+  cryptic: smashing <r+<pots>> in a <r+<temple's>> crossroads
+
+- name: ET Hub Room - Pot 2
+  standard: ET Hub Room - Pot 2
+  pretty: ET Hub Room - Pot 2
+  cryptic: smashing <r+<pots>> in a <r+<temple's>> crossroads
+
+- name: ET Hub Room - Pot 3
+  standard: ET Hub Room - Pot 3
+  pretty: ET Hub Room - Pot 3
+  cryptic: smashing <r+<pots>> in a <r+<temple's>> crossroads
+
+- name: FS In Front of Boss Door - Pot 1
+  standard: FS In Front of Boss Door - Pot 1
+  pretty: FS In Front of Boss Door - Pot 1
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 2
+  standard: FS In Front of Boss Door - Pot 2
+  pretty: FS In Front of Boss Door - Pot 2
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 3
+  standard: FS In Front of Boss Door - Pot 3
+  pretty: FS In Front of Boss Door - Pot 3
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 4
+  standard: FS In Front of Boss Door - Pot 4
+  pretty: FS In Front of Boss Door - Pot 4
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 5
+  standard: FS In Front of Boss Door - Pot 5
+  pretty: FS In Front of Boss Door - Pot 5
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 6
+  standard: FS In Front of Boss Door - Pot 6
+  pretty: FS In Front of Boss Door - Pot 6
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 7
+  standard: FS In Front of Boss Door - Pot 7
+  pretty: FS In Front of Boss Door - Pot 7
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 8
+  standard: FS In Front of Boss Door - Pot 8
+  pretty: FS In Front of Boss Door - Pot 8
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 9
+  standard: FS In Front of Boss Door - Pot 9
+  pretty: FS In Front of Boss Door - Pot 9
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 10
+  standard: FS In Front of Boss Door - Pot 10
+  pretty: FS In Front of Boss Door - Pot 10
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 11
+  standard: FS In Front of Boss Door - Pot 11
+  pretty: FS In Front of Boss Door - Pot 11
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 12
+  standard: FS In Front of Boss Door - Pot 12
+  pretty: FS In Front of Boss Door - Pot 12
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 13
+  standard: FS In Front of Boss Door - Pot 13
+  pretty: FS In Front of Boss Door - Pot 13
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 14
+  standard: FS In Front of Boss Door - Pot 14
+  pretty: FS In Front of Boss Door - Pot 14
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS In Front of Boss Door - Pot 15
+  standard: FS In Front of Boss Door - Pot 15
+  pretty: FS In Front of Boss Door - Pot 15
+  cryptic: smashing <r<pots>> before a <r<fiery showdown>>
+
+- name: FS West of Boss Door After Lava River - Pot 1
+  standard: FS West of Boss Door After Lava River - Pot 1
+  pretty: FS West of Boss Door After Lava River - Pot 1
+  cryptic: smashing <r<pots>> beside a <r<lava river>>
+
+- name: FS West of Boss Door After Lava River - Pot 2
+  standard: FS West of Boss Door After Lava River - Pot 2
+  pretty: FS West of Boss Door After Lava River - Pot 2
+  cryptic: smashing <r<pots>> beside a <r<lava river>>
+
+- name: FS First Magmanos Room - Pot 1
+  standard: FS First Magmanos Room - Pot 1
+  pretty: FS First Magmanos Room - Pot 1
+  cryptic: smashing <r<pots>> near a <r<molten brute>>
+
+- name: FS First Magmanos Room - Pot 2
+  standard: FS First Magmanos Room - Pot 2
+  pretty: FS First Magmanos Room - Pot 2
+  cryptic: smashing <r<pots>> near a <r<molten brute>>
+
+- name: FS First Magmanos Room - Pot 3
+  standard: FS First Magmanos Room - Pot 3
+  pretty: FS First Magmanos Room - Pot 3
+  cryptic: smashing <r<pots>> near a <r<molten brute>>
+
+- name: FS First Magmanos Room - Pot 4
+  standard: FS First Magmanos Room - Pot 4
+  pretty: FS First Magmanos Room - Pot 4
+  cryptic: smashing <r<pots>> near a <r<molten brute>>
+
+- name: FS First Magmanos Room - Pot 5
+  standard: FS First Magmanos Room - Pot 5
+  pretty: FS First Magmanos Room - Pot 5
+  cryptic: smashing <r<pots>> near a <r<molten brute>>
+
+- name: FS Second Trapped Mogma Room - Pot 1
+  standard: FS Second Trapped Mogma Room - Pot 1
+  pretty: FS Second Trapped Mogma Room - Pot 1
+  cryptic: smashing <r<pots>> where a <r<mole>> is trapped
+
+- name: FS Second Trapped Mogma Room - Pot 2
+  standard: FS Second Trapped Mogma Room - Pot 2
+  pretty: FS Second Trapped Mogma Room - Pot 2
+  cryptic: smashing <r<pots>> where a <r<mole>> is trapped
+
+- name: FS Second Trapped Mogma Room - Pot 3
+  standard: FS Second Trapped Mogma Room - Pot 3
+  pretty: FS Second Trapped Mogma Room - Pot 3
+  cryptic: smashing <r<pots>> where a <r<mole>> is trapped
+
+- name: FS Second Trapped Mogma Room - Pot 4
+  standard: FS Second Trapped Mogma Room - Pot 4
+  pretty: FS Second Trapped Mogma Room - Pot 4
+  cryptic: smashing <r<pots>> where a <r<mole>> is trapped
+
+- name: FS Second Trapped Mogma Room - Pot 5
+  standard: FS Second Trapped Mogma Room - Pot 5
+  pretty: FS Second Trapped Mogma Room - Pot 5
+  cryptic: smashing <r<pots>> where a <r<mole>> is trapped
+
+- name: FS Second Trapped Mogma Room - Pot 6
+  standard: FS Second Trapped Mogma Room - Pot 6
+  pretty: FS Second Trapped Mogma Room - Pot 6
+  cryptic: smashing <r<pots>> where a <r<mole>> is trapped
+
+- name: FS Under Magmanos Fight Room - Pot 1
+  standard: FS Under Magmanos Fight Room - Pot 1
+  pretty: FS Under Magmanos Fight Room - Pot 1
+  cryptic: smashing <r<pots>> beneath a <r<molten brawl>>
+
+- name: FS Under Magmanos Fight Room - Pot 2
+  standard: FS Under Magmanos Fight Room - Pot 2
+  pretty: FS Under Magmanos Fight Room - Pot 2
+  cryptic: smashing <r<pots>> beneath a <r<molten brawl>>
+
+- name: FS First Magmanos Room Balcony - Pot 1
+  standard: FS First Magmanos Room Balcony - Pot 1
+  pretty: FS First Magmanos Room Balcony - Pot 1
+  cryptic: smashing <r<pots>> on a <r<fiery balcony>>
+
+- name: FS First Magmanos Room Balcony - Pot 2
+  standard: FS First Magmanos Room Balcony - Pot 2
+  pretty: FS First Magmanos Room Balcony - Pot 2
+  cryptic: smashing <r<pots>> on a <r<fiery balcony>>
+
+- name: FS Water Fruit Room - Pot 1
+  standard: FS Water Fruit Room - Pot 1
+  pretty: FS Water Fruit Room - Pot 1
+  cryptic: smashing <r<pots>> by a <b<watery fruit>>
+
+- name: FS Water Fruit Room - Pot 2
+  standard: FS Water Fruit Room - Pot 2
+  pretty: FS Water Fruit Room - Pot 2
+  cryptic: smashing <r<pots>> by a <b<watery fruit>>
+
+- name: LMF First Hub - Pot 1
+  standard: LMF First Hub - Pot 1
+  pretty: LMF First Hub - Pot 1
+  cryptic: breaking <y<jars>> in a <y<mechanical>> crossroads
+
+- name: LMF First Hub - Pot 2
+  standard: LMF First Hub - Pot 2
+  pretty: LMF First Hub - Pot 2
+  cryptic: breaking <y<jars>> in a <y<mechanical>> crossroads
+
+- name: LMF First Hub - Pot 3
+  standard: LMF First Hub - Pot 3
+  pretty: LMF First Hub - Pot 3
+  cryptic: breaking <y<jars>> in a <y<mechanical>> crossroads
+
+- name: LMF First Hub - Pot 4
+  standard: LMF First Hub - Pot 4
+  pretty: LMF First Hub - Pot 4
+  cryptic: breaking <y<jars>> in a <y<mechanical>> crossroads
+
+- name: LMF Sand Spike Maze - Pot 1
+  standard: LMF Sand Spike Maze - Pot 1
+  pretty: LMF Sand Spike Maze - Pot 1
+  cryptic: breaking <y<jars>> among <y<sand spikes>>
+
+- name: LMF Sand Spike Maze - Pot 2
+  standard: LMF Sand Spike Maze - Pot 2
+  pretty: LMF Sand Spike Maze - Pot 2
+  cryptic: breaking <y<jars>> among <y<sand spikes>>
+
+- name: LMF Sand Spike Maze - Pot 3
+  standard: LMF Sand Spike Maze - Pot 3
+  pretty: LMF Sand Spike Maze - Pot 3
+  cryptic: breaking <y<jars>> among <y<sand spikes>>
+
+- name: LMF Sand Spike Maze - Pot 4
+  standard: LMF Sand Spike Maze - Pot 4
+  pretty: LMF Sand Spike Maze - Pot 4
+  cryptic: breaking <y<jars>> among <y<sand spikes>>
+
+- name: LMF Sand Spike Maze - Pot 5
+  standard: LMF Sand Spike Maze - Pot 5
+  pretty: LMF Sand Spike Maze - Pot 5
+  cryptic: breaking <y<jars>> among <y<sand spikes>>
+
+- name: LMF Sand Spike Maze - Pot 6
+  standard: LMF Sand Spike Maze - Pot 6
+  pretty: LMF Sand Spike Maze - Pot 6
+  cryptic: breaking <y<jars>> among <y<sand spikes>>
+
+- name: LMF Sand Spike Maze - Pot 7
+  standard: LMF Sand Spike Maze - Pot 7
+  pretty: LMF Sand Spike Maze - Pot 7
+  cryptic: breaking <y<jars>> among <y<sand spikes>>
+
+- name: LMF Sand Spike Maze - Pot 8
+  standard: LMF Sand Spike Maze - Pot 8
+  pretty: LMF Sand Spike Maze - Pot 8
+  cryptic: breaking <y<jars>> among <y<sand spikes>>
+
+- name: LMF Boss Key Room - Pot 1
+  standard: LMF Boss Key Room - Pot 1
+  pretty: LMF Boss Key Room - Pot 1
+  cryptic: breaking <y<jars>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Pot 2
+  standard: LMF Boss Key Room - Pot 2
+  pretty: LMF Boss Key Room - Pot 2
+  cryptic: breaking <y<jars>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Pot 3
+  standard: LMF Boss Key Room - Pot 3
+  pretty: LMF Boss Key Room - Pot 3
+  cryptic: breaking <y<jars>> guarding a <r<mechanical key>>
+
+- name: Sandship Captain's Cabin - Pot 1
+  standard: Sandship Captain's Cabin - Pot 1
+  pretty: Sandship Captain's Cabin - Pot 1
+  cryptic: smashing <y+<pots>> in a <y+<captain's quarters>>
+
+- name: Sandship Captain's Cabin - Pot 2
+  standard: Sandship Captain's Cabin - Pot 2
+  pretty: Sandship Captain's Cabin - Pot 2
+  cryptic: smashing <y+<pots>> in a <y+<captain's quarters>>
+
+- name: Sandship Captain's Cabin - Pot 3
+  standard: Sandship Captain's Cabin - Pot 3
+  pretty: Sandship Captain's Cabin - Pot 3
+  cryptic: smashing <y+<pots>> in a <y+<captain's quarters>>
+
+- name: Sandship Captain's Cabin - Pot 4
+  standard: Sandship Captain's Cabin - Pot 4
+  pretty: Sandship Captain's Cabin - Pot 4
+  cryptic: smashing <y+<pots>> in a <y+<captain's quarters>>
+
+- name: Central Skyloft - Pot 1
+  standard: Central Skyloft - Pot 1
+  pretty: Central Skyloft - Pot 1
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 2
+  standard: Central Skyloft - Pot 2
+  pretty: Central Skyloft - Pot 2
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 3
+  standard: Central Skyloft - Pot 3
+  pretty: Central Skyloft - Pot 3
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 4
+  standard: Central Skyloft - Pot 4
+  pretty: Central Skyloft - Pot 4
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 5
+  standard: Central Skyloft - Pot 5
+  pretty: Central Skyloft - Pot 5
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 6
+  standard: Central Skyloft - Pot 6
+  pretty: Central Skyloft - Pot 6
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 7
+  standard: Central Skyloft - Pot 7
+  pretty: Central Skyloft - Pot 7
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 8
+  standard: Central Skyloft - Pot 8
+  pretty: Central Skyloft - Pot 8
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 9
+  standard: Central Skyloft - Pot 9
+  pretty: Central Skyloft - Pot 9
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 10
+  standard: Central Skyloft - Pot 10
+  pretty: Central Skyloft - Pot 10
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 11
+  standard: Central Skyloft - Pot 11
+  pretty: Central Skyloft - Pot 11
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 12
+  standard: Central Skyloft - Pot 12
+  pretty: Central Skyloft - Pot 12
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 13
+  standard: Central Skyloft - Pot 13
+  pretty: Central Skyloft - Pot 13
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 14
+  standard: Central Skyloft - Pot 14
+  pretty: Central Skyloft - Pot 14
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 15
+  standard: Central Skyloft - Pot 15
+  pretty: Central Skyloft - Pot 15
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 16
+  standard: Central Skyloft - Pot 16
+  pretty: Central Skyloft - Pot 16
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Pot 17
+  standard: Central Skyloft - Pot 17
+  pretty: Central Skyloft - Pot 17
+  cryptic: smashing <b<pots>> in the <b<sky's town square>>
+
+- name: Knight Academy - Pot 1
+  standard: Knight Academy - Pot 1
+  pretty: Knight Academy - Pot 1
+  cryptic: smashing <b<pots>> at a <b<school for knights>>
+
+- name: Knight Academy - Pot 2
+  standard: Knight Academy - Pot 2
+  pretty: Knight Academy - Pot 2
+  cryptic: smashing <b<pots>> at a <b<school for knights>>
+
+- name: Knight Academy - Pot 3
+  standard: Knight Academy - Pot 3
+  pretty: Knight Academy - Pot 3
+  cryptic: smashing <b<pots>> at a <b<school for knights>>
+
+- name: Knight Academy - Pot 4
+  standard: Knight Academy - Pot 4
+  pretty: Knight Academy - Pot 4
+  cryptic: smashing <b<pots>> at a <b<school for knights>>
+
+- name: Knight Academy - Pot 5
+  standard: Knight Academy - Pot 5
+  pretty: Knight Academy - Pot 5
+  cryptic: smashing <b<pots>> at a <b<school for knights>>
+
+- name: Knight Academy - Pot 6
+  standard: Knight Academy - Pot 6
+  pretty: Knight Academy - Pot 6
+  cryptic: smashing <b<pots>> at a <b<school for knights>>
+
+- name: Knight Academy - Pot 7
+  standard: Knight Academy - Pot 7
+  pretty: Knight Academy - Pot 7
+  cryptic: smashing <b<pots>> at a <b<school for knights>>
+
+- name: Lumpy Pumpkin Exterior - Pot 1
+  standard: Lumpy Pumpkin Exterior - Pot 1
+  pretty: Lumpy Pumpkin Exterior - Pot 1
+  cryptic: smashing <b<pots>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pot 2
+  standard: Lumpy Pumpkin Exterior - Pot 2
+  pretty: Lumpy Pumpkin Exterior - Pot 2
+  cryptic: smashing <b<pots>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pot 3
+  standard: Lumpy Pumpkin Exterior - Pot 3
+  pretty: Lumpy Pumpkin Exterior - Pot 3
+  cryptic: smashing <b<pots>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pot 4
+  standard: Lumpy Pumpkin Exterior - Pot 4
+  pretty: Lumpy Pumpkin Exterior - Pot 4
+  cryptic: smashing <b<pots>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pot 5
+  standard: Lumpy Pumpkin Exterior - Pot 5
+  pretty: Lumpy Pumpkin Exterior - Pot 5
+  cryptic: smashing <b<pots>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pot 6
+  standard: Lumpy Pumpkin Exterior - Pot 6
+  pretty: Lumpy Pumpkin Exterior - Pot 6
+  cryptic: smashing <b<pots>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pot 7
+  standard: Lumpy Pumpkin Exterior - Pot 7
+  pretty: Lumpy Pumpkin Exterior - Pot 7
+  cryptic: smashing <b<pots>> outside a <y<giant gourd>>
+
+- name: Bug Heaven - Pot 1
+  standard: Bug Heaven - Pot 1
+  pretty: Bug Heaven - Pot 1
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 2
+  standard: Bug Heaven - Pot 2
+  pretty: Bug Heaven - Pot 2
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 3
+  standard: Bug Heaven - Pot 3
+  pretty: Bug Heaven - Pot 3
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 4
+  standard: Bug Heaven - Pot 4
+  pretty: Bug Heaven - Pot 4
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 5
+  standard: Bug Heaven - Pot 5
+  pretty: Bug Heaven - Pot 5
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 6
+  standard: Bug Heaven - Pot 6
+  pretty: Bug Heaven - Pot 6
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 7
+  standard: Bug Heaven - Pot 7
+  pretty: Bug Heaven - Pot 7
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 8
+  standard: Bug Heaven - Pot 8
+  pretty: Bug Heaven - Pot 8
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 9
+  standard: Bug Heaven - Pot 9
+  pretty: Bug Heaven - Pot 9
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 10
+  standard: Bug Heaven - Pot 10
+  pretty: Bug Heaven - Pot 10
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 11
+  standard: Bug Heaven - Pot 11
+  pretty: Bug Heaven - Pot 11
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 12
+  standard: Bug Heaven - Pot 12
+  pretty: Bug Heaven - Pot 12
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Pot 13
+  standard: Bug Heaven - Pot 13
+  pretty: Bug Heaven - Pot 13
+  cryptic: smashing <g<pots>> in a <g<bug paradise>>
+
+- name: Volcano First Room - Pot 1
+  standard: Volcano First Room - Pot 1
+  pretty: Volcano First Room - Pot 1
+  cryptic: smashing <r<pots>> at the <r<volcano's>> start
+
+- name: Volcano First Room - Pot 2
+  standard: Volcano First Room - Pot 2
+  pretty: Volcano First Room - Pot 2
+  cryptic: smashing <r<pots>> at the <r<volcano's>> start
+
+- name: Volcano First Room - Pot 3
+  standard: Volcano First Room - Pot 3
+  pretty: Volcano First Room - Pot 3
+  cryptic: smashing <r<pots>> at the <r<volcano's>> start
+
+- name: Volcano First Room - Pot 4
+  standard: Volcano First Room - Pot 4
+  pretty: Volcano First Room - Pot 4
+  cryptic: smashing <r<pots>> at the <r<volcano's>> start
+
+- name: Volcano First Room - Pot 5
+  standard: Volcano First Room - Pot 5
+  pretty: Volcano First Room - Pot 5
+  cryptic: smashing <r<pots>> at the <r<volcano's>> start
+
+- name: Bokoblin Base Summit - Pot 1
+  standard: Bokoblin Base Summit - Pot 1
+  pretty: Bokoblin Base Summit - Pot 1
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 2
+  standard: Bokoblin Base Summit - Pot 2
+  pretty: Bokoblin Base Summit - Pot 2
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 3
+  standard: Bokoblin Base Summit - Pot 3
+  pretty: Bokoblin Base Summit - Pot 3
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 4
+  standard: Bokoblin Base Summit - Pot 4
+  pretty: Bokoblin Base Summit - Pot 4
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 5
+  standard: Bokoblin Base Summit - Pot 5
+  pretty: Bokoblin Base Summit - Pot 5
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 6
+  standard: Bokoblin Base Summit - Pot 6
+  pretty: Bokoblin Base Summit - Pot 6
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 7
+  standard: Bokoblin Base Summit - Pot 7
+  pretty: Bokoblin Base Summit - Pot 7
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 8
+  standard: Bokoblin Base Summit - Pot 8
+  pretty: Bokoblin Base Summit - Pot 8
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 9
+  standard: Bokoblin Base Summit - Pot 9
+  pretty: Bokoblin Base Summit - Pot 9
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 10
+  standard: Bokoblin Base Summit - Pot 10
+  pretty: Bokoblin Base Summit - Pot 10
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 11
+  standard: Bokoblin Base Summit - Pot 11
+  pretty: Bokoblin Base Summit - Pot 11
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 12
+  standard: Bokoblin Base Summit - Pot 12
+  pretty: Bokoblin Base Summit - Pot 12
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 13
+  standard: Bokoblin Base Summit - Pot 13
+  pretty: Bokoblin Base Summit - Pot 13
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 14
+  standard: Bokoblin Base Summit - Pot 14
+  pretty: Bokoblin Base Summit - Pot 14
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 15
+  standard: Bokoblin Base Summit - Pot 15
+  pretty: Bokoblin Base Summit - Pot 15
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 16
+  standard: Bokoblin Base Summit - Pot 16
+  pretty: Bokoblin Base Summit - Pot 16
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 17
+  standard: Bokoblin Base Summit - Pot 17
+  pretty: Bokoblin Base Summit - Pot 17
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 18
+  standard: Bokoblin Base Summit - Pot 18
+  pretty: Bokoblin Base Summit - Pot 18
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 19
+  standard: Bokoblin Base Summit - Pot 19
+  pretty: Bokoblin Base Summit - Pot 19
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 20
+  standard: Bokoblin Base Summit - Pot 20
+  pretty: Bokoblin Base Summit - Pot 20
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 21
+  standard: Bokoblin Base Summit - Pot 21
+  pretty: Bokoblin Base Summit - Pot 21
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 22
+  standard: Bokoblin Base Summit - Pot 22
+  pretty: Bokoblin Base Summit - Pot 22
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 23
+  standard: Bokoblin Base Summit - Pot 23
+  pretty: Bokoblin Base Summit - Pot 23
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Bokoblin Base Summit - Pot 24
+  standard: Bokoblin Base Summit - Pot 24
+  pretty: Bokoblin Base Summit - Pot 24
+  cryptic: smashing <r<pots>> atop a <r<goblin stronghold>>
+
+- name: Past Volcano Summit - Pot 1
+  standard: Past Volcano Summit - Pot 1
+  pretty: Past Volcano Summit - Pot 1
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 2
+  standard: Past Volcano Summit - Pot 2
+  pretty: Past Volcano Summit - Pot 2
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 3
+  standard: Past Volcano Summit - Pot 3
+  pretty: Past Volcano Summit - Pot 3
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 4
+  standard: Past Volcano Summit - Pot 4
+  pretty: Past Volcano Summit - Pot 4
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 5
+  standard: Past Volcano Summit - Pot 5
+  pretty: Past Volcano Summit - Pot 5
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 6
+  standard: Past Volcano Summit - Pot 6
+  pretty: Past Volcano Summit - Pot 6
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 7
+  standard: Past Volcano Summit - Pot 7
+  pretty: Past Volcano Summit - Pot 7
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 8
+  standard: Past Volcano Summit - Pot 8
+  pretty: Past Volcano Summit - Pot 8
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 9
+  standard: Past Volcano Summit - Pot 9
+  pretty: Past Volcano Summit - Pot 9
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 10
+  standard: Past Volcano Summit - Pot 10
+  pretty: Past Volcano Summit - Pot 10
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 11
+  standard: Past Volcano Summit - Pot 11
+  pretty: Past Volcano Summit - Pot 11
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Past Volcano Summit - Pot 12
+  standard: Past Volcano Summit - Pot 12
+  pretty: Past Volcano Summit - Pot 12
+  cryptic: smashing <r<pots>> beyond the <r<volcano's peak>>
+
+- name: Bokoblin Base Prison - Pot 1
+  standard: Bokoblin Base Prison - Pot 1
+  pretty: Bokoblin Base Prison - Pot 1
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 2
+  standard: Bokoblin Base Prison - Pot 2
+  pretty: Bokoblin Base Prison - Pot 2
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 3
+  standard: Bokoblin Base Prison - Pot 3
+  pretty: Bokoblin Base Prison - Pot 3
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 4
+  standard: Bokoblin Base Prison - Pot 4
+  pretty: Bokoblin Base Prison - Pot 4
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 5
+  standard: Bokoblin Base Prison - Pot 5
+  pretty: Bokoblin Base Prison - Pot 5
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 6
+  standard: Bokoblin Base Prison - Pot 6
+  pretty: Bokoblin Base Prison - Pot 6
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 7
+  standard: Bokoblin Base Prison - Pot 7
+  pretty: Bokoblin Base Prison - Pot 7
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 8
+  standard: Bokoblin Base Prison - Pot 8
+  pretty: Bokoblin Base Prison - Pot 8
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 9
+  standard: Bokoblin Base Prison - Pot 9
+  pretty: Bokoblin Base Prison - Pot 9
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 10
+  standard: Bokoblin Base Prison - Pot 10
+  pretty: Bokoblin Base Prison - Pot 10
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 11
+  standard: Bokoblin Base Prison - Pot 11
+  pretty: Bokoblin Base Prison - Pot 11
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 12
+  standard: Bokoblin Base Prison - Pot 12
+  pretty: Bokoblin Base Prison - Pot 12
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 13
+  standard: Bokoblin Base Prison - Pot 13
+  pretty: Bokoblin Base Prison - Pot 13
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 14
+  standard: Bokoblin Base Prison - Pot 14
+  pretty: Bokoblin Base Prison - Pot 14
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 15
+  standard: Bokoblin Base Prison - Pot 15
+  pretty: Bokoblin Base Prison - Pot 15
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 16
+  standard: Bokoblin Base Prison - Pot 16
+  pretty: Bokoblin Base Prison - Pot 16
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 17
+  standard: Bokoblin Base Prison - Pot 17
+  pretty: Bokoblin Base Prison - Pot 17
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 18
+  standard: Bokoblin Base Prison - Pot 18
+  pretty: Bokoblin Base Prison - Pot 18
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 19
+  standard: Bokoblin Base Prison - Pot 19
+  pretty: Bokoblin Base Prison - Pot 19
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 20
+  standard: Bokoblin Base Prison - Pot 20
+  pretty: Bokoblin Base Prison - Pot 20
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 21
+  standard: Bokoblin Base Prison - Pot 21
+  pretty: Bokoblin Base Prison - Pot 21
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 22
+  standard: Bokoblin Base Prison - Pot 22
+  pretty: Bokoblin Base Prison - Pot 22
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 23
+  standard: Bokoblin Base Prison - Pot 23
+  pretty: Bokoblin Base Prison - Pot 23
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 24
+  standard: Bokoblin Base Prison - Pot 24
+  pretty: Bokoblin Base Prison - Pot 24
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 25
+  standard: Bokoblin Base Prison - Pot 25
+  pretty: Bokoblin Base Prison - Pot 25
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 26
+  standard: Bokoblin Base Prison - Pot 26
+  pretty: Bokoblin Base Prison - Pot 26
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 27
+  standard: Bokoblin Base Prison - Pot 27
+  pretty: Bokoblin Base Prison - Pot 27
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 28
+  standard: Bokoblin Base Prison - Pot 28
+  pretty: Bokoblin Base Prison - Pot 28
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 29
+  standard: Bokoblin Base Prison - Pot 29
+  pretty: Bokoblin Base Prison - Pot 29
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Prison - Pot 30
+  standard: Bokoblin Base Prison - Pot 30
+  pretty: Bokoblin Base Prison - Pot 30
+  cryptic: smashing <r<pots>> in a <r<goblin jail>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 1
+  standard: Bokoblin Base Upper Eldin Cave - Pot 1
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 1
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 2
+  standard: Bokoblin Base Upper Eldin Cave - Pot 2
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 2
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 3
+  standard: Bokoblin Base Upper Eldin Cave - Pot 3
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 3
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 4
+  standard: Bokoblin Base Upper Eldin Cave - Pot 4
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 4
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 5
+  standard: Bokoblin Base Upper Eldin Cave - Pot 5
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 5
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 6
+  standard: Bokoblin Base Upper Eldin Cave - Pot 6
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 6
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 7
+  standard: Bokoblin Base Upper Eldin Cave - Pot 7
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 7
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 8
+  standard: Bokoblin Base Upper Eldin Cave - Pot 8
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 8
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 9
+  standard: Bokoblin Base Upper Eldin Cave - Pot 9
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 9
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 10
+  standard: Bokoblin Base Upper Eldin Cave - Pot 10
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 10
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 11
+  standard: Bokoblin Base Upper Eldin Cave - Pot 11
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 11
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 12
+  standard: Bokoblin Base Upper Eldin Cave - Pot 12
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 12
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 13
+  standard: Bokoblin Base Upper Eldin Cave - Pot 13
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 13
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 14
+  standard: Bokoblin Base Upper Eldin Cave - Pot 14
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 14
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 15
+  standard: Bokoblin Base Upper Eldin Cave - Pot 15
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 15
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 16
+  standard: Bokoblin Base Upper Eldin Cave - Pot 16
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 16
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 17
+  standard: Bokoblin Base Upper Eldin Cave - Pot 17
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 17
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 18
+  standard: Bokoblin Base Upper Eldin Cave - Pot 18
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 18
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 19
+  standard: Bokoblin Base Upper Eldin Cave - Pot 19
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 19
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 20
+  standard: Bokoblin Base Upper Eldin Cave - Pot 20
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 20
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 21
+  standard: Bokoblin Base Upper Eldin Cave - Pot 21
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 21
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 22
+  standard: Bokoblin Base Upper Eldin Cave - Pot 22
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 22
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 23
+  standard: Bokoblin Base Upper Eldin Cave - Pot 23
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 23
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Bokoblin Base Upper Eldin Cave - Pot 24
+  standard: Bokoblin Base Upper Eldin Cave - Pot 24
+  pretty: Bokoblin Base Upper Eldin Cave - Pot 24
+  cryptic: smashing <r<pots>> in a <r<goblin cave>>
+
+- name: Sand Slide Platform - Pot 1
+  standard: Sand Slide Platform - Pot 1
+  pretty: Sand Slide Platform - Pot 1
+  cryptic: breaking <y<jars>> on a <y<sandy slope>>
+
+- name: Sand Slide Platform - Pot 2
+  standard: Sand Slide Platform - Pot 2
+  pretty: Sand Slide Platform - Pot 2
+  cryptic: breaking <y<jars>> on a <y<sandy slope>>
+
+- name: Sand Slide Platform - Pot 3
+  standard: Sand Slide Platform - Pot 3
+  pretty: Sand Slide Platform - Pot 3
+  cryptic: breaking <y<jars>> on a <y<sandy slope>>
+
+- name: Sand Slide Platform - Pot 4
+  standard: Sand Slide Platform - Pot 4
+  pretty: Sand Slide Platform - Pot 4
+  cryptic: breaking <y<jars>> on a <y<sandy slope>>
+
+- name: Lanayru Mine Statues Area - Pot 1
+  standard: Lanayru Mine Statues Area - Pot 1
+  pretty: Lanayru Mine Statues Area - Pot 1
+  cryptic: breaking <y<jars>> among <y<mining statues>>
+
+- name: Lanayru Mine Statues Area - Pot 2
+  standard: Lanayru Mine Statues Area - Pot 2
+  pretty: Lanayru Mine Statues Area - Pot 2
+  cryptic: breaking <y<jars>> among <y<mining statues>>
+
+- name: Lanayru Mine Statues Area - Pot 3
+  standard: Lanayru Mine Statues Area - Pot 3
+  pretty: Lanayru Mine Statues Area - Pot 3
+  cryptic: breaking <y<jars>> among <y<mining statues>>
+
+- name: Lanayru Mine Statues Area - Pot 4
+  standard: Lanayru Mine Statues Area - Pot 4
+  pretty: Lanayru Mine Statues Area - Pot 4
+  cryptic: breaking <y<jars>> among <y<mining statues>>
+
+- name: Lanayru Mine Statues Area - Pot 5
+  standard: Lanayru Mine Statues Area - Pot 5
+  pretty: Lanayru Mine Statues Area - Pot 5
+  cryptic: breaking <y<jars>> among <y<mining statues>>
+
+- name: Lanayru Mine Statues Area - Pot 6
+  standard: Lanayru Mine Statues Area - Pot 6
+  pretty: Lanayru Mine Statues Area - Pot 6
+  cryptic: breaking <y<jars>> among <y<mining statues>>
+
+- name: Temple of Time South - Pot 1
+  standard: Temple of Time South - Pot 1
+  pretty: Temple of Time South - Pot 1
+  cryptic: breaking <y<jars>> in <y<time's>> southern ruins
+
+- name: Temple of Time South - Pot 2
+  standard: Temple of Time South - Pot 2
+  pretty: Temple of Time South - Pot 2
+  cryptic: breaking <y<jars>> in <y<time's>> southern ruins
+
+- name: Temple of Time South - Pot 3
+  standard: Temple of Time South - Pot 3
+  pretty: Temple of Time South - Pot 3
+  cryptic: breaking <y<jars>> in <y<time's>> southern ruins
+
+- name: Temple of Time South - Pot 4
+  standard: Temple of Time South - Pot 4
+  pretty: Temple of Time South - Pot 4
+  cryptic: breaking <y<jars>> in <y<time's>> southern ruins
+
+- name: Temple of Time South - Pot 5
+  standard: Temple of Time South - Pot 5
+  pretty: Temple of Time South - Pot 5
+  cryptic: breaking <y<jars>> in <y<time's>> southern ruins
+
+- name: Temple of Time South - Pot 6
+  standard: Temple of Time South - Pot 6
+  pretty: Temple of Time South - Pot 6
+  cryptic: breaking <y<jars>> in <y<time's>> southern ruins
+
+- name: Skipper's Retreat Shack - Pot 1
+  standard: Skipper's Retreat Shack - Pot 1
+  pretty: Skipper's Retreat Shack - Pot 1
+  cryptic: breaking <y<jars>> in a <y<sailor's shack>>
+
+- name: Skipper's Retreat Shack - Pot 2
+  standard: Skipper's Retreat Shack - Pot 2
+  pretty: Skipper's Retreat Shack - Pot 2
+  cryptic: breaking <y<jars>> in a <y<sailor's shack>>
+
+- name: Skipper's Retreat Shack - Pot 3
+  standard: Skipper's Retreat Shack - Pot 3
+  pretty: Skipper's Retreat Shack - Pot 3
+  cryptic: breaking <y<jars>> in a <y<sailor's shack>>
+
+- name: Skipper's Retreat Shack - Pot 4
+  standard: Skipper's Retreat Shack - Pot 4
+  pretty: Skipper's Retreat Shack - Pot 4
+  cryptic: breaking <y<jars>> in a <y<sailor's shack>>
+
+- name: Skipper's Retreat Shack - Pot 5
+  standard: Skipper's Retreat Shack - Pot 5
+  pretty: Skipper's Retreat Shack - Pot 5
+  cryptic: breaking <y<jars>> in a <y<sailor's shack>>
+
+- name: Skipper's Retreat Shack - Pot 6
+  standard: Skipper's Retreat Shack - Pot 6
+  pretty: Skipper's Retreat Shack - Pot 6
+  cryptic: breaking <y<jars>> in a <y<sailor's shack>>
+
+- name: Skipper's Retreat Shack - Pot 7
+  standard: Skipper's Retreat Shack - Pot 7
+  pretty: Skipper's Retreat Shack - Pot 7
+  cryptic: breaking <y<jars>> in a <y<sailor's shack>>
+
+- name: Skipper's Retreat Shack - Pot 8
+  standard: Skipper's Retreat Shack - Pot 8
+  pretty: Skipper's Retreat Shack - Pot 8
+  cryptic: breaking <y<jars>> in a <y<sailor's shack>>
+
+- name: Skipper's Retreat Shack - Pot 9
+  standard: Skipper's Retreat Shack - Pot 9
+  pretty: Skipper's Retreat Shack - Pot 9
+  cryptic: breaking <y<jars>> in a <y<sailor's shack>>
+
+- name: Lanayru Caves - Pot 1
+  standard: Lanayru Caves - Pot 1
+  pretty: Lanayru Caves - Pot 1
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 2
+  standard: Lanayru Caves - Pot 2
+  pretty: Lanayru Caves - Pot 2
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 3
+  standard: Lanayru Caves - Pot 3
+  pretty: Lanayru Caves - Pot 3
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 4
+  standard: Lanayru Caves - Pot 4
+  pretty: Lanayru Caves - Pot 4
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 5
+  standard: Lanayru Caves - Pot 5
+  pretty: Lanayru Caves - Pot 5
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 6
+  standard: Lanayru Caves - Pot 6
+  pretty: Lanayru Caves - Pot 6
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 7
+  standard: Lanayru Caves - Pot 7
+  pretty: Lanayru Caves - Pot 7
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 8
+  standard: Lanayru Caves - Pot 8
+  pretty: Lanayru Caves - Pot 8
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 9
+  standard: Lanayru Caves - Pot 9
+  pretty: Lanayru Caves - Pot 9
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 10
+  standard: Lanayru Caves - Pot 10
+  pretty: Lanayru Caves - Pot 10
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 11
+  standard: Lanayru Caves - Pot 11
+  pretty: Lanayru Caves - Pot 11
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 12
+  standard: Lanayru Caves - Pot 12
+  pretty: Lanayru Caves - Pot 12
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Pot 13
+  standard: Lanayru Caves - Pot 13
+  pretty: Lanayru Caves - Pot 13
+  cryptic: breaking <ye<jars>> in <ye<desert caves>>
+
+- name: Temple of Hylia - Pot 1
+  standard: Temple of Hylia - Pot 1
+  pretty: Temple of Hylia - Pot 1
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 2
+  standard: Temple of Hylia - Pot 2
+  pretty: Temple of Hylia - Pot 2
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 3
+  standard: Temple of Hylia - Pot 3
+  pretty: Temple of Hylia - Pot 3
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 4
+  standard: Temple of Hylia - Pot 4
+  pretty: Temple of Hylia - Pot 4
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 5
+  standard: Temple of Hylia - Pot 5
+  pretty: Temple of Hylia - Pot 5
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 6
+  standard: Temple of Hylia - Pot 6
+  pretty: Temple of Hylia - Pot 6
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 7
+  standard: Temple of Hylia - Pot 7
+  pretty: Temple of Hylia - Pot 7
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 8
+  standard: Temple of Hylia - Pot 8
+  pretty: Temple of Hylia - Pot 8
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 9
+  standard: Temple of Hylia - Pot 9
+  pretty: Temple of Hylia - Pot 9
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 10
+  standard: Temple of Hylia - Pot 10
+  pretty: Temple of Hylia - Pot 10
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 11
+  standard: Temple of Hylia - Pot 11
+  pretty: Temple of Hylia - Pot 11
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 12
+  standard: Temple of Hylia - Pot 12
+  pretty: Temple of Hylia - Pot 12
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 13
+  standard: Temple of Hylia - Pot 13
+  pretty: Temple of Hylia - Pot 13
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 14
+  standard: Temple of Hylia - Pot 14
+  pretty: Temple of Hylia - Pot 14
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 15
+  standard: Temple of Hylia - Pot 15
+  pretty: Temple of Hylia - Pot 15
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+- name: Temple of Hylia - Pot 16
+  standard: Temple of Hylia - Pot 16
+  pretty: Temple of Hylia - Pot 16
+  cryptic: smashing <b<pots>> at a <b<goddess's temple>>
+
+# Pumpkin Locations
+
+- name: Skyloft Village - Pumpkin 1
+  standard: Skyloft Village - Pumpkin 1
+  pretty: Skyloft Village - Pumpkin 1
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 2
+  standard: Skyloft Village - Pumpkin 2
+  pretty: Skyloft Village - Pumpkin 2
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 3
+  standard: Skyloft Village - Pumpkin 3
+  pretty: Skyloft Village - Pumpkin 3
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 4
+  standard: Skyloft Village - Pumpkin 4
+  pretty: Skyloft Village - Pumpkin 4
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 5
+  standard: Skyloft Village - Pumpkin 5
+  pretty: Skyloft Village - Pumpkin 5
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 6
+  standard: Skyloft Village - Pumpkin 6
+  pretty: Skyloft Village - Pumpkin 6
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 7
+  standard: Skyloft Village - Pumpkin 7
+  pretty: Skyloft Village - Pumpkin 7
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 8
+  standard: Skyloft Village - Pumpkin 8
+  pretty: Skyloft Village - Pumpkin 8
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 9
+  standard: Skyloft Village - Pumpkin 9
+  pretty: Skyloft Village - Pumpkin 9
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 10
+  standard: Skyloft Village - Pumpkin 10
+  pretty: Skyloft Village - Pumpkin 10
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 11
+  standard: Skyloft Village - Pumpkin 11
+  pretty: Skyloft Village - Pumpkin 11
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 12
+  standard: Skyloft Village - Pumpkin 12
+  pretty: Skyloft Village - Pumpkin 12
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 13
+  standard: Skyloft Village - Pumpkin 13
+  pretty: Skyloft Village - Pumpkin 13
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 14
+  standard: Skyloft Village - Pumpkin 14
+  pretty: Skyloft Village - Pumpkin 14
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 15
+  standard: Skyloft Village - Pumpkin 15
+  pretty: Skyloft Village - Pumpkin 15
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 16
+  standard: Skyloft Village - Pumpkin 16
+  pretty: Skyloft Village - Pumpkin 16
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 17
+  standard: Skyloft Village - Pumpkin 17
+  pretty: Skyloft Village - Pumpkin 17
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 18
+  standard: Skyloft Village - Pumpkin 18
+  pretty: Skyloft Village - Pumpkin 18
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 19
+  standard: Skyloft Village - Pumpkin 19
+  pretty: Skyloft Village - Pumpkin 19
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 20
+  standard: Skyloft Village - Pumpkin 20
+  pretty: Skyloft Village - Pumpkin 20
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 21
+  standard: Skyloft Village - Pumpkin 21
+  pretty: Skyloft Village - Pumpkin 21
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 22
+  standard: Skyloft Village - Pumpkin 22
+  pretty: Skyloft Village - Pumpkin 22
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 23
+  standard: Skyloft Village - Pumpkin 23
+  pretty: Skyloft Village - Pumpkin 23
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 24
+  standard: Skyloft Village - Pumpkin 24
+  pretty: Skyloft Village - Pumpkin 24
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 25
+  standard: Skyloft Village - Pumpkin 25
+  pretty: Skyloft Village - Pumpkin 25
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 26
+  standard: Skyloft Village - Pumpkin 26
+  pretty: Skyloft Village - Pumpkin 26
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 27
+  standard: Skyloft Village - Pumpkin 27
+  pretty: Skyloft Village - Pumpkin 27
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 28
+  standard: Skyloft Village - Pumpkin 28
+  pretty: Skyloft Village - Pumpkin 28
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 29
+  standard: Skyloft Village - Pumpkin 29
+  pretty: Skyloft Village - Pumpkin 29
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 30
+  standard: Skyloft Village - Pumpkin 30
+  pretty: Skyloft Village - Pumpkin 30
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 31
+  standard: Skyloft Village - Pumpkin 31
+  pretty: Skyloft Village - Pumpkin 31
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 32
+  standard: Skyloft Village - Pumpkin 32
+  pretty: Skyloft Village - Pumpkin 32
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 33
+  standard: Skyloft Village - Pumpkin 33
+  pretty: Skyloft Village - Pumpkin 33
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 34
+  standard: Skyloft Village - Pumpkin 34
+  pretty: Skyloft Village - Pumpkin 34
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 35
+  standard: Skyloft Village - Pumpkin 35
+  pretty: Skyloft Village - Pumpkin 35
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 36
+  standard: Skyloft Village - Pumpkin 36
+  pretty: Skyloft Village - Pumpkin 36
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 37
+  standard: Skyloft Village - Pumpkin 37
+  pretty: Skyloft Village - Pumpkin 37
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Skyloft Village - Pumpkin 38
+  standard: Skyloft Village - Pumpkin 38
+  pretty: Skyloft Village - Pumpkin 38
+  cryptic: smashing <b<fruits>> in a <b<village>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 1
+  standard: Lumpy Pumpkin Exterior - Pumpkin 1
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 1
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 2
+  standard: Lumpy Pumpkin Exterior - Pumpkin 2
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 2
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 3
+  standard: Lumpy Pumpkin Exterior - Pumpkin 3
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 3
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 4
+  standard: Lumpy Pumpkin Exterior - Pumpkin 4
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 4
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 5
+  standard: Lumpy Pumpkin Exterior - Pumpkin 5
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 5
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 6
+  standard: Lumpy Pumpkin Exterior - Pumpkin 6
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 6
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 7
+  standard: Lumpy Pumpkin Exterior - Pumpkin 7
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 7
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 8
+  standard: Lumpy Pumpkin Exterior - Pumpkin 8
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 8
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 9
+  standard: Lumpy Pumpkin Exterior - Pumpkin 9
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 9
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 10
+  standard: Lumpy Pumpkin Exterior - Pumpkin 10
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 10
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 11
+  standard: Lumpy Pumpkin Exterior - Pumpkin 11
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 11
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 12
+  standard: Lumpy Pumpkin Exterior - Pumpkin 12
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 12
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 13
+  standard: Lumpy Pumpkin Exterior - Pumpkin 13
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 13
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 14
+  standard: Lumpy Pumpkin Exterior - Pumpkin 14
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 14
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 15
+  standard: Lumpy Pumpkin Exterior - Pumpkin 15
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 15
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 16
+  standard: Lumpy Pumpkin Exterior - Pumpkin 16
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 16
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 17
+  standard: Lumpy Pumpkin Exterior - Pumpkin 17
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 17
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 18
+  standard: Lumpy Pumpkin Exterior - Pumpkin 18
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 18
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 19
+  standard: Lumpy Pumpkin Exterior - Pumpkin 19
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 19
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 20
+  standard: Lumpy Pumpkin Exterior - Pumpkin 20
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 20
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 21
+  standard: Lumpy Pumpkin Exterior - Pumpkin 21
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 21
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 22
+  standard: Lumpy Pumpkin Exterior - Pumpkin 22
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 22
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 23
+  standard: Lumpy Pumpkin Exterior - Pumpkin 23
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 23
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 24
+  standard: Lumpy Pumpkin Exterior - Pumpkin 24
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 24
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 25
+  standard: Lumpy Pumpkin Exterior - Pumpkin 25
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 25
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 26
+  standard: Lumpy Pumpkin Exterior - Pumpkin 26
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 26
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 27
+  standard: Lumpy Pumpkin Exterior - Pumpkin 27
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 27
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 28
+  standard: Lumpy Pumpkin Exterior - Pumpkin 28
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 28
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 29
+  standard: Lumpy Pumpkin Exterior - Pumpkin 29
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 29
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 30
+  standard: Lumpy Pumpkin Exterior - Pumpkin 30
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 30
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 31
+  standard: Lumpy Pumpkin Exterior - Pumpkin 31
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 31
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 32
+  standard: Lumpy Pumpkin Exterior - Pumpkin 32
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 32
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 33
+  standard: Lumpy Pumpkin Exterior - Pumpkin 33
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 33
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 34
+  standard: Lumpy Pumpkin Exterior - Pumpkin 34
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 34
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Pumpkin 35
+  standard: Lumpy Pumpkin Exterior - Pumpkin 35
+  pretty: Lumpy Pumpkin Exterior - Pumpkin 35
+  cryptic: smashing <b<pumpkins>> outside a <y<giant gourd>>
+
+- name: Knight Academy - Big Pot 1
+  standard: Knight Academy - Big Pot 1
+  pretty: Knight Academy - Big Pot 1
+  cryptic: smashing <b<giant pots>> at a <b<school for knights>>
+
+- name: Knight Academy - Big Pot 2
+  standard: Knight Academy - Big Pot 2
+  pretty: Knight Academy - Big Pot 2
+  cryptic: smashing <b<giant pots>> at a <b<school for knights>>
+
+- name: Knight Academy - Big Pot 3
+  standard: Knight Academy - Big Pot 3
+  pretty: Knight Academy - Big Pot 3
+  cryptic: smashing <b<giant pots>> at a <b<school for knights>>
+
+- name: Knight Academy - Big Pot 4
+  standard: Knight Academy - Big Pot 4
+  pretty: Knight Academy - Big Pot 4
+  cryptic: smashing <b<giant pots>> at a <b<school for knights>>
+
+- name: Knight Academy - Big Pot 5
+  standard: Knight Academy - Big Pot 5
+  pretty: Knight Academy - Big Pot 5
+  cryptic: smashing <b<giant pots>> at a <b<school for knights>>
+
+- name: Lumpy Pumpkin Exterior - Big Pot 1
+  standard: Lumpy Pumpkin Exterior - Big Pot 1
+  pretty: Lumpy Pumpkin Exterior - Big Pot 1
+  cryptic: smashing <b<giant pots>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Big Pot 2
+  standard: Lumpy Pumpkin Exterior - Big Pot 2
+  pretty: Lumpy Pumpkin Exterior - Big Pot 2
+  cryptic: smashing <b<giant pots>> outside a <y<giant gourd>>
+
+- name: Lumpy Pumpkin Exterior - Big Pot 3
+  standard: Lumpy Pumpkin Exterior - Big Pot 3
+  pretty: Lumpy Pumpkin Exterior - Big Pot 3
+  cryptic: smashing <b<giant pots>> outside a <y<giant gourd>>
+
+- name: Bug Heaven - Big Pot 1
+  standard: Bug Heaven - Big Pot 1
+  pretty: Bug Heaven - Big Pot 1
+  cryptic: smashing <g<giant pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Big Pot 2
+  standard: Bug Heaven - Big Pot 2
+  pretty: Bug Heaven - Big Pot 2
+  cryptic: smashing <g<giant pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Big Pot 3
+  standard: Bug Heaven - Big Pot 3
+  pretty: Bug Heaven - Big Pot 3
+  cryptic: smashing <g<giant pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Big Pot 4
+  standard: Bug Heaven - Big Pot 4
+  pretty: Bug Heaven - Big Pot 4
+  cryptic: smashing <g<giant pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Big Pot 5
+  standard: Bug Heaven - Big Pot 5
+  pretty: Bug Heaven - Big Pot 5
+  cryptic: smashing <g<giant pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Big Pot 6
+  standard: Bug Heaven - Big Pot 6
+  pretty: Bug Heaven - Big Pot 6
+  cryptic: smashing <g<giant pots>> in a <g<bug paradise>>
+
+- name: Bug Heaven - Big Pot 7
+  standard: Bug Heaven - Big Pot 7
+  pretty: Bug Heaven - Big Pot 7
+  cryptic: smashing <g<giant pots>> in a <g<bug paradise>>
+
+- name: Central Skyloft - Barrel 1
+  standard: Central Skyloft - Barrel 1
+  pretty: Central Skyloft - Barrel 1
+  cryptic: smashing <b<barrels>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Barrel 2
+  standard: Central Skyloft - Barrel 2
+  pretty: Central Skyloft - Barrel 2
+  cryptic: smashing <b<barrels>> in the <b<sky's town square>>
+
+- name: Central Skyloft - Barrel 3
+  standard: Central Skyloft - Barrel 3
+  pretty: Central Skyloft - Barrel 3
+  cryptic: smashing <b<barrels>> in the <b<sky's town square>>
+
+- name: Fire Node - Barrel 1
+  standard: Fire Node - Barrel 1
+  pretty: Fire Node - Barrel 1
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 2
+  standard: Fire Node - Barrel 2
+  pretty: Fire Node - Barrel 2
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 3
+  standard: Fire Node - Barrel 3
+  pretty: Fire Node - Barrel 3
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 4
+  standard: Fire Node - Barrel 4
+  pretty: Fire Node - Barrel 4
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 5
+  standard: Fire Node - Barrel 5
+  pretty: Fire Node - Barrel 5
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 6
+  standard: Fire Node - Barrel 6
+  pretty: Fire Node - Barrel 6
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 7
+  standard: Fire Node - Barrel 7
+  pretty: Fire Node - Barrel 7
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 8
+  standard: Fire Node - Barrel 8
+  pretty: Fire Node - Barrel 8
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 9
+  standard: Fire Node - Barrel 9
+  pretty: Fire Node - Barrel 9
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 10
+  standard: Fire Node - Barrel 10
+  pretty: Fire Node - Barrel 10
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Fire Node - Barrel 11
+  standard: Fire Node - Barrel 11
+  pretty: Fire Node - Barrel 11
+  cryptic: breaking <r<barrels>> in a <r<fiery node>>
+
+- name: Knight Academy - Barrel 1
+  standard: Knight Academy - Barrel 1
+  pretty: Knight Academy - Barrel 1
+  cryptic: smashing <b<barrels>> at a <b<school for knights>>
+
+- name: LMF Armos Fight Room - Barrel 1
+  standard: LMF Armos Fight Room - Barrel 1
+  pretty: LMF Armos Fight Room - Barrel 1
+  cryptic: breaking <y<barrels>> near a <y<statue that wakes>>
+
+- name: LMF Armos Fight Room - Barrel 2
+  standard: LMF Armos Fight Room - Barrel 2
+  pretty: LMF Armos Fight Room - Barrel 2
+  cryptic: breaking <y<barrels>> near a <y<statue that wakes>>
+
+- name: LMF Big Hub South - Barrel 1
+  standard: LMF Big Hub South - Barrel 1
+  pretty: LMF Big Hub South - Barrel 1
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 2
+  standard: LMF Big Hub South - Barrel 2
+  pretty: LMF Big Hub South - Barrel 2
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 3
+  standard: LMF Big Hub South - Barrel 3
+  pretty: LMF Big Hub South - Barrel 3
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 4
+  standard: LMF Big Hub South - Barrel 4
+  pretty: LMF Big Hub South - Barrel 4
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 5
+  standard: LMF Big Hub South - Barrel 5
+  pretty: LMF Big Hub South - Barrel 5
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 6
+  standard: LMF Big Hub South - Barrel 6
+  pretty: LMF Big Hub South - Barrel 6
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 7
+  standard: LMF Big Hub South - Barrel 7
+  pretty: LMF Big Hub South - Barrel 7
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 8
+  standard: LMF Big Hub South - Barrel 8
+  pretty: LMF Big Hub South - Barrel 8
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 9
+  standard: LMF Big Hub South - Barrel 9
+  pretty: LMF Big Hub South - Barrel 9
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 10
+  standard: LMF Big Hub South - Barrel 10
+  pretty: LMF Big Hub South - Barrel 10
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 11
+  standard: LMF Big Hub South - Barrel 11
+  pretty: LMF Big Hub South - Barrel 11
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 12
+  standard: LMF Big Hub South - Barrel 12
+  pretty: LMF Big Hub South - Barrel 12
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 13
+  standard: LMF Big Hub South - Barrel 13
+  pretty: LMF Big Hub South - Barrel 13
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 14
+  standard: LMF Big Hub South - Barrel 14
+  pretty: LMF Big Hub South - Barrel 14
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 15
+  standard: LMF Big Hub South - Barrel 15
+  pretty: LMF Big Hub South - Barrel 15
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Big Hub South - Barrel 16
+  standard: LMF Big Hub South - Barrel 16
+  pretty: LMF Big Hub South - Barrel 16
+  cryptic: breaking <y<barrels>> in a <y<mining facility's central hub>>
+
+- name: LMF Boss Key Room - Barrel 1
+  standard: LMF Boss Key Room - Barrel 1
+  pretty: LMF Boss Key Room - Barrel 1
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 2
+  standard: LMF Boss Key Room - Barrel 2
+  pretty: LMF Boss Key Room - Barrel 2
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 3
+  standard: LMF Boss Key Room - Barrel 3
+  pretty: LMF Boss Key Room - Barrel 3
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 4
+  standard: LMF Boss Key Room - Barrel 4
+  pretty: LMF Boss Key Room - Barrel 4
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 5
+  standard: LMF Boss Key Room - Barrel 5
+  pretty: LMF Boss Key Room - Barrel 5
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 6
+  standard: LMF Boss Key Room - Barrel 6
+  pretty: LMF Boss Key Room - Barrel 6
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 7
+  standard: LMF Boss Key Room - Barrel 7
+  pretty: LMF Boss Key Room - Barrel 7
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 8
+  standard: LMF Boss Key Room - Barrel 8
+  pretty: LMF Boss Key Room - Barrel 8
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 9
+  standard: LMF Boss Key Room - Barrel 9
+  pretty: LMF Boss Key Room - Barrel 9
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 10
+  standard: LMF Boss Key Room - Barrel 10
+  pretty: LMF Boss Key Room - Barrel 10
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 11
+  standard: LMF Boss Key Room - Barrel 11
+  pretty: LMF Boss Key Room - Barrel 11
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 12
+  standard: LMF Boss Key Room - Barrel 12
+  pretty: LMF Boss Key Room - Barrel 12
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 13
+  standard: LMF Boss Key Room - Barrel 13
+  pretty: LMF Boss Key Room - Barrel 13
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF Boss Key Room - Barrel 14
+  standard: LMF Boss Key Room - Barrel 14
+  pretty: LMF Boss Key Room - Barrel 14
+  cryptic: breaking <y<barrels>> guarding a <r<mechanical key>>
+
+- name: LMF First Room - Barrel 1
+  standard: LMF First Room - Barrel 1
+  pretty: LMF First Room - Barrel 1
+  cryptic: breaking <y<barrels>> at the start of a <y<mining facility>>
+
+- name: LMF First Room - Barrel 2
+  standard: LMF First Room - Barrel 2
+  pretty: LMF First Room - Barrel 2
+  cryptic: breaking <y<barrels>> at the start of a <y<mining facility>>
+
+- name: LMF First Room - Barrel 3
+  standard: LMF First Room - Barrel 3
+  pretty: LMF First Room - Barrel 3
+  cryptic: breaking <y<barrels>> at the start of a <y<mining facility>>
+
+- name: LMF First Room - Barrel 4
+  standard: LMF First Room - Barrel 4
+  pretty: LMF First Room - Barrel 4
+  cryptic: breaking <y<barrels>> at the start of a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 1
+  standard: LMF First West Room - Barrel 1
+  pretty: LMF First West Room - Barrel 1
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 2
+  standard: LMF First West Room - Barrel 2
+  pretty: LMF First West Room - Barrel 2
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 3
+  standard: LMF First West Room - Barrel 3
+  pretty: LMF First West Room - Barrel 3
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 4
+  standard: LMF First West Room - Barrel 4
+  pretty: LMF First West Room - Barrel 4
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 5
+  standard: LMF First West Room - Barrel 5
+  pretty: LMF First West Room - Barrel 5
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF First West Room - Barrel 6
+  standard: LMF First West Room - Barrel 6
+  pretty: LMF First West Room - Barrel 6
+  cryptic: breaking <y<barrels>> in a <y<mining facility>>
+
+- name: LMF Hop Across Boxes Room - Barrel 1
+  standard: LMF Hop Across Boxes Room - Barrel 1
+  pretty: LMF Hop Across Boxes Room - Barrel 1
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Hop Across Boxes Room - Barrel 2
+  standard: LMF Hop Across Boxes Room - Barrel 2
+  pretty: LMF Hop Across Boxes Room - Barrel 2
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Hop Across Boxes Room - Barrel 3
+  standard: LMF Hop Across Boxes Room - Barrel 3
+  pretty: LMF Hop Across Boxes Room - Barrel 3
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Hop Across Boxes Room - Barrel 4
+  standard: LMF Hop Across Boxes Room - Barrel 4
+  pretty: LMF Hop Across Boxes Room - Barrel 4
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Hop Across Boxes Room - Barrel 5
+  standard: LMF Hop Across Boxes Room - Barrel 5
+  pretty: LMF Hop Across Boxes Room - Barrel 5
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Hop Across Boxes Room - Barrel 6
+  standard: LMF Hop Across Boxes Room - Barrel 6
+  pretty: LMF Hop Across Boxes Room - Barrel 6
+  cryptic: breaking <y<barrels>> among <y<hopping boxes>>
+
+- name: LMF Key Locked Room - Barrel 1
+  standard: LMF Key Locked Room - Barrel 1
+  pretty: LMF Key Locked Room - Barrel 1
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 2
+  standard: LMF Key Locked Room - Barrel 2
+  pretty: LMF Key Locked Room - Barrel 2
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 3
+  standard: LMF Key Locked Room - Barrel 3
+  pretty: LMF Key Locked Room - Barrel 3
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 4
+  standard: LMF Key Locked Room - Barrel 4
+  pretty: LMF Key Locked Room - Barrel 4
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 5
+  standard: LMF Key Locked Room - Barrel 5
+  pretty: LMF Key Locked Room - Barrel 5
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 6
+  standard: LMF Key Locked Room - Barrel 6
+  pretty: LMF Key Locked Room - Barrel 6
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 7
+  standard: LMF Key Locked Room - Barrel 7
+  pretty: LMF Key Locked Room - Barrel 7
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 8
+  standard: LMF Key Locked Room - Barrel 8
+  pretty: LMF Key Locked Room - Barrel 8
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 9
+  standard: LMF Key Locked Room - Barrel 9
+  pretty: LMF Key Locked Room - Barrel 9
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: LMF Key Locked Room - Barrel 10
+  standard: LMF Key Locked Room - Barrel 10
+  pretty: LMF Key Locked Room - Barrel 10
+  cryptic: breaking <y<barrels>> behind a <y<locked mining door>>
+
+- name: Lanayru Caves - Barrel 1
+  standard: Lanayru Caves - Barrel 1
+  pretty: Lanayru Caves - Barrel 1
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 2
+  standard: Lanayru Caves - Barrel 2
+  pretty: Lanayru Caves - Barrel 2
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 3
+  standard: Lanayru Caves - Barrel 3
+  pretty: Lanayru Caves - Barrel 3
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 4
+  standard: Lanayru Caves - Barrel 4
+  pretty: Lanayru Caves - Barrel 4
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 5
+  standard: Lanayru Caves - Barrel 5
+  pretty: Lanayru Caves - Barrel 5
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 6
+  standard: Lanayru Caves - Barrel 6
+  pretty: Lanayru Caves - Barrel 6
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lanayru Caves - Barrel 7
+  standard: Lanayru Caves - Barrel 7
+  pretty: Lanayru Caves - Barrel 7
+  cryptic: breaking <ye<barrels>> in <ye<desert caves>>
+
+- name: Lightning Node - Barrel 1
+  standard: Lightning Node - Barrel 1
+  pretty: Lightning Node - Barrel 1
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 2
+  standard: Lightning Node - Barrel 2
+  pretty: Lightning Node - Barrel 2
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 3
+  standard: Lightning Node - Barrel 3
+  pretty: Lightning Node - Barrel 3
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 4
+  standard: Lightning Node - Barrel 4
+  pretty: Lightning Node - Barrel 4
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 5
+  standard: Lightning Node - Barrel 5
+  pretty: Lightning Node - Barrel 5
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 6
+  standard: Lightning Node - Barrel 6
+  pretty: Lightning Node - Barrel 6
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 7
+  standard: Lightning Node - Barrel 7
+  pretty: Lightning Node - Barrel 7
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 8
+  standard: Lightning Node - Barrel 8
+  pretty: Lightning Node - Barrel 8
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 9
+  standard: Lightning Node - Barrel 9
+  pretty: Lightning Node - Barrel 9
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 10
+  standard: Lightning Node - Barrel 10
+  pretty: Lightning Node - Barrel 10
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Lightning Node - Barrel 11
+  standard: Lightning Node - Barrel 11
+  pretty: Lightning Node - Barrel 11
+  cryptic: breaking <y<barrels>> in a <y<buried building>>
+
+- name: Pirate Stronghold Dock - Barrel 1
+  standard: Pirate Stronghold Dock - Barrel 1
+  pretty: Pirate Stronghold Dock - Barrel 1
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 2
+  standard: Pirate Stronghold Dock - Barrel 2
+  pretty: Pirate Stronghold Dock - Barrel 2
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 3
+  standard: Pirate Stronghold Dock - Barrel 3
+  pretty: Pirate Stronghold Dock - Barrel 3
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 4
+  standard: Pirate Stronghold Dock - Barrel 4
+  pretty: Pirate Stronghold Dock - Barrel 4
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 5
+  standard: Pirate Stronghold Dock - Barrel 5
+  pretty: Pirate Stronghold Dock - Barrel 5
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 6
+  standard: Pirate Stronghold Dock - Barrel 6
+  pretty: Pirate Stronghold Dock - Barrel 6
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 7
+  standard: Pirate Stronghold Dock - Barrel 7
+  pretty: Pirate Stronghold Dock - Barrel 7
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 8
+  standard: Pirate Stronghold Dock - Barrel 8
+  pretty: Pirate Stronghold Dock - Barrel 8
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 9
+  standard: Pirate Stronghold Dock - Barrel 9
+  pretty: Pirate Stronghold Dock - Barrel 9
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 10
+  standard: Pirate Stronghold Dock - Barrel 10
+  pretty: Pirate Stronghold Dock - Barrel 10
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 11
+  standard: Pirate Stronghold Dock - Barrel 11
+  pretty: Pirate Stronghold Dock - Barrel 11
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Dock - Barrel 12
+  standard: Pirate Stronghold Dock - Barrel 12
+  pretty: Pirate Stronghold Dock - Barrel 12
+  cryptic: breaking <b<barrels>> at a <b<pirate dock>>
+
+- name: Pirate Stronghold Interior - Barrel 1
+  standard: Pirate Stronghold Interior - Barrel 1
+  pretty: Pirate Stronghold Interior - Barrel 1
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 2
+  standard: Pirate Stronghold Interior - Barrel 2
+  pretty: Pirate Stronghold Interior - Barrel 2
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 3
+  standard: Pirate Stronghold Interior - Barrel 3
+  pretty: Pirate Stronghold Interior - Barrel 3
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 4
+  standard: Pirate Stronghold Interior - Barrel 4
+  pretty: Pirate Stronghold Interior - Barrel 4
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 5
+  standard: Pirate Stronghold Interior - Barrel 5
+  pretty: Pirate Stronghold Interior - Barrel 5
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 6
+  standard: Pirate Stronghold Interior - Barrel 6
+  pretty: Pirate Stronghold Interior - Barrel 6
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 7
+  standard: Pirate Stronghold Interior - Barrel 7
+  pretty: Pirate Stronghold Interior - Barrel 7
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 8
+  standard: Pirate Stronghold Interior - Barrel 8
+  pretty: Pirate Stronghold Interior - Barrel 8
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 9
+  standard: Pirate Stronghold Interior - Barrel 9
+  pretty: Pirate Stronghold Interior - Barrel 9
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 10
+  standard: Pirate Stronghold Interior - Barrel 10
+  pretty: Pirate Stronghold Interior - Barrel 10
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 11
+  standard: Pirate Stronghold Interior - Barrel 11
+  pretty: Pirate Stronghold Interior - Barrel 11
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 12
+  standard: Pirate Stronghold Interior - Barrel 12
+  pretty: Pirate Stronghold Interior - Barrel 12
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 13
+  standard: Pirate Stronghold Interior - Barrel 13
+  pretty: Pirate Stronghold Interior - Barrel 13
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 14
+  standard: Pirate Stronghold Interior - Barrel 14
+  pretty: Pirate Stronghold Interior - Barrel 14
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 15
+  standard: Pirate Stronghold Interior - Barrel 15
+  pretty: Pirate Stronghold Interior - Barrel 15
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 16
+  standard: Pirate Stronghold Interior - Barrel 16
+  pretty: Pirate Stronghold Interior - Barrel 16
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: Pirate Stronghold Interior - Barrel 17
+  standard: Pirate Stronghold Interior - Barrel 17
+  pretty: Pirate Stronghold Interior - Barrel 17
+  cryptic: breaking <b<barrels>> inside a <b<pirate fortress>>
+
+- name: SK Sacred Power of Nayru Room - Barrel 1
+  standard: SK Sacred Power of Nayru Room - Barrel 1
+  pretty: SK Sacred Power of Nayru Room - Barrel 1
+  cryptic: breaking <b<barrels>> in a <b<sky fortress room of wisdom>>
+
+- name: SK Sacred Power of Nayru Room - Barrel 2
+  standard: SK Sacred Power of Nayru Room - Barrel 2
+  pretty: SK Sacred Power of Nayru Room - Barrel 2
+  cryptic: breaking <b<barrels>> in a <b<sky fortress room of wisdom>>
+
+- name: SK Sandship Room West - Barrel 1
+  standard: SK Sandship Room West - Barrel 1
+  pretty: SK Sandship Room West - Barrel 1
+  cryptic: breaking <b<barrels>> in a <b<sky fortress ship room>>
+
+- name: SK Sandship Room West - Barrel 2
+  standard: SK Sandship Room West - Barrel 2
+  pretty: SK Sandship Room West - Barrel 2
+  cryptic: breaking <b<barrels>> in a <b<sky fortress ship room>>
+
+- name: Sandship Before Ship's Bow - Barrel 1
+  standard: Sandship Before Ship's Bow - Barrel 1
+  pretty: Sandship Before Ship's Bow - Barrel 1
+  cryptic: breaking <b<barrels>> near the <b<bow of a ghost ship>>
+
+- name: Sandship Boss Room - Barrel 1
+  standard: Sandship Boss Room - Barrel 1
+  pretty: Sandship Boss Room - Barrel 1
+  cryptic: breaking <r<barrels>> while <r<escaping a sinking ship>>
+
+- name: Sandship Boss Room - Barrel 2
+  standard: Sandship Boss Room - Barrel 2
+  pretty: Sandship Boss Room - Barrel 2
+  cryptic: breaking <r<barrels>> while <r<escaping a sinking ship>>
+
+- name: Sandship Boss Room - Barrel 3
+  standard: Sandship Boss Room - Barrel 3
+  pretty: Sandship Boss Room - Barrel 3
+  cryptic: breaking <r<barrels>> while <r<escaping a sinking ship>>
+
+- name: Sandship Boss Room - Barrel 4
+  standard: Sandship Boss Room - Barrel 4
+  pretty: Sandship Boss Room - Barrel 4
+  cryptic: breaking <r<barrels>> while <r<escaping a sinking ship>>
+
+- name: Sandship Boss Room - Barrel 5
+  standard: Sandship Boss Room - Barrel 5
+  pretty: Sandship Boss Room - Barrel 5
+  cryptic: breaking <r<barrels>> while <r<escaping a sinking ship>>
+
+- name: Sandship Brig - Barrel 1
+  standard: Sandship Brig - Barrel 1
+  pretty: Sandship Brig - Barrel 1
+  cryptic: breaking <b<barrels>> in the <b<belly of a ghost ship>>
+
+- name: Sandship Brig - Barrel 2
+  standard: Sandship Brig - Barrel 2
+  pretty: Sandship Brig - Barrel 2
+  cryptic: breaking <b<barrels>> in the <b<belly of a ghost ship>>
+
+- name: Sandship Brig - Barrel 3
+  standard: Sandship Brig - Barrel 3
+  pretty: Sandship Brig - Barrel 3
+  cryptic: breaking <b<barrels>> in the <b<belly of a ghost ship>>
+
+- name: Sandship Brig - Barrel 4
+  standard: Sandship Brig - Barrel 4
+  pretty: Sandship Brig - Barrel 4
+  cryptic: breaking <b<barrels>> in the <b<belly of a ghost ship>>
+
+- name: Sandship Corridor - Barrel 1
+  standard: Sandship Corridor - Barrel 1
+  pretty: Sandship Corridor - Barrel 1
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 2
+  standard: Sandship Corridor - Barrel 2
+  pretty: Sandship Corridor - Barrel 2
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 3
+  standard: Sandship Corridor - Barrel 3
+  pretty: Sandship Corridor - Barrel 3
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 4
+  standard: Sandship Corridor - Barrel 4
+  pretty: Sandship Corridor - Barrel 4
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 5
+  standard: Sandship Corridor - Barrel 5
+  pretty: Sandship Corridor - Barrel 5
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 6
+  standard: Sandship Corridor - Barrel 6
+  pretty: Sandship Corridor - Barrel 6
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 7
+  standard: Sandship Corridor - Barrel 7
+  pretty: Sandship Corridor - Barrel 7
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Corridor - Barrel 8
+  standard: Sandship Corridor - Barrel 8
+  pretty: Sandship Corridor - Barrel 8
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's corridor>>
+
+- name: Sandship Main Deck - Barrel 1
+  standard: Sandship Main Deck - Barrel 1
+  pretty: Sandship Main Deck - Barrel 1
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 2
+  standard: Sandship Main Deck - Barrel 2
+  pretty: Sandship Main Deck - Barrel 2
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 3
+  standard: Sandship Main Deck - Barrel 3
+  pretty: Sandship Main Deck - Barrel 3
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 4
+  standard: Sandship Main Deck - Barrel 4
+  pretty: Sandship Main Deck - Barrel 4
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 5
+  standard: Sandship Main Deck - Barrel 5
+  pretty: Sandship Main Deck - Barrel 5
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 6
+  standard: Sandship Main Deck - Barrel 6
+  pretty: Sandship Main Deck - Barrel 6
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 7
+  standard: Sandship Main Deck - Barrel 7
+  pretty: Sandship Main Deck - Barrel 7
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Main Deck - Barrel 8
+  standard: Sandship Main Deck - Barrel 8
+  pretty: Sandship Main Deck - Barrel 8
+  cryptic: breaking <b<barrels>> on the <b<deck of a ghost ship>>
+
+- name: Sandship Port Rooms - Barrel 1
+  standard: Sandship Port Rooms - Barrel 1
+  pretty: Sandship Port Rooms - Barrel 1
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's port rooms>>
+
+- name: Sandship Port Rooms - Barrel 2
+  standard: Sandship Port Rooms - Barrel 2
+  pretty: Sandship Port Rooms - Barrel 2
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's port rooms>>
+
+- name: Sandship Port Rooms - Barrel 3
+  standard: Sandship Port Rooms - Barrel 3
+  pretty: Sandship Port Rooms - Barrel 3
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's port rooms>>
+
+- name: Sandship Port Rooms - Barrel 4
+  standard: Sandship Port Rooms - Barrel 4
+  pretty: Sandship Port Rooms - Barrel 4
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's port rooms>>
+
+- name: Sandship Starboard Rooms - Barrel 1
+  standard: Sandship Starboard Rooms - Barrel 1
+  pretty: Sandship Starboard Rooms - Barrel 1
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's starboard rooms>>
+
+- name: Sandship Starboard Rooms - Barrel 2
+  standard: Sandship Starboard Rooms - Barrel 2
+  pretty: Sandship Starboard Rooms - Barrel 2
+  cryptic: breaking <b<barrels>> in a <b<ghost ship's starboard rooms>>
+
+- name: Sandship Treasure Room - Barrel 1
+  standard: Sandship Treasure Room - Barrel 1
+  pretty: Sandship Treasure Room - Barrel 1
+  cryptic: breaking <y<barrels>> by a <y<ship's treasure>>
+
+- name: Sandship Treasure Room - Barrel 2
+  standard: Sandship Treasure Room - Barrel 2
+  pretty: Sandship Treasure Room - Barrel 2
+  cryptic: breaking <y<barrels>> by a <y<ship's treasure>>
+
+- name: Shipyard End of Minecart Ride - Barrel 1
+  standard: Shipyard End of Minecart Ride - Barrel 1
+  pretty: Shipyard End of Minecart Ride - Barrel 1
+  cryptic: breaking <b<barrels>> at the <b<end of a minecart ride>>
+
+- name: Shipyard End of Minecart Ride - Barrel 2
+  standard: Shipyard End of Minecart Ride - Barrel 2
+  pretty: Shipyard End of Minecart Ride - Barrel 2
+  cryptic: breaking <b<barrels>> at the <b<end of a minecart ride>>
+
+- name: Shipyard End of Minecart Ride - Barrel 3
+  standard: Shipyard End of Minecart Ride - Barrel 3
+  pretty: Shipyard End of Minecart Ride - Barrel 3
+  cryptic: breaking <b<barrels>> at the <b<end of a minecart ride>>
+
+- name: Shipyard End of Minecart Ride - Barrel 4
+  standard: Shipyard End of Minecart Ride - Barrel 4
+  pretty: Shipyard End of Minecart Ride - Barrel 4
+  cryptic: breaking <b<barrels>> at the <b<end of a minecart ride>>

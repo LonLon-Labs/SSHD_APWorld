@@ -7,6 +7,7 @@ use crate::debug;
 use crate::flag;
 use crate::input;
 use crate::item;
+use crate::player;
 use crate::savefile;
 use crate::settings;
 
@@ -85,6 +86,7 @@ extern "C" {
     static GLOBAL_TEXT_MGR: *mut TextMgr;
     static FILE_MGR: *mut savefile::FileMgr;
     static RANDOMIZER_SETTINGS: settings::RandomizerSettings;
+    static PLAYER_PTR: *mut player::dPlayer;
 
     static dLytSaveMgr__sSavePrompts: [*const c_char; 6];
 
@@ -396,7 +398,7 @@ unsafe fn set_help_page_3d_args(help_number: u32) {
 /// Set the string args for page 0x3A (Archipelago check statistics).
 /// Reads from AP_CHECK_STATS buffer written by the Python client.
 unsafe fn set_help_page_stats_args(help_number: u32) {
-    let stats = &item::AP_CHECK_STATS;
+    let stats = &crate::ipc::AP_IPC_ROOT.check_stats;
     let nc = stats.normal_checked as u32;
     let nt = stats.normal_total as u32;
     let ac = stats.ap_checked as u32;
@@ -619,16 +621,183 @@ extern "C" fn override_inventory_caption_item_text(
     }
 }
 
+/// Maps `dLytSaveMgr.save_obj_name_index` (the statue actor's param2 low byte,
+/// i.e. its SAVEOBJ_NAME_xx text index) to that statue's Bird Statue unlock
+/// flag in scene 6. The flag is the unlock item's index in
+/// `ALL_BIRD_STATUE_UNLOCK_ITEMS` (itemconstants.py). -1 = no unlock item (the
+/// inner dungeon statues and non-statue save objects), which fails open.
+///
+/// The three region entrance statues (Sealed Grounds, Volcano Entrance,
+/// Lanayru Mine Entry) have unlock flags 23, 24 and 25 respectively. Measured
+/// in game: Sealed Grounds = 28, Volcano Entrance = 10, inner Eldin statues =
+/// 14 and 15 (no unlock item, -1), Lanayru Mine Entry = 16, Ancient Harbour =
+/// 23. Remaining unknown slots: 9, 29.
+const BIRD_STATUE_UNLOCK_FLAG_BY_SAVE_OBJ_INDEX: [i8; 30] = [
+    0,  // 0  Behind the Temple
+    1,  // 1  Faron Woods Entry
+    2,  // 2  In the Woods
+    3,  // 3  Viewing Platform
+    6,  // 4  The Great Tree
+    5,  // 5  Forest Temple
+    4,  // 6  Deep Woods
+    7,  // 7  Lake Floria
+    8,  // 8  Floria Waterfall
+    -1, // 9
+    24, // 10 Volcano Entrance
+    9,  // 11 Volcano East
+    10, // 12 Volcano Ascent
+    11, // 13 Temple Entrance
+    -1, // 14
+    -1, // 15
+    25, // 16 Lanayru Mine Entry
+    12, // 17 Desert Entrance
+    13, // 18 West Desert
+    16, // 19 North Desert
+    17, // 20 Stone Cache
+    14, // 21 Desert Gorge
+    15, // 22 Temple of Time
+    18, // 23 Ancient Harbour
+    19, // 24 Skipper's Retreat
+    20, // 25 Shipyard
+    21, // 26 Pirate Stronghold
+    22, // 27 Lanayru Gorge
+    23, // 28 Sealed Grounds
+    -1, // 29
+];
+
+/// True if "Bird Statues Need to be Unlocked" is on and the statue whose save
+/// prompt is open has an unlock flag that is not set. Fails open for any
+/// statue that isn't in the table.
+unsafe fn bird_statue_locked(save_mgr: *mut dLytSaveMgr) -> bool {
+    if RANDOMIZER_SETTINGS.bird_statues_need_unlock == 0 {
+        return false;
+    }
+    let index = (*save_mgr).save_obj_name_index as usize;
+    if index >= BIRD_STATUE_UNLOCK_FLAG_BY_SAVE_OBJ_INDEX.len() {
+        return false;
+    }
+    let flag_id = BIRD_STATUE_UNLOCK_FLAG_BY_SAVE_OBJ_INDEX[index];
+    flag_id >= 0 && flag::check_global_sceneflag(6, flag_id as u16) == 0
+}
+
+/// Debug aid for measuring the save object index of each statue. Needs
+/// ASM_DEBUG_PRINT = True in asmpatchhandler.py to be visible in the emulator
+/// log.
+const LOG_BIRD_STATUE_SAVE_OBJ_INDEX: bool = false;
+
 #[no_mangle]
-pub extern "C" fn require_sailcloth_to_fly_to_sky(save_mgr: *mut dLytSaveMgr) {
+pub extern "C" fn require_sailcloth_and_loftwing_to_fly_to_sky(save_mgr: *mut dLytSaveMgr) {
     unsafe {
+        if LOG_BIRD_STATUE_SAVE_OBJ_INDEX && (*save_mgr).save_text_prompt_index == 1 {
+            debug::debug_print_num(
+                c"statue save obj idx: %d".as_ptr(),
+                (*save_mgr).save_obj_name_index as usize,
+            );
+        }
         if (*save_mgr).save_text_prompt_index == 1
-            && flag::check_itemflag(flag::ITEMFLAGS::SAILCLOTH) == 0
+            && (flag::check_itemflag(flag::ITEMFLAGS::SAILCLOTH) == 0
+                || flag::check_storyflag(27) == 0
+                || bird_statue_locked(save_mgr))
         {
             (*save_mgr).save_text_prompt_index = 0;
         }
         ((*(*save_mgr).state_mgr.vtable).execute_state)(
             &mut (*save_mgr).state_mgr as *mut actor::StateMgr,
         );
+    }
+}
+
+/// Number of Bird Statue unlock items (flags 0..=25 in scene 6, indices into
+/// ALL_BIRD_STATUE_UNLOCK_ITEMS in itemconstants.py).
+const BIRD_STATUE_UNLOCK_FLAG_COUNT: u16 = 26;
+
+/// Region of a light pillar / the statues it can drop you to.
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub enum PillarRegion {
+    Faron,
+    Eldin,
+    Lanayru,
+}
+
+/// Bitmask (bit N = scene 6 flag N) of every statue unlock flag that can be
+/// selected on a region's landing map. Includes the region entrance statue
+/// (flags 23..=25). The inner Eldin statues have no unlock item and are never
+/// droppable in this mode.
+///
+/// IMPORTANT: do NOT return `&'static [u16]` slices (or any other pointer to
+/// static data) from a `match` here. The compiler turns that into a table of
+/// ABSOLUTE link-time pointers in .rodata, and the blob is patched in raw
+/// (nothing relocates those pointers), so dereferencing them at runtime
+/// faults ("Invalid memory access at 0x712E0BD000"). Plain integers are safe.
+const fn region_unlock_mask(region: PillarRegion) -> u32 {
+    match region {
+        // flags 0..=8, 23
+        PillarRegion::Faron => 0x0080_01FF,
+        // flags 9, 10, 11, 24
+        PillarRegion::Eldin => 0x0100_0E00,
+        // flags 12..=22, 25
+        PillarRegion::Lanayru => 0x027F_F000,
+    }
+}
+
+/// Maps the `scen_link` of a light pillar's dTgSceneChange (SCEN type 9) to
+/// the region whose landing map it opens. Not measured yet: turn on
+/// LOG_PILLAR_SCEN_LINK, step into each pillar once, and fill in the logged
+/// scen_link values here. Until a pillar is listed it is treated as "any
+/// region", i.e. it only voids out when no statue anywhere is unlocked (the
+/// previous, softlock-safe-but-lenient behavior).
+// (Kept as a plain `match` in `pillar_region` below rather than a const slice,
+// to stay clear of pointer tables in the raw-patched blob.)
+
+/// Debug aid for measuring pillar scen_link values. Needs ASM_DEBUG_PRINT =
+/// True in asmpatchhandler.py to be visible in the emulator log.
+const LOG_PILLAR_SCEN_LINK: bool = false;
+
+fn pillar_region(scen_link: u8) -> Option<PillarRegion> {
+    match scen_link {
+        0 => Some(PillarRegion::Faron),
+        1 => Some(PillarRegion::Eldin),
+        2 => Some(PillarRegion::Lanayru),
+        _ => None,
+    }
+}
+
+/// True if "Bird Statues Need to be Unlocked" is on and the pillar identified
+/// by `scen_link` would open a landing map with no unlocked statue on it, so
+/// there is nothing to drop down to (softlock). For a pillar whose region is
+/// not known yet, every region counts. Used by the sailcloth-style void-out
+/// when entering a light pillar (see
+/// voidout_near_skyloft_or_light_pillars_without_sailcloth in entrance.rs).
+/// Fails open during the tutorial, which force-enables a few statues in
+/// vanilla.
+pub fn no_droppable_bird_statues(scen_link: u8) -> bool {
+    unsafe {
+        if LOG_PILLAR_SCEN_LINK {
+            debug::debug_print_num(c"pillar scen_link: %d".as_ptr(), scen_link as usize);
+        }
+        if RANDOMIZER_SETTINGS.bird_statues_need_unlock == 0 {
+            return false;
+        }
+        // Tutorial fail-open uses a value cached by the main loop: calling
+        // check_storyflag from this scene-change hook crashes.
+        if flag::tutorial_fail_open() {
+            return false;
+        }
+        // Gather every set unlock flag into one bitmask, then test it against
+        // the region's mask (no static slices / pointer tables, see
+        // region_unlock_mask).
+        let mut unlocked: u32 = 0;
+        let mut f: u16 = 0;
+        while f < BIRD_STATUE_UNLOCK_FLAG_COUNT {
+            if flag::check_global_sceneflag(6, f) != 0 {
+                unlocked |= 1u32 << f;
+            }
+            f += 1;
+        }
+        match pillar_region(scen_link) {
+            Some(region) => unlocked & region_unlock_mask(region) == 0,
+            // Unknown pillar: only void out if no statue anywhere is unlocked.
+            None => unlocked == 0,
+        }
     }
 }

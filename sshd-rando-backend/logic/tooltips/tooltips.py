@@ -445,7 +445,42 @@ def pretty_name(item, count):
         return item
 
 
+def _skip_flatten_for_archipelago(world: World) -> bool:
+    """
+    The tooltip search only produces tracker tooltips and each item's
+    chain_locations, which the hint generator uses for hint importance and
+    barren regions. Archipelago generation doesn't use the tracker, and when
+    every hint count is 0 no hints are made, so the search is wasted work.
+    It can also take minutes: DNF expressions grow combinatorially when region
+    access is gated behind many bird statue unlock items.
+
+    Only skipped when running under the Archipelago wrapper (it sets
+    SSHD_AP_EXTRACT_PATH) and all hint counts are 0. Set
+    SSHD_AP_FORCE_TOOLTIPS=1 to run the search anyway.
+    """
+    import os
+
+    if not os.environ.get("SSHD_AP_EXTRACT_PATH"):
+        return False
+    if os.environ.get("SSHD_AP_FORCE_TOOLTIPS"):
+        return False
+    try:
+        return all(
+            world.setting(name).value_as_number() == 0
+            for name in ("path_hints", "barren_hints", "item_hints", "location_hints")
+        )
+    except Exception:
+        return False
+
+
 def flatten_world_requirements(world: World) -> None:
+
+    if _skip_flatten_for_archipelago(world):
+        print(
+            "[tooltips] Skipping requirement flattening "
+            "(Archipelago generation with all hints disabled)"
+        )
+        return
 
     # Run the tooltip search. This will set the simplified
     # requirement for each location

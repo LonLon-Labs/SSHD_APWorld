@@ -319,10 +319,55 @@ cmp w8, #99
 b.eq check_sailcloth_for_air_vents
 
 cmp w8, #100
-b.eq require_sailcloth_to_fly_to_sky
+b.eq require_sailcloth_and_loftwing_to_fly_to_sky
 
 cmp w8, #101
 b.eq voidout_near_skyloft_or_light_pillars_without_sailcloth
+
+; shop item buy decide position
+cmp w8, #102
+b.eq get_shop_item_move_target
+
+; Fi proactive alert override
+cmp w8, #103
+b.eq fi_proactive_alert_override
+
+; Fi can't-drop gate
+cmp w8, #104
+b.eq fi_cant_drop_gate_pending
+
+; DEBUG (remove after the sky test): FUN_7100a69ccc entry counter
+cmp w8, #105
+b.eq fi_dbg_entry
+
+; DEBUG (remove after the sky test): before the Fi event request call
+; (x0 = Fi object, x1 = request struct)
+cmp w8, #106
+b.eq fi_dbg_request_pre
+
+; DEBUG (remove after the sky test): after the Fi event request call
+; (x0 = result of FUN_7100b70290)
+cmp w8, #107
+b.eq fi_dbg_request_post
+
+; Pot sanity: item drop when a pot breaks (x5 = pot actor)
+cmp w8, #108
+b.eq pot_spawn_custom_item
+
+; File select slot name display (apseed_ui.rs): file select state + cursor
+; (x0 = file select scene object)
+cmp w8, #109
+b.eq apseed_ui_fs_hook
+
+; File select slot name display: label getter entry
+; (x0 = message file index, x1 = label)
+cmp w8, #110
+b.eq apseed_ui_label_hook
+
+; File select slot name display: label getter epilogue
+; (x0 = string pointer about to be returned; returns the pointer to use)
+cmp w8, #111
+b.eq apseed_ui_label_ret_hook
 
 ret ; this should never be reached
 

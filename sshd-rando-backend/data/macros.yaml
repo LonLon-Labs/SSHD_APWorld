@@ -62,7 +62,12 @@ Can Afford 1600 Rupees: Can_High_Rupee_Farm and wallet_capacity(1600)
 
 Full Song of the Hero: count(4, Song_of_the_Hero_Part)
 
-Complete Triforce: Triforce_of_Courage and Triforce_of_Wisdom and Triforce_of_Power
+# When triforce_required is off the Triforce is not needed at all: logic does not require it and the
+# Temple of Hylia double doors are unlocked from the start (startflags.yaml keys off this macro).
+# Otherwise the doors need any triforce_door_pieces of the three pieces (3 = the complete Triforce, 0 = none).
+# In game, 1 or 2 required pieces are handled by main_loop_inject (mainloop.rs), which sets the door
+# sceneflag once enough pieces are owned.
+Complete Triforce: triforce_required == off or triforce_door_pieces == 0 or (triforce_door_pieces == 3 and Triforce_of_Courage and Triforce_of_Wisdom and Triforce_of_Power) or (triforce_door_pieces == 2 and ((Triforce_of_Courage and Triforce_of_Wisdom) or (Triforce_of_Courage and Triforce_of_Power) or (Triforce_of_Wisdom and Triforce_of_Power))) or (triforce_door_pieces == 1 and (Triforce_of_Courage or Triforce_of_Wisdom or Triforce_of_Power))
 
 # Don't use this. Only used by the Bottle macro.
 # Separated out to make it easier to verify correctness.

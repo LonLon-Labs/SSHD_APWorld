@@ -114,6 +114,9 @@ def generate_item_pool(world: "World") -> None:
     if world.setting("goddess_chest_shuffle") == "off":
         types_to_ignore.append("Goddess Chests")
 
+    if world.setting("bird_statues_give_items") == "off":
+        types_to_ignore.append("Bird Statues")
+
     test_counter = 0
     for loc_name in world.location_table:
         location = world.location_table[loc_name]
@@ -140,6 +143,11 @@ def generate_item_pool(world: "World") -> None:
     item_pool += (
         [DUSK_RELIC] * world.setting("trial_treasure_shuffle").value_as_number() * 4
     )
+
+    # Each Bird Statue (other than the region entrances) gets its own unlock
+    # item when statues need to be unlocked.
+    if world.setting("bird_statues_need_unlock") == "on":
+        item_pool += list(ALL_BIRD_STATUE_UNLOCK_ITEMS)
 
     for item_name in item_pool:
         if item_name in VANILLA_RANDOM_ITEM_TABLE:
@@ -208,6 +216,18 @@ def generate_starting_item_pool(world: "World"):
             random_item = random.choice(random_starting_item_pool)
             starting_items[random_item] = starting_items[random_item] + 1
             random_starting_item_pool.remove(random_item)
+
+    # Start with one random Bird Statue unlocked in each region
+    if (
+        world.setting("bird_statues_need_unlock") == "on"
+        and world.setting("start_with_region_bird_statues") == "on"
+    ):
+        for region_items in BIRD_STATUE_UNLOCK_ITEMS_BY_REGION.values():
+            unlock_choices = [
+                item for item in region_items if starting_items[item] == 0
+            ]
+            if unlock_choices:
+                starting_items[random.choice(unlock_choices)] += 1
 
     # Remove Heart Containers/Pieces for starting health
     extra_hearts = world.setting("starting_hearts").value_as_number() - 6

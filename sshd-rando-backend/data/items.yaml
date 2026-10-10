@@ -154,6 +154,240 @@
   shop_arc_name: GetBirdStatue
   shop_model_name: GetBirdStatue
   advancement: true
+- id: 300
+  name: Behind the Temple Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 301
+  name: Faron Woods Entry Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 302
+  name: In the Woods Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 303
+  name: Viewing Platform Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 304
+  name: Deep Woods Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 305
+  name: Forest Temple Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 306
+  name: The Great Tree Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 307
+  name: Lake Floria Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 308
+  name: Floria Waterfall Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 309
+  name: Volcano East Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 310
+  name: Volcano Ascent Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 311
+  name: Temple Entrance Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 312
+  name: Desert Entrance Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 313
+  name: West Desert Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 314
+  name: Desert Gorge Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 315
+  name: Temple of Time Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 316
+  name: North Desert Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 317
+  name: Stone Cache Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 318
+  name: Ancient Harbour Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 319
+  name: Skipper's Retreat Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 320
+  name: Shipyard Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 321
+  name: Pirate Stronghold Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 322
+  name: Lanayru Gorge Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 323
+  name: Sealed Grounds Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 324
+  name: Volcano Entrance Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
+- id: 325
+  name: Lanayru Mine Entry Statue Unlock
+  types:
+    - Major Items
+    - Main Quest Items
+  oarc: SaveObjectA
+  shop_arc_name: SaveObjectA
+  shop_model_name: SaveObjectA
+  advancement: true
 - id: 25
   name: Ancient Cistern Boss Key
   types:

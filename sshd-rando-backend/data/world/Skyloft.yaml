@@ -23,6 +23,16 @@
     Knight Academy Lower East Door Interior: Nothing # Open the door.
     Knight Academy Lower West Door Interior: Nothing # Open the door.
   locations:
+    Knight Academy - Pot 1: Nothing
+    Knight Academy - Pot 2: Nothing
+    Knight Academy - Pot 3: Nothing
+    Knight Academy - Pot 4: Nothing
+    Knight Academy - Pot 5: Nothing
+    Knight Academy - Pot 6: Nothing
+    Knight Academy - Pot 7: Nothing
+    Knight Academy - Big Pot 1: Nothing
+    Knight Academy - Big Pot 2: Nothing
+    Knight Academy - Big Pot 3: Nothing
     Knight Academy - Link's Closet: Nothing # Open the closet.
     Knight Academy - Fledge's Closet: Nothing # Open the closet.
     Knight Academy - Groose's Closet: Nothing # Open the closet.
@@ -39,6 +49,7 @@
     Knight Academy - Deliver Kikwi to Owlan: Day and 'Retrieve_Oolo'
     Knight Academy - Deliver Cawlin's Letter: Day and Cawlins_Letter
     Knight Academy - Help Fledge Workout: Night and 'Obtain_Stamina_Potion'
+    Knight Academy - Barrel 1: Nothing
 
 - name: Knight Academy Chimney
   hint_region: Knight Academy
@@ -63,6 +74,11 @@
   locations:
     Knight Academy - Crystal in Zelda's Room: Night
     Knight Academy - Zelda's Closet: Nothing # Open the closet door.
+    # Room 6 big pots (F001r r6). Placed in Zelda's Room, the strictest candidate region
+    # (Zelda's door can't be opened from the corridor in logic), so logic can never be
+    # more permissive than the game. Move to Knight Academy if confirmed in the corridor.
+    Knight Academy - Big Pot 4: Nothing
+    Knight Academy - Big Pot 5: Nothing
 
 - name: Knight Academy Upper North Door Interior
   allowed_time_of_day: All
@@ -210,6 +226,23 @@
     Waterfall Cave: Can_Cut_Trees_And_Logs
     Bird Nest: logic_bird_nest_item_from_beedles_shop and Day and Distance_Activator and (Beetle or Whip)
   locations:
+    Central Skyloft - Pot 1: Nothing
+    Central Skyloft - Pot 2: Nothing
+    Central Skyloft - Pot 3: Nothing
+    Central Skyloft - Pot 4: Nothing
+    Central Skyloft - Pot 5: Nothing
+    Central Skyloft - Pot 6: Nothing
+    Central Skyloft - Pot 7: Nothing
+    Central Skyloft - Pot 8: Nothing
+    Central Skyloft - Pot 9: Nothing
+    Central Skyloft - Pot 10: Nothing
+    Central Skyloft - Pot 11: Nothing
+    Central Skyloft - Pot 12: Nothing
+    Central Skyloft - Pot 13: Nothing
+    Central Skyloft - Pot 14: Nothing
+    Central Skyloft - Pot 15: Nothing
+    Central Skyloft - Pot 16: Nothing
+    Central Skyloft - Pot 17: Nothing
     Central Skyloft - Crystal between Wooden Planks: Night
     Central Skyloft - Crystal below West Cliff: Night
     Central Skyloft - Crystal on Light Tower: Night
@@ -243,6 +276,9 @@
     Central Skyloft - Crystal on Waterfall Island: Night and Quick_Beetle and logic_precise_beetle
     Central Skyloft - Crystal near Bird Statue after Waterfall Cave: Night and Beetle and logic_precise_beetle
     Central Skyloft - Crystal in Loftwing Prison after Waterfall Cave: Night and Beetle and logic_precise_beetle
+    Central Skyloft - Barrel 1: Nothing
+    Central Skyloft - Barrel 2: Nothing
+    Central Skyloft - Barrel 3: Nothing
 
 - name: Bird Nest
   hint_region: Central Skyloft
@@ -363,6 +399,9 @@
     Central Skyloft: Nothing # Exit out the top of the cave.
     Skyloft Past Waterfall Cave: Nothing # Exit out the bottom of the cave.
   locations:
+    Waterfall Cave - Pot 1: Nothing
+    Waterfall Cave - Pot 2: Nothing
+    Waterfall Cave - Pot 3: Nothing
     Central Skyloft - Waterfall Cave First Chest: Nothing # Open the chest.
     Central Skyloft - Waterfall Cave Second Chest: Nothing # Open the chest.
     Central Skyloft - First Rupee in Waterfall Cave Crawlspace: Nothing # Crawl into the small tunnel and collect the freestanding item.
@@ -425,6 +464,44 @@
     Skyloft Village - Bonk Tree near River: Nothing # Bonk into the tree.
     Skyloft Village - Crystal near Pumpkin Patch: Night
     Skyloft Village - Stamina Fruit above Pipit's House: Nothing # Collect the freestanding item.
+    Skyloft Village - Pumpkin 1: Nothing
+    Skyloft Village - Pumpkin 2: Nothing
+    Skyloft Village - Pumpkin 3: Nothing
+    Skyloft Village - Pumpkin 4: Nothing
+    Skyloft Village - Pumpkin 5: Nothing
+    Skyloft Village - Pumpkin 6: Nothing
+    Skyloft Village - Pumpkin 7: Nothing
+    Skyloft Village - Pumpkin 8: Nothing
+    Skyloft Village - Pumpkin 9: Nothing
+    Skyloft Village - Pumpkin 10: Nothing
+    Skyloft Village - Pumpkin 11: Nothing
+    Skyloft Village - Pumpkin 12: Nothing
+    Skyloft Village - Pumpkin 13: Nothing
+    Skyloft Village - Pumpkin 14: Nothing
+    Skyloft Village - Pumpkin 15: Nothing
+    Skyloft Village - Pumpkin 16: Nothing
+    Skyloft Village - Pumpkin 17: Nothing
+    Skyloft Village - Pumpkin 18: Nothing
+    Skyloft Village - Pumpkin 19: Nothing
+    Skyloft Village - Pumpkin 20: Nothing
+    Skyloft Village - Pumpkin 21: Nothing
+    Skyloft Village - Pumpkin 22: Nothing
+    Skyloft Village - Pumpkin 23: Nothing
+    Skyloft Village - Pumpkin 24: Nothing
+    Skyloft Village - Pumpkin 25: Nothing
+    Skyloft Village - Pumpkin 26: Nothing
+    Skyloft Village - Pumpkin 27: Nothing
+    Skyloft Village - Pumpkin 28: Nothing
+    Skyloft Village - Pumpkin 29: Nothing
+    Skyloft Village - Pumpkin 30: Nothing
+    Skyloft Village - Pumpkin 31: Nothing
+    Skyloft Village - Pumpkin 32: Nothing
+    Skyloft Village - Pumpkin 33: Nothing
+    Skyloft Village - Pumpkin 34: Nothing
+    Skyloft Village - Pumpkin 35: Nothing
+    Skyloft Village - Pumpkin 36: Nothing
+    Skyloft Village - Pumpkin 37: Nothing
+    Skyloft Village - Pumpkin 38: Nothing
 
 - name: Bertie's House
   allowed_time_of_day: All

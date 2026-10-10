@@ -44,6 +44,12 @@
     Lanayru Mine Entry: "'Blow_Down_First_Mine_Statue'"
     Lanayru Mine End: Bomb_Bag or ('Blow_Down_First_Mine_Statue' and Hook_Beetle) or Can_use_Stamina_Potion_in_Sink_Sand or logic_brakeslide
   locations:
+    Lanayru Mine Statues Area - Pot 1: Nothing
+    Lanayru Mine Statues Area - Pot 2: Nothing
+    Lanayru Mine Statues Area - Pot 3: Nothing
+    Lanayru Mine Statues Area - Pot 4: Nothing
+    Lanayru Mine Statues Area - Pot 5: Nothing
+    Lanayru Mine Statues Area - Pot 6: Nothing
     Lanayru Mine - Blow Left Digging Robot's Wall after First Minecart Ride: Gust_Bellows
     Lanayru Mine - Blow Right Digging Robot's Wall after First Minecart Ride: Gust_Bellows
     Lanayru Mine - Chest behind Northeast Statue: Bomb_Bag or ('Blow_Down_First_Mine_Statue' and Hook_Beetle)
@@ -235,6 +241,17 @@
     Lightning Node - Bonk Lightning Node Power Supply: Bomb_Bag
     Lightning Node - Bonk Lightning Node Generator: Bomb_Bag
     Lightning Node - Raised Chest near Generator: Bomb_Bag and (Bow or Beetle or logic_bomb_throws)
+    Lightning Node - Barrel 1: Nothing
+    Lightning Node - Barrel 2: Nothing
+    Lightning Node - Barrel 3: Nothing
+    Lightning Node - Barrel 4: Nothing
+    Lightning Node - Barrel 5: Nothing
+    Lightning Node - Barrel 6: Nothing
+    Lightning Node - Barrel 7: Nothing
+    Lightning Node - Barrel 8: Nothing
+    Lightning Node - Barrel 9: Nothing
+    Lightning Node - Barrel 10: Nothing
+    Lightning Node - Barrel 11: Nothing
 
 - name: Lanayru Desert Secret Passageway
   hint_region: Lanayru Desert
@@ -269,6 +286,17 @@
     Fire Node - Bonk Fire Node Generator: "'Can_Reach_Fire_Node_Activator'"
     Fire Node - Left Ending Chest: "'Can_Reach_Fire_Node_Activator'"
     Fire Node - Right Ending Chest: "'Can_Reach_Fire_Node_Activator'"
+    Fire Node - Barrel 1: Nothing
+    Fire Node - Barrel 2: Nothing
+    Fire Node - Barrel 3: Nothing
+    Fire Node - Barrel 4: Nothing
+    Fire Node - Barrel 5: Nothing
+    Fire Node - Barrel 6: Nothing
+    Fire Node - Barrel 7: Nothing
+    Fire Node - Barrel 8: Nothing
+    Fire Node - Barrel 9: Nothing
+    Fire Node - Barrel 10: Nothing
+    Fire Node - Barrel 11: Nothing
 
 
 # TEMPLE OF TIME
@@ -281,6 +309,12 @@
     Desert Gorge Statue: Nothing # Interact with the statue.
     Temple of Time West: Hook_Beetle or (Slingshot and logic_tot_slingshot)
   locations:
+    Temple of Time South - Pot 1: Nothing
+    Temple of Time South - Pot 2: Nothing
+    Temple of Time South - Pot 3: Nothing
+    Temple of Time South - Pot 4: Nothing
+    Temple of Time South - Pot 5: Nothing
+    Temple of Time South - Pot 6: Nothing
     Temple of Time - Northwest Rupee on Tree Root: Beetle
     Temple of Time - Northeast Rupee on Tree Root: Beetle
     Temple of Time - Southeast Rupee on Tree Root: Beetle
@@ -369,10 +403,30 @@
     Lanayru Mine Caves Platform: Nothing # Run up the ledge and exit towards the mine.
     Sand Oasis Highest Platform: Nothing # Run past the pillars towards the main desert.
   locations:
+    Lanayru Caves - Pot 1: Nothing
+    Lanayru Caves - Pot 2: Nothing
+    Lanayru Caves - Pot 3: Nothing
+    Lanayru Caves - Pot 4: Nothing
+    Lanayru Caves - Pot 5: Nothing
+    Lanayru Caves - Pot 6: Nothing
+    Lanayru Caves - Pot 7: Nothing
+    Lanayru Caves - Pot 8: Nothing
+    Lanayru Caves - Pot 9: Nothing
+    Lanayru Caves - Pot 10: Nothing
+    Lanayru Caves - Pot 11: Nothing
+    Lanayru Caves - Pot 12: Nothing
+    Lanayru Caves - Pot 13: Nothing
     Lanayru Caves - Chest near Golo: Nothing # Open the chest.
     Lanayru Caves - Golo's Gift: Nothing # Talk to Golo.
     Lanayru Caves - Gossip Stone Treasure in Center: (Goddess's_Harp and Ballad_of_the_Goddess) or gossip_stone_treasure_shuffle == off
     Lanayru Caves - Gossip Stone Hint in Center: (Goddess's_Harp and Ballad_of_the_Goddess) or gossip_stone_treasure_shuffle == off
+    Lanayru Caves - Barrel 1: Nothing
+    Lanayru Caves - Barrel 2: Nothing
+    Lanayru Caves - Barrel 3: Nothing
+    Lanayru Caves - Barrel 4: Nothing
+    Lanayru Caves - Barrel 5: Nothing
+    Lanayru Caves - Barrel 6: Nothing
+    Lanayru Caves - Barrel 7: Nothing
 
 - name: Lanayru Caves Past Locked Door
   hint_region: Lanayru Caves
@@ -510,6 +564,15 @@
   exits:
     Skipper's Retreat Top: Nothing # Open the door and exit the shack.
   locations:
+    Skipper's Retreat Shack - Pot 1: Nothing
+    Skipper's Retreat Shack - Pot 2: Nothing
+    Skipper's Retreat Shack - Pot 3: Nothing
+    Skipper's Retreat Shack - Pot 4: Nothing
+    Skipper's Retreat Shack - Pot 5: Nothing
+    Skipper's Retreat Shack - Pot 6: Nothing
+    Skipper's Retreat Shack - Pot 7: Nothing
+    Skipper's Retreat Shack - Pot 8: Nothing
+    Skipper's Retreat Shack - Pot 9: Nothing
     Skipper's Retreat Shack - Chest under Sand: Gust_Bellows
     Skipper's Retreat Shack - Skipper's Closet: Gust_Bellows
     Skipper's Retreat Shack - Blow Aeroplane: Gust_Bellows
@@ -547,6 +610,10 @@
     Construction Bay Upper Platform: Nothing # Open the door.
   locations:
     Shipyard - Bonk Sign after Second Minecart Track: Nothing # Bonk into the sign.
+    Shipyard End of Minecart Ride - Barrel 1: Nothing
+    Shipyard End of Minecart Ride - Barrel 2: Nothing
+    Shipyard End of Minecart Ride - Barrel 3: Nothing
+    Shipyard End of Minecart Ride - Barrel 4: Nothing
 
 - name: Construction Bay Upper Platform
   exits:
@@ -575,6 +642,18 @@
     Pirate Stronghold - Stamina Fruit on Left Side: Nothing # Collect the freestanding item.
     Pirate Stronghold - Stamina Fruit on Upper Right Side: Nothing # Collect the freestanding item.
     Pirate Stronghold - Stamina Fruit on Lower Right Side: Nothing # Collect the freestanding item.
+    Pirate Stronghold Dock - Barrel 1: Nothing
+    Pirate Stronghold Dock - Barrel 2: Nothing
+    Pirate Stronghold Dock - Barrel 3: Nothing
+    Pirate Stronghold Dock - Barrel 4: Nothing
+    Pirate Stronghold Dock - Barrel 5: Nothing
+    Pirate Stronghold Dock - Barrel 6: Nothing
+    Pirate Stronghold Dock - Barrel 7: Nothing
+    Pirate Stronghold Dock - Barrel 8: Nothing
+    Pirate Stronghold Dock - Barrel 9: Nothing
+    Pirate Stronghold Dock - Barrel 10: Nothing
+    Pirate Stronghold Dock - Barrel 11: Nothing
+    Pirate Stronghold Dock - Barrel 12: Nothing
 
 # "'Finish_Pirate_Stronghold'" means the Shark Head is raised.
 - name: Pirate Stronghold Inside the Shark Head
@@ -599,6 +678,23 @@
     Pirate Stronghold Interior - Chest behind Electric Fence: Nothing # Carry the timeshift orb, run through the mini-dungeon, and open the chest.
     Pirate Stronghold Interior - Chest before Deku Babas: Nothing # Carry the timeshift orb, run through the mini-dungeon, and open the chest.
     Pirate Stronghold Interior - Chest before Double Armos Fight: Nothing # Carry the timeshift orb, run through the mini-dungeon, and open the chest.
+    Pirate Stronghold Interior - Barrel 1: Nothing
+    Pirate Stronghold Interior - Barrel 2: Nothing
+    Pirate Stronghold Interior - Barrel 3: Nothing
+    Pirate Stronghold Interior - Barrel 4: Nothing
+    Pirate Stronghold Interior - Barrel 5: Nothing
+    Pirate Stronghold Interior - Barrel 6: Nothing
+    Pirate Stronghold Interior - Barrel 7: Nothing
+    Pirate Stronghold Interior - Barrel 8: Nothing
+    Pirate Stronghold Interior - Barrel 9: Nothing
+    Pirate Stronghold Interior - Barrel 10: Nothing
+    Pirate Stronghold Interior - Barrel 11: Nothing
+    Pirate Stronghold Interior - Barrel 12: Nothing
+    Pirate Stronghold Interior - Barrel 13: Nothing
+    Pirate Stronghold Interior - Barrel 14: Nothing
+    Pirate Stronghold Interior - Barrel 15: Nothing
+    Pirate Stronghold Interior - Barrel 16: Nothing
+    Pirate Stronghold Interior - Barrel 17: Nothing
 
 - name: Pirate Stronghold Side Door
   exits:
@@ -615,6 +711,8 @@
 - name: Lanayru Mine Entry Statue
   events:
     Unlock Lanayru Mine Entry Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Mine - Mine Entry Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lanayru Mine Entry: Nothing # Back out of interaction.
@@ -622,6 +720,8 @@
 - name: Desert Entrance Statue
   events:
     Unlock Desert Entrance Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Desert - Desert Entrance Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lanayru Desert South: Nothing # Back out of interaction.
@@ -629,6 +729,8 @@
 - name: West Desert Statue
   events:
     Unlock West Desert Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Desert - West Desert Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Sand Oasis Middle: Nothing # Back out of interaction.
@@ -636,6 +738,8 @@
 - name: Desert Gorge Statue
   events:
     Unlock Desert Gorge Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Desert - Desert Gorge Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Temple of Time South: Nothing # Back out of interaction.
@@ -643,6 +747,8 @@
 - name: Temple of Time Statue
   events:
     Unlock Temple of Time Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Temple of Time - Temple of Time Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Temple of Time West Past Rubble: Nothing # Back out of interaction.
@@ -650,6 +756,8 @@
 - name: North Desert Statue
   events:
     Unlock North Desert Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Desert - North Desert Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lanayru Desert North: Nothing # Back out of interaction.
@@ -657,6 +765,8 @@
 - name: Stone Cache Statue
   events:
     Unlock Stone Cache Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Desert - Stone Cache Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lanayru Desert East: Nothing # Back out of interaction.
@@ -664,6 +774,8 @@
 - name: Ancient Harbour Statue
   events:
     Unlock Ancient Harbour Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Ancient Harbour - Ancient Harbour Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Ancient Harbour: Nothing # Back out of interaction.
@@ -671,6 +783,8 @@
 - name: Skipper's Retreat Statue
   events:
     Unlock Skippers Retreat Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Skipper's Retreat - Skipper's Retreat Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Skipper's Retreat Dock: Nothing # Back out of interaction.
@@ -678,6 +792,8 @@
 - name: Shipyard Statue
   events:
     Unlock Shipyard Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Shipyard - Shipyard Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Shipyard Dock: Nothing # Back out of interaction.
@@ -685,6 +801,8 @@
 - name: Pirate Stronghold Statue
   events:
     Unlock Pirate Stronghold Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Pirate Stronghold - Pirate Stronghold Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Pirate Stronghold Dock: Nothing # Back out of interaction.
@@ -692,6 +810,8 @@
 - name: Lanayru Gorge Statue
   events:
     Unlock Lanayru Gorge Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Lanayru Gorge - Lanayru Gorge Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Lanayru Gorge: Nothing # Back out of interaction.

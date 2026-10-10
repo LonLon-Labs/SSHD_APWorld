@@ -74,6 +74,39 @@
     - vanilla: "Closets will contain their vanilla items."
     - randomized: "All NPC closets will contain randomized items."
 
+- name: pot_shuffle
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Pot Shuffle
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Pots will drop their vanilla items."
+    - "on": "Breaking a pot can give a randomized item. Pots revert to their vanilla drop after the item has been collected."
+
+- name: pumpkin_shuffle
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Pumpkin Shuffle
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Pumpkins will drop their vanilla items."
+    - "on": "Breaking a pumpkin in the Skyloft pumpkin patches or at Lumpy Pumpkin can give a randomized item. Pumpkins revert to their vanilla drop after the item has been collected."
+
+- name: barrel_shuffle
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Barrel Shuffle
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Barrels will drop their vanilla items."
+    - "on": "Breaking a barrel can give a randomized item. The exploding barrels in the Sand Sea are not included. Barrels revert to their vanilla drop after the item has been collected."
+
 - name: hidden_item_shuffle
   tracker_important: true
   default_option: "off"
@@ -133,7 +166,31 @@
     - "On"
   options:
     - "off": "Activating and opening Goddess Chests will not be required."
-    - "on": "Goddess Chests can contain any item. Goddess Chests are activated by Skyward Striking their corresponding Goddess Cube."
+    - "on": "Goddess Chests can contain any item. How Goddess Chests are activated depends on the Goddess Chest Unlock setting."
+
+- name: goddess_chest_unlock
+  tracker_important: true
+  default_option: locked_until_struck
+  pretty_name: Goddess Chest Unlock
+  pretty_options:
+    - Locked Until Struck
+    - Unlocked After Goddess Sword
+    - Unlocked From Start
+  options:
+    - locked_until_struck: "Goddess Chests are activated by Skyward Striking their corresponding Goddess Cube (vanilla behaviour)."
+    - unlocked_after_goddess_sword: "All Goddess Chests are activated as soon as you obtain the Goddess Sword."
+    - unlocked_from_start: "All Goddess Chests are activated from the start of the game."
+
+- name: decouple_goddess_cubes_and_chests
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Decouple Goddess Cubes and Chests
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Goddess Cubes only activate their corresponding Goddess Chest (or do nothing if Goddess Chests are already unlocked)."
+    - "on": "Goddess Cubes become checks that give a randomized item when Skyward Struck. If Goddess Chest Unlock is Locked Until Struck, striking a cube also activates its Goddess Chest as in vanilla."
 
 - name: trial_treasure_shuffle
   tracker_important: true
@@ -662,6 +719,54 @@
     - "off": "You will not start with your Loftwing unlocked. This can break expected progression and may put checks out of logic."
     - "on": "You will start with your Loftwing unlocked."
     - "random": "The randomizer will choose whether you start with your Loftwing unlocked when generating the seed."
+
+- name: bird_statues_give_items
+  default_option: "off"
+  pretty_name: Bird Statues Give Items
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Bird Statues will not give items."
+    - "on": "Unlocking a Bird Statue for the first time will give an item. This applies to every Bird Statue. Statues are not gated unless Bird Statues Need to be Unlocked is also enabled."
+
+- name: bird_statues_need_unlock
+  default_option: "off"
+  pretty_name: Bird Statues Need to be Unlocked
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Bird Statues can be dropped down to as normal."
+    - "on": "Each Bird Statue has an unlock item in the item pool. You cannot drop down to a Bird Statue until its item is obtained, but you can still use it to fly up to the sky."
+
+- name: start_with_region_bird_statues
+  default_option: "off"
+  pretty_name: Start with a Bird Statue in Each Region
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "You will not start with any extra Bird Statues unlocked."
+    - "on": "Only applies when Bird Statues Need to be Unlocked is on. You start with one Bird Statue unlocked in each of Faron, Eldin and Lanayru, and those unlock items are removed from the item pool."
+
+- name: triforce_required
+  default_option: "on"
+  pretty_name: Triforce Required
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "The double doors in Temple of Hylia are unlocked from the start. You do not need the Triforce of Courage, Power and Wisdom to reach the end of the game."
+    - "on": "You will need the Triforce of Courage, Power and Wisdom to unlock the double doors in Temple of Hylia at the end of the game."
+
+- name: triforce_door_pieces
+  default_option: 3
+  pretty_name: Triforce Pieces for Temple of Hylia Doors
+  pretty_options:
+    - 0-3
+  options:
+    - 0-3: "Only applies when Triforce Required is on. Choose how many of the three Triforce pieces (any combination of Courage, Power and Wisdom) are needed to unlock the double doors in Temple of Hylia. 0 unlocks them from the start and 3 requires the complete Triforce."
 
 - name: skip_horde
   default_option: "off"

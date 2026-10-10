@@ -291,18 +291,13 @@ pub extern "C" fn setup_traps(item_actor: *mut item::dAcItem) -> u16 {
         if itemid == 216 || itemid == 217 || itemid == 218 {
             let params = item::unpack_custom_item_params(item_actor);
             if params.flag != 0x7F {
-                let scene_raw: u32 = match params.sceneindex {
-                    6 => 0,
-                    13 => 1,
-                    16 => 2,
-                    19 => 3,
-                    _ => 0,
-                };
+                // Full custom flag ID including the group bit, rebuilt straight
+                // from param2 so it can't drift from the selector tables.
                 let computed_flag_id =
-                    (params.flag & 0x7F) | (scene_raw << 7) | (params.flag_space_trigger << 9);
+                    item::custom_flag_id_from_item_param2((*item_actor).base.members.base.param2);
                 core::ptr::write_volatile(
                     core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
-                    computed_flag_id as u16,
+                    computed_flag_id,
                 );
             }
         }
@@ -569,8 +564,10 @@ pub extern "C" fn spawned_actor_traps(
             // false flag writes on the first item spawn after game boot
             if NEXT_CUSTOM_FLAG_PENDING != 0 {
                 if NEXT_CUSTOM_FLAG != 0x3FF {
+                    // Chests/closets/etc. are group 0 only; the 10-bit mask keeps
+                    // a group-1 ID from spilling into param2 bit 18.
                     ACTORBASE_PARAM2 &= 0xFFFC00FF; // clear bits 8-17
-                    ACTORBASE_PARAM2 |= (NEXT_CUSTOM_FLAG as u32) << 8;
+                    ACTORBASE_PARAM2 |= ((NEXT_CUSTOM_FLAG & 0x3FF) as u32) << 8;
                 }
                 NEXT_CUSTOM_FLAG_PENDING = 0;
             }
@@ -598,6 +595,15 @@ pub extern "C" fn handle_closet_traps(item_id: u32) -> u32 {
         if custom_flag != 0x3FF {
             ACTORBASE_PARAM2 &= 0xFFFC00FF; // clear bits 8-17
             ACTORBASE_PARAM2 |= custom_flag << 8;
+        }
+
+        // Extended (>= 256) item ids. The asm hands us the id after a byte load of
+        // params1 bits 8-15 (and a pass through dAcItem__determineFinalItemid, which
+        // would randomize some low ids), so the patcher clears params2 bit 18 (it is
+        // 1 for every other closet) and we rebuild the full 9-bit id here.
+        // Keep in sync with patch_closet in patches/stagepatchhandler.py.
+        if (((*closet_actor).members.base.param2 >> 18) & 1) == 0 {
+            return (((*closet_actor).basebase.members.param1 >> 8) & 0xFF) | 0x100;
         }
 
         return item_id;
@@ -629,13 +635,28 @@ pub extern "C" fn handle_bucha_traps() {
     }
 }
 
+// Extended (9-bit) item ids for AC boko, heart container and digspot.
+//
+// These three actors read their item id with a byte load in asm, so only 8
+// bits of it reach the item actor's param1. The patcher therefore sets a 2-bit
+// tag in params2 bits 22-23 whenever the id is >= 256, and this hook (which
+// every one of them calls right before spawning the item, with w2 = the item
+// actor's param1) rebuilds the full id from the actor and overwrites param1's
+// id field.   tag 0: id = (params2 & 0xFF) | 0x100          (AC boko)
+//   tag 1: id = ((params1 >> 16) & 0xFF) | 0x100  (heart container)
+//   tag 2: id = ((params2 >> 24) & 0xFF) | 0x100  (digspot)
+//   tag 3: no extended id (also the value of an unpatched actor's 0xFFFFFFFF)
+// The id can't be fixed earlier because the asm passes the byte through
+// dAcItem__determineFinalItemid, which randomizes some low ids (e.g. 61-64).
+// Keep in sync with patches/stagepatchhandler.py.
 #[no_mangle]
-pub extern "C" fn handle_ac_boko_and_heartco_and_digspot_traps() {
+pub extern "C" fn handle_ac_boko_and_heartco_and_digspot_traps(_x0: u64, _x1: u64, param1: u32) {
     unsafe {
         let ac_boko: *mut actor::dAcOBase;
         asm!("mov {0:x}, x19", out(reg) ac_boko);
 
-        let trapid = ((*ac_boko).members.base.param2 >> 8) & 0xF;
+        let param2 = (*ac_boko).members.base.param2;
+        let trapid = (param2 >> 8) & 0xF;
 
         ACTORBASE_PARAM2 &= 0xFFFFFF0F;
         ACTORBASE_PARAM2 |= trapid << 4;
@@ -644,13 +665,35 @@ pub extern "C" fn handle_ac_boko_and_heartco_and_digspot_traps() {
         // to NEXT_CUSTOM_FLAG so spawned_actor_traps() encodes it into the
         // spawned item actor's param2.  Unpatched actors have 0x3FF sentinel
         // written by the Python BZS patcher, preventing false flag writes.
-        let custom_flag = ((*ac_boko).members.base.param2 >> 12) & 0x3FF;
+        let custom_flag = (param2 >> 12) & 0x3FF;
         if custom_flag != 0x3FF {
             NEXT_CUSTOM_FLAG = custom_flag as u16;
             NEXT_CUSTOM_FLAG_PENDING = 1;
         }
 
-        // Replaced instructions
-        asm!("mov w0, #0x281", "mov w3, #2");
+        // Rebuild extended (>= 256) item ids.
+        let actor_param1 = (*ac_boko).basebase.members.param1;
+        let extended_id: u32 = match (param2 >> 22) & 0x3 {
+            0 => (param2 & 0xFF) | 0x100,
+            1 => ((actor_param1 >> 16) & 0xFF) | 0x100,
+            2 => ((param2 >> 24) & 0xFF) | 0x100,
+            _ => 0,
+        };
+        let new_param1: u64 = if extended_id != 0 {
+            ((param1 & !0x1FF) | extended_id) as u64
+        } else {
+            param1 as u64
+        };
+
+        // Replaced instructions (+ the possibly rewritten item actor param1 in w2)
+        asm!(
+            "mov w2, w9",
+            "mov w0, #0x281",
+            "mov w3, #2",
+            in("x9") new_param1,
+            out("x0") _,
+            out("x2") _,
+            out("x3") _,
+        );
     }
 }

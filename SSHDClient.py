@@ -57,7 +57,7 @@ from CommonClient import CommonContext, server_loop, gui_enabled, \
 from NetUtils import ClientStatus
 
 from .TrackerBridge import TrackerBridge
-from .Locations import LOCATION_TABLE
+from .Locations import LOCATION_TABLE, LOCATION_CODE_TO_NAME
 from .Items import ITEM_TABLE
 
 try:
@@ -431,6 +431,48 @@ BIRD_STATUE_FLAGS = {
     "Lanayru Gorge Statue":      ("scene",  9, 12),
 }
 
+# Bird Statue -> "Bird Statues Give Items" location name. Every statue in
+# BIRD_STATUE_FLAGS except the two dungeon-area ones has a check. The server only
+# knows these locations when the option is on, so the client reports them only
+# if the server lists the location for this slot.
+BIRD_STATUE_LOCATION_NAMES = {
+    "Sealed Grounds Statue":     "Sealed Grounds - Sealed Grounds Bird Statue",
+    "Behind the Temple Statue":  "Sealed Grounds - Behind the Temple Bird Statue",
+    "Faron Woods Entry Statue":  "Faron Woods - Faron Woods Entry Bird Statue",
+    "In the Woods Statue":       "Faron Woods - In the Woods Bird Statue",
+    "Viewing Platform Statue":   "Faron Woods - Viewing Platform Bird Statue",
+    "Deep Woods Statue":         "Deep Woods - Deep Woods Bird Statue",
+    "Forest Temple Statue":      "Deep Woods - Forest Temple Bird Statue",
+    "The Great Tree Statue":     "Faron Woods - Great Tree Bird Statue",
+    "Lake Floria Statue":        "Lake Floria - Lake Floria Bird Statue",
+    "Floria Waterfall Statue":   "Floria Waterfall - Floria Waterfall Bird Statue",
+    "Volcano Entrance Statue":   "Eldin Volcano - Volcano Entrance Bird Statue",
+    "Volcano East Statue":       "Eldin Volcano - Volcano East Bird Statue",
+    "Volcano Ascent Statue":     "Eldin Volcano - Volcano Ascent Bird Statue",
+    "Temple Entrance Statue":    "Eldin Volcano - Temple Entrance Bird Statue",
+    "Lanayru Mine Entry Statue": "Lanayru Mine - Mine Entry Bird Statue",
+    "Desert Entrance Statue":    "Lanayru Desert - Desert Entrance Bird Statue",
+    "West Desert Statue":        "Lanayru Desert - West Desert Bird Statue",
+    "Desert Gorge Statue":       "Lanayru Desert - Desert Gorge Bird Statue",
+    "Temple of Time Statue":     "Temple of Time - Temple of Time Bird Statue",
+    "North Desert Statue":       "Lanayru Desert - North Desert Bird Statue",
+    "Stone Cache Statue":        "Lanayru Desert - Stone Cache Bird Statue",
+    "Ancient Harbour Statue":    "Ancient Harbour - Ancient Harbour Bird Statue",
+    "Skipper's Retreat Statue":  "Skipper's Retreat - Skipper's Retreat Bird Statue",
+    "Shipyard Statue":           "Shipyard - Shipyard Bird Statue",
+    "Pirate Stronghold Statue":  "Pirate Stronghold - Pirate Stronghold Bird Statue",
+    "Lanayru Gorge Statue":      "Lanayru Gorge - Lanayru Gorge Bird Statue",
+}
+
+# The statue that is always unlocked (the region entrance in the logic) for each
+# surface region. Its touch flag is already set from the start, so its check is
+# reported the first time the player visits the region instead.
+_REGION_LOGIC_ENTRANCE_STATUES = {
+    "faron":   "Sealed Grounds Statue",
+    "eldin":   "Volcano Entrance Statue",
+    "lanayru": "Lanayru Mine Entry Statue",
+}
+
 # Map from game stage codes to the scene indices where bird statues live.
 # When the player is in a stage, flags for statues in the corresponding scene
 # index(es) are allowed to be newly set (the player walked near a statue).
@@ -567,7 +609,7 @@ STAGE_NAMES = {
     "F401": "Sealed Grounds Spiral",
     "F402": "Sealed Temple",
     "F403": "Ghirahim Boss Arena",
-    "F404": "Credits",
+    "F404": "Sealed Grounds Temple (Past)",
     "F405": "Sealed Grounds Spiral Cutscene (first cutscene)",
     "F407": "Sky Keep beaten CS",
 
@@ -1900,6 +1942,7 @@ class SSHDContext(CommonContext):
             "Progressive Bug Net": 0,
             "Progressive Wallet": 0,
             "Progressive Pouch": 0,
+            "Progressive Loftwing": 0,
         }
         
         # Deferred flag writes — no longer used.
@@ -1920,6 +1963,7 @@ class SSHDContext(CommonContext):
             "Progressive Bug Net":   [71, 140],
             "Progressive Wallet":    [108, 109, 110, 111],
             "Progressive Pouch":     [112, 113, 113, 113, 113],
+            "Progressive Loftwing":  [219, 21],
         }
 
         # Story flags that the rando event system sets for each progressive
@@ -1935,6 +1979,7 @@ class SSHDContext(CommonContext):
             "Progressive Slingshot": [947, 948],
             "Progressive Bug Net":   [949, 950],
             "Progressive Pouch":     [30, 932, 932, 932, 932],
+            "Progressive Loftwing":  [27, 364],
         }
         
         # Game state tracking
@@ -2027,6 +2072,13 @@ class SSHDContext(CommonContext):
         # Format: {location_code: [scene_index, set_sceneflag]}
         self.goddess_chest_scene_flags: Dict[int, list] = {}
         self.previous_goddess_chest_flags: Dict[int, int] = {}  # location_code -> last_state (0 or 1)
+
+        # Goddess cube strike checking (decouple_goddess_cubes_and_chests only).
+        # Striking a cube sets its vanilla storyflag (227-256); slot_data maps
+        # location_code -> storyflag id as goddess_cube_story_flags.
+        self.goddess_cube_story_flags: Dict[int, int] = {}
+        self._goddess_cube_cursor: int = 0            # round-robin position into the pending cubes
+        self._last_goddess_cube_poll_time: float = 0.0
         
         # AP item info table (for item 216 textbox display) and check stats (for help menu)
         self.ap_item_info: Dict[int, dict] = {}  # custom_flag_id -> {"item": name, "player": name}
@@ -2324,6 +2376,7 @@ class SSHDContext(CommonContext):
                     "option_dungeon_goal_count",
                     self.slot_data.get("option_required_dungeon_count", 2),
                 ))
+
             except (TypeError, ValueError):
                 required_dungeons = 2
 
@@ -3040,6 +3093,14 @@ class SSHDContext(CommonContext):
             else:
                 logger.info(f"[GoddessChest] WARNING: goddess_chest_scene_flags key missing or empty in slot_data (slot_data keys: {list(slot_data.keys())})")
 
+            # Load goddess cube storyflag mapping (only present when cubes are decoupled)
+            goddess_cube_raw = slot_data.get("goddess_cube_story_flags", {})
+            self.goddess_cube_story_flags = {int(k): int(v) for k, v in goddess_cube_raw.items()} if goddess_cube_raw else {}
+            self._goddess_cube_cursor = 0
+            self._last_goddess_cube_poll_time = 0.0
+            if self.goddess_cube_story_flags:
+                logger.debug(f"[GoddessCube] Loaded {len(self.goddess_cube_story_flags)} goddess cube storyflag mappings from slot_data")
+
             # Load AP item info for cross-world item textbox display
             ap_item_info_raw = slot_data.get("ap_item_info", {})
             if ap_item_info_raw:
@@ -3526,6 +3587,11 @@ class SSHDContext(CommonContext):
                 # All tiers give a Pouch Expansion (game item 113)
                 actual_item_name = "Pouch Expansion"
                 logger.debug(f"Progressive Pouch #{count} -> {actual_item_name}")
+            elif item_name == "Progressive Loftwing":
+                # Tier 1: Loftwing (game item 219), 2: Spiral Charge (game item 21)
+                loftwing_tiers = ["Progressive Loftwing", "Spiral Charge"]
+                actual_item_name = loftwing_tiers[min(count - 1, 1)]
+                logger.debug(f"Progressive Loftwing #{count} -> {actual_item_name}")
         
         # Try using the new item system with animations
         if GameItemSystem:
@@ -3964,6 +4030,8 @@ class SSHDContext(CommonContext):
                             _fn = _fid & 0x7F
                             _si = _scene_idx_map.get((_fid >> 7) & 0x03, 6)
                             _fs = (_fid >> 9) & 0x01
+                            if (_fid >> 10) & 0x01:
+                                _si = 26 + ((_fid >> 7) & 0x03)
                             _already = self.previous_custom_flags.get(_fid, 0)
                             logger.debug(f"[TEAR-DEBUG]   flag_id={_fid} already_set={_already} scene={_si} u16={_fn//16} bit={_fn%16} space={'dungeon' if _fs else 'scene'} -> {_name}")
                     else:
@@ -4029,10 +4097,16 @@ class SSHDContext(CommonContext):
                 region = _stage_to_region(stage_name)
                 if region and region not in self._visited_regions:
                     self._visited_regions.add(region)
+                    logic_entrance = _REGION_LOGIC_ENTRANCE_STATUES.get(region)
+                    if logic_entrance:
+                        self._report_bird_statue_check(logic_entrance)
                     entry_name = _REGION_ENTRY_STATUES.get(region)
                     if entry_name and self._bird_statue_snapshot is not None:
                         if not self._bird_statue_snapshot.get(entry_name, False):
                             self._bird_statue_snapshot[entry_name] = True
+                            # The entry statue is enabled for the player without a touch
+                            # event, so report its check here or it would never fire.
+                            self._report_bird_statue_check(entry_name)
                             logger.info(
                                 f"[BirdStatue] Auto-enabled entry statue: {entry_name} "
                                 f"(first visit to {region})"
@@ -4377,6 +4451,11 @@ class SSHDContext(CommonContext):
                 # Goddess chests use vanilla scene flags instead of custom flags
                 if self.goddess_chest_scene_flags:
                     await self.check_goddess_chest_flags()
+
+                # Decoupled goddess cubes are their own locations; striking one
+                # sets its vanilla storyflag, which we read back via the game.
+                if self.goddess_cube_story_flags:
+                    await self.check_goddess_cube_flags()
                 
                 # Boss fight rewards (HeartCo actors) and Demise defeat don't
                 # set custom sceneflags, so monitor their vanilla flags directly.
@@ -4743,9 +4822,9 @@ class SSHDContext(CommonContext):
             # Read header (8 bytes) + first entry flag_id (2 bytes)
             header = self.memory.pm.read_bytes(addr, 10)
 
-            # count (u16 at offset 4) must be <= 512
+            # count (u16 at offset 4) must be <= AP_ITEM_TABLE_MAX (1536)
             count = int.from_bytes(header[4:6], 'little')
-            if count > 512:
+            if count > 1536:
                 return False
 
             # _pad (u16 at offset 6) must be 0
@@ -4754,11 +4833,12 @@ class SSHDContext(CommonContext):
                 return False
 
             # First entry flag_id: if count==0, should be 0xFFFF (uninit);
-            # if count>0, should be a valid id (< 1024) or 0xFFFF.
+            # if count>0, should be a valid id (< 2048: group 0 is < 1024, the
+            # extended group 1 pool for pots/pumpkins/barrels is 0x400-0x7FF) or 0xFFFF.
             flag0 = int.from_bytes(header[8:10], 'little')
             if count == 0 and flag0 != 0xFFFF:
                 return False
-            if count > 0 and flag0 > 1023 and flag0 != 0xFFFF:
+            if count > 0 and flag0 > 2047 and flag0 != 0xFFFF:
                 return False
 
             # Strongest check: AP_CHECK_STATS magic should be exactly 12 bytes
@@ -4913,7 +4993,7 @@ class SSHDContext(CommonContext):
           offset 0: magic [u8; 4] = "IT\\x00\\x01"
           offset 4: count (u16)
           offset 6: _pad (u16)
-          offset 8: entries[0..512], each 98 bytes:
+          offset 8: entries[0..1536], each 98 bytes:
             flag_id (u16) + item_name ([u16; 32] = 64 bytes) + player_name ([u16; 16] = 32 bytes)
         
         IMPORTANT: Entries are written BEFORE count to avoid a race condition.
@@ -4959,7 +5039,7 @@ class SSHDContext(CommonContext):
                 entry = struct.pack('<H', flag_id) + item_name_bytes + player_name_bytes
                 entries.append(entry)
             
-            count = min(len(entries), 512)
+            count = min(len(entries), 1536)  # must match AP_ITEM_TABLE_MAX in item.rs / ap-ipc
             
             # Write entries FIRST (offset +8, each 98 bytes)
             # This must happen before writing count to avoid a race where the
@@ -5003,7 +5083,7 @@ class SSHDContext(CommonContext):
         
         try:
             table_addr = self.memory.base_address + self._ap_item_info_offset
-            count = min(len(self.ap_item_info), 512)
+            count = min(len(self.ap_item_info), 1536)  # must match AP_ITEM_TABLE_MAX
             count_data = struct.pack('<HH', count, 0)
             self.memory.pm.write_bytes(table_addr + 4, count_data, len(count_data))
             self._ap_item_info_last_refresh = now
@@ -5055,6 +5135,11 @@ class SSHDContext(CommonContext):
         if hasattr(self, '_prev_fa_tbox_snapshot'):
             self._prev_fa_tbox_snapshot = None
             self._prev_static_tbox_snapshot = None
+
+        # Reset goddess cube polling (storyflags are persistent, so a plain restart
+        # of the round-robin re-recovers anything already struck on the new file)
+        self._goddess_cube_cursor = 0
+        self._last_goddess_cube_poll_time = 0.0
 
         # Reset Beedle shop monitoring
         if hasattr(self, '_beedle_flags_initializing'):
@@ -5989,10 +6074,17 @@ class SSHDContext(CommonContext):
             flag_num = flag_id & 0x7F  # Lower 7 bits
             scene_idx_raw = (flag_id >> 7) & 0x03  # Bits 7-8
             flag_space_trigger = (flag_id >> 9) & 0x01  # Bit 9
+            # Bit 10 = extended group (pots): scene indexes 26-29, which are
+            # reserved padding in the save file's flag arrays (see item.rs).
+            group1 = (flag_id >> 10) & 0x01
             
-            # Transform scene index - these are the actual scene indices in the 26-scene array
-            scene_idx_map = {0: 6, 1: 13, 2: 16, 3: 19}
-            sceneindex = scene_idx_map.get(scene_idx_raw, 6)
+            # Transform scene index - these are the actual scene indices in the
+            # 256-index save file arrays (group 0: 6/13/16/19, group 1: 26-29)
+            if group1:
+                sceneindex = 26 + scene_idx_raw
+            else:
+                scene_idx_map = {0: 6, 1: 13, 2: 16, 3: 19}
+                sceneindex = scene_idx_map.get(scene_idx_raw, 6)
             
             # Calculate u16 position and bit position within that u16
             # Each u16 holds 16 flags (bits 0-15)
@@ -6342,6 +6434,77 @@ class SSHDContext(CommonContext):
                     f"({already_set} already set, stage={self.current_stage})"
                 )
 
+    async def check_goddess_cube_flags(self):
+        """
+        Detect goddess cube strikes (decouple_goddess_cubes_and_chests only).
+
+        When cubes are decoupled each cube is its own AP location holding a
+        randomized item. Striking a cube with a Skyward Strike sets that cube's
+        vanilla storyflag (227-256), so a location is checked as soon as its
+        storyflag reads back as set. The location_code -> storyflag mapping
+        comes from slot_data as goddess_cube_story_flags.
+
+        Like check_beedle_shop_storyflags, this asks the game for each flag
+        (request_flag_operation) instead of computing a byte offset locally,
+        since only the game's FlagMgr knows where a flag actually lives.
+
+        A flag that is already set counts as checked on every poll, which
+        recovers cubes struck while the client wasn't running or connected.
+        Locations the server already knows about are skipped without a read.
+
+        Every request blocks for about a game frame, so reading all 27 cubes
+        each tick would stall the 10 Hz update loop. Instead we poll at most
+        once per second and read only the next few not-yet-checked cubes,
+        walking round-robin through them. Detected cubes are never read again.
+        """
+        if not self.memory.connected or not self.memory.pm or not self.memory.base_address:
+            return
+        if not self.goddess_cube_story_flags:
+            return
+        # Flag manager isn't valid until a save file is loaded (no stage = no save).
+        if not self.current_stage:
+            return
+
+        now = time.time()
+        if now - self._last_goddess_cube_poll_time < 1.0:
+            return
+        self._last_goddess_cube_poll_time = now
+
+        pending = [
+            (location_code, storyflag)
+            for location_code, storyflag in sorted(self.goddess_cube_story_flags.items())
+            if location_code not in self.checked_locations and location_code not in self.sent_locations
+        ]
+        if not pending:
+            return
+
+        batch_size = 6
+        start = self._goddess_cube_cursor % len(pending)
+        batch = [pending[(start + i) % len(pending)] for i in range(min(batch_size, len(pending)))]
+        self._goddess_cube_cursor = (start + len(batch)) % len(pending)
+
+        for location_code, storyflag in batch:
+            try:
+                flag_value = await self.request_flag_operation(
+                    "storyflag", "get", storyflag, timeout=0.3
+                )
+            except Exception as e:
+                logger.debug(f"[GoddessCube] Error querying storyflag {storyflag}: {e}")
+                continue
+
+            if not flag_value:
+                continue
+
+            self.checked_locations.add(location_code)
+            loc_name = LOCATION_CODE_TO_NAME.get(location_code, str(location_code))
+            logger.debug(f"[GoddessCube] Location checked: {loc_name} (sf{storyflag})")
+            # Trigger sword/beetle upgrade if this is a local progressive item.
+            if self._location_has_own_sword(location_code):
+                self._update_sword_storyflags()
+            elif location_code in self.beetle_location_codes:
+                self._update_beetle_storyflags()
+            self.update_tracker_state()
+
     async def check_beedle_shop_storyflags(self):
         """
         Detect Beedle's Airshop purchases via the vanilla sold_out storyflags
@@ -6593,6 +6756,28 @@ class SSHDContext(CommonContext):
             return next(iter(scene_set))
         return None
 
+    def _report_bird_statue_check(self, statue_name: str) -> None:
+        """Report the "Bird Statues Give Items" check for a statue the player
+        has just legitimately activated.
+
+        The locations only exist on the server when the option is enabled, so
+        this does nothing unless the server lists the location for this slot.
+        """
+        location_name = BIRD_STATUE_LOCATION_NAMES.get(statue_name)
+        if not location_name:
+            return
+        location = LOCATION_TABLE.get(location_name)
+        if location is None:
+            return
+        code = location.code
+        server_locations = getattr(self, "server_locations", None)
+        if server_locations is not None and code not in server_locations:
+            return  # option off (or not connected yet): no such location
+        if code in self.checked_locations:
+            return
+        self.checked_locations.add(code)
+        logger.info(f"[BirdStatue] Checked {location_name}")
+
     def _enforce_bird_statue_flags(self) -> None:
         """Prevent the game's HD-progression system from auto-unlocking
         bird statues the player hasn't physically visited.
@@ -6659,6 +6844,7 @@ class SSHDContext(CommonContext):
 
                 if legitimate:
                     self._bird_statue_snapshot[name] = True
+                    self._report_bird_statue_check(name)
                     if name not in self._bird_statue_enforcement_log:
                         logger.info(f"[BirdStatue] {name} legitimately activated")
                         self._bird_statue_enforcement_log.add(name)

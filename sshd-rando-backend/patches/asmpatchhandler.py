@@ -10,6 +10,7 @@ from lz4.block import compress, decompress
 
 from constants.asmconstants import *
 from constants.itemconstants import (
+    ALL_BIRD_STATUE_UNLOCK_ITEMS,
     ITEM_ITEMFLAGS,
     ITEM_STORYFLAGS,
     ITEM_DUNGEONFLAGS,
@@ -46,7 +47,7 @@ from sslib.yaml import yaml_load, yaml_write
 # Only prints that start with "> " will be printed to the console on yuzu
 # This variable disables this functionality if desired (mainly just leftover
 # from when this would print *everything* to the console ^^')
-ASM_DEBUG_PRINT = False
+ASM_DEBUG_PRINT = True
 
 
 class ASMPatchHandler:
@@ -313,6 +314,14 @@ class ASMPatchHandler:
                 ASM_PATCHES_DIFFS_PATH / damage_multiplier_diff_file_path, world
             )
 
+            print_progress_text("Creating bird statue unlock patch")
+            bird_statue_unlock_diff_file_path = (
+                temp_dir_name / "bird-statue-unlock-diff.yaml"
+            )
+            self.create_bird_statue_unlock_patch(
+                ASM_PATCHES_DIFFS_PATH / bird_statue_unlock_diff_file_path, world
+            )
+
             print_progress_text("Applying asm patches")
             self.patch_asm(
                 world,
@@ -487,6 +496,7 @@ class ASMPatchHandler:
 
         # Set flags for random starting statues
         bird_statue_data = yaml_load(BIRD_STATUE_DATA_PATH)
+        bird_statue_unlock_flags: list[int] = []
         faron_starting_statue = world.get_entrance(
             "Faron Region Entrance -> Sealed Grounds Statue"
         ).connected_area.name
@@ -510,6 +520,20 @@ class ASMPatchHandler:
                     sceneflags[scene] = []
                 sceneflags[scene].append(flag)
 
+        # With "Bird Statues Need to be Unlocked", the landing map reads a separate
+        # unlock flag per statue (see create_bird_statue_unlock_patch). Only set the
+        # flags for the unlock items we actually start with (i.e. the ones chosen by
+        # "Start with a Bird Statue in Each Region"). No statue is forced open: the
+        # region's starting statue is not unlocked for free.
+        if world.setting("bird_statues_need_unlock") == "on":
+            unlock_item_names = list(ALL_BIRD_STATUE_UNLOCK_ITEMS)
+            unlocked_names: set[str] = set()
+            for item, count in world.starting_item_pool.items():
+                if count > 0 and item.name in unlock_item_names:
+                    unlocked_names.add(item.name)
+            bird_statue_unlock_flags = sorted(
+                unlock_item_names.index(name) for name in unlocked_names
+            )
         # Each section is delimited by 0xFFFF
         startflags_data = BytesIO()
 
@@ -525,6 +549,10 @@ class ASMPatchHandler:
                 startflags_data.write(
                     struct.pack("<BB", SCENE_NAME_TO_SCENE_INDEX[scene], flag)
                 )
+
+        # Bird Statue unlock flags live in scene 6's flag space
+        for flag in bird_statue_unlock_flags:
+            startflags_data.write(struct.pack("<BB", 6, flag))
 
         startflags_data.write(bytes.fromhex("FFFF"))
 
@@ -599,6 +627,13 @@ class ASMPatchHandler:
         skip_harp_playing = world.setting("skip_harp_playing").value_index()
         cutoff_game_over_music = world.setting("cutoff_game_over_music").value_index()
         archipelago_item_model = world.setting("archipelago_item_model").value_index()
+        goddess_chest_unlock = world.setting("goddess_chest_unlock")
+        if goddess_chest_unlock == "unlocked_after_goddess_sword":
+            goddess_chest_unlock_mode = 1
+        elif goddess_chest_unlock == "unlocked_from_start":
+            goddess_chest_unlock_mode = 2
+        else:
+            goddess_chest_unlock_mode = 0
 
         sky_keep_goal = world.get_dungeon("Sky Keep").goal_location
         if sky_keep_goal == None:
@@ -609,6 +644,17 @@ class ASMPatchHandler:
             sky_keep_beaten_sceneflag = 62
         elif sky_keep_goal.name.endswith("Farore"):
             sky_keep_beaten_sceneflag = 64
+
+        # Temple of Hylia door: when only 1 or 2 Triforce pieces are needed, the game opens the door
+        # itself (flag::handle_triforce_door_flag). 0 = nothing to do (vanilla all-3 or no requirement).
+        triforce_door_dynamic = 0
+        if world.setting("triforce_required") == "on":
+            try:
+                _door_pieces = int(str(world.setting("triforce_door_pieces")))
+            except (TypeError, ValueError):
+                _door_pieces = 3
+            if _door_pieces in (1, 2):
+                triforce_door_dynamic = _door_pieces
 
         init_rw_globals_dict = {
             0x712E54B6BC: [
@@ -622,7 +668,16 @@ class ASMPatchHandler:
                 sky_keep_beaten_sceneflag,
                 cutoff_game_over_music,
                 archipelago_item_model,
-            ],  # RANDOMIZER_SETTINGS
+                goddess_chest_unlock_mode,
+                1 if world.setting("bird_statues_need_unlock") == "on" else 0,
+                triforce_door_dynamic,
+                0,
+            ]
+            + list(struct.pack("<Q", int(getattr(world, "ap_seed", 0) or 0) & 0xFFFFFFFFFFFFFFFF))
+            + list(
+                (str(getattr(world, "ap_slot_name", "") or "")[:16] + "\0" * 17)[:17]
+                .encode("utf-16-le")
+            ),  # RANDOMIZER_SETTINGS (+8: ap_seed u64, +16: ap_slot_name [u16; 17])
             0x712E5FF020: [
                 0xFF,
                 0xFF,
@@ -673,6 +728,102 @@ class ASMPatchHandler:
             flags[2] & 0xFF, (flags[2] >> 8) & 0xFF,
         ]  # CREST_CUSTOM_FLAGS
 
+        # Decoupled Goddess Cubes: per-cube AP custom flag (u16, 0x3FF = none, so the
+        # game ignores the slot) and the item id handed out when the cube is struck.
+        # Padded to 32 entries each to match the GODDESS_CUBE_* statics.
+        cube_flags, cube_item_ids = getattr(
+            self, "goddess_cube_arrays", ([0x3FF] * 27, [0] * 27)
+        )
+        cube_flags = list(cube_flags) + [0x3FF] * (32 - len(cube_flags))
+        cube_item_ids = list(cube_item_ids) + [0] * (32 - len(cube_item_ids))
+        flag_bytes: list[int] = []
+        for cube_flag in cube_flags:
+            flag_bytes += [cube_flag & 0xFF, (cube_flag >> 8) & 0xFF]
+        # Addresses match GODDESS_CUBE_* in symbols.yaml. They sit next to
+        # RANDOMIZER_SETTINGS (a region these patches already write and the game
+        # already reads). The magic word is only written when at least one cube
+        # has an item, so the game ignores the tables on every other seed.
+        if any(cube_flag != 0x3FF for cube_flag in cube_flags):
+            init_rw_globals_dict[0x712E54B700] = list(b"CUBE")  # GODDESS_CUBE_MAGIC
+        init_rw_globals_dict[0x712E54B710] = flag_bytes  # GODDESS_CUBE_CUSTOM_FLAGS
+        init_rw_globals_dict[0x712E54B750] = [
+            byte
+            for item_id in cube_item_ids
+            for byte in (item_id & 0xFF, (item_id >> 8) & 0xFF)
+        ]  # GODDESS_CUBE_ITEM_IDS (32 x u16, little endian)
+
+        # Bird Statues Give Items: same layout as the Goddess Cube tables, placed right
+        # after them in the patcher-written config area (see symbols.yaml). The magic
+        # word is only written when at least one statue has an item.
+        statue_flags, statue_item_ids = getattr(
+            self, "bird_statue_arrays", ([0x3FF] * 26, [0] * 26)
+        )
+        statue_flags = list(statue_flags) + [0x3FF] * (32 - len(statue_flags))
+        statue_item_ids = list(statue_item_ids) + [0] * (32 - len(statue_item_ids))
+        statue_flag_bytes: list[int] = []
+        for statue_flag in statue_flags:
+            statue_flag_bytes += [statue_flag & 0xFF, (statue_flag >> 8) & 0xFF]
+        if any(statue_flag != 0x3FF for statue_flag in statue_flags):
+            init_rw_globals_dict[0x712E54B790] = list(b"BIRD")  # BIRD_STATUE_MAGIC
+        init_rw_globals_dict[0x712E54B7A0] = statue_flag_bytes  # BIRD_STATUE_CUSTOM_FLAGS
+        init_rw_globals_dict[0x712E54B7E0] = [
+            byte
+            for item_id in statue_item_ids
+            for byte in (item_id & 0xFF, (item_id >> 8) & 0xFF)
+        ]  # BIRD_STATUE_ITEM_IDS (32 x u16, little endian)
+
+        # Pumpkin Shuffle: position-keyed table directly after the Bird Statue tables
+        # (PUMPKIN_TABLE_MAGIC / _COUNT / _ENTRIES in symbols.yaml, one contiguous
+        # block). The pumpkin actor's params are wiped at runtime, so the game finds
+        # each pumpkin's item by its X/Z position instead. Nothing is written (magic
+        # stays zero, so the game ignores it) when no pumpkin has an item.
+        pumpkin_entries = getattr(self, "pumpkin_entries", [])
+        if pumpkin_entries:
+            # Must match PUMPKIN_TABLE_MAX in item.rs / symbols.yaml (12 bytes each)
+            assert len(pumpkin_entries) <= 96, "Too many pumpkin table entries"
+            pumpkin_table = bytearray(b"PUMP")
+            pumpkin_table += struct.pack("<I", len(pumpkin_entries))
+            for px_bits, pz_bits, item_word, custom_flag in pumpkin_entries:
+                pumpkin_table += struct.pack(
+                    "<IIHH", px_bits, pz_bits, item_word, custom_flag
+                )
+            init_rw_globals_dict[0x712E54B820] = list(pumpkin_table)  # PUMPKIN_TABLE_*
+
+        # Big Pot Shuffle: same position-keyed layout as the pumpkin table, placed right
+        # after it (BIG_POT_TABLE_MAGIC 0x712E54BCB0 / _COUNT 0x712E54BCB4 / _ENTRIES
+        # 0x712E54BCB8 in symbols.yaml, one contiguous block). All big pots have
+        # identical params, so the game finds each pot's item by its X/Z position.
+        # Nothing is written (magic stays zero) when no big pot has an item.
+        big_pot_entries = getattr(self, "big_pot_entries", [])
+        if big_pot_entries:
+            # Must match BIG_POT_TABLE_MAX in item.rs / symbols.yaml (12 bytes each)
+            assert len(big_pot_entries) <= 16, "Too many big pot table entries"
+            big_pot_table = bytearray(b"BGPT")  # 0x54504742 little endian
+            big_pot_table += struct.pack("<I", len(big_pot_entries))
+            for px_bits, pz_bits, item_word, custom_flag in big_pot_entries:
+                big_pot_table += struct.pack(
+                    "<IIHH", px_bits, pz_bits, item_word, custom_flag
+                )
+            init_rw_globals_dict[0x712E54BCB0] = list(big_pot_table)  # BIG_POT_TABLE_*
+
+        # Barrel Shuffle: same position-keyed layout as the pumpkin table, at
+        # BARREL_TABLE_MAGIC 0x712E54E000 / _COUNT 0x712E54E004 / _ENTRIES 0x712E54E008
+        # in symbols.yaml (after RANDOM_MUSIC_DATA; the gap after the big pot table is
+        # too small). Barrel params are unusable, so the game finds each barrel's item
+        # by its X/Z position. Nothing is written (magic stays zero) when no barrel has
+        # an item.
+        barrel_entries = getattr(self, "barrel_entries", [])
+        if barrel_entries:
+            # Must match BARREL_TABLE_MAX in item.rs / symbols.yaml (12 bytes each)
+            assert len(barrel_entries) <= 192, "Too many barrel table entries"
+            barrel_table = bytearray(b"RBRL")  # 0x4C524252 little endian
+            barrel_table += struct.pack("<I", len(barrel_entries))
+            for px_bits, pz_bits, item_word, custom_flag in barrel_entries:
+                barrel_table += struct.pack(
+                    "<IIHH", px_bits, pz_bits, item_word, custom_flag
+                )
+            init_rw_globals_dict[0x712E54E000] = list(barrel_table)  # BARREL_TABLE_*
+
         # Apply additional symbol initializers provided by stage patch setup.
         global_symbol_values: dict[str, int] = getattr(self, "global_symbol_values", {})
         if "EXTRA_DEMISE_COUNT" in global_symbol_values:
@@ -701,6 +852,91 @@ class ASMPatchHandler:
         }
 
         yaml_write(output_path, damage_multiplier_dict)
+
+    # Bird Statue landing map condition tables (rodata, addresses in the same
+    # address space as the .offset values in the asm patches). Each table holds
+    # `count` first-half entries (the flag set when the statue is visited) followed
+    # by `count` second-half entries (the "HD progression" flag). Entries are
+    # 8 bytes: u32 type (0 = scene flag, 1 = story flag) then the value, which is
+    # (u16 scene, u16 flag) for scene flags and the flag number for story flags.
+    # The landing map shows a statue if either half's flag is set.
+    #
+    # Every surface statue has an unlock item, including the region entrance
+    # statues (Sealed Grounds, Volcano Entrance, Lanayru Mine Entry). Only the two
+    # inner dungeon statues are left alone. Values are each statue's table index.
+    BIRD_STATUE_MAP_TABLES = (
+        (
+            0x71013A2434,  # Faron
+            10,
+            {
+                "Behind the Temple Statue": 0,
+                "Faron Woods Entry Statue": 1,
+                "In the Woods Statue": 2,
+                "Viewing Platform Statue": 3,
+                "The Great Tree Statue": 4,
+                "Forest Temple Statue": 5,
+                "Deep Woods Statue": 6,
+                "Lake Floria Statue": 7,
+                "Floria Waterfall Statue": 8,
+                "Sealed Grounds Statue": 9,
+            },
+        ),
+        (
+            0x71013A24D4,  # Eldin
+            6,
+            {
+                "Volcano Entrance Statue": 0,
+                "Volcano East Statue": 1,
+                "Volcano Ascent Statue": 2,
+                "Temple Entrance Statue": 3,
+            },
+        ),
+        (
+            0x71013A2534,  # Lanayru
+            12,
+            {
+                "Lanayru Mine Entry Statue": 0,
+                "Desert Entrance Statue": 1,
+                "West Desert Statue": 2,
+                "North Desert Statue": 3,
+                "Stone Cache Statue": 4,
+                "Desert Gorge Statue": 5,
+                "Temple of Time Statue": 6,
+                "Ancient Harbour Statue": 7,
+                "Skipper's Retreat Statue": 8,
+                "Shipyard Statue": 9,
+                "Pirate Stronghold Statue": 10,
+                "Lanayru Gorge Statue": 11,
+            },
+        ),
+    )
+
+    def create_bird_statue_unlock_patch(self, output_path: Path, world: World):
+        # Only needed when statues have to be unlocked. Point each gated statue's
+        # landing map condition at its own unlock flag (scene 6, flag = the item's
+        # index in ALL_BIRD_STATUE_UNLOCK_ITEMS, which the item sets when it is
+        # collected) and disable its "HD progression" flag so nothing else can
+        # make it droppable. Touching a statue then only lets you fly up from it.
+        if world.setting("bird_statues_need_unlock") != "on":
+            return
+
+        unlock_item_names = list(ALL_BIRD_STATUE_UNLOCK_ITEMS)
+        patch: dict[int, list[int]] = {}
+
+        for table_address, count, statues in self.BIRD_STATUE_MAP_TABLES:
+            for statue_area, index in statues.items():
+                flag = unlock_item_names.index(f"{statue_area} Unlock")
+
+                # First half: type 0 (scene flag), scene 6, unlock flag
+                patch[table_address + index * 8] = list(
+                    struct.pack("<IHH", 0, 6, flag)
+                )
+                # Second half: type 1 (story flag) with the invalid flag 0xFFFF
+                patch[table_address + (index + count) * 8] = list(
+                    struct.pack("<II", 1, 0xFFFF)
+                )
+
+        yaml_write(output_path, patch)
 
     def add_shop_data(
         self,

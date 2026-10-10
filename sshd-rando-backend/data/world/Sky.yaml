@@ -31,17 +31,17 @@
 - name: Faron Pillar
   hint_region: None
   exits:
-    Faron Region Entrance: Nothing
-    Sealed Grounds Statue: "'Unlock_Sealed_Grounds_Statue'"
-    Behind the Temple Statue: "'Unlock_Behind_the_Temple_Statue'"
-    Faron Woods Entry Statue: "'Unlock_Faron_Woods_Entry_Statue'"
-    Viewing Platform Statue:  "'Unlock_Viewing_Platform_Statue'"
-    In the Woods Statue: "'Unlock_In_the_Woods_Statue'"
-    Deep Woods Statue: "'Unlock_Deep_Woods_Statue'"
-    Forest Temple Statue: "'Unlock_Forest_Temple_Statue'"
-    The Great Tree Statue: "'Unlock_The_Great_Tree_Statue'"
-    Lake Floria Statue: "'Unlock_Lake_Floria_Statue'"
-    Floria Waterfall Statue: "'Unlock_Floria_Waterfall_Statue'"
+    Faron Region Entrance: bird_statues_need_unlock == off
+    Sealed Grounds Statue: "('Unlock_Sealed_Grounds_Statue' and bird_statues_need_unlock == off) or (Sealed_Grounds_Statue_Unlock and bird_statues_need_unlock == on)"
+    Behind the Temple Statue: "('Unlock_Behind_the_Temple_Statue' and bird_statues_need_unlock == off) or (Behind_the_Temple_Statue_Unlock and bird_statues_need_unlock == on)"
+    Faron Woods Entry Statue: "('Unlock_Faron_Woods_Entry_Statue' and bird_statues_need_unlock == off) or (Faron_Woods_Entry_Statue_Unlock and bird_statues_need_unlock == on)"
+    Viewing Platform Statue: "('Unlock_Viewing_Platform_Statue' and bird_statues_need_unlock == off) or (Viewing_Platform_Statue_Unlock and bird_statues_need_unlock == on)"
+    In the Woods Statue: "('Unlock_In_the_Woods_Statue' and bird_statues_need_unlock == off) or (In_the_Woods_Statue_Unlock and bird_statues_need_unlock == on)"
+    Deep Woods Statue: "('Unlock_Deep_Woods_Statue' and bird_statues_need_unlock == off) or (Deep_Woods_Statue_Unlock and bird_statues_need_unlock == on)"
+    Forest Temple Statue: "('Unlock_Forest_Temple_Statue' and bird_statues_need_unlock == off) or (Forest_Temple_Statue_Unlock and bird_statues_need_unlock == on)"
+    The Great Tree Statue: "('Unlock_The_Great_Tree_Statue' and bird_statues_need_unlock == off) or (The_Great_Tree_Statue_Unlock and bird_statues_need_unlock == on)"
+    Lake Floria Statue: "('Unlock_Lake_Floria_Statue' and bird_statues_need_unlock == off) or (Lake_Floria_Statue_Unlock and bird_statues_need_unlock == on)"
+    Floria Waterfall Statue: "('Unlock_Floria_Waterfall_Statue' and bird_statues_need_unlock == off) or (Floria_Waterfall_Statue_Unlock and bird_statues_need_unlock == on)"
 
 - name: Faron Region Entrance
   hint_region: None
@@ -51,11 +51,11 @@
 - name: Eldin Pillar
   hint_region: None
   exits:
-    Eldin Region Entrance: Nothing
-    Volcano Entrance Statue: "'Unlock_Volcano_Entrance_Statue'"
-    Volcano East Statue: "'Unlock_Volcano_East_Statue'"
-    Volcano Ascent Statue: "'Unlock_Volcano_Ascent_Statue'"
-    Temple Entrance Statue: "'Unlock_Temple_Entrance_Statue'"
+    Eldin Region Entrance: bird_statues_need_unlock == off
+    Volcano Entrance Statue: "('Unlock_Volcano_Entrance_Statue' and bird_statues_need_unlock == off) or (Volcano_Entrance_Statue_Unlock and bird_statues_need_unlock == on)"
+    Volcano East Statue: "('Unlock_Volcano_East_Statue' and bird_statues_need_unlock == off) or (Volcano_East_Statue_Unlock and bird_statues_need_unlock == on)"
+    Volcano Ascent Statue: "('Unlock_Volcano_Ascent_Statue' and bird_statues_need_unlock == off) or (Volcano_Ascent_Statue_Unlock and bird_statues_need_unlock == on)"
+    Temple Entrance Statue: "('Unlock_Temple_Entrance_Statue' and bird_statues_need_unlock == off) or (Temple_Entrance_Statue_Unlock and bird_statues_need_unlock == on)"
     Inside the Volcano Statue: "'Unlock_Inside_the_Volcano_Statue'"
     Inside the Fire Sanctuary Statue: "'Unlock_Inside_the_Fire_Sanctuary_Statue'"
 
@@ -67,19 +67,19 @@
 - name: Lanayru Pillar
   hint_region: None
   exits:
-    Lanayru Region Entrance: Nothing
-    Lanayru Mine Entry Statue: "'Unlock_Lanayru_Mine_Entry_Statue'"
-    Desert Entrance Statue: "'Unlock_Desert_Entrance_Statue'"
-    West Desert Statue: "'Unlock_West_Desert_Statue'"
-    Desert Gorge Statue: "'Unlock_Desert_Gorge_Statue'"
-    Temple of Time Statue: "'Unlock_Temple_of_Time_Statue'"
-    North Desert Statue: "'Unlock_North_Desert_Statue'"
-    Stone Cache Statue: "'Unlock_Stone_Cache_Statue'"
-    Ancient Harbour Statue: "'Unlock_Ancient_Harbour_Statue'"
-    Skipper's Retreat Statue: "'Unlock_Skipper's_Retreat_Statue'"
-    Shipyard Statue: "'Unlock_Shipyard_Statue'"
-    Pirate Stronghold Statue: "'Unlock_Pirate_Stronghold_Statue'"
-    Lanayru Gorge Statue: "'Unlock_Lanayru_Gorge_Statue'"
+    Lanayru Region Entrance: bird_statues_need_unlock == off
+    Lanayru Mine Entry Statue: "('Unlock_Lanayru_Mine_Entry_Statue' and bird_statues_need_unlock == off) or (Lanayru_Mine_Entry_Statue_Unlock and bird_statues_need_unlock == on)"
+    Desert Entrance Statue: "('Unlock_Desert_Entrance_Statue' and bird_statues_need_unlock == off) or (Desert_Entrance_Statue_Unlock and bird_statues_need_unlock == on)"
+    West Desert Statue: "('Unlock_West_Desert_Statue' and bird_statues_need_unlock == off) or (West_Desert_Statue_Unlock and bird_statues_need_unlock == on)"
+    Desert Gorge Statue: "('Unlock_Desert_Gorge_Statue' and bird_statues_need_unlock == off) or (Desert_Gorge_Statue_Unlock and bird_statues_need_unlock == on)"
+    Temple of Time Statue: "('Unlock_Temple_of_Time_Statue' and bird_statues_need_unlock == off) or (Temple_of_Time_Statue_Unlock and bird_statues_need_unlock == on)"
+    North Desert Statue: "('Unlock_North_Desert_Statue' and bird_statues_need_unlock == off) or (North_Desert_Statue_Unlock and bird_statues_need_unlock == on)"
+    Stone Cache Statue: "('Unlock_Stone_Cache_Statue' and bird_statues_need_unlock == off) or (Stone_Cache_Statue_Unlock and bird_statues_need_unlock == on)"
+    Ancient Harbour Statue: "('Unlock_Ancient_Harbour_Statue' and bird_statues_need_unlock == off) or (Ancient_Harbour_Statue_Unlock and bird_statues_need_unlock == on)"
+    Skipper's Retreat Statue: "('Unlock_Skippers_Retreat_Statue' and bird_statues_need_unlock == off) or (Skippers_Retreat_Statue_Unlock and bird_statues_need_unlock == on)"
+    Shipyard Statue: "('Unlock_Shipyard_Statue' and bird_statues_need_unlock == off) or (Shipyard_Statue_Unlock and bird_statues_need_unlock == on)"
+    Pirate Stronghold Statue: "('Unlock_Pirate_Stronghold_Statue' and bird_statues_need_unlock == off) or (Pirate_Stronghold_Statue_Unlock and bird_statues_need_unlock == on)"
+    Lanayru Gorge Statue: "('Unlock_Lanayru_Gorge_Statue' and bird_statues_need_unlock == off) or (Lanayru_Gorge_Statue_Unlock and bird_statues_need_unlock == on)"
 
 - name: Lanayru Region Entrance
   hint_region: None
@@ -153,6 +153,16 @@
     Lumpy Pumpkin Main West Door Exterior: Nothing # Open the door.
     The Sky: Day or natural_night_connections == off
   locations:
+    Lumpy Pumpkin Exterior - Pot 1: Nothing
+    Lumpy Pumpkin Exterior - Pot 2: Nothing
+    Lumpy Pumpkin Exterior - Pot 3: Nothing
+    Lumpy Pumpkin Exterior - Pot 4: Nothing
+    Lumpy Pumpkin Exterior - Pot 5: Nothing
+    Lumpy Pumpkin Exterior - Pot 6: Nothing
+    Lumpy Pumpkin Exterior - Pot 7: Nothing
+    Lumpy Pumpkin Exterior - Big Pot 1: Nothing
+    Lumpy Pumpkin Exterior - Big Pot 2: Nothing
+    Lumpy Pumpkin Exterior - Big Pot 3: Nothing
     Lumpy Pumpkin - Slingshot Left Porch Lantern: Slingshot
     Lumpy Pumpkin - Slingshot Right Porch Lantern: Slingshot
     Lumpy Pumpkin - Slingshot Lantern Left of Main Door: Slingshot
@@ -164,6 +174,41 @@
     Lumpy Pumpkin - Deliver Mogma to Kina: Day and 'Pick_up_Guld'
     Lumpy Pumpkin - Gossip Stone Treasure near Back Door: (Goddess's_Harp and Ballad_of_the_Goddess) or gossip_stone_treasure_shuffle == off
     Lumpy Pumpkin - Gossip Stone Hint near Back Door: (Goddess's_Harp and Ballad_of_the_Goddess) or gossip_stone_treasure_shuffle == off
+    Lumpy Pumpkin Exterior - Pumpkin 1: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 2: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 3: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 4: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 5: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 6: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 7: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 8: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 9: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 10: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 11: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 12: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 13: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 14: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 15: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 16: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 17: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 18: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 19: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 20: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 21: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 22: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 23: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 24: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 25: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 26: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 27: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 28: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 29: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 30: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 31: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 32: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 33: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 34: Nothing
+    Lumpy Pumpkin Exterior - Pumpkin 35: Nothing
 
 - name: Lumpy Pumpkin Back Door Exterior
   allowed_time_of_day: All
@@ -324,6 +369,26 @@
   exits:
     Inside the Thunderhead: Day or natural_night_connections == off
   locations:
+    Bug Heaven - Pot 1: Nothing
+    Bug Heaven - Pot 2: Nothing
+    Bug Heaven - Pot 3: Nothing
+    Bug Heaven - Pot 4: Nothing
+    Bug Heaven - Pot 5: Nothing
+    Bug Heaven - Pot 6: Nothing
+    Bug Heaven - Pot 7: Nothing
+    Bug Heaven - Pot 8: Nothing
+    Bug Heaven - Pot 9: Nothing
+    Bug Heaven - Pot 10: Nothing
+    Bug Heaven - Pot 11: Nothing
+    Bug Heaven - Pot 12: Nothing
+    Bug Heaven - Pot 13: Nothing
+    Bug Heaven - Big Pot 1: Nothing
+    Bug Heaven - Big Pot 2: Nothing
+    Bug Heaven - Big Pot 3: Nothing
+    Bug Heaven - Big Pot 4: Nothing
+    Bug Heaven - Big Pot 5: Nothing
+    Bug Heaven - Big Pot 6: Nothing
+    Bug Heaven - Big Pot 7: Nothing
     Bug Heaven - 10 Bugs in 3 Minutes: (Bug_Net and (minigame_difficulty == vanilla or minigame_difficulty == hard)) or Big_Bug_Net
     Bug Heaven - Goddess Chest: Volcano_Summit_Goddess_Cube_at_Summit_Waterfall
     Bug Heaven - Stamina Fruit near Start: Nothing # Collect the freestanding item.

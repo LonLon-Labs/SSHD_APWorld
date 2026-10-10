@@ -41,6 +41,12 @@ from worlds.LauncherComponents import (
 )
 
 from .Items import ITEM_TABLE
+
+# Locations whose in-game item carrier can only hold item ids 0-255, so the Bird
+# Statue unlock items (ids 300-325) must not be placed there. The Lumpy Pumpkin
+# chandelier reads its item id with a byte load in asm and has no spare
+# instruction slot to widen it (see stagepatchhandler.py patch_chandelier_item).
+EXTENDED_ITEM_ID_UNSUPPORTED_LOCATIONS = {"Lumpy Pumpkin - Item on Chandelier"}
 from .Locations import LOCATION_TABLE
 from .SSHD_Options import SSHDOptions, sshd_option_groups
 from .Rules import set_rules, set_completion_condition
@@ -90,7 +96,7 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
     temp_deps_path = Path(SSHD_RANDO_TEMP_DIR) / "_bundled_deps"
     
     # Extract sshd-rando-backend AND _bundled_deps from the zip
-    _EXTRACT_PREFIXES = ('sshd/sshd-rando-backend/', 'sshd/_bundled_deps/')
+    _EXTRACT_PREFIXES = ('sshd/sshd-rando-backend/', 'sshd/_bundled_deps/', 'sshd/_bundled_bin/')
     with zipfile.ZipFile(apworld_path, 'r') as zip_file:
         for file_info in zip_file.filelist:
             if not any(file_info.filename.startswith(p) for p in _EXTRACT_PREFIXES):
@@ -98,7 +104,7 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
             # Remove 'sshd/' prefix to get relative path
             relative_path = file_info.filename[5:]  # Remove 'sshd/'
             # Skip bare directory entries
-            if relative_path.rstrip('/') in ('sshd-rando-backend', '_bundled_deps'):
+            if relative_path.rstrip('/') in ('sshd-rando-backend', '_bundled_deps', '_bundled_bin'):
                 continue
             
             target_path = Path(SSHD_RANDO_TEMP_DIR) / relative_path
@@ -111,6 +117,16 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
                 with zip_file.open(file_info.filename) as source:
                     with open(target_path, 'wb') as target:
                         target.write(source.read())
+                # Preserve the executable bit for bundled Rust client
+                # binaries on POSIX — zipfile.extract() doesn't restore
+                # permission bits on its own, and without +x a Linux/macOS
+                # binary would fail to launch even though it's present.
+                if relative_path.startswith('_bundled_bin/') and sys.platform != "win32":
+                    try:
+                        current_mode = os.stat(target_path).st_mode
+                        os.chmod(target_path, current_mode | 0o111)
+                    except OSError:
+                        pass
     
     # Add sshd-rando-backend at highest priority.
     sys.path.insert(0, str(temp_backend_path))
@@ -135,6 +151,7 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
     importlib.invalidate_caches()
 
     SSHD_RANDO_AVAILABLE = True
+    RUST_CLIENT_BIN_DIR = Path(SSHD_RANDO_TEMP_DIR) / "_bundled_bin"
     
     # Register cleanup function to delete temp directory on exit
     def cleanup_temp_dir():
@@ -143,11 +160,15 @@ if hasattr(sys.modules[__name__], '__loader__') and hasattr(sys.modules[__name__
     atexit.register(cleanup_temp_dir)
     
 elif SSHD_RANDO_PATH.exists():
-    # Running from filesystem
+    # Running from filesystem (dev mode) — look for a locally-built Rust
+    # client under sshd-ap-client/dist/ (see build_ap_client.py) rather
+    # than anything extracted from a zip.
     sys.path.insert(0, str(SSHD_RANDO_PATH))
     SSHD_RANDO_AVAILABLE = True
+    RUST_CLIENT_BIN_DIR = Path(__file__).parent / "sshd-ap-client" / "dist"
 else:
     SSHD_RANDO_AVAILABLE = False
+    RUST_CLIENT_BIN_DIR = None
 
 # Version information
 AP_VERSION = [0, 6, 5]
@@ -254,6 +275,115 @@ components.append(
 icon_paths["Skyward Sword HD"] = "ap:worlds.sshd/assets/icon.png"
 
 
+def _rust_platform_tag() -> str:
+    """Matches the tag convention build_ap_client.py uses when staging a
+    binary, so this always looks in the right dist/<tag>/ subdirectory."""
+    import platform as _platform
+    system = _platform.system().lower()
+    machine = _platform.machine().lower()
+    if system == "windows":
+        return "win_amd64"
+    if system == "linux":
+        return "manylinux2014_x86_64"
+    if system == "darwin":
+        return "macosx_11_0_arm64" if machine in ("arm64", "aarch64") else "macosx_10_9_x86_64"
+    return f"{system}_{machine}"
+
+
+def _find_rust_client_binary():
+    """Locates the bundled Rust client binary for the current platform, if
+    one was built and bundled (see build_ap_client.py / build_apworld.py).
+    Returns None if not available — callers should fall back to the Python
+    client in that case."""
+    if RUST_CLIENT_BIN_DIR is None or not RUST_CLIENT_BIN_DIR.exists():
+        return None
+    binary_name = "ap-client.exe" if sys.platform == "win32" else "ap-client"
+    candidate = RUST_CLIENT_BIN_DIR / _rust_platform_tag() / binary_name
+    return candidate if candidate.exists() else None
+
+
+def _run_rust_client_process(*args: str) -> None:
+    """Launches the bundled Rust client binary as a subprocess, translating
+    Archipelago's standard client args into what it expects.
+
+    NOTE: on Linux/macOS, a launcher-spawned process typically has no
+    visible terminal, so the Rust client's interactive "Enter slot name:"
+    prompt (when no slot name is supplied) won't be visible. This works
+    cleanly on Windows (a console is auto-allocated for a console-subsystem
+    child process) but is a known gap elsewhere until this launches with an
+    explicit terminal emulator per-platform, or the Rust client grows a way
+    to take the slot name as a flag from a generated connection file.
+    """
+    client_args = list(args) if args else []
+
+    # Patch-only mode (.apsshd) isn't something the Rust client does yet —
+    # fall back to the Python installer for that specific case.
+    patch_file = next((a for a in client_args if isinstance(a, str) and a.lower().endswith(".apsshd")), None)
+    if patch_file:
+        print("[SSHD Launcher] .apsshd patch install isn't implemented in the Rust client yet;")
+        print("[SSHD Launcher] falling back to the Python client for patch installation.")
+        _run_client_process(*args)
+        return
+
+    binary = _find_rust_client_binary()
+    if binary is None:
+        print("[SSHD Launcher] No Rust client binary bundled for this platform;")
+        print("[SSHD Launcher] falling back to the Python client.")
+        _run_client_process(*args)
+        return
+
+    # Archipelago typically passes a bare "server:port" positional arg (from
+    # a .archipelago connection file or the launcher's "Connect" dialog).
+    # Translate that into the Rust client's --connect flag; slot
+    # name/password aren't provided this way today, so the Rust client
+    # prompts for the slot name interactively in its own console window.
+    connect_arg = next((a for a in client_args if isinstance(a, str) and not a.lower().endswith(".apsshd")), None)
+    cmd = [str(binary)]
+    if connect_arg:
+        cmd += ["--connect", connect_arg]
+
+    print(f"[SSHD Launcher] Launching Rust client: {' '.join(cmd)}")
+    try:
+        popen_kwargs = {}
+        if sys.platform == "win32":
+            # Guarantee a dedicated console window rather than relying on
+            # Windows' default console-allocation heuristics.
+            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+        subprocess.Popen(cmd, **popen_kwargs)
+    except OSError as e:
+        print(f"[SSHD Launcher] Failed to launch Rust client ({e}); falling back to the Python client.")
+        _run_client_process(*args)
+
+
+def run_rust_client(*args: str) -> None:
+    """
+    Launch the experimental Rust SSHD client, if one was bundled for this
+    platform. See sshd-ap-client/README.md for what it does and doesn't
+    support yet — this is NOT a full replacement for the Python client (no
+    UI, missing several location-check mechanisms, hints, shop logic).
+    """
+    print(f"Running SSHD Rust Client (experimental) with args: {args}")
+    try:
+        launch_subprocess(_run_rust_client_process, name="SSHDRustClient", args=tuple(args))
+    except Exception:
+        _run_rust_client_process(*args)
+
+
+# Register the experimental Rust client launcher as a SEPARATE entry so the
+# existing, more feature-complete Python client stays the default. Falls
+# back to the Python client automatically if no Rust binary was bundled for
+# this platform (see _run_rust_client_process).
+components.append(
+    Component(
+        "Skyward Sword HD Client (Rust, experimental)",
+        func=run_rust_client,
+        component_type=Type.CLIENT,
+        file_identifier=SuffixIdentifier(".apsshd"),
+        icon="Skyward Sword HD"
+    )
+)
+
+
 class SSHDWeb(WebWorld):
     """
     Web interface for SSHD Archipelago.
@@ -314,6 +444,8 @@ PROGRESSIVE_STAGE_ITEMS: set[str] = {
     "Big Wallet", "Giant Wallet", "Tycoon Wallet",
     # Pouch stages (Progressive Pouch covers these)
     "Pouch Expansion",
+    # Loftwing stages (Progressive Loftwing covers these: Loftwing -> Spiral Charge)
+    "Spiral Charge",
 }
 
 
@@ -401,7 +533,7 @@ class SSHDWorld(World):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.created_regions: list[str] = []
-    
+
     # Per-dungeon "require" toggles: AP option name for each dungeon.
     _REQUIRE_DUNGEON_OPTIONS: ClassVar[dict] = {
         "Skyview Temple": "require_skyview_temple",
@@ -432,7 +564,7 @@ class SSHDWorld(World):
         if chosen:
             return "Sky Keep" in chosen
         return bool(self.options.dungeons_include_sky_keep.value)
-
+    
     def get_resolved_setting(self, setting_name: str, default: str = None) -> str:
         """
         Get a resolved setting value from sshd-rando.
@@ -463,10 +595,15 @@ class SSHDWorld(World):
         # Shuffles
         "gratitude_crystal_shuffle": ("gratitude_crystal_shuffle", "toggle", None),
         "stamina_fruit_shuffle": ("stamina_fruit_shuffle", "toggle", None),
+        "pot_shuffle": ("pot_shuffle", "toggle", None),
+        "pumpkin_shuffle": ("pumpkin_shuffle", "toggle", None),
+        "barrel_shuffle": ("barrel_shuffle", "toggle", None),
         "npc_closet_shuffle": ("npc_closet_shuffle", "toggle_custom", {"randomized": 1, "vanilla": 0}),
         "hidden_item_shuffle": ("hidden_item_shuffle", "toggle", None),
         "rupee_shuffle": ("rupee_shuffle", "choice", {"vanilla": 0, "beginner": 1, "intermediate": 2, "advanced": 3}),
         "goddess_chest_shuffle": ("goddess_chest_shuffle", "toggle", None),
+        "goddess_chest_unlock": ("goddess_chest_unlock", "choice", {"locked_until_struck": 0, "unlocked_after_goddess_sword": 1, "unlocked_from_start": 2}),
+        "decouple_goddess_cubes_and_chests": ("decouple_goddess_cubes_and_chests", "toggle", None),
         "trial_treasure_shuffle": ("trial_treasure_shuffle", "range", None),
         "tadtone_shuffle": ("tadtone_shuffle", "toggle", None),
         "gossip_stone_treasure_shuffle": ("gossip_stone_treasure_shuffle", "toggle", None),
@@ -518,6 +655,9 @@ class SSHDWorld(World):
         "unlock_all_groosenator_destinations": ("unlock_all_groosenator_destinations", "toggle", None),
         "allow_flying_at_night": ("allow_flying_at_night", "toggle", None),
         "randomize_loftwing": ("randomize_loftwing", "choice", {"off": 0, "on": 1, "random": 2}),
+        "bird_statues_give_items": ("bird_statues_give_items", "toggle", None),
+        "bird_statues_need_unlock": ("bird_statues_need_unlock", "toggle", None),
+        "start_with_region_bird_statues": ("start_with_region_bird_statues", "toggle", None),
         "natural_night_connections": ("natural_night_connections", "toggle", None),
         "dungeons_include_sky_keep": ("dungeons_include_sky_keep", "toggle", None),
         "require_skyview_temple": ("require_skyview_temple", "toggle", None),
@@ -957,6 +1097,9 @@ class SSHDWorld(World):
             "Gratitude Crystals":    "gratitude_crystal_shuffle",
             "Stamina Fruits":        "stamina_fruit_shuffle",
             "Hidden Items":          "hidden_item_shuffle",
+            "Pots":                  "pot_shuffle",
+            "Pumpkins":              "pumpkin_shuffle",
+            "Barrels":               "barrel_shuffle",
             "Goddess Chests":        "goddess_chest_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",
@@ -1003,8 +1146,10 @@ class SSHDWorld(World):
 
         # Goddess Cubes are dummy logic items (oarc: null) used internally by
         # sshd-rando to link cube-strike locations to sky Goddess Chests.
-        # They have no in-game model and must never be in the AP pool.
-        excluded.add("Goddess Cube")
+        # They have no in-game model and are only real AP locations when goddess
+        # cubes are decoupled from goddess chests.
+        if not self._goddess_cubes_decoupled():
+            excluded.add("Goddess Cube")
 
         # "Game Beatable" is the victory pseudo-location.  It must NOT
         # exist as a real AP location (with an int address) because:
@@ -1016,6 +1161,13 @@ class SSHDWorld(World):
         excluded.add("Game Beatable")
 
         return excluded
+
+    def _goddess_cubes_decoupled(self) -> bool:
+        """Whether goddess cubes are decoupled from goddess chests (cubes are item locations)."""
+        s = getattr(self, '_sshd_resolved_settings', {})
+        if s:
+            return s.get("decouple_goddess_cubes_and_chests", "off") == "on"
+        return bool(self.options.decouple_goddess_cubes_and_chests.value)
 
     def _create_basic_regions(self) -> None:
         """Fallback: create basic regions from Regions.py (old behavior)."""
@@ -1079,6 +1231,12 @@ class SSHDWorld(World):
                         data.code,
                         region
                     )
+                    if name in EXTENDED_ITEM_ID_UNSUPPORTED_LOCATIONS:
+                        # This location's item carrier can't hold item ids >= 256
+                        # (the Bird Statue unlock items), so never put one here.
+                        location.item_rule = lambda item, player=self.player: not (
+                            item.player == player and item.name.endswith(" Statue Unlock")
+                        )
                     region.locations.append(location)
 
         # Create a proper event-only location for Game Beatable
@@ -1203,6 +1361,9 @@ class SSHDWorld(World):
                         "Gratitude Crystals":    "gratitude_crystal_shuffle",
                         "Stamina Fruits":        "stamina_fruit_shuffle",
                         "Hidden Items":          "hidden_item_shuffle",
+                        "Pots":                  "pot_shuffle",
+                        "Pumpkins":              "pumpkin_shuffle",
+                        "Barrels":               "barrel_shuffle",
                         "Goddess Chests":        "goddess_chest_shuffle",
                         "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
                         "Underground Rupees":    "underground_rupee_shuffle",
@@ -1231,8 +1392,15 @@ class SSHDWorld(World):
                     except (ValueError, TypeError):
                         trial_treasure_num_early = 0
 
-                # Goddess Cubes are dummy logic items (oarc: null) — always exclude
-                excluded_loc_types.add("Goddess Cube")
+                # Goddess Cubes are dummy logic items (oarc: null) unless decoupled,
+                # in which case they are real locations holding randomized items
+                _cube_setting = (
+                    world.setting_map.settings.get("decouple_goddess_cubes_and_chests")
+                    if hasattr(world, 'setting_map') and world.setting_map
+                    else None
+                )
+                if _cube_setting is None or _cube_setting.value != "on":
+                    excluded_loc_types.add("Goddess Cube")
                 
                 if excluded_loc_types:
                     print(f"[__init__.py] Excluding location types from item pool: {sorted(excluded_loc_types)}")
@@ -1256,7 +1424,7 @@ class SSHDWorld(World):
                     name for name in ITEM_TABLE if "Goddess Cube" in name
                 )
                 if _type_specific_skip_items:
-                    print(f"[__init__.py] Will skip shuffle-specific items at excluded locations: {sorted(_type_specific_skip_items)}")
+                    print(f"[__init__.py] Skipping items when rebuilding the pool (shuffle-specific items for excluded location types, plus dummy Goddess Cube logic items; cube locations are NOT excluded by this): {sorted(_type_specific_skip_items)}")
                 
                 # Individually excluded locations from config.yaml remain in the
                 # AP world as EXCLUDED locations, so their items still belong in
@@ -1678,6 +1846,8 @@ class SSHDWorld(World):
             "Tycoon Wallet": "Progressive Wallet",
             "Adventure Pouch": "Progressive Pouch",
             "Pouch Expansion": "Progressive Pouch",
+            "Loftwing": "Progressive Loftwing",
+            "Spiral Charge": "Progressive Loftwing",
         }
         
         # Items to skip entirely (not part of the randomized pool)
@@ -2219,6 +2389,7 @@ class SSHDWorld(World):
             loc for loc in self.multiworld.get_locations(self.player)
             if loc.address is not None
             and loc.item is None
+            and not self._is_user_excluded(loc)
             and getattr(loc, "sshd_region", loc.name.split(" - ")[0] if " - " in loc.name else "") == dungeon
         ]
     
@@ -2229,6 +2400,7 @@ class SSHDWorld(World):
             loc for loc in self.multiworld.get_locations(self.player)
             if loc.address is not None
             and loc.item is None
+            and not self._is_user_excluded(loc)
             and LOCATION_TABLE.get(loc.name, None) is not None
             and LOCATION_TABLE[loc.name].region in region_names
         ]
@@ -2249,6 +2421,7 @@ class SSHDWorld(World):
             loc for loc in self.multiworld.get_locations(self.player)
             if loc.address is not None
             and loc.item is None
+            and not self._is_user_excluded(loc)
             and loc.name not in dungeon_locs
         ]
     
@@ -2306,6 +2479,14 @@ class SSHDWorld(World):
             return collected
         
         def _get_valid_locations_for_mode(mode: str, dungeon: str) -> list:
+            """Valid unfilled locations for a shuffle mode and dungeon, minus any
+            location the player excluded in their YAML."""
+            return [
+                loc for loc in _get_valid_locations_for_mode_unfiltered(mode, dungeon)
+                if not self._is_user_excluded(loc)
+            ]
+
+        def _get_valid_locations_for_mode_unfiltered(mode: str, dungeon: str) -> list:
             """Get valid unfilled locations for a given shuffle mode and dungeon."""
             if mode in ("own_dungeon", "own_dungeon_restricted", "own_dungeon_unrestricted", "vanilla"):
                 # Restrict to the dungeon's own locations
@@ -2663,6 +2844,7 @@ class SSHDWorld(World):
                         loc for loc in self.multiworld.get_locations(self.player)
                         if loc.address is not None
                         and loc.item is None
+                        and not self._is_user_excluded(loc)
                         and loc.name in end_loc_names
                     ]
 
@@ -2785,6 +2967,7 @@ class SSHDWorld(World):
                         valid_locations = [
                             loc for loc in self.multiworld.get_locations(self.player)
                             if loc.address is not None and loc.item is None
+                            and not self._is_user_excluded(loc)
                             and LOCATION_TABLE.get(loc.name) is not None
                             and LOCATION_TABLE[loc.name].region in (
                                 "Lanayru Caves", "Lanayru Caves Past Locked Door"
@@ -2843,6 +3026,7 @@ class SSHDWorld(World):
                 valid_locations = [
                     loc for loc in self.multiworld.get_locations(self.player)
                     if loc.address is not None and loc.item is None
+                    and not self._is_user_excluded(loc)
                     and (loc.parent_region is None or loc.parent_region.name not in all_gated_regions)
                 ]
                 if not valid_locations:
@@ -2962,6 +3146,7 @@ class SSHDWorld(World):
                         loc for loc in self.multiworld.get_locations(self.player)
                         if loc.address is not None
                         and loc.item is None
+                        and not self._is_user_excluded(loc)
                         and LOCATION_TABLE.get(loc.name) is not None
                         and LOCATION_TABLE[loc.name].region == "Lanayru Caves"
                     ]
@@ -2971,6 +3156,7 @@ class SSHDWorld(World):
                         loc for loc in self.multiworld.get_locations(self.player)
                         if loc.address is not None
                         and loc.item is None
+                        and not self._is_user_excluded(loc)
                         and loc.name not in all_dungeon_locs
                     ]
                 else:
@@ -3014,6 +3200,7 @@ class SSHDWorld(World):
                         loc for loc in self.multiworld.get_locations(self.player)
                         if loc.address is not None
                         and loc.item is None
+                        and not self._is_user_excluded(loc)
                         and loc.name in vanilla_triforce_locs
                     ]
                 elif triforce_mode == "sky_keep":
@@ -3022,6 +3209,7 @@ class SSHDWorld(World):
                         loc for loc in self.multiworld.get_locations(self.player)
                         if loc.address is not None
                         and loc.item is None
+                        and not self._is_user_excluded(loc)
                         and LOCATION_TABLE.get(loc.name) is not None
                         and LOCATION_TABLE[loc.name].region == "Sky Keep"
                     ]
@@ -3255,6 +3443,17 @@ class SSHDWorld(World):
                 }
         
         slot_data["location_to_item_map"] = location_to_item_map
+
+        # Goddess cube location -> story flag mapping (decoupled cubes only).
+        # The client polls these story flags to detect cube strikes as location checks.
+        if self._goddess_cubes_decoupled():
+            from .Locations import GODDESS_CUBE_STORY_FLAGS
+            goddess_cube_story_flags = {}
+            for location in self.multiworld.get_locations(self.player):
+                cube_flag = GODDESS_CUBE_STORY_FLAGS.get(location.name)
+                if cube_flag is not None and location.address is not None:
+                    goddess_cube_story_flags[str(location.address)] = cube_flag
+            slot_data["goddess_cube_story_flags"] = goddess_cube_story_flags
         
         # Build custom flag mapping for ALL locations
         # This happens during slot_data generation (before generate_output)
@@ -3279,7 +3478,8 @@ class SSHDWorld(World):
         # sold_out_storyflag rather than a normal AP custom_flag (they never
         # get one - see the shop-restrictions comment above), so they get a
         # separate flag_id namespace here: bit 15 set, storyflag in the low
-        # bits. Real custom_flag_ids only ever use bits 0-9, so this can
+        # bits. Real custom_flag_ids only ever use bits 0-10 (bit 10 = extended
+        # group, used by pots), so this can
         # never collide. shop.rs's handle_shop_traps() writes
         # LAST_AP_ITEM_FLAG_ID with the same 0x8000 | storyflag encoding at
         # purchase time.
@@ -3307,10 +3507,16 @@ class SSHDWorld(World):
                     # for Beedle's Airshop locations.
                     loc_code = location.address
                     flag_id = None
-                    if loc_code in location_to_custom_flag:
-                        flag_id = location_to_custom_flag[loc_code]
-                    elif location.name in BEEDLE_SOLD_OUT_STORYFLAGS:
+                    # NOTE: Beedle must be checked FIRST. _build_custom_flag_mapping()
+                    # assigns a custom flag to ALL locations (Beedle included), so
+                    # testing location_to_custom_flag first always matched and the
+                    # 0x8000|storyflag branch was unreachable -- the game (shop.rs
+                    # handle_shop_traps) looks Beedle items up by 0x8000|storyflag,
+                    # so they never found their entry.
+                    if location.name in BEEDLE_SOLD_OUT_STORYFLAGS:
                         flag_id = 0x8000 | BEEDLE_SOLD_OUT_STORYFLAGS[location.name]
+                    elif loc_code in location_to_custom_flag:
+                        flag_id = location_to_custom_flag[loc_code]
                     if flag_id is not None:
                         player_name = self.multiworld.get_player_name(location.item.player)
                         ap_item_info[flag_id] = {
@@ -3551,6 +3757,20 @@ class SSHDWorld(World):
                 },
                 "seed": self.multiworld.seed,
                 "sshdr_seed": getattr(self, '_sshdr_resolved_seed', f"AP{self.multiworld.seed}P{self.player}"),
+                "ap_seed": int(self.multiworld.seed),
+                "ap_slot_name": self.player_name,
+                # Fi's dungeon goal text (None = goal disabled) and the AP-selected
+                # required dungeons, so the standalone patcher matches generate-time patching.
+                "ap_dungeon_goal_count": (
+                    self.options.dungeon_goal_count.value
+                    if self.options.dungeon_goal_requirement.value
+                    else None
+                ),
+                "ap_required_dungeons": (
+                    list(self._ap_required_dungeons)
+                    if getattr(self, '_ap_required_dungeons', None) is not None
+                    else None
+                ),
             }
             
             # Create the .apsshd patch file
@@ -3708,14 +3928,18 @@ class SSHDWorld(World):
             from .SSHDRWrapper import inject_custom_flags_into_world
             inject_custom_flags_into_world(world, self._custom_flag_mapping, self.multiworld, self.player)
             print(f"[__init__.py] ✓ Injected {len(self._custom_flag_mapping)} custom flags")
-            
+
+            # Seed + slot name stored in new save files and shown on file select
+            world.ap_seed = int(self.multiworld.seed)
+            world.ap_slot_name = self.player_name
+
             # Let Fi's text tell the player the dungeon goal count (None = goal disabled)
             world.ap_dungeon_goal_count = (
                 self.options.dungeon_goal_count.value
                 if self.options.dungeon_goal_requirement.value
                 else None
             )
-
+            
             # Sync required-dungeon flags so Fi's text matches AP's selection
             ap_required = getattr(self, '_ap_required_dungeons', None)
             if ap_required is not None:
@@ -3869,6 +4093,42 @@ class SSHDWorld(World):
             traceback.print_exc()
             return None, None
     
+    def _get_user_excluded_location_names(self) -> list:
+        """
+        Names of locations the player excluded via the standard Archipelago
+        ``exclude_locations`` YAML option, limited to locations that are actually
+        randomized for this player. Sorted so generation stays deterministic.
+        """
+        from .Locations import LOCATION_TABLE
+        requested = self._user_excluded_set()
+        excluded_types = self._get_excluded_item_types()
+        names = []
+        for name in sorted(requested):
+            data = LOCATION_TABLE.get(name)
+            if data is None or data.code is None:
+                continue
+            if any(t in excluded_types for t in data.types):
+                continue  # not shuffled -> stays vanilla, nothing to exclude
+            names.append(name)
+        return names
+
+    def _user_excluded_set(self) -> set:
+        """Union of the player's `exclude_locations` and `excluded_locations` YAML options."""
+        cached = getattr(self, "_user_excluded_cache", None)
+        if cached is None:
+            cached = set()
+            for attr in ("exclude_locations", "excluded_locations"):
+                opt = getattr(self.options, attr, None)
+                if opt is not None:
+                    cached |= set(opt.value)
+            self._user_excluded_cache = cached
+        return cached
+
+    def _is_user_excluded(self, loc) -> bool:
+        """True if the player excluded this location in their YAML. Locked
+        (pre_fill) placements must never put progression items on these."""
+        return loc.name in self._user_excluded_set()
+
     def _collect_archipelago_settings(self) -> dict:
         """
         Collect Archipelago options as a dictionary for sshd-rando wrapper.
@@ -3893,6 +4153,14 @@ class SSHDWorld(World):
         settings_dict["dungeon_goal_count"] = str(self.options.dungeon_goal_count.value)
         settings_dict["required_triforce_pieces"] = str(self.options.required_triforce_pieces.value)
         settings_dict["require_triforce_pieces"] = "on" if self.options.require_triforce_pieces.value else "off"
+        # Backend 'triforce_required' mirrors the Triforce Required toggle as-is. The number of pieces
+        # the Temple of Hylia doors need is sent separately as 'triforce_door_pieces' (any N of the 3):
+        # it follows Required Triforce Pieces when Require Triforce Pieces is on, otherwise all 3.
+        settings_dict["triforce_required"] = "on" if self.options.triforce_required.value else "off"
+        door_pieces = 3
+        if self.options.require_triforce_pieces.value and self.options.required_triforce_pieces.value < 3:
+            door_pieces = max(0, int(self.options.required_triforce_pieces.value))
+        settings_dict["triforce_door_pieces"] = str(door_pieces)
         settings_dict["require_dungeons"] = "on" if self.options.dungeon_goal_requirement.value else "off"
         settings_dict["require_greg"] = "on" if self.options.require_greg.value else "off"
         settings_dict["require_tim"] = "on" if self.options.require_tim.value else "off"
@@ -3927,6 +4195,9 @@ class SSHDWorld(World):
         # Shuffles
         settings_dict["gratitude_crystal_shuffle"] = "on" if self.options.gratitude_crystal_shuffle.value else "off"
         settings_dict["stamina_fruit_shuffle"] = "on" if self.options.stamina_fruit_shuffle.value else "off"
+        settings_dict["pot_shuffle"] = "on" if self.options.pot_shuffle.value else "off"
+        settings_dict["pumpkin_shuffle"] = "on" if self.options.pumpkin_shuffle.value else "off"
+        settings_dict["barrel_shuffle"] = "on" if self.options.barrel_shuffle.value else "off"
         settings_dict["npc_closet_shuffle"] = "randomized" if self.options.npc_closet_shuffle.value else "vanilla"
         settings_dict["hidden_item_shuffle"] = "on" if self.options.hidden_item_shuffle.value else "off"
         
@@ -3934,6 +4205,9 @@ class SSHDWorld(World):
         settings_dict["rupee_shuffle"] = rupee_mode_map[self.options.rupee_shuffle.value]
         
         settings_dict["goddess_chest_shuffle"] = "on" if self.options.goddess_chest_shuffle.value else "off"
+        goddess_chest_unlock_map = {0: "locked_until_struck", 1: "unlocked_after_goddess_sword", 2: "unlocked_from_start"}
+        settings_dict["goddess_chest_unlock"] = goddess_chest_unlock_map[self.options.goddess_chest_unlock.value]
+        settings_dict["decouple_goddess_cubes_and_chests"] = "on" if self.options.decouple_goddess_cubes_and_chests.value else "off"
         settings_dict["trial_treasure_shuffle"] = str(self.options.trial_treasure_shuffle.value)
         settings_dict["tadtone_shuffle"] = "on" if self.options.tadtone_shuffle.value else "off"
         settings_dict["gossip_stone_treasure_shuffle"] = "on" if self.options.gossip_stone_treasure_shuffle.value else "off"
@@ -4016,6 +4290,9 @@ class SSHDWorld(World):
         settings_dict["allow_flying_at_night"] = "on" if self.options.allow_flying_at_night.value else "off"
         loftwing_start_map = {0: "off", 1: "on", 2: "random"}
         settings_dict["randomize_loftwing"] = loftwing_start_map[self.options.randomize_loftwing.value]
+        settings_dict["bird_statues_give_items"] = "on" if self.options.bird_statues_give_items.value else "off"
+        settings_dict["bird_statues_need_unlock"] = "on" if self.options.bird_statues_need_unlock.value else "off"
+        settings_dict["start_with_region_bird_statues"] = "on" if self.options.start_with_region_bird_statues.value else "off"
         settings_dict["natural_night_connections"] = "on" if self.options.natural_night_connections.value else "off"
         settings_dict["peatrice_conversations"] = str(self.options.peatrice_conversations.value)
         
@@ -4197,7 +4474,22 @@ class SSHDWorld(World):
         
         # Configuration
         settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())
+
+        # Other mods to merge into the output (folder names inside the other_mods
+        # folder). Purely a patching concern: it never affects logic or the seed.
+        other_mods = []
+        for mod_name in list(self.options.other_mods.value or []):
+            mod_name = str(mod_name).strip()
+            if mod_name and mod_name not in other_mods:
+                other_mods.append(mod_name)
+        settings_dict["other_mods"] = other_mods
+        settings_dict["other_mods_path"] = (self.options.other_mods_path.value or "").strip()
         
+        # Player-excluded locations (standard `exclude_locations` YAML option).
+        # generate_early() and the sshd-rando wrapper both read this key; it was
+        # never populated, so the exclusions were silently ignored.
+        settings_dict["excluded_locations"] = self._get_user_excluded_location_names()
+
         return settings_dict
 
     
@@ -4222,7 +4514,31 @@ class SSHDWorld(World):
         # IMPORTANT: Do NOT reverse - pop() from the end gives high IDs (1015, 1014, ...)
         # The sshd-rando patcher assigns from the low end (0, 1, 2, ...) for non-AP locations,
         # so AP must use the high end to avoid flag ID collisions.
-        custom_flags = [i for i in range(1024) if (i & 0x7F) != 0x7F]
+        # Custom flag IDs 0-31 are reserved for Bird Statue unlock flags (see
+        # BIRD_STATUE_UNLOCK_FLAG_RESERVED_COUNT in the sshd-rando backend), so
+        # neither the patcher nor AP may hand them out to locations.
+        custom_flags = [i for i in range(32, 1024) if (i & 0x7F) != 0x7F]
+
+        # Pots (Pot Shuffle, ~294 locations) overflow the 984 group 0 flags, so
+        # they use the extended group 1 pool instead: bit 10 set, selector 0-3 in
+        # bits 7-8 (scene indexes 26-29 in the save file), flag space bit 9 always
+        # 0. Local ID 0 means "no flag" in the game's item handler, so IDs start
+        # at 1: 4 * 127 - 1 = 507 IDs. The group 0 list above is untouched, so
+        # seeds without pots keep byte-identical assignments. Keep these constants
+        # in sync with CUSTOM_FLAG_GROUP1 / GROUP1_LOCAL_FLAGS in the sshd-rando
+        # backend (patches/checkpatchhandler.py), item.rs, ap-ipc and SSHDClient.py.
+        CUSTOM_FLAG_GROUP1 = 0x400
+        # Scene-space IDs (bit 9 = 0) and dungeon-space IDs (bit 9 = 1) for save-file
+        # scene indexes 26-29. The dungeon-space IDs come FIRST in the list: pop()
+        # takes from the end, so seeds that fit in the original 507 scene-space IDs
+        # keep byte-identical assignments and only overflow into dungeon space
+        # (508 more IDs, added for barrel shuffle). Keep in sync with
+        # GROUP1_LOCAL_FLAGS in the sshd-rando backend (patches/checkpatchhandler.py).
+        group1_flags = [
+            CUSTOM_FLAG_GROUP1 | i for i in range(512, 1024) if (i & 0x7F) != 0x7F
+        ] + [
+            CUSTOM_FLAG_GROUP1 | i for i in range(1, 512) if (i & 0x7F) != 0x7F
+        ]
         
         custom_flag_to_location = {}
         
@@ -4234,16 +4550,39 @@ class SSHDWorld(World):
         
         # Sort locations consistently (by location code) to ensure deterministic assignment
         all_locations.sort(key=lambda loc: loc.address)
+
+        pot_locations = [
+            loc for loc in all_locations if any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels"))
+        ]
+        other_locations = [
+            loc for loc in all_locations if not any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels"))
+        ]
         
-        # Assign custom flags sequentially to ALL locations
-        for location in all_locations:
-            if custom_flags:
-                custom_flag_id = custom_flags.pop()
-                custom_flag_to_location[custom_flag_id] = location.address
-            else:
-                print(f"[__init__.py] ERROR: Ran out of custom flags! Location {location.name} could not be assigned.")
+        # Fail early with a clear message instead of producing a seed where some
+        # locations have no custom flag (every enabled location needs one).
+        from Options import OptionError
+        if len(other_locations) > len(custom_flags):
+            raise OptionError(
+                f"SSHD: {len(other_locations)} non-pot locations are enabled but "
+                f"only {len(custom_flags)} custom flags exist. Turn off some "
+                f"shuffles and generate again."
+            )
+        if len(pot_locations) > len(group1_flags):
+            raise OptionError(
+                f"SSHD: {len(pot_locations)} pot locations are enabled but only "
+                f"{len(group1_flags)} extended custom flags exist."
+            )
+
+        # Assign custom flags sequentially: pots from the extended pool, everything
+        # else from the original pool, each in location-code order.
+        for location in other_locations:
+            custom_flag_id = custom_flags.pop()
+            custom_flag_to_location[custom_flag_id] = location.address
+        for location in pot_locations:
+            custom_flag_id = group1_flags.pop()
+            custom_flag_to_location[custom_flag_id] = location.address
         
-        print(f"[__init__.py] Built custom flag mapping with {len(custom_flag_to_location)} flags for {len(all_locations)} locations")
+        print(f"[__init__.py] Built custom flag mapping with {len(custom_flag_to_location)} flags for {len(all_locations)} locations ({len(pot_locations)} pots in extended group)")
         return custom_flag_to_location
 
     
