@@ -4396,6 +4396,16 @@ class SSHDWorld(World):
         settings_dict["remove_enemy_music"] = "on" if self.options.remove_enemy_music.value else "off"
         text_shuffle_map = {0: "off", 1: "baby", 2: "crazy", 3: "extreme", 4: "european_extreme", 5: "psychopath"}
         settings_dict["text_shuffle"] = text_shuffle_map.get(self.options.text_shuffle.value, "off")
+
+        # These AP Choice options use the same names as the sshd-rando backend, so
+        # pass the option name (current_key) rather than the int index. Without
+        # these entries the backend silently keeps its defaults (e.g. english_us).
+        settings_dict["language"] = self.options.language.current_key
+        settings_dict["daytime_sky_color"] = self.options.daytime_sky_color.current_key
+        settings_dict["nighttime_sky_color"] = self.options.nighttime_sky_color.current_key
+        settings_dict["daytime_cloud_color"] = self.options.daytime_cloud_color.current_key
+        settings_dict["nighttime_cloud_color"] = self.options.nighttime_cloud_color.current_key
+        settings_dict["low_health_beeping_speed"] = self.options.low_health_beeping_speed.current_key
         
         # Extra Starting Inventory
         settings_dict["starting_hearts"] = str(self.options.starting_hearts.value)
