@@ -1177,7 +1177,9 @@ fn handle_command(
         "spawn_demise" => cmd_spawn_demise(emulator, output),
         "flag" => cmd_flag(&args, emulator, output),
         "warp" => cmd_warp(&args, emulator, output),
+        "tp" => cmd_tp(&args, emulator, output),
         "stage_info" => cmd_stage_info(emulator, output),
+        "player_info" => cmd_player_info(emulator, output),
         "go_mode" => cmd_go_mode(connection, ap_connected, emulator, reported_locations, output),
         "received" => cmd_received(connection, ap_connected, output),
         "missing" => cmd_location_list(false, connection, ap_connected, output),
@@ -1202,7 +1204,9 @@ fn cmd_help(output: &EventSink) {
         "/spawn_actor <ACTORID name|id> [param1] [oarc], /spawn_demise — spawn an actor",
         "/flag <storyflag|sceneflag|itemflag|dungeonflag> <get|set|unset> <id|all> [value_or_scene]",
         "/warp start  |  /warp <stage name or id> [layer] [room] [entrance] [night] [trial]  (or key=value, e.g. night=1 room=2)",
+        "/tp <x> <y> <z> — teleport Link to a world position in the current stage (no stage load)",
         "/stage_info — current stage, layer, room, entrance, night, trial, fade frames (and the pending next-stage values)",
+        "/player_info — Link's stamina, position, angles, speed, velocity, current action and button flags",
         "/go_mode — victory requirements and whether you have them",
         "/received, /missing, /checked, /players — multiworld info",
     ] {
@@ -1899,6 +1903,69 @@ fn cmd_warp(args: &[&str], emulator: &mut Option<(Backend, usize)>, output: &Eve
     }
 }
 
+/// Largest absolute coordinate `/tp` accepts. Real stage coordinates stay far
+/// below this; the cap only exists to catch typos (an extra few zeros) before
+/// they fling Link out of the world.
+const TP_MAX_ABS_COORD: f32 = 1_000_000.0;
+
+/// Parses `/tp` arguments: exactly three finite numbers (x y z). A trailing
+/// comma on a token is tolerated (`/tp 1, 2, 3`). Returns a user-facing error
+/// message on bad input.
+fn parse_tp_args(args: &[&str]) -> Result<(f32, f32, f32), String> {
+    if args.len() != 3 {
+        return Err(format!("Expected 3 coordinates (x y z), got {}.", args.len()));
+    }
+    let mut coords = [0.0f32; 3];
+    for ((slot, name), tok) in coords.iter_mut().zip(["x", "y", "z"]).zip(args) {
+        let value: f32 = tok
+            .trim_end_matches(',')
+            .parse()
+            .map_err(|_| format!("Invalid {name} '{tok}'. Use a number like 1234.5 or -80."))?;
+        if !value.is_finite() || value.abs() > TP_MAX_ABS_COORD {
+            return Err(format!("{name} must be a finite number within +/-{TP_MAX_ABS_COORD:.0}."));
+        }
+        *slot = value;
+    }
+    Ok((coords[0], coords[1], coords[2]))
+}
+
+/// `/tp <x> <y> <z>`: moves Link to that world position in the CURRENT stage.
+/// This is a position write only -- it does not load a stage (use `/warp` for
+/// that), so coordinates are only meaningful for the stage you're standing in.
+fn cmd_tp(args: &[&str], emulator: &mut Option<(Backend, usize)>, output: &EventSink) {
+    if args.is_empty() {
+        log!(output, "Usage: /tp <x> <y> <z>");
+        log!(output, "  Moves Link to that world position in the current stage. Example: /tp 1250.5 300 -4000");
+        log!(output, "  This doesn't change stages; use /warp for that.");
+        return;
+    }
+    let (x, y, z) = match parse_tp_args(args) {
+        Ok(v) => v,
+        Err(msg) => {
+            log!(output, "WARNING: {msg} Usage: /tp <x> <y> <z>");
+            return;
+        },
+    };
+
+    let Some((mem, root_addr)) = require_emulator(emulator, output) else { return };
+    match ipc_requests::teleport_request(mem, root_addr, x, y, z) {
+        Ok(ap_ipc::TELEPORT_RESPONSE_OK) => log!(output, "Teleported to ({x}, {y}, {z})."),
+        Ok(ap_ipc::TELEPORT_RESPONSE_NO_PLAYER) => log!(
+            output,
+            "WARNING: Teleport rejected: there's no player right now (title screen or loading?)."
+        ),
+        Ok(ap_ipc::TELEPORT_RESPONSE_BAD_COORDS) => {
+            log!(output, "WARNING: Teleport rejected: the game says a coordinate wasn't a finite number.")
+        },
+        Ok(other) => log!(output, "WARNING: Teleport request returned unexpected response code {other}."),
+        Err(e) => log!(
+            output,
+            "WARNING: Teleport request failed or timed out ({e}). Ensure the emulator is connected and the game \
+             is running with the mod loaded (IPC v{AP_IPC_SUPPORTED_VERSION})."
+        ),
+    }
+}
+
 /// Reads a null-terminated ASCII field (stage names/suffixes) into a String.
 fn c_str(bytes: &[u8]) -> String {
     let end = bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len());
@@ -1976,6 +2043,79 @@ fn cmd_stage_info(emulator: &mut Option<(Backend, usize)>, output: &EventSink) {
         if stage_mgr_valid != 0 { "present" } else { "null" },
         yes_no(in_trigger)
     );
+}
+
+/// `/player_info`: prints the player actor's live state (from
+/// `AP_IPC_ROOT.player_info`, refreshed every frame by the game) plus stamina
+/// (from `player_vitals`, which already accounts for per-stage offsets).
+/// This is a snapshot of the moment the command runs, not a live readout.
+fn cmd_player_info(emulator: &mut Option<(Backend, usize)>, output: &EventSink) {
+    let Some((mem, root_addr)) = require_emulator(emulator, output) else { return };
+    let raw = match mem.read_bytes(
+        root_addr + offsets::PLAYER_INFO,
+        std::mem::size_of::<ap_ipc::ApPlayerInfo>(),
+    ) {
+        Ok(raw) => raw,
+        Err(e) => {
+            log!(output, "WARNING: Couldn't read player info ({e}). Is the game running the matching mod version (IPC v{AP_IPC_SUPPORTED_VERSION})?");
+            return;
+        },
+    };
+    let info: ap_ipc::ApPlayerInfo = ap_ipc::bytes::read(&raw);
+
+    // Copy packed fields to locals before formatting (no references into
+    // packed structs).
+    let valid = info.valid;
+    if valid == 0 {
+        log!(output, "No player right now (title screen or loading?).");
+        return;
+    }
+    let (rot_x, rot_y, rot_z) = (info.rot_x, info.rot_y, info.rot_z);
+    let (pos_x, pos_y, pos_z) = (info.pos_x, info.pos_y, info.pos_z);
+    let (vel_x, vel_y, vel_z) = (info.vel_x, info.vel_y, info.vel_z);
+    let (forward_speed, move_speed) = (info.forward_speed, info.move_speed);
+    let action = info.current_action;
+    let (held, pressed, current_pressed) =
+        (info.held_buttons, info.triggered_buttons, info.current_pressed_button_flags);
+
+    // Stamina lives in player_vitals (already resolved for F103/B301 by the game).
+    let stamina = mem
+        .read_bytes(
+            root_addr + offsets::PLAYER_VITALS,
+            std::mem::size_of::<ap_ipc::ApPlayerVitals>(),
+        )
+        .map(|raw| {
+            let vitals: ap_ipc::ApPlayerVitals = ap_ipc::bytes::read(&raw);
+            vitals.stamina
+        });
+
+    // Raw u16 angle (0x10000 = a full turn) -> degrees.
+    let deg = |raw: u16| raw as f32 * 360.0 / 65536.0;
+    let action_text = match crate::player_actions::action_name(action) {
+        Some(name) => format!("{name} ({action:#X})"),
+        None => format!("unknown ({action:#X})"),
+    };
+
+    log!(output, "=== Player Info ===");
+    match stamina {
+        Ok(s) => log!(output, "  Stamina:         {s}"),
+        Err(e) => log!(output, "  Stamina:         unreadable ({e})"),
+    }
+    log!(output, "  Pos X:           {pos_x:.3}");
+    log!(output, "  Pos Y:           {pos_y:.3}");
+    log!(output, "  Pos Z:           {pos_z:.3}");
+    log!(output, "  Angle X:         {rot_x:#06X} ({:.2} deg)", deg(rot_x));
+    log!(output, "  Angle Y:         {rot_y:#06X} ({:.2} deg)", deg(rot_y));
+    log!(output, "  Angle Z:         {rot_z:#06X} ({:.2} deg)", deg(rot_z));
+    log!(output, "  Forward Speed:   {forward_speed:.3}");
+    log!(output, "  Move Speed:      {move_speed:.3}  (the value that actually drives walking/running)");
+    log!(output, "  Velocity X:      {vel_x:.3}");
+    log!(output, "  Velocity Y:      {vel_y:.3}");
+    log!(output, "  Velocity Z:      {vel_z:.3}");
+    log!(output, "  Current Action:  {action_text}");
+    log!(output, "  Buttons Held:    {held:#06X} ({held:016b})");
+    log!(output, "  Buttons Pressed: {pressed:#06X} ({pressed:016b})");
+    log!(output, "  Current Pressed: {current_pressed:#06X} ({current_pressed:016b})");
 }
 
 fn cmd_go_mode(
@@ -2138,5 +2278,27 @@ fn cmd_players(connection: &mut Option<Connection<SlotData>>, ap_connected: bool
     log!(output, "Players ({}):", players.len());
     for p in players {
         log!(output, "  {} {} ({}) — {}", p.slot(), p.alias(), p.name(), p.game());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_tp_args_cases() {
+        assert_eq!(parse_tp_args(&["1", "2.5", "-3"]), Ok((1.0, 2.5, -3.0)));
+        assert_eq!(parse_tp_args(&["1,", "2,", "3"]), Ok((1.0, 2.0, 3.0)));
+        assert_eq!(parse_tp_args(&["-0.5", "1e3", "0"]), Ok((-0.5, 1000.0, 0.0)));
+        // wrong argument count
+        assert!(parse_tp_args(&[]).is_err());
+        assert!(parse_tp_args(&["1", "2"]).is_err());
+        assert!(parse_tp_args(&["1", "2", "3", "4"]).is_err());
+        // not numbers / not finite / absurdly large
+        assert!(parse_tp_args(&["1", "two", "3"]).is_err());
+        assert!(parse_tp_args(&["1,5", "2", "3"]).is_err());
+        assert!(parse_tp_args(&["nan", "0", "0"]).is_err());
+        assert!(parse_tp_args(&["0", "inf", "0"]).is_err());
+        assert!(parse_tp_args(&["0", "0", "1e9"]).is_err());
     }
 }

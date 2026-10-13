@@ -37,7 +37,7 @@
 //! sshd-ap-client) after any change here, before testing in-game.
 
 use crate::cheats::{ApCheatFlags, ApSpawnRequest};
-use crate::commands::{ApFlagRequest, ApWarpRequest};
+use crate::commands::{ApFlagRequest, ApTeleportRequest, ApWarpRequest};
 use crate::item::{ApCheckStats, ApItemInfoTable, ArchipelagoItemSlot, ARCHIPELAGO_BUFFER_SIZE};
 use static_assertions::assert_eq_size;
 
@@ -46,7 +46,7 @@ use static_assertions::assert_eq_size;
 /// a breaking change to `ApIpcRoot`'s layout so old/new clients don't
 /// silently misread each other).
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_VERSION: u16 = 12;
+pub const AP_IPC_VERSION: u16 = 14;
 
 /// Live BY-VALUE COPY of the player's health and stamina, refreshed every
 /// frame by `item::refresh_ipc_addresses()`. Lets the host client detect
@@ -146,6 +146,47 @@ pub struct ApSeedInfo {
     pub _pad:          [u8; 6],
 }
 assert_eq_size!([u8; 24], ApSeedInfo);
+
+/// Live BY-VALUE COPY of the player actor's state, refreshed every frame by
+/// `player::refresh_player_info()` (called from the main loop). Backs the
+/// client's `/player_info`. Stamina is NOT duplicated here; it's already in
+/// `ApPlayerVitals`. Added in IPC version 14.
+///
+/// - `valid`: 1 if PLAYER_PTR is non-null (every other field is stale/zero
+///   otherwise).
+/// - `rot_*`: the actor's rotation (`dAcBasemembers.rot`), raw u16 angles
+///   (0x10000 = 360 degrees).
+/// - `pos_*` / `vel_*`: `dAcBasemembers.pos` / `dAcOBasemembers.velocity`.
+/// - `forward_speed`: `dAcOBasemembers.forward_speed`. NOTE: the player code
+///   recomputes this, so it is NOT what drives walking/running.
+/// - `move_speed`: the f32 at dPlayer+0x64E8, which does drive Link's movement
+///   (the one the speed cheat scales; see cheats.rs).
+/// - `current_action`: `dPlayer.current_action` (PLAYER_ACTIONS value).
+/// - `held_buttons` / `triggered_buttons` / `current_pressed_button_flags`:
+///   the dPlayer button fields (held, pressed-this-frame, and the game's
+///   "current pressed" flags).
+#[repr(C, packed(1))]
+pub struct ApPlayerInfo {
+    pub valid:                        u8,
+    pub _pad0:                        u8,
+    pub rot_x:                        u16,
+    pub rot_y:                        u16,
+    pub rot_z:                        u16,
+    pub pos_x:                        f32,
+    pub pos_y:                        f32,
+    pub pos_z:                        f32,
+    pub vel_x:                        f32,
+    pub vel_y:                        f32,
+    pub vel_z:                        f32,
+    pub forward_speed:                f32,
+    pub move_speed:                   f32,
+    pub current_action:               u32,
+    pub held_buttons:                 u16,
+    pub triggered_buttons:            u16,
+    pub current_pressed_button_flags: u16,
+    pub _pad1:                        [u8; 2],
+}
+assert_eq_size!([u8; 52], ApPlayerInfo);
 
 #[repr(C, packed(1))]
 pub struct ApIpcRoot {
@@ -255,6 +296,15 @@ pub struct ApIpcRoot {
 
     // Appended at the END. Added in IPC version 12.
     pub seed_info: ApSeedInfo,
+
+    // ── Python-write / Rust-read: one-shot teleport request backing the
+    //    client's /tp command (see `ApTeleportRequest` in commands.rs).
+    //    Appended at the END. Added in IPC version 13.
+    pub teleport_request: ApTeleportRequest,
+
+    // ── Rust-write / client-read: live player actor state copy (see
+    //    `ApPlayerInfo`). Appended at the END. Added in IPC version 14.
+    pub player_info: ApPlayerInfo,
 }
 
 #[no_mangle]
@@ -400,6 +450,37 @@ pub static mut AP_IPC_ROOT: ApIpcRoot = ApIpcRoot {
         seed_match:    0,
         _pad:          [0; 6],
     },
+
+    teleport_request: ApTeleportRequest {
+        pending:        false,
+        response_ready: false,
+        response_code:  0,
+        _pad:           0,
+        x_bits:         0,
+        y_bits:         0,
+        z_bits:         0,
+    },
+
+    player_info: ApPlayerInfo {
+        valid:                        0,
+        _pad0:                        0,
+        rot_x:                        0,
+        rot_y:                        0,
+        rot_z:                        0,
+        pos_x:                        0.0,
+        pos_y:                        0.0,
+        pos_z:                        0.0,
+        vel_x:                        0.0,
+        vel_y:                        0.0,
+        vel_z:                        0.0,
+        forward_speed:                0.0,
+        move_speed:                   0.0,
+        current_action:               0,
+        held_buttons:                 0,
+        triggered_buttons:            0,
+        current_pressed_button_flags: 0,
+        _pad1:                        [0; 2],
+    },
 };
 
 // Self-check: catches accidental layout drift at compile time. Update this
@@ -423,6 +504,8 @@ assert_eq_size!(
         + 2
         + 44
         + 128
-        + 24],
+        + 24
+        + 16
+        + 52],
     ApIpcRoot
 );

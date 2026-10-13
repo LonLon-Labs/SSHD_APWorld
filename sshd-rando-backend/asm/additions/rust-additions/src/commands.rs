@@ -4,6 +4,8 @@
 
 use crate::entrance;
 use crate::flag;
+use crate::math;
+use crate::player;
 use crate::traps;
 use core::ffi::c_char;
 use static_assertions::assert_eq_size;
@@ -123,6 +125,44 @@ const WARP_FLAG_TRIAL_SET: u8 = 1 << 3;
 const WARP_MODE_START: u8 = 0;
 const WARP_MODE_STAGE: u8 = 1;
 
+// ─── AP_TELEPORT_REQUEST ───────────────────────────────────────────────
+// Backs the client's /tp <x> <y> <z> command (IPC version 13). Moves the
+// player to a world position in the CURRENT stage; it never loads a stage
+// (that's what ApWarpRequest is for). Lives at AP_IPC_ROOT.teleport_request.
+// This layout must stay in sync with `ApTeleportRequest` in the client's
+// ap-ipc crate.
+//
+// Layout (packed, little-endian, 16 bytes total):
+//   +0  pending bool        — 1 = new request for us to process; we clear it
+//                             back to 0 as soon as we pick it up
+//   +1  response_ready bool — we set this to 1 once response_code is valid
+//   +2  response_code u8    — TELEPORT_RESPONSE_*
+//   +3  _pad u8
+//   +4  x_bits u32          — f32 bits of the target X
+//   +8  y_bits u32          — f32 bits of the target Y
+//   +12 z_bits u32          — f32 bits of the target Z
+// The coordinates are sent as raw bits rather than f32 so the client never has
+// to take a reference to a (possibly misaligned) float inside a packed struct.
+#[repr(C, packed(1))]
+pub struct ApTeleportRequest {
+    pub pending:        bool,
+    pub response_ready: bool,
+    pub response_code:  u8,
+    pub _pad:           u8,
+    pub x_bits:         u32,
+    pub y_bits:         u32,
+    pub z_bits:         u32,
+}
+assert_eq_size!([u8; 16], ApTeleportRequest);
+
+// ApTeleportRequest.response_code values. Must match TELEPORT_RESPONSE_* in
+// the client's ap-ipc.
+const TELEPORT_RESPONSE_OK: u8 = 0;
+/// PLAYER_PTR is null (title screen, loading, ...).
+const TELEPORT_RESPONSE_NO_PLAYER: u8 = 1;
+/// A coordinate was NaN or infinite.
+const TELEPORT_RESPONSE_BAD_COORDS: u8 = 2;
+
 // Flag type discriminants — must match FLAG_TYPES in SSHDClient.py
 const FLAG_TYPE_STORYFLAG: u8 = 0;
 const FLAG_TYPE_SCENEFLAG: u8 = 1;
@@ -140,6 +180,8 @@ const SCENE_INDEX_CURRENT: u16 = 0xFFFF;
 // IMPORTANT: when using vanilla code, the start point must be declared in
 // symbols.yaml and then added to this extern block.
 extern "C" {
+    static PLAYER_PTR: *mut player::dPlayer;
+
     // Functions
     fn debugPrint_128(string: *const c_char, fstr: *const c_char, ...);
 }
@@ -346,6 +388,49 @@ pub fn handle_warp_request() {
         };
 
         (*req).response_code = if ok { 0 } else { 1 };
+        (*req).response_ready = true;
+    }
+}
+
+/// Processes at most one AP_TELEPORT_REQUEST per call (one-shot, same pattern
+/// as the flag/warp request handlers). Backs the client's `/tp`.
+///
+/// Only the player's position is written; no stage load happens, so the target
+/// is interpreted in whatever stage is currently loaded. Besides the primary
+/// `pos`, the actor's position copies are updated too (otherwise the game can
+/// copy the stale value back over `pos` on its next update), and velocity is
+/// zeroed so a fall in progress doesn't carry over to the destination.
+pub fn handle_teleport_request() {
+    unsafe {
+        let req = core::ptr::addr_of_mut!(crate::ipc::AP_IPC_ROOT.teleport_request);
+        if !(*req).pending {
+            return;
+        }
+        // Clear first so this is one-shot even if we return early below.
+        (*req).pending = false;
+        (*req).response_ready = false;
+
+        let x = f32::from_bits((*req).x_bits);
+        let y = f32::from_bits((*req).y_bits);
+        let z = f32::from_bits((*req).z_bits);
+
+        let code = if !(x.is_finite() && y.is_finite() && z.is_finite()) {
+            TELEPORT_RESPONSE_BAD_COORDS
+        } else if PLAYER_PTR.is_null() {
+            TELEPORT_RESPONSE_NO_PLAYER
+        } else {
+            let pos = math::Vec3f { x, y, z };
+            let player = PLAYER_PTR;
+            (*player).obj_base_members.base.pos = pos;
+            (*player).obj_base_members.base.pos_copy = pos;
+            (*player).obj_base_members.pos_copy1 = pos;
+            (*player).obj_base_members.pos_copy2 = pos;
+            (*player).obj_base_members.pos_copy3 = pos;
+            (*player).obj_base_members.velocity = math::Vec3f::default();
+            TELEPORT_RESPONSE_OK
+        };
+
+        (*req).response_code = code;
         (*req).response_ready = true;
     }
 }

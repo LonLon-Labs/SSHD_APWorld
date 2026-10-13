@@ -18,7 +18,7 @@ use std::mem::size_of;
 
 /// 8-byte discovery marker the client scans for exactly once.
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_SUPPORTED_VERSION: u16 = 12;
+pub const AP_IPC_SUPPORTED_VERSION: u16 = 14;
 
 // ─── Sub-structs (mirror commands.rs / item.rs) ────────────────────────────
 
@@ -275,6 +275,55 @@ pub struct ApSeedInfo {
     pub _pad:          [u8; 6],
 }
 
+/// One-shot teleport mailbox for `/tp` (IPC version 13+). The client writes
+/// the target coordinates (as raw `f32` bits, since the struct is packed) and
+/// sets `pending`; the game moves the player on its next frame, then fills in
+/// `response_code` and sets `response_ready`. Mirrors `ApTeleportRequest` in
+/// the game's commands.rs.
+#[repr(C, packed)]
+#[derive(Copy, Clone, Debug, Default)]
+pub struct ApTeleportRequest {
+    pub pending:        u8,
+    pub response_ready: u8,
+    /// `TELEPORT_RESPONSE_*`.
+    pub response_code:  u8,
+    pub _pad:           u8,
+    pub x_bits:         u32,
+    pub y_bits:         u32,
+    pub z_bits:         u32,
+}
+
+/// Live by-value copy of the player actor's state (IPC version 14+),
+/// refreshed every frame by the game. Mirrors `ApPlayerInfo` in ipc.rs.
+/// Stamina is in `ApPlayerVitals`, not here.
+#[repr(C, packed)]
+#[derive(Copy, Clone, Debug, Default)]
+pub struct ApPlayerInfo {
+    /// 1 if the game's PLAYER_PTR is non-null; otherwise the rest is stale.
+    pub valid:                        u8,
+    pub _pad0:                        u8,
+    /// Raw u16 angles (0x10000 = 360 degrees).
+    pub rot_x:                        u16,
+    pub rot_y:                        u16,
+    pub rot_z:                        u16,
+    pub pos_x:                        f32,
+    pub pos_y:                        f32,
+    pub pos_z:                        f32,
+    pub vel_x:                        f32,
+    pub vel_y:                        f32,
+    pub vel_z:                        f32,
+    /// `dAcOBasemembers.forward_speed`. Not what drives walking/running.
+    pub forward_speed:                f32,
+    /// The f32 at dPlayer+0x64E8 that does drive Link's movement.
+    pub move_speed:                   f32,
+    /// `PLAYER_ACTIONS` value.
+    pub current_action:               u32,
+    pub held_buttons:                 u16,
+    pub triggered_buttons:            u16,
+    pub current_pressed_button_flags: u16,
+    pub _pad1:                        [u8; 2],
+}
+
 #[repr(C, packed)]
 #[derive(Copy, Clone, Debug)]
 pub struct ApIpcRoot {
@@ -356,6 +405,12 @@ pub struct ApIpcRoot {
 
     // Seed gating info (IPC version 12+). Appended at the end.
     pub seed_info: ApSeedInfo,
+
+    // One-shot `/tp` request (IPC version 13+). Appended at the end.
+    pub teleport_request: ApTeleportRequest,
+
+    // Live player actor state (IPC version 14+). Appended at the end.
+    pub player_info: ApPlayerInfo,
 }
 
 impl Default for ApIpcRoot {
@@ -382,6 +437,8 @@ impl Default for ApIpcRoot {
             stage_info:      ApStageInfo::default(),
             ext_flags:       ApExtFlags::default(),
             seed_info:       ApSeedInfo::default(),
+            teleport_request: ApTeleportRequest::default(),
+            player_info: ApPlayerInfo::default(),
         }
     }
 }
@@ -413,7 +470,9 @@ pub mod offsets {
     pub const STAGE_INFO: usize = LINK_REQUESTS + size_of::<ApLinkRequests>();
     pub const EXT_FLAGS: usize = STAGE_INFO + size_of::<ApStageInfo>();
     pub const SEED_INFO: usize = EXT_FLAGS + size_of::<ApExtFlags>();
-    pub const TOTAL_SIZE: usize = SEED_INFO + size_of::<ApSeedInfo>();
+    pub const TELEPORT_REQUEST: usize = SEED_INFO + size_of::<ApSeedInfo>();
+    pub const PLAYER_INFO: usize = TELEPORT_REQUEST + size_of::<ApTeleportRequest>();
+    pub const TOTAL_SIZE: usize = PLAYER_INFO + size_of::<ApPlayerInfo>();
 
     pub fn item_buffer_slot(index: usize) -> usize {
         ITEM_BUFFER + index * size_of::<ArchipelagoItemSlot>()
@@ -445,6 +504,13 @@ pub const WARP_FLAG_NIGHT_SET: u8 = 1 << 1;
 pub const WARP_FLAG_TRIAL: u8 = 1 << 2;
 /// The trial value was explicitly specified.
 pub const WARP_FLAG_TRIAL_SET: u8 = 1 << 3;
+
+/// `ApTeleportRequest.response_code` values (mirror commands.rs).
+pub const TELEPORT_RESPONSE_OK: u8 = 0;
+/// No player actor exists right now (title screen, loading, ...).
+pub const TELEPORT_RESPONSE_NO_PLAYER: u8 = 1;
+/// A coordinate was NaN or infinite.
+pub const TELEPORT_RESPONSE_BAD_COORDS: u8 = 2;
 
 /// Decodes the custom flag ID encoding used for the majority of location
 /// checks (see `decode_custom_flag` in the game's `item.rs`, which this
@@ -557,6 +623,8 @@ mod tests {
         assert_eq!(size_of::<ApStageInfo>(), 44);
         assert_eq!(size_of::<ApExtFlags>(), 128);
         assert_eq!(size_of::<ApSeedInfo>(), 24);
+        assert_eq!(size_of::<ApTeleportRequest>(), 16);
+        assert_eq!(size_of::<ApPlayerInfo>(), 52);
     }
 
     #[test]
@@ -580,7 +648,9 @@ mod tests {
         assert_eq!(offsets::LINK_REQUESTS, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10);
         assert_eq!(offsets::STAGE_INFO, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2);
         assert_eq!(offsets::EXT_FLAGS, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44);
-        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24);
+        assert_eq!(offsets::TELEPORT_REQUEST, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24);
+        assert_eq!(offsets::PLAYER_INFO, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24 + 16);
+        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24 + 16 + 52);
         assert_eq!(size_of::<ApIpcRoot>(), offsets::TOTAL_SIZE);
     }
 

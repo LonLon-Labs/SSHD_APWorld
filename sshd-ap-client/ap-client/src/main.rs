@@ -53,6 +53,7 @@ mod item_info;
 mod items;
 mod links;
 mod locations;
+mod player_actions;
 mod stages;
 mod theme;
 mod worker;

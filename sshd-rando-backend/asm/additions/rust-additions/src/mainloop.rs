@@ -15,6 +15,7 @@ use crate::flag;
 use crate::input;
 use crate::item;
 use crate::mem;
+use crate::player;
 use crate::settings;
 use crate::traps;
 
@@ -176,6 +177,9 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     // for the external client's batch location-check polling.
     item::refresh_ipc_addresses();
 
+    // Archipelago - live player actor state copy for the client's /player_info.
+    player::refresh_player_info();
+
     // File select slot name display: drop the caption override once the file
     // select screen has been left.
     apseed_ui::tick();
@@ -246,6 +250,7 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     cheats::handle_spawn_actor_request();
     commands::handle_flag_request();
     commands::handle_warp_request();
+    commands::handle_teleport_request();
 
     // Runtime Demise trap: spawns configured extras once when entering B400.
     traps::spawn_extra_demise();

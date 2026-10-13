@@ -1,5 +1,5 @@
 //! Shared request/response round trips over the `AP_IPC_ROOT` mailboxes
-//! for `/flag`, `/warp`, and `/spawn_actor` (`/spawn_demise`), ported from
+//! for `/flag`, `/warp`, `/tp`, and `/spawn_actor` (`/spawn_demise`), ported from
 //! `SSHDClient.py`'s `request_flag_operation` / `request_warp_operation` /
 //! `request_spawn_actor`.
 //!
@@ -135,6 +135,42 @@ pub fn warp_request_ex(
         thread::sleep(POLL_INTERVAL);
     }
     Err(MemError::Unsupported("timed out waiting for rust-additions to service the warp_request".into()))
+}
+
+/// Asks the game to move the player to world position (`x`, `y`, `z`) in the
+/// CURRENT stage (no stage load; use `warp_request*` to change stages).
+/// Returns the `response_code` (`ap_ipc::TELEPORT_RESPONSE_*`: 0 = ok, 1 = no
+/// player right now, 2 = a coordinate wasn't finite). The floats travel as raw
+/// bits because `ApTeleportRequest` is packed.
+pub fn teleport_request(
+    mem: &mut impl ProcessMemory,
+    root_addr: usize,
+    x: f32,
+    y: f32,
+    z: f32,
+) -> Result<u8, MemError> {
+    let addr = root_addr + offsets::TELEPORT_REQUEST;
+
+    let req = ap_ipc::ApTeleportRequest {
+        pending: 1,
+        response_ready: 0,
+        response_code: 0,
+        _pad: 0,
+        x_bits: x.to_bits(),
+        y_bits: y.to_bits(),
+        z_bits: z.to_bits(),
+    };
+    mem.write_bytes(addr, &ap_ipc::bytes::write(&req))?;
+
+    for _ in 0..POLL_ATTEMPTS {
+        let raw = mem.read_bytes(addr, std::mem::size_of::<ap_ipc::ApTeleportRequest>())?;
+        let resp: ap_ipc::ApTeleportRequest = ap_ipc::bytes::read(&raw);
+        if resp.response_ready != 0 {
+            return Ok(resp.response_code);
+        }
+        thread::sleep(POLL_INTERVAL);
+    }
+    Err(MemError::Unsupported("timed out waiting for rust-additions to service the teleport_request".into()))
 }
 
 /// Sets a one-shot request to spawn `actor_id` in the current stage. This
