@@ -195,6 +195,17 @@
     SVT Last Room After Rope: Can_Defeat_Ghirahim
     Skyview Spring: Can_Defeat_Ghirahim
   locations:
+    Skyview Boss Room - Pot 1: Nothing
+    Skyview Boss Room - Pot 2: Nothing
+    Skyview Boss Room - Pot 3: Nothing
+    Skyview Boss Room - Pot 4: Nothing
+    Skyview Boss Room - Pot 5: Nothing
+    Skyview Boss Room - Pot 6: Nothing
+    Skyview Boss Room - Pot 7: Nothing
+    Skyview Boss Room - Pot 8: Nothing
+    Skyview Boss Room - Pot 9: Nothing
+    Skyview Boss Room - Pot 10: Nothing
+    Skyview Boss Room - Pot 11: Nothing
     Skyview Temple - Defeat Boss: Can_Defeat_Ghirahim
 
 - name: Skyview Spring

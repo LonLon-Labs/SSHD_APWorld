@@ -8,8 +8,8 @@ This APWorld allows you to play Skyward Sword HD in a multiworld randomizer with
 
 ## Features
 
-- **800+ Locations**: All chests, closets, NPCs, dungeons, minigames, and more
-- **200+ Items**: Progression items, equipment, tablets, keys, consumables
+- **1400+ Locations**: All chests, closets, NPCs, pots, barrels, goddess cubes/chests, bird statues, and more
+- **250+ Items**: Progression items, equipment, tablets, keys, consumables
 - **Full Logic Support**: Ensures you always have items needed to progress
 - **40+ Options**: Customize starting items, logic difficulty, item placement
 - **Custom Logos**: Replace title screen with Archipelago branding
@@ -26,8 +26,8 @@ Download the latest release zip from the [Releases](https://github.com/LonLon-La
 - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_macos_apple_silicon.tar` — dedicated randomizer/yaml generator for macOS on Apple Silicon
 - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_macos_intel.tar` — dedicated randomizer/yaml generator for macOS on Intel
 - `Skyward_Sword_HD_Randomizer_Archipelago_v1.0_windows.zip` — dedicated randomizer/yaml generator for Windows
-- `ArchipelagoSSHDPatcher.exe` — standalone patcher GUI for generating ROM patches from a lightweight `.apsshd` (not required if using the patcher in dedicated randomizer/yaml generator)
-- `Skyward Sword HD.yaml` — template YAML for seed generation
+- `ArchipelagoSSHDPatcher.exe` — standalone patcher GUI for generating ROM patches from a lightweight `.apsshd`
+- `Skyward Sword HD.yaml` — template YAML for seed generation (not recommended to use since I regularly forget about it)
 
 ### Build from Source
 See [Quick Start → Option B](#1-install-the-apworld-and-client) below.
@@ -37,14 +37,12 @@ See [Quick Start → Option B](#1-install-the-apworld-and-client) below.
 - **Emulator**: Ryujinx (Tested on [1.1.1376](https://drive.randomstuff.cc/s/dAX3VyrrTcKoatU))
 - **Game**: The Legend of Zelda: Skyward Sword HD and Update Data (dumped from your Switch)
 
-> **Note**: The mod seems to be at least partially broken for most people on newer versions like 1.3.3, so an older version like 1.1.1376 is recommended
-
 > **Note**: Python is **not** required for players using the pre-built release. Python is only needed if you are building from source.  
 > If you are building from source, Python 3.10 or higher is required (Python 3.13.9 is recommended as that is what it was built with)
 
 ## Quick Start
 
-You can follow [this video guide](https://www.youtube.com/watch?v=d3bCL_RCDzE) or the written guide below
+You can follow the written guide below.
 
 ### 1. Install the APWorld and Client
 
@@ -56,7 +54,7 @@ Download the latest release from the [Releases](https://github.com/LonLon-Labs/S
    - **Linux**: `~/.local/share/Archipelago/custom_worlds/`
    - **macOS**: `~/Library/Application Support/Archipelago/custom_worlds/`
 
-That's it — no Python, no pip, no dependencies to install.
+That's it.
 
 **Option B: Build from Source (developers/contributors)**
 ```bash
@@ -77,7 +75,7 @@ You'll need a legally obtained copy of Skyward Sword HD for Nintendo Switch alon
 
 > **Note**: If you are only hosting (generating the multiworld) and not playing SSHD yourself, you can skip this step. The host does not need the ROM — players will patch locally using their own ROM extract.
 
-1. Extract the RomFS and ExeFS from your game using Ryujinx (MAKE SURE THE UPDATE IS INSTALLED BEFORE EXTRACTING)
+1. Extract the RomFS and ExeFS from your game using Ryujinx or a yuzu-based emulator (MAKE SURE THE UPDATE IS INSTALLED BEFORE EXTRACTING)
 2. Extract them to your platform's default location:
    - **Windows**: `C:\ProgramData\Archipelago\sshd_extract\`
    - **Linux**: `~/.local/share/Archipelago/sshd_extract/`
@@ -126,7 +124,7 @@ The host does **not** need the ROM to generate — the `.apsshd` files will be l
 ### 4. Hosting
 
 1. Upload the generated `.zip` file to [archipelago.gg](https://archipelago.gg)
-2. Host locally (ADVANCED - requires port forwarding or everyone being on the same LAN)
+2. Host locally (ADVANCED - requires port forwarding, a VPN, or everyone being on the same LAN)
 
 ### 5. Open Ryujinx
 Make sure the mod and 1.0.1 update are enabled and open Skyward Sword HD
@@ -139,8 +137,6 @@ Get into the game far enough to where you can move Link
 Open the Archipelago launcher and open the Skyward Sword HD Client
 
 ### 7. Play!
-> **Note**: Nothing will work until you get the message: `Found SSHD base address` in the client.  
-> I would personally recommend waiting until you get that message before connecting to the server
 
 Items you find are automatically sent to other players and vice-versa!
 
@@ -151,7 +147,7 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 ### Development Setup
 
 1. Fork this repository
-2. Create a feature branch
+2. Create a feature branch (named `feature/NEWFEATURE` or `fix/BUGFIX`)
 3. Make your changes
 4. Test thoroughly
 5. Submit a pull request
@@ -172,7 +168,7 @@ This project is licensed under the AGPL License - see the [LICENSE](LICENSE) for
 
 ## Beta Testers
 
-- [Aurox](https://github.com/2manydoritos) (aurox44) on Discord
+- [Aurox](https://github.com/2manydoritos)
 - [Terra](https://youtube.com/@TerraGuild)
 - [Utz](https://twitch.tv/utzstauder)
 

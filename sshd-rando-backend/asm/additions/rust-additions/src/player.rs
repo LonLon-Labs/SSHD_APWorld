@@ -500,6 +500,8 @@ assert_eq_size!([u8; 0x1A50], dBird);
 // IMPORTANT: when using vanilla code, the start point must be declared in
 // symbols.yaml and then added to this extern block.
 extern "C" {
+    static PLAYER_PTR: *mut dPlayer;
+
     // Functions
     fn debugPrint_128(string: *const c_char, fstr: *const c_char, ...);
 }
@@ -511,3 +513,49 @@ extern "C" {
 ////////////////////////
 // ADD FUNCTIONS HERE //
 ////////////////////////
+
+/// Offset of the player's movement-speed f32 inside dPlayer (past the end of
+/// the mapped struct, so addressed by raw offset). Same field the speed cheat
+/// scales; see `PLAYER_SPEED_OFFSET` in cheats.rs.
+const PLAYER_MOVE_SPEED_OFFSET: usize = 0x64E8;
+
+/// Copies the player actor's state into `AP_IPC_ROOT.player_info` for the
+/// client's `/player_info`. Called once per frame from the main loop. When
+/// there is no player (title screen, loading) only `valid` is cleared, so the
+/// client can tell the rest is stale.
+pub fn refresh_player_info() {
+    unsafe {
+        let info = core::ptr::addr_of_mut!(crate::ipc::AP_IPC_ROOT.player_info);
+        let player = PLAYER_PTR;
+        if player.is_null() {
+            (*info).valid = 0;
+            return;
+        }
+
+        let rot = (*player).obj_base_members.base.rot;
+        let pos = (*player).obj_base_members.base.pos;
+        let vel = (*player).obj_base_members.velocity;
+
+        (*info).rot_x = rot.x;
+        (*info).rot_y = rot.y;
+        (*info).rot_z = rot.z;
+        (*info).pos_x = pos.x;
+        (*info).pos_y = pos.y;
+        (*info).pos_z = pos.z;
+        (*info).vel_x = vel.x;
+        (*info).vel_y = vel.y;
+        (*info).vel_z = vel.z;
+        (*info).forward_speed = (*player).obj_base_members.forward_speed;
+        (*info).move_speed = core::ptr::read_unaligned(
+            (player as *const u8).add(PLAYER_MOVE_SPEED_OFFSET) as *const f32,
+        );
+        // Read the action as a raw u32 rather than through the enum, so a value
+        // outside PLAYER_ACTIONS can't be materialized as an invalid enum.
+        (*info).current_action =
+            core::ptr::read_unaligned(core::ptr::addr_of!((*player).current_action) as *const u32);
+        (*info).held_buttons = (*player).held_buttons;
+        (*info).triggered_buttons = (*player).triggered_buttons;
+        (*info).current_pressed_button_flags = (*player).current_pressed_button_flags;
+        (*info).valid = 1;
+    }
+}

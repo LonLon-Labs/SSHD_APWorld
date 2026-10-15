@@ -3,6 +3,71 @@ from constants.itemnames import *
 # Item Groups
 ALL_TABLETS = (EMERALD_TABLET, RUBY_TABLET, AMBER_TABLET)
 
+# Bird Statue unlock items, grouped by the region their statue is in.
+# Every surface statue has an unlock item, including the three region entrance
+# statues (Sealed Grounds, Volcano Entrance and Lanayru Mine Entry). None of them
+# is unlocked for free when "Bird Statues Need to be Unlocked" is on; the only
+# ones you start with are the ones picked by "Start with a Bird Statue in Each
+# Region".
+BIRD_STATUE_UNLOCK_ITEMS_BY_REGION = {
+    "Faron": [
+        "Sealed Grounds Statue Unlock",
+        "Behind the Temple Statue Unlock",
+        "Faron Woods Entry Statue Unlock",
+        "In the Woods Statue Unlock",
+        "Viewing Platform Statue Unlock",
+        "Deep Woods Statue Unlock",
+        "Forest Temple Statue Unlock",
+        "The Great Tree Statue Unlock",
+        "Lake Floria Statue Unlock",
+        "Floria Waterfall Statue Unlock",
+    ],
+    "Eldin": [
+        "Volcano Entrance Statue Unlock",
+        "Volcano East Statue Unlock",
+        "Volcano Ascent Statue Unlock",
+        "Temple Entrance Statue Unlock",
+    ],
+    "Lanayru": [
+        "Lanayru Mine Entry Statue Unlock",
+        "Desert Entrance Statue Unlock",
+        "West Desert Statue Unlock",
+        "Desert Gorge Statue Unlock",
+        "Temple of Time Statue Unlock",
+        "North Desert Statue Unlock",
+        "Stone Cache Statue Unlock",
+        "Ancient Harbour Statue Unlock",
+        "Skipper's Retreat Statue Unlock",
+        "Shipyard Statue Unlock",
+        "Pirate Stronghold Statue Unlock",
+        "Lanayru Gorge Statue Unlock",
+    ],
+}
+
+# The unlock flag / item id order. This is NOT the order of the dict above: the
+# first 23 entries keep their original ids (300..=322) and the three region
+# entrance statues were added afterwards as 323..=325. Keep this in sync with
+# data/items.yaml, Items.py and the BIRD_STATUE_UNLOCK_* constants in item.rs.
+BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS = (
+    "Sealed Grounds Statue Unlock",
+    "Volcano Entrance Statue Unlock",
+    "Lanayru Mine Entry Statue Unlock",
+)
+
+ALL_BIRD_STATUE_UNLOCK_ITEMS = tuple(
+    item
+    for region_items in BIRD_STATUE_UNLOCK_ITEMS_BY_REGION.values()
+    for item in region_items
+    if item not in BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS
+) + BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS
+
+# Custom flag IDs 0..31 are reserved for Bird Statue unlock flags. Each unlock item
+# owns the flag whose ID is its index in ALL_BIRD_STATUE_UNLOCK_ITEMS. These are in
+# the scene flag space of the first unused scene index, so the bird statue map
+# tables (which read scene flags) can point straight at them.
+# Keep the AP world's custom flag pool (__init__.py) in sync with this value.
+BIRD_STATUE_UNLOCK_FLAG_RESERVED_COUNT = 32
+
 COMMON_TREASURES = (
     ELDIN_ORE,
     ANCIENT_FLOWER,

@@ -138,6 +138,41 @@ def strip_outer_parenthesis(req_str: str):
     return req_str[req_str.index("(") + 1 : req_str.rindex(")")]
 
 
+def goddess_cube_event_name(item: "Item") -> str:
+    # Name of the event which represents striking the Goddess Cube
+    # that the given dummy item stands for.
+    return item.name.replace("'", "").replace(" ", "_") + "_Struck"
+
+
+# Goddess Chests used to require the dummy "Goddess Cube" items. Depending on the
+# Goddess Chest Unlock and Decouple Goddess Cubes and Chests settings, the
+# requirement to open a chest is one of:
+#   - unlocked_from_start:          Nothing
+#   - unlocked_after_goddess_sword: Goddess Sword
+#   - locked_until_struck:          the cube's dummy item when not decoupled
+#                                   (the item is placed on the cube location),
+#                                   or a "cube struck" event when decoupled
+#                                   (the cube location now holds a random item).
+def resolve_goddess_cube_requirement(item: "Item", world: "World") -> Requirement:
+    unlock = world.setting("goddess_chest_unlock")
+    req = copy.deepcopy(Requirement())
+
+    if unlock == "unlocked_from_start":
+        req.type = RequirementType.NOTHING
+    elif unlock == "unlocked_after_goddess_sword":
+        req = parse_requirement_string("Goddess_Sword", world, force_logic=True)
+    elif world.setting("decouple_goddess_cubes_and_chests") == "on":
+        event_name = goddess_cube_event_name(item)
+        world.add_event(event_name)
+        req.type = RequirementType.EVENT
+        req.args.append(world.events[event_name])
+    else:
+        req.type = RequirementType.ITEM
+        req.args.append(item)
+
+    return req
+
+
 # Takes a logic expression and translates it into a requirement object
 # that's evaluated during the the search algorithm
 def parse_requirement_string(
@@ -229,8 +264,13 @@ def parse_requirement_string(
             return world.get_macro(arg)
         # Then items...
         elif arg.replace("_", " ") in world.item_table:
+            item = world.get_item(arg)
+            if item.goddess_chest is not None:
+                # Goddess Cube dummy items are resolved based on how
+                # Goddess Chests are unlocked.
+                return resolve_goddess_cube_requirement(item, world)
             req.type = RequirementType.ITEM
-            req.args.append(world.get_item(arg))
+            req.args.append(item)
         # Then events...
         elif arg[0] == "'":
             req.type = RequirementType.EVENT

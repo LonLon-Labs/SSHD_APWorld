@@ -54,6 +54,14 @@ Skyward Sword HD:
   # On macOS: /Users/user/Library/Application Support/Archipelago/sshd_extract
   extract_path: ""
 
+  # Other mods to merge into the randomizer output (EXPERIMENTAL).
+  # other_mods is a list of folder names; each folder holds that mod's romfs folder.
+  # other_mods_path is the folder containing those mod folders. Leave it blank to use
+  # the other_mods folder next to your extract path. The sshd-rando GUI fills both in.
+  # Mods that modify exefs are not supported.
+  other_mods: []
+  other_mods_path: ""
+
 
 
   # ====================================================================================
@@ -110,7 +118,7 @@ Skyward Sword HD:
   # ========================================
   # CHEATS
   # ========================================
-  # These cheats are applied in real-time by the client via memory writes.
+  # These cheats are enabled in the rust backend by the Archipelago client when connected.
   # They do NOT affect randomizer logic or seed generation.
 
   # Infinite Health
@@ -182,6 +190,10 @@ Skyward Sword HD:
   # Technoblin electricity (and any other source) will still deal normal
   # knockback damage, but the prolonged paralysis animation is removed.
   cheat_no_electric_stun: false
+
+  # No Enemy Damage
+  # When enabled, enemies cannot hit Link.
+  cheat_no_enemy_damage: false
 
   # Speed Multiplier
   # Multiplies Link's forward movement speed.
@@ -290,6 +302,22 @@ Skyward Sword HD:
   npc_closet_shuffle: false             # Randomized NPC closets (false = vanilla items)
   hidden_item_shuffle: false            # Hidden Item checks can contain any item first time (false = always vanilla items)
   goddess_chest_shuffle: false          # Goddess Chest items can be randomized (false = not required to activate/open)
+  pot_shuffle: false                    # Pots can contain any item (false = only rupees, hearts, and seeds)
+  pumpkin_shuffle: false                # Pumpkins can contain any item (false = only vanilla items)
+  barrel_shuffle: false                 # Barrels can contain any item (false = only vanilla items)
+
+  # Goddess Chest Unlock
+  # locked_until_struck: Goddess Chests are activated by striking their goddess cube with a Skyward Strike (vanilla, default)
+  # unlocked_after_goddess_sword: All Goddess Chests are activated once you obtain the Goddess Sword
+  # unlocked_from_start: All Goddess Chests are activated from the start of the game
+  goddess_chest_unlock: locked_until_struck
+
+  # Decouple Goddess Cubes and Chests
+  # false: Goddess Cubes only activate their chest (or do nothing if chests are already unlocked) (default)
+  # true: Striking a Goddess Cube gives a randomized item (each cube becomes a location).
+  #       If Goddess Chest Unlock is locked_until_struck, striking a cube also still activates its chest
+  decouple_goddess_cubes_and_chests: false
+
   tadtone_shuffle: false                # Tadtones in Flooded Faron Woods shuffled with world items (false = not shuffled)
   gossip_stone_treasure_shuffle: false  # Gossip Stones give random items when raised (false = always visible, no items)
   

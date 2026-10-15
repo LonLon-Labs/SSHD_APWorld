@@ -399,6 +399,99 @@ pub extern "C" fn unset_storyflag(flag: u16) {
     };
 }
 
+/// Cached "tutorial fail-open" state for `lyt::no_droppable_bird_statues`.
+///
+/// Calling `check_storyflag` from inside the light-pillar scene-change hook
+/// crashes (the storyflag getter's flag-space helper walks the actor tree
+/// and faults on a pointer into our blob while a scene change is in flight).
+/// The same call is safe from the main loop, so the main loop refreshes this
+/// once per frame and the hook only reads the cache.
+static mut TUTORIAL_FAIL_OPEN: u8 = 0;
+
+/// Cached "player owns the Sailcloth" state, refreshed by the main loop.
+/// Game hooks (scene change, landing map, ...) must NOT call the itemflag /
+/// storyflag getters themselves: those walk the actor tree and have faulted
+/// when called from the light-pillar scene-change hook. They read this
+/// cache instead. Defaults to 1 (owned) so a stale cache never voids a player
+/// out by mistake.
+static mut HAS_SAILCLOTH: u8 = 1;
+
+/// Called every frame from `main_loop_inject`. Never call from a game hook.
+#[inline(never)]
+pub fn refresh_cached_story_state() {
+    unsafe {
+        let mut value = 0u8;
+        if !STORYFLAG_MGR.is_null() && !(*STORYFLAG_MGR).funcs.is_null() {
+            // Tutorial: vanilla force-enables a few statues until story
+            // flag 0x10 is set, so don't void out then.
+            if check_storyflag(0x20F) != 0 && check_storyflag(0x10) == 0 {
+                value = 1;
+            }
+        }
+        core::ptr::write_volatile(core::ptr::addr_of_mut!(TUTORIAL_FAIL_OPEN), value);
+
+        if !ITEMFLAG_MGR.is_null() && !(*ITEMFLAG_MGR).funcs.is_null() {
+            let has = (check_itemflag(ITEMFLAGS::SAILCLOTH) != 0) as u8;
+            core::ptr::write_volatile(core::ptr::addr_of_mut!(HAS_SAILCLOTH), has);
+        }
+    }
+}
+
+/// Temple of Hylia door: sceneflag 50 of the Sealed Grounds scene (index 10)
+/// is the "Unlocked Horde Door from Temple of Hylia" flag that startflags.yaml
+/// sets for a complete Triforce. When the seed needs only 1 or 2 Triforce
+/// pieces (`needed`), set it as soon as that many of the three pieces are
+/// owned. Called every frame from the main loop (never from a game hook, see
+/// `refresh_cached_story_state`).
+pub fn handle_triforce_door_flag(needed: u8) {
+    unsafe {
+        if needed == 0 || needed > 3 {
+            return;
+        }
+        if STORYFLAG_MGR.is_null()
+            || (*STORYFLAG_MGR).funcs.is_null()
+            || ITEMFLAG_MGR.is_null()
+            || (*ITEMFLAG_MGR).funcs.is_null()
+            || SCENEFLAG_MGR.is_null()
+            || FILE_MGR.is_null()
+        {
+            return;
+        }
+
+        let mut owned: u8 = 0;
+        for piece in [
+            ITEMFLAGS::TRIFORCE_OF_COURAGE,
+            ITEMFLAGS::TRIFORCE_OF_POWER,
+            ITEMFLAGS::TRIFORCE_OF_WISDOM,
+        ] {
+            if check_itemflag(piece) != 0 {
+                owned += 1;
+            }
+        }
+        if owned < needed {
+            return;
+        }
+
+        if check_global_sceneflag(10, 50) == 0 {
+            set_global_sceneflag(10, 50);
+        }
+        // The scene currently loaded reads the local copy, so update it too.
+        if (*SCENEFLAG_MGR).sceneindex == 10 && check_local_sceneflag(50) == 0 {
+            set_local_sceneflag(50);
+        }
+    }
+}
+
+/// True if the player owns the Sailcloth (cached; see `HAS_SAILCLOTH`).
+pub fn has_sailcloth_cached() -> bool {
+    unsafe { core::ptr::read_volatile(core::ptr::addr_of!(HAS_SAILCLOTH)) != 0 }
+}
+
+/// True during the tutorial (cached; see `refresh_cached_story_state`).
+pub fn tutorial_fail_open() -> bool {
+    unsafe { core::ptr::read_volatile(core::ptr::addr_of!(TUTORIAL_FAIL_OPEN)) != 0 }
+}
+
 #[no_mangle]
 pub extern "C" fn check_storyflag(flag: u16) -> u32 {
     unsafe {
@@ -795,6 +888,10 @@ pub extern "C" fn handle_startflags() {
 
         // amiibo
         (*FILE_MGR).game_options |= 1;
+
+        // Archipelago: remember which multiworld (seed + slot name) this new
+        // file belongs to.
+        savefile::write_save_seed();
 
         ((*(*STORYFLAG_MGR).funcs).do_commit)(STORYFLAG_MGR);
         ((*(*ITEMFLAG_MGR).funcs).do_commit)(ITEMFLAG_MGR);
