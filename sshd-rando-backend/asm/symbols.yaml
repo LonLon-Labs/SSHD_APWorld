@@ -358,6 +358,11 @@ main:
     ## Placed in RODATA segment (read-only) past original rodata end (0x20FCAC).
     CREST_CUSTOM_FLAGS: 0x712e5fecb0
 
+    ## Size: 8 (4 x u16) - Archipelago custom flags for the 4 silent realm "Collect all
+    ## Tears Reward" locations, indexed S000, S100, S200, S300 (0x3FF = no flag).
+    ## Written by the patcher (init_global_variables) right after CREST_CUSTOM_FLAGS.
+    TRIAL_REWARD_CUSTOM_FLAGS: 0x712e5fecb8
+
     ## Size: 0x80 (128) each
     DEBUG_PRINTABLE_STRING: 0x712e601000
     DEBUG_PRINTABLE_STRING_ARG: 0x712e601040

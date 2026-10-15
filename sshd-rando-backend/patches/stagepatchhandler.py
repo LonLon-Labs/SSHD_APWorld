@@ -105,6 +105,11 @@ AP_ITEM_OARC_NAMES: frozenset[str] = frozenset({
 _SKIP_AP_OARC_STAGES: frozenset[str] = frozenset({"B400", "F400", "F402", "F403", "F404", "F405", "F407"})
 
 
+# Silent realm stages, in the order the game's Rust additions (item.rs
+# TRIAL_REWARD_CUSTOM_FLAGS) index the trial reward custom flag table.
+SILENT_REALM_STAGES: list[str] = ["S000", "S100", "S200", "S300"]
+
+
 # Story flags set by striking each of the 27 Goddess Cubes, in ascending order.
 # The game's Rust additions (item.rs GODDESS_CUBE_STORYFLAGS) use the same order to
 # index the GODDESS_CUBE_CUSTOM_FLAGS / GODDESS_CUBE_ITEM_IDS tables.
@@ -1388,6 +1393,11 @@ class StagePatchHandler:
         # Populated during handle_stage_patches() when SwSB check patches are processed.
         # Written to the CREST_CUSTOM_FLAGS Rust static via init_global_variables.
         self.crest_custom_flags: list[int] = [0x3FF, 0x3FF, 0x3FF]
+        # Silent realm "Collect all Tears Reward" custom flags, indexed by
+        # SILENT_REALM_STAGES (S000, S100, S200, S300). Populated while handling the
+        # trial gate (WarpObj) check patches and written to the
+        # TRIAL_REWARD_CUSTOM_FLAGS Rust static via init_global_variables.
+        self.trial_reward_custom_flags: list[int] = [0x3FF] * len(SILENT_REALM_STAGES)
         # Decoupled Goddess Cubes: story flag -> (item id, AP custom flag).
         # Written to the GODDESS_CUBE_* Rust statics via init_global_variables;
         # the game hands out the item when the cube's story flag gets set.
@@ -1717,6 +1727,13 @@ class StagePatchHandler:
                             itemid,
                             trapid,
                         )
+                        # Record this realm's reward custom flag so the game reads
+                        # the real flag from TRIAL_REWARD_CUSTOM_FLAGS instead of a
+                        # hardcoded one (written via init_global_variables).
+                        if stage_name in SILENT_REALM_STAGES and custom_flag != 0x3FF:
+                            self.trial_reward_custom_flags[
+                                SILENT_REALM_STAGES.index(stage_name)
+                            ] = custom_flag
                     elif object_name == "TgReact":
                         patch_tgreact(
                             room_bzs["LAY "][f"l{layer}"],

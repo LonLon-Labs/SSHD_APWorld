@@ -152,6 +152,9 @@ class AllPatchHandler:
         # init_global_variables can write them into the CREST_CUSTOM_FLAGS
         # Rust static.
         self.asm_patch_handler.crest_custom_flags = self.stage_patch_handler.crest_custom_flags
+        self.asm_patch_handler.trial_reward_custom_flags = (
+            self.stage_patch_handler.trial_reward_custom_flags
+        )
         self.asm_patch_handler.goddess_cube_arrays = (
             self.stage_patch_handler.get_goddess_cube_arrays()
         )

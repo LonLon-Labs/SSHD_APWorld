@@ -130,6 +130,11 @@ extern "C" {
 
     static mut CREST_CUSTOM_FLAGS: [u16; 3];
 
+    // Silent realm "Collect all Tears Reward" custom flags, indexed S000, S100,
+    // S200, S300 (filled in by the patcher via init_global_variables; 0x3FF =
+    // none)
+    static mut TRIAL_REWARD_CUSTOM_FLAGS: [u16; 4];
+
     // Decoupled Goddess Cubes (filled in by the patcher via init_global_variables)
     static GODDESS_CUBE_MAGIC: u32;
     static mut GODDESS_CUBE_CUSTOM_FLAGS: [u16; 32];
@@ -264,34 +269,34 @@ pub extern "C" fn archipelago_silent_realm_tear_fix() {
         // When all 15 tears are collected, bypass dSilentRealmFldMgr (which does
         // not fire with AP items) and trigger trial completion directly.
         if tears_collected >= 15 {
-            // Per-realm: (game storyflag, AP custom_flag, S{x}00 current_room, exit_index)
-            // AP custom_flag bits: [0-6]=flag, [7-8]=scene_selector (0→6,1→13,2→16,3→19),
-            //   [9]=flag_space.
-            //   S000: 267 → scene 16, bit 11
-            //   S100: 253 → scene 13, bit 125
-            //   S200: 223 → scene 13, bit 95  (trial in room 2)
-            //   S300: 237 → scene 13, bit 109
+            // Per-realm: (game storyflag, trial reward index into
+            // TRIAL_REWARD_CUSTOM_FLAGS, S{x}00 current_room, exit_index).
+            // The AP custom flag is NOT hardcoded: the patcher writes each realm's
+            // real reward flag into TRIAL_REWARD_CUSTOM_FLAGS (0x3FF = none).
             // Exit data from entrance_shuffle_data.yaml: all realms use exit_index 1.
             //   S000 r00 exit 1 → F000 r00 entrance 83
             //   S100 r00 exit 1 → F100 r00 entrance 48
             //   S200 r02 exit 1 → F200 r02 entrance 5 (Eldin return, room 2!)
             //   S300 r00 exit 1 → F300 r00 entrance 4
-            let (completion_storyflag, ap_custom_flag, current_room, exit_index): (
+            let (completion_storyflag, reward_index, current_room, exit_index): (
                 u16,
-                u16,
+                usize,
                 u32,
                 u32,
             ) = if current_stage == b"S000" {
-                (919, 267, 0, 1) // Goddess -> F000 r00 entrance 83
+                (919, 0, 0, 1) // Goddess -> F000 r00 entrance 83
             } else if current_stage == b"S100" {
-                (921, 253, 0, 1) // Farore  -> F100 r00 entrance 48
+                (921, 1, 0, 1) // Farore  -> F100 r00 entrance 48
             } else if current_stage == b"S200" {
-                (920, 223, 2, 1) // Din     -> F200 r02 entrance 5
+                (920, 2, 2, 1) // Din     -> F200 r02 entrance 5
             } else if current_stage == b"S300" {
-                (922, 237, 0, 1) // Nayru   -> F300 r00 entrance 4
+                (922, 3, 0, 1) // Nayru   -> F300 r00 entrance 4
             } else {
                 return;
             };
+            let ap_custom_flag: u16 = core::ptr::read_volatile(core::ptr::addr_of!(
+                TRIAL_REWARD_CUSTOM_FLAGS[reward_index]
+            ));
 
             // On the first completion frame, store the AP reward info and storyflag
             // for deferred spawn after the overworld reloads.

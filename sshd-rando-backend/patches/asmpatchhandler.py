@@ -728,6 +728,18 @@ class ASMPatchHandler:
             flags[2] & 0xFF, (flags[2] >> 8) & 0xFF,
         ]  # CREST_CUSTOM_FLAGS
 
+        # Silent realm "Collect all Tears Reward" custom flags (4 x u16, indexed S000,
+        # S100, S200, S300; 0x3FF = no flag). Read by
+        # archipelago_silent_realm_tear_fix in item.rs. Sits right after
+        # CREST_CUSTOM_FLAGS (see symbols.yaml).
+        trial_flags = getattr(self, "trial_reward_custom_flags", [0x3FF] * 4)
+        trial_flags = list(trial_flags) + [0x3FF] * (4 - len(trial_flags))
+        init_rw_globals_dict[SUBSDK_CREST_CUSTOM_FLAGS_OFFSET + 8] = [
+            byte
+            for trial_flag in trial_flags[:4]
+            for byte in (trial_flag & 0xFF, (trial_flag >> 8) & 0xFF)
+        ]  # TRIAL_REWARD_CUSTOM_FLAGS
+
         # Decoupled Goddess Cubes: per-cube AP custom flag (u16, 0x3FF = none, so the
         # game ignores the slot) and the item id handed out when the cube is struck.
         # Padded to 32 entries each to match the GODDESS_CUBE_* statics.

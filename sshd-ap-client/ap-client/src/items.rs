@@ -1,5 +1,5 @@
 //! AP item code → game `original_id` mapping, generated from `Items.py`'s
-//! `ITEM_TABLE` (206 entries as of this port — regenerate this file if
+//! `ITEM_TABLE` (209 entries as of this port — regenerate this file if
 //! `Items.py` changes).
 //!
 //! Every entry's AP `code` is `2773000 + original_id` (a fixed offset the
@@ -19,7 +19,7 @@
 //! sentinel and is never used.
 
 /// (ap_code, original_id) — sorted by ap_code. The Bird Statue unlock items
-/// use ids 300..=322 and therefore sit after the event-only ids.
+/// use ids 300..=325 and therefore sit after the event-only ids.
 const ITEM_CODE_TO_ORIGINAL_ID: &[(i64, u16)] = &[
     (2773001, 1), // Small Key
     (2773002, 2), // Green Rupee
@@ -250,6 +250,9 @@ const ITEM_CODE_TO_ORIGINAL_ID: &[(i64, u16)] = &[
     (2773320, 320), // Shipyard Statue Unlock
     (2773321, 321), // Pirate Stronghold Statue Unlock
     (2773322, 322), // Lanayru Gorge Statue Unlock
+    (2773323, 323), // Sealed Grounds Statue Unlock
+    (2773324, 324), // Volcano Entrance Statue Unlock
+    (2773325, 325), // Lanayru Mine Entry Statue Unlock
 ];
 
 /// AP item code base — every SSHD item's `code` is `2773000 + original_id`.
@@ -351,6 +354,11 @@ mod tests {
     fn bird_statue_unlocks_resolve_above_255() {
         assert_eq!(original_id_for_ap_code(2773300), Some(300)); // Behind the Temple
         assert_eq!(original_id_for_ap_code(2773322), Some(322)); // Lanayru Gorge
+        assert_eq!(original_id_for_ap_code(2773323), Some(323)); // Sealed Grounds
+        assert_eq!(original_id_for_ap_code(2773324), Some(324)); // Volcano Entrance
+        assert_eq!(original_id_for_ap_code(2773325), Some(325)); // Lanayru Mine Entry
+        // 326+ is past the last statue unlock item (the game's flag range is 300..=325).
+        assert_eq!(original_id_for_ap_code(2773326), None);
         // The old statue ids (228..=249, and 156 for Lanayru Gorge) are gone.
         assert_eq!(original_id_for_ap_code(2773228), None);
         assert_eq!(original_id_for_ap_code(2773156), None);

@@ -248,10 +248,10 @@
     Lightning Node - Barrel 5: Nothing
     Lightning Node - Barrel 6: Nothing
     Lightning Node - Barrel 7: Nothing
-    Lightning Node - Barrel 8: Nothing
-    Lightning Node - Barrel 9: Nothing
-    Lightning Node - Barrel 10: Nothing
-    Lightning Node - Barrel 11: Nothing
+    Lightning Node - Barrel 8: Bomb_Bag
+    Lightning Node - Barrel 9: Bomb_Bag
+    Lightning Node - Barrel 10: Bomb_Bag
+    Lightning Node - Barrel 11: Bomb_Bag
 
 - name: Lanayru Desert Secret Passageway
   hint_region: Lanayru Desert
