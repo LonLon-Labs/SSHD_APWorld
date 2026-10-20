@@ -78,6 +78,19 @@ pub extern "C" fn fix_item_get() {
             return;
         }
 
+        // Safety: PLAYER_PTR can go null mid-animation if the player object
+        // is torn down while an item-get is still being processed (e.g. a
+        // manual/forced stage reload while items are being delivered from
+        // the buffer). Without this check the reads below crash with a
+        // null-pointer data abort.
+        if PLAYER_PTR.is_null() {
+            unsafe {
+                asm!("mov w8, #0"); // clamp to small animation, same as the
+                                    // bounds-check bail-out above
+            }
+            return;
+        }
+
         let current_action = (*PLAYER_PTR).current_action;
 
         // If in water or sliding, allow immediate item gets
@@ -286,24 +299,34 @@ pub extern "C" fn is_kikwi_found(dont_care: *mut c_void, found_storyflag: u16) -
 }
 
 #[no_mangle]
-pub extern "C" fn fix_ammo_counts(collected_item: flag::ITEMFLAGS) {
+pub extern "C" fn fix_ammo_counts(collected_item: u16) {
+    // Raw item id (u16), not `flag::ITEMFLAGS`: custom ids such as the Bird
+    // Statue unlocks (300..=325) are not enum variants, and passing one as the
+    // enum is undefined behavior.
+    const FIVE_BOMBS: u16 = flag::ITEMFLAGS::FIVE_BOMBS as u16;
+    const TEN_BOMBS: u16 = flag::ITEMFLAGS::TEN_BOMBS as u16;
+    const SINGLE_ARROW: u16 = flag::ITEMFLAGS::SINGLE_ARROW as u16;
+    const BUNDLE_OF_ARROWS: u16 = flag::ITEMFLAGS::BUNDLE_OF_ARROWS as u16;
+    const FIVE_DEKU_SEEDS: u16 = flag::ITEMFLAGS::FIVE_DEKU_SEEDS as u16;
+    const TEN_DEKU_SEEDS: u16 = flag::ITEMFLAGS::TEN_DEKU_SEEDS as u16;
+
     // Reset ammo counts to zero if we collect ammo, but don't
     // have the item which corresponds to using the ammo
     match collected_item {
         // Bombs
-        flag::ITEMFLAGS::FIVE_BOMBS | flag::ITEMFLAGS::TEN_BOMBS => {
+        FIVE_BOMBS | TEN_BOMBS => {
             if flag::check_itemflag(flag::ITEMFLAGS::BOMB_BAG) == 0 {
                 flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::BOMB_COUNTER, 0);
             }
         },
         // Arrows
-        flag::ITEMFLAGS::SINGLE_ARROW | flag::ITEMFLAGS::BUNDLE_OF_ARROWS => {
+        SINGLE_ARROW | BUNDLE_OF_ARROWS => {
             if flag::check_itemflag(flag::ITEMFLAGS::BOW) == 0 {
                 flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::ARROW_COUNTER, 0);
             }
         },
         // Deku Seeds
-        flag::ITEMFLAGS::FIVE_DEKU_SEEDS | flag::ITEMFLAGS::TEN_DEKU_SEEDS => {
+        FIVE_DEKU_SEEDS | TEN_DEKU_SEEDS => {
             if flag::check_itemflag(flag::ITEMFLAGS::SLINGSHOT) == 0 {
                 flag::set_itemflag_or_counter_to_value(flag::ITEMFLAGS::DEKU_SEED_COUNTER, 0);
             }

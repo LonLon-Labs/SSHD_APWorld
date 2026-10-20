@@ -48,7 +48,13 @@ else:
     SSHD_EXTRACT_PATH = Path(userdata_path) / "sshd_extract"
 EXEFS_EXTRACT_PATH = SSHD_EXTRACT_PATH / "exefs"
 ROMFS_EXTRACT_PATH = SSHD_EXTRACT_PATH / "romfs"
-OTHER_MODS_PATH = Path(userdata_path) / "other_mods"
+# The folder holding other mods to merge in. Defaults to <userdata>/other_mods,
+# but the player's YAML (other_mods_path) can point it anywhere, e.g. the
+# other_mods folder of the sshd-rando GUI they added their mods with.
+_ap_other_mods = os.environ.get("SSHD_AP_OTHER_MODS_PATH")
+OTHER_MODS_PATH = (
+    Path(_ap_other_mods) if _ap_other_mods else Path(userdata_path) / "other_mods"
+)
 COMBINED_MODS_FOLDER = "TEMP_COMBINED_MOD_DATA"
 COMBINED_MODS_PATH = OTHER_MODS_PATH / COMBINED_MODS_FOLDER
 

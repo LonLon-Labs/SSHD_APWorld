@@ -8,6 +8,21 @@ from constants.itemconstants import (
     GRATITUDE_CRYSTAL_PACK,
     PROGRESSIVE_WALLET,
     EXTRA_WALLET,
+    SVT_SMALL_KEY,
+    LMF_SMALL_KEY,
+    AC_SMALL_KEY,
+    FS_SMALL_KEY,
+    SSH_SMALL_KEY,
+    SK_SMALL_KEY,
+    LC_SMALL_KEY,
+    SVT_KEY_RING,
+    LMF_KEY_RING,
+    AC_KEY_RING,
+    FS_KEY_RING,
+    SSH_KEY_RING,
+    SK_KEY_RING,
+    LC_KEY_RING,
+    SKELETON_KEY,
 )
 
 if TYPE_CHECKING:
@@ -138,6 +153,82 @@ def strip_outer_parenthesis(req_str: str):
     return req_str[req_str.index("(") + 1 : req_str.rindex(")")]
 
 
+# Each dungeon's Key Ring stands in for every small key of that dungeon, and the
+# Skeleton Key stands in for every small key in the game. When Key Rings / the
+# Skeleton Key are in the pool (which is also what happens to the literal small
+# keys when small_keys == removed), the logic's literal small key requirements
+# must be satisfiable by them or every locked door becomes impossible.
+SMALL_KEY_TO_KEY_RING = {
+    SVT_SMALL_KEY: SVT_KEY_RING,
+    LMF_SMALL_KEY: LMF_KEY_RING,
+    AC_SMALL_KEY: AC_KEY_RING,
+    FS_SMALL_KEY: FS_KEY_RING,
+    SSH_SMALL_KEY: SSH_KEY_RING,
+    SK_SMALL_KEY: SK_KEY_RING,
+    LC_SMALL_KEY: LC_KEY_RING,
+}
+
+
+def small_key_substitutes(item: "Item", world: "World") -> list["Item"]:
+    ring_name = SMALL_KEY_TO_KEY_RING.get(item.name)
+    if ring_name is None:
+        return []
+    return [
+        world.item_table[name]
+        for name in (ring_name, SKELETON_KEY)
+        if name in world.item_table
+    ]
+
+
+# Wraps a literal small key requirement (ITEM or COUNT) so that the dungeon's
+# Key Ring or the Skeleton Key also satisfy it. Non small key items pass through.
+def with_small_key_substitutes(
+    req: "Requirement", item: "Item", world: "World"
+) -> "Requirement":
+    substitutes = small_key_substitutes(item, world)
+    if not substitutes:
+        return req
+    return Requirement(
+        RequirementType.OR,
+        [req] + [Requirement(RequirementType.ITEM, [sub]) for sub in substitutes],
+    )
+
+
+def goddess_cube_event_name(item: "Item") -> str:
+    # Name of the event which represents striking the Goddess Cube
+    # that the given dummy item stands for.
+    return item.name.replace("'", "").replace(" ", "_") + "_Struck"
+
+
+# Goddess Chests used to require the dummy "Goddess Cube" items. Depending on the
+# Goddess Chest Unlock and Decouple Goddess Cubes and Chests settings, the
+# requirement to open a chest is one of:
+#   - unlocked_from_start:          Nothing
+#   - unlocked_after_goddess_sword: Goddess Sword
+#   - locked_until_struck:          the cube's dummy item when not decoupled
+#                                   (the item is placed on the cube location),
+#                                   or a "cube struck" event when decoupled
+#                                   (the cube location now holds a random item).
+def resolve_goddess_cube_requirement(item: "Item", world: "World") -> Requirement:
+    unlock = world.setting("goddess_chest_unlock")
+    req = copy.deepcopy(Requirement())
+
+    if unlock == "unlocked_from_start":
+        req.type = RequirementType.NOTHING
+    elif unlock == "unlocked_after_goddess_sword":
+        req = parse_requirement_string("Goddess_Sword", world, force_logic=True)
+    elif world.setting("decouple_goddess_cubes_and_chests") == "on":
+        event_name = goddess_cube_event_name(item)
+        world.add_event(event_name)
+        req.type = RequirementType.EVENT
+        req.args.append(world.events[event_name])
+    else:
+        req.type = RequirementType.ITEM
+        req.args.append(item)
+
+    return req
+
+
 # Takes a logic expression and translates it into a requirement object
 # that's evaluated during the the search algorithm
 def parse_requirement_string(
@@ -229,8 +320,14 @@ def parse_requirement_string(
             return world.get_macro(arg)
         # Then items...
         elif arg.replace("_", " ") in world.item_table:
+            item = world.get_item(arg)
+            if item.goddess_chest is not None:
+                # Goddess Cube dummy items are resolved based on how
+                # Goddess Chests are unlocked.
+                return resolve_goddess_cube_requirement(item, world)
             req.type = RequirementType.ITEM
-            req.args.append(world.get_item(arg))
+            req.args.append(item)
+            return with_small_key_substitutes(req, item, world)
         # Then events...
         elif arg[0] == "'":
             req.type = RequirementType.EVENT
@@ -258,6 +355,8 @@ def parse_requirement_string(
             else:
                 req.args.append(count)
                 req.args.append(item)
+
+            return with_small_key_substitutes(req, item, world)
         # Then setting comparison check...
         # Since settings don't change curing seed generation,
         # we can resolve them to NOTHING or IMPOSSIBLE requirements now
@@ -272,10 +371,15 @@ def parse_requirement_string(
                     f'Setting "{setting_name}" is not a known setting'
                 )
 
-            actual_option = world.setting(setting_name).value_index()
-            compared_option = world.setting(setting_name).value_index(
-                compared_option_str
-            )
+            setting_getter = world.setting(setting_name)
+            if setting_getter.keeps_locks_despite_removed():
+                # "removed" key locks stay locked when Key Rings / the Skeleton Key
+                # are in the pool, so the setting must not match any real option
+                # here (== removed is False, != removed is True).
+                actual_option = -1
+            else:
+                actual_option = setting_getter.value_index()
+            compared_option = setting_getter.value_index(compared_option_str)
             if (
                 ("==" in arg and actual_option == compared_option)
                 or ("!=" in arg and actual_option != compared_option)

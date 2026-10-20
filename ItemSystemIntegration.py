@@ -51,7 +51,7 @@ class GameOffsets:
     # Archipelago integration
     # Buffer is allocated as a Rust static variable in item.rs
     # Structure: 1024 slots × 4 bytes each = 4096 bytes total
-    # Each slot: [item_id (u8), flags (u8), reserved (u16)]
+    # Each slot: [item_id_lo (u8), flags (u8), reserved (u8), item_id_hi (u8)]
     ARCHIPELAGO_BUFFER_SIZE = 1024  # Number of slots
     ARCHIPELAGO_BUFFER_SLOT_SIZE = 4  # Bytes per slot
 
@@ -522,14 +522,19 @@ class GameItemSystem:
                     if play_jingle:
                         flags |= 0x02
 
-                    # Write to buffer ATOMICALLY using a single 16-bit write.
+                    # The item id is 9 bits wide: the low byte goes in byte 0 and
+                    # the high byte in byte 3 (see ArchipelagoItemSlot in item.rs).
+                    # Write the high byte FIRST: the game treats the slot as pending
+                    # as soon as byte 0 is non-zero, so the single 16-bit write below
+                    # (which also sets the flags) must be the last thing we do.
                     buffer_offset = self.buffer_addr + (slot * GameOffsets.ARCHIPELAGO_BUFFER_SLOT_SIZE)
-                    slot_value = item_id | (flags << 8)  # little-endian: [item_id, flags]
+                    self.memory.write_byte(buffer_offset + 3, (item_id >> 8) & 0xFF)
+                    slot_value = (item_id & 0xFF) | (flags << 8)  # little-endian: [item_id_lo, flags]
                     if self.memory.write_short(buffer_offset, slot_value):
                         logger.info(f"Wrote item {item_id} to buffer slot {slot} with flags {flags:02x}")
                         logger.info(f"Buffer address: base+0x{self.buffer_addr:x} = 0x{self.memory.base_address + self.buffer_addr:x}")
                         buffer_success = self._wait_for_item_processed(
-                            buffer_offset, expected_item_id=item_id
+                            buffer_offset, expected_item_id=item_id & 0xFF
                         )
                     else:
                         logger.warning(f"Failed to write item {item_id} to buffer slot {slot}")
@@ -763,6 +768,7 @@ class GameItemSystem:
         # not write into potentially stale memory; force caller to retry.
         if self._verify_buffer_magic():
             self.memory.write_short(buffer_offset, 0)
+            self.memory.write_byte(buffer_offset + 3, 0)
         else:
             logger.warning(
                 "Buffer magic invalid at timeout; skipping slot clear to avoid stale-memory write"
