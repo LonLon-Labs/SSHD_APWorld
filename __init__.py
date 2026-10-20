@@ -1100,6 +1100,7 @@ class SSHDWorld(World):
             "Pots":                  "pot_shuffle",
             "Pumpkins":              "pumpkin_shuffle",
             "Barrels":               "barrel_shuffle",
+            "Bird Statues":          "bird_statues_give_items",
             "Goddess Chests":        "goddess_chest_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",
@@ -1364,6 +1365,7 @@ class SSHDWorld(World):
                         "Pots":                  "pot_shuffle",
                         "Pumpkins":              "pumpkin_shuffle",
                         "Barrels":               "barrel_shuffle",
+                        "Bird Statues":          "bird_statues_give_items",
                         "Goddess Chests":        "goddess_chest_shuffle",
                         "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
                         "Underground Rupees":    "underground_rupee_shuffle",
@@ -1660,7 +1662,32 @@ class SSHDWorld(World):
         # If it failed, this prevents the logic converter from treating all
         # setting comparisons as False (which makes regions like Temple of Hylia unreachable).
         self._ensure_critical_resolved_settings()
+        self._apply_key_lock_overrides()
     
+    def _apply_key_lock_overrides(self):
+        """
+        Keep key-lock logic in sync with what the patcher does in game.
+
+        "Removed" normally means the small key locks start opened. With Key Rings
+        and/or the Skeleton Key in the pool, those items are what open the doors,
+        so the doors stay locked. The sshd-rando backend applies this when it sets
+        the starting door flags; this mirrors it for the Archipelago logic, which
+        otherwise treats `small_keys == removed` as "no key needed" and could place
+        a Key Ring or the Skeleton Key behind a door it thinks is already open.
+        """
+        s = getattr(self, '_sshd_resolved_settings', None)
+        if s is None:
+            return
+        if not (self.options.key_rings_in_pool.value or self.options.skeleton_key_in_pool.value):
+            return
+        for setting_name in ("small_keys", "lanayru_caves_keys"):
+            if s.get(setting_name) == "removed":
+                # Not "removed" and not "vanilla": doors stay locked, but keys are
+                # still not pinned to their vanilla locations.
+                s[setting_name] = "removed_locked"
+                print(f"[__init__.py] {setting_name}: 'removed' with Key Rings/Skeleton Key "
+                      f"enabled -> doors stay locked")
+
     def _ensure_critical_resolved_settings(self):
         """
         Populate _sshd_resolved_settings with fallback values derived from
@@ -1882,6 +1909,11 @@ class SSHDWorld(World):
             for raw_name, count in starting_items.items():
                 # Convert any stage names to progressive (safety net for progressive_items=on)
                 item_name = STAGE_TO_PROGRESSIVE.get(raw_name, raw_name)
+                # Generic sshd-rando placeholders have no dungeon, so they can't be
+                # meaningfully granted in Archipelago. Never precollect them.
+                if raw_name in ("Small Key", "Map"):
+                    print(f"  [WARNING] generic '{raw_name}' x{count} has no dungeon - skipped")
+                    continue
                 # Skip Sailcloth if already force-precollected above
                 if item_name == "Sailcloth" and not self.options.randomize_sailcloth.value:
                     print(f"  {item_name} x{count} (skipped, already force-granted)")
@@ -1974,6 +2006,28 @@ class SSHDWorld(World):
                     ap_pool_counts["Skeleton Key"] = 1
                 print(f"[__init__.py] All-keys mode: replaced {total_removed} small keys with key rings + 1 Skeleton Key")
             
+            # ── Defensive cleanup: items that must never be in the pool ──────
+            # Generic "Small Key" / "Map" are sshd-rando placeholders. Archipelago
+            # only knows the dungeon-specific names, so any leftover (e.g. from a
+            # location whose dungeon could not be resolved) must not leak in.
+            for _generic in ("Small Key", "Map"):
+                _leftover = ap_pool_counts.pop(_generic, 0)
+                if _leftover:
+                    print(f"[__init__.py] Dropped {_leftover} unconverted generic '{_generic}' item(s) from the pool")
+            # Key Rings only exist when Key Rings are enabled.
+            if sk_mode not in ("key_rings", "all_keys"):
+                for _ring in DUNGEON_TO_KEY_RING.values():
+                    if ap_pool_counts.pop(_ring, 0):
+                        print(f"[__init__.py] Dropped '{_ring}' from the pool (Key Rings are off)")
+            # The Skeleton Key only exists when it is enabled.
+            if sk_mode not in ("skeleton_key", "all_keys"):
+                if ap_pool_counts.pop("Skeleton Key", 0):
+                    print("[__init__.py] Dropped 'Skeleton Key' from the pool (Skeleton Key is off)")
+            # Bird Statue unlock items only exist when statues need unlocking.
+            if not self.options.bird_statues_need_unlock.value:
+                for _stat in [n for n in list(ap_pool_counts) if n.endswith(" Statue Unlock")]:
+                    ap_pool_counts.pop(_stat, None)
+            
             # Add all placed items directly to the AP pool.
             # No subtraction needed — sshd-rando already removed starting items
             # from item_pool before fill_worlds() ran, so items at locations
@@ -2059,6 +2113,20 @@ class SSHDWorld(World):
             if self.options.open_earth_temple.value == 0:  # open
                 POOL_ITEM_COUNTS.pop("Key Piece", None)
             
+            # Items that must NOT be added by the generic "every progression/useful
+            # item" sweep below: they only belong in the pool when their option is on
+            # (or never, for the generic placeholders).
+            _fb_skip = {"Small Key", "Map", "Skeleton Key", "Archipelago Item"}
+            _fb_skip |= {n for n in ITEM_TABLE if n.endswith(" Key Ring")}
+            if not self.options.bird_statues_need_unlock.value:
+                _fb_skip |= {n for n in ITEM_TABLE if n.endswith(" Statue Unlock")}
+            if not self.options.require_greg.value:
+                _fb_skip.add("Greg The Green Rupee")
+            if not self.options.require_tim.value:
+                _fb_skip.add("Tim The Tumbleweed")
+            if self.options.boss_key_shuffle.current_key == "removed":
+                _fb_skip |= {n for n in ITEM_TABLE if n.endswith(" Boss Key")}
+            
             for name, data in ITEM_TABLE.items():
                 if name in SKIP_ITEMS or name in PROGRESSIVE_STAGE_ITEMS:
                     continue
@@ -2079,6 +2147,8 @@ class SSHDWorld(World):
                     for _ in range(pool_count):
                         item_pool.append(self.create_item(name))
                 elif data.classification in (IC.progression, IC.useful):
+                    if name in _fb_skip:
+                        continue
                     starting_count = starting_items.get(name, 0)
                     if starting_count == 0:
                         item_pool.append(self.create_item(name))
@@ -2119,6 +2189,50 @@ class SSHDWorld(World):
                     else:
                         converted_pool.append(item)
                 item_pool = converted_pool
+            elif _fallback_sk_mode == "all_keys":
+                # Key Rings AND Skeleton Key both on: one ring per dungeon + 1 skeleton key
+                converted_pool = []
+                rings_added = set()
+                for item in item_pool:
+                    if item.name in ALL_SMALL_KEY_NAMES_FB:
+                        ring = ALL_SMALL_KEY_NAMES_FB[item.name]
+                        if ring not in rings_added:
+                            converted_pool.append(self.create_item(ring))
+                            rings_added.add(ring)
+                    else:
+                        converted_pool.append(item)
+                converted_pool.append(self.create_item("Skeleton Key"))
+                item_pool = converted_pool
+            elif _fallback_sk_mode == "removed":
+                # Small keys removed: drop them (Lanayru Caves has its own setting)
+                item_pool = [
+                    i for i in item_pool
+                    if not (i.name in ALL_SMALL_KEY_NAMES_FB and i.name != "Lanayru Caves Small Key")
+                ]
+        
+        # Single-copy dungeon items (maps, boss keys, key rings, skeleton key) that
+        # the player already starts with (AP start_inventory or sshd-rando starting
+        # items) must not ALSO remain in the pool, e.g. starting with every map while
+        # maps are shuffled "own dungeon" would otherwise leave all maps in dungeons.
+        from collections import Counter as _Counter
+        _precollected = _Counter(
+            i.name for i in self.multiworld.precollected_items[self.player]
+        )
+        _kept_pool = []
+        _dropped_dupes = []
+        for _it in item_pool:
+            _single = (
+                _it.name.endswith((" Map", " Boss Key", " Key Ring"))
+                or _it.name == "Skeleton Key"
+            )
+            if _single and _precollected.get(_it.name, 0) > 0:
+                _precollected[_it.name] -= 1
+                _dropped_dupes.append(_it.name)
+                continue
+            _kept_pool.append(_it)
+        if _dropped_dupes:
+            print(f"[__init__.py] Removed {len(_dropped_dupes)} pool item(s) the player already starts with: {sorted(_dropped_dupes)}")
+            item_pool = _kept_pool
         
         # Fill remaining slots with weighted junk filler items.
         # NOTE: In the hardcoded fallback path, chest-unsafe items are excluded
@@ -2372,7 +2486,7 @@ class SSHDWorld(World):
                            "Fire Node", "Lightning Node"},
         "Lanayru Sand Sea": {"Lanayru Gorge", "Ancient Harbour", "Shipyard",
                              "Skipper's Retreat", "Skipper's Retreat Shack",
-                             "Pirate Stronghold", "Pirate Stronghold Interior",
+                             "Pirate Stronghold", "Pirate Stronghold Interior", "Pirate Stronghold Dock",
                              "Construction Bay"},
         "Central Skyloft": {"Central Skyloft", "Upper Skyloft", "Skyloft Village",
                             "Knight Academy", "Sparring Hall", "Bazaar",

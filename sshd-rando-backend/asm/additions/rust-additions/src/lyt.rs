@@ -685,6 +685,14 @@ unsafe fn bird_statue_locked(save_mgr: *mut dLytSaveMgr) -> bool {
 /// log.
 const LOG_BIRD_STATUE_SAVE_OBJ_INDEX: bool = false;
 
+/// TEST (remove when done): when true, a locked bird statue cycles through
+/// the prompt indices in TEST_CYCLE_INDICES. Press Y while the prompt is open
+/// to go to the next index. Each switch is logged. Index 2 is the dungeon
+/// "go outside" prompt and index 3 locks up, so neither is in the list.
+const TEST_CYCLE_ENABLED: bool = false;
+const TEST_CYCLE_INDICES: [u32; 3] = [0, 4, 5];
+static mut TEST_CYCLE_POS: usize = 0;
+
 #[no_mangle]
 pub extern "C" fn require_sailcloth_and_loftwing_to_fly_to_sky(save_mgr: *mut dLytSaveMgr) {
     unsafe {
@@ -694,7 +702,16 @@ pub extern "C" fn require_sailcloth_and_loftwing_to_fly_to_sky(save_mgr: *mut dL
                 (*save_mgr).save_obj_name_index as usize,
             );
         }
-        if (*save_mgr).save_text_prompt_index == 1
+        if TEST_CYCLE_ENABLED && bird_statue_locked(save_mgr) {
+            if input::check_button_pressed_down(input::BUTTON_INPUTS::Y_BUTTON) {
+                TEST_CYCLE_POS = (TEST_CYCLE_POS + 1) % TEST_CYCLE_INDICES.len();
+                debug::debug_print_num(
+                    c"statue test prompt index: %d".as_ptr(),
+                    TEST_CYCLE_INDICES[TEST_CYCLE_POS] as usize,
+                );
+            }
+            (*save_mgr).save_text_prompt_index = TEST_CYCLE_INDICES[TEST_CYCLE_POS];
+        } else if (*save_mgr).save_text_prompt_index == 1
             && (flag::check_itemflag(flag::ITEMFLAGS::SAILCLOTH) == 0
                 || flag::check_storyflag(27) == 0
                 || bird_statue_locked(save_mgr))

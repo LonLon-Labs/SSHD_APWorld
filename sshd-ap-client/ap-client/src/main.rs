@@ -45,6 +45,7 @@ mod colors;
 mod delivery;
 mod filelog;
 mod go_mode;
+mod goal;
 mod goddess_chests;
 mod goddess_cubes;
 mod gui;
@@ -339,6 +340,10 @@ fn run_headless(args: StartupArgs) {
     // Beedle's shop needs no slot_data (its 10-entry table is hardcoded),
     // so it can be built up front.
     let mut beedle_poller = BeedleShopPoller::new();
+    // Victory detection (goal.rs).
+    let mut goal_poller = goal::GoalPoller::new();
+    let mut goal_type: i64 = 0;
+    let mut goal_sent = false;
 
     // AP location codes already reported to the server (via mark_checked)
     // by ANY of the four check mechanisms below, so none of them re-poll
@@ -364,6 +369,12 @@ fn run_headless(args: StartupArgs) {
                     println!("[AP] Connected.");
                     if let Some(client) = connection.client() {
                         let slot_data = client.slot_data();
+                        goal_type = slot_data.option_goal;
+                        println!(
+                            "[AP] Goal: {} (storyflag {}).",
+                            goal::goal_name(goal_type),
+                            goal::goal_storyflag(goal_type)
+                        );
 
                         let custom_flags = slot_data.custom_flag_to_location.clone();
                         println!(
@@ -672,6 +683,28 @@ fn run_headless(args: StartupArgs) {
         match boss_defeats::poll(&mut mem, root_addr, &already_checked) {
             Ok(codes) => newly_checked_all.extend(codes),
             Err(e) => eprintln!("[IPC] boss defeat poll failed: {e}"),
+        }
+        if !goal_sent {
+            match goal_poller.poll(&mut mem, root_addr, goal_type) {
+                Ok(true) => {
+                    goal_sent = true;
+                    println!("[AP] Goal reached: {} defeated!", goal::goal_name(goal_type));
+                    if !reported_locations.contains(&goal::GOAL_LOCATION_CODE) {
+                        newly_checked_all.push(goal::GOAL_LOCATION_CODE);
+                    }
+                    if let Some(client) = connection.client_mut() {
+                        match client.set_status(archipelago_rs::ClientStatus::Goal) {
+                            Ok(()) => println!("[AP] Sent goal completion to the server."),
+                            Err(e) => {
+                                goal_sent = false; // retry next poll
+                                eprintln!("[AP] Failed to send goal completion: {e}");
+                            },
+                        }
+                    }
+                },
+                Ok(false) => {},
+                Err(e) => eprintln!("[IPC] goal poll failed: {e}"),
+            }
         }
         }
 

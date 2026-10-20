@@ -146,6 +146,14 @@ pub struct DeliveryTracker {
     /// When cheat mode may start (a short settle time after entering it, so a
     /// server's initial item sync isn't mistaken for new `!getitem`s).
     cheat_arm_at: Option<Instant>,
+    /// Own-world items whose location was checked from outside the game
+    /// (`/send_location`, `/collect`, `/release`). The server never echoes an
+    /// item back to the slot that owns its location, and the game only hands
+    /// it out when it checks the location itself, so the client delivers these.
+    /// AP item codes, oldest first.
+    external: VecDeque<i64>,
+    /// Buffer slots holding an `external` item that the game hasn't taken yet.
+    ext_in_flight: HashSet<usize>,
 }
 
 impl DeliveryTracker {
@@ -171,7 +179,15 @@ impl DeliveryTracker {
             own_slot: -1,
             cheat_next: None,
             cheat_arm_at: None,
+            external: VecDeque::new(),
+            ext_in_flight: HashSet::new(),
         }
+    }
+
+    /// Queue an own-world item whose location was checked outside the game
+    /// (see `external`). Delivered once a matching save is loaded.
+    pub fn queue_external(&mut self, ap_code: i64) {
+        self.external.push_back(ap_code);
     }
 
     /// Declare the locations the game gives items for natively, plus our own
@@ -304,6 +320,7 @@ impl DeliveryTracker {
     fn rewind(&mut self) {
         self.next_index = self.safe_index;
         self.in_flight.clear();
+        self.ext_in_flight.clear();
         self.prefix_history.clear();
         self.last_stage = [0; 8];
         self.last_save_loaded = false;
@@ -505,6 +522,7 @@ impl DeliveryTracker {
             self.last_progress = now;
             self.stall_logged = false;
         }
+        self.ext_in_flight.retain(|&slot| buffer[slot * SLOT_SIZE] != 0);
         let prefix = self.in_flight.values().copied().min().unwrap_or(self.next_index);
         if self.prefix_history.back().map(|&(_, p)| p) != Some(prefix) {
             self.prefix_history.push_back((now, prefix));
@@ -564,8 +582,39 @@ impl DeliveryTracker {
             return Ok(());
         }
 
+        // Externally-checked own-world items (/send_location etc.): they have
+        // no received index, so they are tracked separately from `in_flight`.
+        while self.in_flight.len() + self.ext_in_flight.len() < MAX_IN_FLIGHT {
+            let Some(&code) = self.external.front() else { break };
+            let prior_copies = if code == items::PROGRESSIVE_LOFTWING_CODE {
+                received.iter().filter(|r| r.item().id() == code).count()
+            } else {
+                0
+            };
+            let Some(original_id) = items::progressive_tier_original_id(code, prior_copies) else {
+                out.verbose(format!("[AP] External item code {code} is not deliverable via item_buffer, dropping"));
+                self.external.pop_front();
+                continue;
+            };
+            let Some(slot) = (1..ARCHIPELAGO_BUFFER_SIZE).find(|&i| buffer[i * SLOT_SIZE] == 0) else {
+                break;
+            };
+            let raw = ap_ipc::bytes::write(&ap_ipc::ArchipelagoItemSlot {
+                item_id:    (original_id & 0xFF) as u8,
+                flags:      0,
+                _reserved:  0,
+                item_id_hi: (original_id >> 8) as u8,
+            });
+            mem.write_bytes(buffer_addr + slot * SLOT_SIZE, &raw)?;
+            buffer[slot * SLOT_SIZE] = (original_id & 0xFF) as u8;
+            self.external.pop_front();
+            self.ext_in_flight.insert(slot);
+            self.last_progress = now;
+            out.verbose(format!("[AP] External item (code {code}) queued (game item id {original_id})"));
+        }
+
         // Feed the buffer, a few items at a time.
-        while self.in_flight.len() < MAX_IN_FLIGHT && self.next_index < received.len() {
+        while self.in_flight.len() + self.ext_in_flight.len() < MAX_IN_FLIGHT && self.next_index < received.len() {
             let index = self.next_index;
             let item = &received[index];
 

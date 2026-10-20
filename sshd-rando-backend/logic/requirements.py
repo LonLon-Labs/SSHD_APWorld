@@ -8,6 +8,21 @@ from constants.itemconstants import (
     GRATITUDE_CRYSTAL_PACK,
     PROGRESSIVE_WALLET,
     EXTRA_WALLET,
+    SVT_SMALL_KEY,
+    LMF_SMALL_KEY,
+    AC_SMALL_KEY,
+    FS_SMALL_KEY,
+    SSH_SMALL_KEY,
+    SK_SMALL_KEY,
+    LC_SMALL_KEY,
+    SVT_KEY_RING,
+    LMF_KEY_RING,
+    AC_KEY_RING,
+    FS_KEY_RING,
+    SSH_KEY_RING,
+    SK_KEY_RING,
+    LC_KEY_RING,
+    SKELETON_KEY,
 )
 
 if TYPE_CHECKING:
@@ -136,6 +151,47 @@ class Requirement:
 # its outer most parenthesis
 def strip_outer_parenthesis(req_str: str):
     return req_str[req_str.index("(") + 1 : req_str.rindex(")")]
+
+
+# Each dungeon's Key Ring stands in for every small key of that dungeon, and the
+# Skeleton Key stands in for every small key in the game. When Key Rings / the
+# Skeleton Key are in the pool (which is also what happens to the literal small
+# keys when small_keys == removed), the logic's literal small key requirements
+# must be satisfiable by them or every locked door becomes impossible.
+SMALL_KEY_TO_KEY_RING = {
+    SVT_SMALL_KEY: SVT_KEY_RING,
+    LMF_SMALL_KEY: LMF_KEY_RING,
+    AC_SMALL_KEY: AC_KEY_RING,
+    FS_SMALL_KEY: FS_KEY_RING,
+    SSH_SMALL_KEY: SSH_KEY_RING,
+    SK_SMALL_KEY: SK_KEY_RING,
+    LC_SMALL_KEY: LC_KEY_RING,
+}
+
+
+def small_key_substitutes(item: "Item", world: "World") -> list["Item"]:
+    ring_name = SMALL_KEY_TO_KEY_RING.get(item.name)
+    if ring_name is None:
+        return []
+    return [
+        world.item_table[name]
+        for name in (ring_name, SKELETON_KEY)
+        if name in world.item_table
+    ]
+
+
+# Wraps a literal small key requirement (ITEM or COUNT) so that the dungeon's
+# Key Ring or the Skeleton Key also satisfy it. Non small key items pass through.
+def with_small_key_substitutes(
+    req: "Requirement", item: "Item", world: "World"
+) -> "Requirement":
+    substitutes = small_key_substitutes(item, world)
+    if not substitutes:
+        return req
+    return Requirement(
+        RequirementType.OR,
+        [req] + [Requirement(RequirementType.ITEM, [sub]) for sub in substitutes],
+    )
 
 
 def goddess_cube_event_name(item: "Item") -> str:
@@ -271,6 +327,7 @@ def parse_requirement_string(
                 return resolve_goddess_cube_requirement(item, world)
             req.type = RequirementType.ITEM
             req.args.append(item)
+            return with_small_key_substitutes(req, item, world)
         # Then events...
         elif arg[0] == "'":
             req.type = RequirementType.EVENT
@@ -298,6 +355,8 @@ def parse_requirement_string(
             else:
                 req.args.append(count)
                 req.args.append(item)
+
+            return with_small_key_substitutes(req, item, world)
         # Then setting comparison check...
         # Since settings don't change curing seed generation,
         # we can resolve them to NOTHING or IMPOSSIBLE requirements now
@@ -312,10 +371,15 @@ def parse_requirement_string(
                     f'Setting "{setting_name}" is not a known setting'
                 )
 
-            actual_option = world.setting(setting_name).value_index()
-            compared_option = world.setting(setting_name).value_index(
-                compared_option_str
-            )
+            setting_getter = world.setting(setting_name)
+            if setting_getter.keeps_locks_despite_removed():
+                # "removed" key locks stay locked when Key Rings / the Skeleton Key
+                # are in the pool, so the setting must not match any real option
+                # here (== removed is False, != removed is True).
+                actual_option = -1
+            else:
+                actual_option = setting_getter.value_index()
+            compared_option = setting_getter.value_index(compared_option_str)
             if (
                 ("==" in arg and actual_option == compared_option)
                 or ("!=" in arg and actual_option != compared_option)

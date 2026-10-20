@@ -499,6 +499,25 @@ pub extern "C" fn check_storyflag(flag: u16) -> u32 {
     }
 }
 
+/// Storyflag set when Demise (BLastBoss, B400) is killed. The Archipelago
+/// client (sshd-ap-client goal.rs) polls it to send the victory/release.
+/// Marked "Unused" in the flag spreadsheet. MUST match
+/// `DEMISE_DEFEATED_STORYFLAG` in ap-client/src/goal.rs.
+pub const DEMISE_DEFEATED_STORYFLAG: u16 = 784;
+
+/// Landingpad index 112. Called from dAcBlastboss_c's Down state execute
+/// (Ghidra 0x71001efb14, runtime 0x71001f3b14) at the moment it switches to
+/// the "End" (death) state, via the stub in jumptable.asm. `_boss` is the boss
+/// actor (x19); unused. Sets and commits the storyflag so the client sees it
+/// even if the cutscenes after the kill are skipped.
+#[no_mangle]
+pub extern "C" fn demise_defeated_hook(_boss: *mut c_void) {
+    unsafe {
+        set_storyflag(DEMISE_DEFEATED_STORYFLAG);
+        ((*(*STORYFLAG_MGR).funcs).do_commit)(STORYFLAG_MGR);
+    }
+}
+
 // Sceneflags (local)
 #[no_mangle]
 pub extern "C" fn set_local_sceneflag(flag: u32) {

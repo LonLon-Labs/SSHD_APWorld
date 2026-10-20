@@ -1590,14 +1590,9 @@ fn pumpkin_drop_custom_item(
         let px_bits = (*pumpkin).members.base.pos.x.to_bits();
         let pz_bits = (*pumpkin).members.base.pos.z.to_bits();
 
-        // TEMP (pumpkin shuffle testing, remove once confirmed in-game)
-        debug::debug_print_num(c"pumpkin px %x".as_ptr(), px_bits as usize);
-        debug::debug_print_num(c"pumpkin pz %x".as_ptr(), pz_bits as usize);
-
         let index = match find_pumpkin_entry(px_bits, pz_bits) {
             Some(index) => index,
             None => {
-                debug::debug_print_num(c"pumpkin not in table, vanilla drop %x".as_ptr(), 0);
                 return false;
             },
         };
@@ -1651,18 +1646,6 @@ fn pumpkin_drop_custom_item(
             new_itemid,
             synthetic_param2,
             true,
-        );
-
-        // TEMP (pumpkin shuffle testing): table index, then item id (0 on spawn
-        // failure)
-        debug::debug_print_num(c"pumpkin table index %x".as_ptr(), index);
-        debug::debug_print_num(
-            c"pumpkin dropped item %x".as_ptr(),
-            if item_actor.is_null() {
-                0
-            } else {
-                new_itemid as usize
-            },
         );
 
         if item_actor.is_null() {
@@ -1734,18 +1717,11 @@ fn big_pot_drop_custom_item(pot: *mut actor::dAcOBase, roomid: u32, pos: *mut ma
         let start_px_bits = (*pot).members.starting_pos.x.to_bits();
         let start_pz_bits = (*pot).members.starting_pos.z.to_bits();
 
-        // TEMP (big pot shuffle testing, remove once confirmed in-game)
-        debug::debug_print_num(c"big pot px %x".as_ptr(), px_bits as usize);
-        debug::debug_print_num(c"big pot pz %x".as_ptr(), pz_bits as usize);
-        debug::debug_print_num(c"big pot start px %x".as_ptr(), start_px_bits as usize);
-        debug::debug_print_num(c"big pot start pz %x".as_ptr(), start_pz_bits as usize);
-
         let index = match find_big_pot_entry(px_bits, pz_bits)
             .or_else(|| find_big_pot_entry(start_px_bits, start_pz_bits))
         {
             Some(index) => index,
             None => {
-                debug::debug_print_num(c"big pot not in table %x".as_ptr(), 0);
                 return false;
             },
         };
@@ -1796,17 +1772,6 @@ fn big_pot_drop_custom_item(pot: *mut actor::dAcOBase, roomid: u32, pos: *mut ma
             new_itemid,
             synthetic_param2,
             true,
-        );
-
-        // TEMP (big pot shuffle testing)
-        debug::debug_print_num(c"big pot table index %x".as_ptr(), index);
-        debug::debug_print_num(
-            c"big pot dropped item %x".as_ptr(),
-            if item_actor.is_null() {
-                0
-            } else {
-                new_itemid as usize
-            },
         );
 
         if item_actor.is_null() {
@@ -1893,15 +1858,6 @@ fn barrel_drop_custom_item(
         {
             Some(index) => index,
             None => {
-                // TEMP (barrel shuffle testing, remove once confirmed in-game)
-                debug::debug_print_num(
-                    c"barrel not in table px %x".as_ptr(),
-                    start_px_bits as usize,
-                );
-                debug::debug_print_num(
-                    c"barrel not in table pz %x".as_ptr(),
-                    start_pz_bits as usize,
-                );
                 return false;
             },
         };
@@ -1993,15 +1949,6 @@ pub extern "C" fn pot_spawn_custom_item(
                 || (*pot).basebase.members.actorid == actor::ACTORID::OBJ_TUBO_BIG as u16
                 || (*pot).basebase.members.actorid == PUMPKIN_ACTORID
                 || (*pot).basebase.members.actorid == BARREL_ACTORID);
-
-        // TEMP (big pot shuffle testing, remove once confirmed in-game): log the
-        // actor id of everything else that reaches this hook.
-        if !pot.is_null() && !is_pot {
-            debug::debug_print_num(
-                c"pot hook other actor %x".as_ptr(),
-                (*pot).basebase.members.actorid as usize,
-            );
-        }
 
         if is_pot {
             let param2 = (*pot).members.base.param2;
@@ -4067,15 +4014,18 @@ pub extern "C" fn refresh_ipc_addresses() {
         };
 
         let stamina = if player_valid {
-            let stage = &CURRENT_STAGE_NAME[..5];
-            let stamina_ptr: *const u32 = if stage == b"F103\0" {
-                (PLAYER_PTR as *const u8).offset(-0x7FA8isize) as *const u32
-            } else if stage == b"B301\0" {
-                (PLAYER_PTR as *const u8).add(0x5CD8) as *const u32
-            } else {
-                core::ptr::addr_of!((*PLAYER_PTR).stamina_amount)
-            };
-            core::ptr::read_unaligned(stamina_ptr)
+            // None while the stage is loading or when the stage-specific offset
+            // doesn't look like stamina (see player::stamina_ptr). In that case
+            // keep the previously mirrored value instead of reporting 0, so the
+            // client never sees a bogus 1 -> 0 edge (false BreathLink).
+            match crate::player::stamina_ptr() {
+                Some(ptr) => core::ptr::read_unaligned(ptr as *const u32),
+                None => {
+                    core::ptr::read_unaligned(core::ptr::addr_of!(
+                        crate::ipc::AP_IPC_ROOT.player_vitals.stamina
+                    ))
+                },
+            }
         } else {
             0u32
         };

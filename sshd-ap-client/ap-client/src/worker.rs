@@ -90,7 +90,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use ap_ipc::{offsets, AP_IPC_SUPPORTED_VERSION};
-use archipelago_rs::{BounceOptions, Connection, ConnectionOptions, DeathLinkOptions, Error, Event};
+use archipelago_rs::{BounceOptions, ClientStatus, Connection, ConnectionOptions, DeathLinkOptions, Error, Event};
 use iced::futures::channel::mpsc;
 use iced::futures::{SinkExt, StreamExt};
 use iced::stream;
@@ -110,6 +110,7 @@ use crate::bird_statues;
 use crate::boss_defeats;
 use crate::cheat_sync;
 use crate::go_mode;
+use crate::goal::{self, GoalPoller};
 use crate::ipc_requests;
 use crate::stages;
 use crate::colors::{self, LogSpan};
@@ -200,6 +201,11 @@ struct SyncState {
     // Beedle's shop needs no slot_data (its 10-entry table is hardcoded),
     // so it's always present rather than an `Option`.
     beedle_poller:        BeedleShopPoller,
+    // Victory detection (see goal.rs): polls the goal storyflag for the slot's
+    // `option_goal`, then reports the goal location + CLIENT_GOAL exactly once.
+    goal_poller:          GoalPoller,
+    goal_type:            i64,
+    goal_sent:            bool,
     // Cheat toggles from slot_data, kept around (rather than only being
     // used once at `Event::Connected`) so they can be applied on a LATER
     // tick once the emulator is found, if it wasn't found yet at the
@@ -252,6 +258,9 @@ impl SyncState {
             goddess_chest_poller: None,
             goddess_cube_poller:  None,
             beedle_poller:        BeedleShopPoller::new(),
+            goal_poller:          GoalPoller::new(),
+            goal_type:            0,
+            goal_sent:            false,
             pending_cheat_slot_data: None,
             pending_item_info: None,
             item_info_live: None,
@@ -515,6 +524,13 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                         let mut want_tags: Vec<&'static str> = Vec::new();
                         if let Some(client) = conn.client() {
                             let slot_data = client.slot_data();
+
+                            sync.goal_type = slot_data.option_goal;
+                            vlog!(
+                                "[AP] Goal: {} (storyflag {}).",
+                                goal::goal_name(sync.goal_type),
+                                goal::goal_storyflag(sync.goal_type)
+                            );
 
                             let custom_flags = slot_data.custom_flag_to_location.clone();
                             vlog!(
@@ -972,6 +988,31 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                     Ok(codes) => newly_checked_all.extend(codes),
                     Err(e) => vlog!("[IPC] boss defeat poll failed: {e}"),
                 }
+
+                // Victory: the goal storyflag (set by the game when the final
+                // boss dies; see goal.rs) -> goal location + CLIENT_GOAL.
+                if !sync.goal_sent {
+                    match sync.goal_poller.poll(mem, root_addr, sync.goal_type) {
+                        Ok(true) => {
+                            sync.goal_sent = true;
+                            log!(&output, "[AP] Goal reached: {} defeated!", goal::goal_name(sync.goal_type));
+                            if !reported_locations.contains(&goal::GOAL_LOCATION_CODE) {
+                                newly_checked_all.push(goal::GOAL_LOCATION_CODE);
+                            }
+                            if let Some(client) = conn.client_mut() {
+                                match client.set_status(ClientStatus::Goal) {
+                                    Ok(()) => log!(&output, "[AP] Sent goal completion to the server."),
+                                    Err(e) => {
+                                        sync.goal_sent = false; // retry next poll
+                                        log!(&output, "[AP] Failed to send goal completion: {e}");
+                                    },
+                                }
+                            }
+                        },
+                        Ok(false) => {},
+                        Err(e) => vlog!("[IPC] goal poll failed: {e}"),
+                    }
+                }
                 }
 
                 if !newly_checked_all.is_empty() {
@@ -984,6 +1025,38 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                     if let Some(client) = conn.client_mut() {
                         if let Err(e) = client.mark_checked(newly_checked_all) {
                             log!(&output, "[AP] mark_checked failed: {e}");
+                        }
+                    }
+                }
+
+                // Locations checked from OUTSIDE the game (`/send_location`,
+                // `/collect`, `/release`): the server checked them but no poller
+                // here did. The server never echoes an item back to the slot that
+                // owns the location and the game only gives it when it checks the
+                // location itself, so deliver our own items from those here.
+                // (`reported_locations` is seeded with everything the server knew
+                // at connect time, and every poller adds to it before reporting.)
+                if seed_ok {
+                    if let Some(client) = conn.client() {
+                        let own_slot = client.this_player().slot() as i64;
+                        let external: Vec<i64> = client
+                            .checked_locations()
+                            .map(|l| l.id())
+                            .filter(|id| !reported_locations.contains(id))
+                            .collect();
+                        for loc in external {
+                            reported_locations.insert(loc);
+                            let Some(entry) = client.slot_data().location_to_item_map.get(&loc) else { continue };
+                            if entry.player != own_slot {
+                                continue; // someone else's item: the server sends it to them
+                            }
+                            let code = if entry.item_id >= items::AP_CODE_BASE {
+                                entry.item_id
+                            } else {
+                                items::AP_CODE_BASE + entry.item_id
+                            };
+                            log!(&output, "[AP] Location {loc} was checked outside the game; delivering its item (code {code}).");
+                            sync.delivery.queue_external(code);
                         }
                     }
                 }
@@ -2204,14 +2277,26 @@ fn cmd_go_mode(
         } else {
             colors::SpanColor::Yellow
         };
-        let line = format!(
-            "  {} {}: {}/{}",
-            if req.met() { "[x]" } else { "[ ]" },
-            req.label,
-            req.have,
-            req.need
-        );
-        send(output, WorkerEvent::Print(vec![LogSpan::new(line, color)]));
+        let mark = if req.met() { "[x]" } else { "[ ]" };
+        if req.parts.is_empty() {
+            let line = format!("  {mark} {}: {}/{}", req.label, req.have, req.need);
+            send(output, WorkerEvent::Print(vec![LogSpan::new(line, color)]));
+        } else {
+            // Named list (dungeon bosses): color each entry on its own --
+            // completed green, not completed light yellow -- while the
+            // surrounding text keeps the requirement's overall color.
+            let title = req.label.split(" (").next().unwrap_or(&req.label);
+            let mut spans = vec![LogSpan::new(format!("  {mark} {title} ("), color)];
+            for (i, (name, done)) in req.parts.iter().enumerate() {
+                if i > 0 {
+                    spans.push(LogSpan::new(", ", color));
+                }
+                let part_color = if *done { colors::SpanColor::Green } else { colors::SpanColor::Yellow };
+                spans.push(LogSpan::new(name.clone(), part_color));
+            }
+            spans.push(LogSpan::new(format!("): {}/{}", req.have, req.need), color));
+            send(output, WorkerEvent::Print(spans));
+        }
     }
     for note in notes {
         log!(output, "[Go Mode] {note}");

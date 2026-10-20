@@ -104,11 +104,9 @@ assert_eq_size!([u8; 48], ApSpawnRequest);
 // Exposed as pub so CE can read the address (subsdk8_base + symbol_offset).
 pub static mut MY_BIRD_PTR: *mut player::dBird = core::ptr::null_mut();
 
-// Byte offset of the spiral-charge field from the START of the dBird struct.
-// usize::MAX = not yet discovered.  Once any candidate write succeeds, this
-// is set and reused for all future frames and stages without needing the
-// player-relative candidate table (which varies by build/heap layout).
-static mut CHARGE_FIELD_DBIRD_OFFSET: usize = usize::MAX;
+// Byte offsets inside dBird (from the start of the actor, vtable at +0).
+const BIRD_CHARGES_OFFSET: usize = 0x14CA; // i16, max 3
+const BIRD_RECHARGE_TIMER_OFFSET: usize = 0x1512; // i16, reloads to 0x32 (50)
 
 // Tracks whether X was held on the previous frame so we can fire the
 // takeoff kick exactly once when X is first pressed.
@@ -266,18 +264,13 @@ pub fn handle_infinite_stamina() {
         if !crate::ipc::AP_IPC_ROOT.cheat_flags.infinite_stamina {
             return;
         }
-        if PLAYER_PTR.is_null() {
-            return;
-        }
-        let stage = &CURRENT_STAGE_NAME[..5];
-        let stamina_ptr: *mut u32 = if stage == b"F103\0" {
-            (PLAYER_PTR as *mut u8).offset(-0x7FA8isize) as *mut u32
-        } else if stage == b"B301\0" {
-            (PLAYER_PTR as *mut u8).add(0x5CD8) as *mut u32
-        } else {
-            core::ptr::addr_of_mut!((*PLAYER_PTR).stamina_amount)
+        // None while the stage is loading or if the stage-specific stamina
+        // offset doesn't point at a stamina-like value (see player::stamina_ptr).
+        let stamina_ptr = match player::stamina_ptr() {
+            Some(ptr) => ptr,
+            None => return,
         };
-        *stamina_ptr = 1_000_000;
+        core::ptr::write_unaligned(stamina_ptr, 1_000_000);
         (*PLAYER_PTR).stamina_recovery_timer = 0;
         (*PLAYER_PTR).something_we_use_for_stamina = 0;
     }
@@ -404,37 +397,13 @@ pub fn handle_infinite_loftwing() {
             return;
         }
 
-        let bird_start = bird_ptr as usize;
-        let bird_end = bird_start + core::mem::size_of::<player::dBird>();
-
-        if CHARGE_FIELD_DBIRD_OFFSET != usize::MAX {
-            let charge_ptr = (bird_start + CHARGE_FIELD_DBIRD_OFFSET) as *mut u32;
-            let current = *charge_ptr;
-            if current <= 3 {
-                *charge_ptr = 3;
-            }
-            return;
-        }
-
-        let stage = &CURRENT_STAGE_NAME[..5];
-        let candidates: &[isize] = if stage == b"F020\0" {
-            &[-0xB57E6isize, -0x8B24Eisize]
-        } else if stage == b"F023\0" {
-            &[-0x37A2Eisize]
-        } else {
-            return;
-        };
-        for &offset in candidates {
-            let cand_addr = (PLAYER_PTR as isize + offset) as usize;
-            if cand_addr >= bird_start && cand_addr + 4 <= bird_end {
-                let charge_ptr = cand_addr as *mut u32;
-                let current = *charge_ptr;
-                if current <= 3 {
-                    *charge_ptr = 3;
-                    CHARGE_FIELD_DBIRD_OFFSET = cand_addr - bird_start;
-                }
-            }
-        }
+        // Spiral/dash charges live in the dBird actor itself (found in the
+        // dBird update, FUN_7100242ae0): an i16 at +0x14CA capped at 3, and an
+        // i16 recharge timer at +0x1512 that reloads to 0x32. Both are
+        // bird-relative, so this works in every stage (Sky, Thunderhead, ...).
+        let base = bird_ptr as *mut u8;
+        core::ptr::write_unaligned(base.add(BIRD_CHARGES_OFFSET) as *mut i16, 3);
+        core::ptr::write_unaligned(base.add(BIRD_RECHARGE_TIMER_OFFSET) as *mut i16, 0x32);
     }
 }
 
@@ -593,17 +562,11 @@ pub fn handle_link_requests() {
         // BreathLink: zero stamina and trigger the exhaustion state (same
         // three fields the health trap in traps.rs writes).
         if core::ptr::read_volatile(drain_ptr) != 0 {
-            core::ptr::write_volatile(drain_ptr, 0);
-            if !PLAYER_PTR.is_null() {
-                let stage = &CURRENT_STAGE_NAME[..5];
-                let stamina_ptr: *mut u32 = if stage == b"F103\0" {
-                    (PLAYER_PTR as *mut u8).offset(-0x7FA8isize) as *mut u32
-                } else if stage == b"B301\0" {
-                    (PLAYER_PTR as *mut u8).add(0x5CD8) as *mut u32
-                } else {
-                    core::ptr::addr_of_mut!((*PLAYER_PTR).stamina_amount)
-                };
-                *stamina_ptr = 0;
+            // Only consume the request once stamina can safely be written
+            // (not while a stage is loading), so the drain isn't lost.
+            if let Some(stamina_ptr) = player::stamina_ptr() {
+                core::ptr::write_volatile(drain_ptr, 0);
+                core::ptr::write_unaligned(stamina_ptr, 0);
                 (*PLAYER_PTR).something_we_use_for_stamina = 0x5A;
                 (*PLAYER_PTR).stamina_recovery_timer = 64;
             }

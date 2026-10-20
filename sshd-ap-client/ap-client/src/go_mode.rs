@@ -16,6 +16,11 @@ pub struct Requirement {
     pub label: String,
     pub have:  i64,
     pub need:  i64,
+    /// Per-item completion for requirements made of a named list (the
+    /// dungeon bosses), so the display can color each entry on its own.
+    /// The label is `"<title> (<name>, <name>, ...)"`; empty for
+    /// requirements that aren't a list.
+    pub parts: Vec<(String, bool)>,
 }
 
 impl Requirement {
@@ -51,8 +56,11 @@ pub fn requirements(
     let have = |name: &str| owned.get(name).copied().unwrap_or(0);
 
     let mut add = |label: String, have: i64, need: i64| {
-        reqs.push(Requirement { label, have, need });
+        reqs.push(Requirement { label, have, need, parts: Vec::new() });
     };
+    // Per-dungeon completion, attached to the dungeon requirement once the
+    // `add` closure (which borrows `reqs`) is no longer in use.
+    let mut dungeon_parts: Vec<(String, bool)> = Vec::new();
 
     // Gate of Time sword requirement.
     let sword_needed = match slot_data.option_gate_of_time_sword_requirement {
@@ -84,9 +92,12 @@ pub fn requirements(
     // dungeon is entered).
     if slot_data.option_dungeon_goal_requirement != 0 && slot_data.option_boss_key_shuffle != 6 {
         let needed = slot_data.option_required_dungeon_count.clamp(0, DUNGEON_BOSS_FLAGS.len() as i64);
-        let defeated = DUNGEON_BOSS_FLAGS.iter().filter(|(_, flag)| boss_flag_set(*flag)).count() as i64;
+        let parts: Vec<(String, bool)> =
+            DUNGEON_BOSS_FLAGS.iter().map(|(n, flag)| (n.to_string(), boss_flag_set(*flag))).collect();
+        let defeated = parts.iter().filter(|(_, done)| *done).count() as i64;
         let names: Vec<&str> = DUNGEON_BOSS_FLAGS.iter().map(|(n, _)| *n).collect();
         add(format!("Dungeon Bosses Defeated ({})", names.join(", ")), defeated, needed);
+        dungeon_parts = parts;
     }
 
     // Optional Triforce requirement.
@@ -112,6 +123,12 @@ pub fn requirements(
                 .to_string(),
         );
         notes.push("This command currently reports the explicit victory-rule requirements above.".to_string());
+    }
+
+    if !dungeon_parts.is_empty() {
+        if let Some(req) = reqs.iter_mut().find(|r| r.label.starts_with("Dungeon Bosses Defeated")) {
+            req.parts = dungeon_parts;
+        }
     }
 
     (reqs, notes)

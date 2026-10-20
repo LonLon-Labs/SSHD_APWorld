@@ -819,6 +819,7 @@ class SSHDLogicConverter:
             "Hidden Items":          "hidden_item_shuffle",
             "Pots":                  "pot_shuffle",
             "Pumpkins":              "pumpkin_shuffle",
+            "Barrels": "barrel_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",
         }

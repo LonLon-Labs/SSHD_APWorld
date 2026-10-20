@@ -173,6 +173,11 @@ pub extern "C" fn main_loop_inject() -> *mut c_void {
     // flag::refresh_cached_story_state).
     flag::refresh_cached_story_state();
 
+    // Track stage/player changes so nothing writes through the stage-specific
+    // stamina offsets while a stage is still loading (see player::stamina_ptr).
+    // Must run before refresh_ipc_addresses() and the cheats below.
+    player::tick_stamina_stage_settle();
+
     // Archipelago - Refresh IPC-exposed addresses (sceneflags/dungeonflags)
     // for the external client's batch location-check polling.
     item::refresh_ipc_addresses();

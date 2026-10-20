@@ -210,6 +210,20 @@ bl additions_jumptable
 ldp x19, x30, [sp], #16
 ret
 
+; Demise defeated flag (landingpad index 112). Replaces `mov w8, #0x32` at
+; runtime 0x71001f3b14 (Ghidra 0x71001efb14) in dAcBlastboss_c's Down state
+; execute, where it switches to the "End" (death) state. x19 is the boss actor.
+; Sets the goal storyflag via Rust, then restores w8 = 0x32 for the replaced
+; instruction. Only x0-x18 are clobbered; x19-x28 are preserved by Rust.
+.offset 0x7100659c80
+stp x29, x30, [sp, #-16]!
+mov x0, x19
+mov w8, #112
+bl additions_jumptable
+ldp x29, x30, [sp], #16
+mov w8, #0x32
+ret
+
 ; Actually branches to the rust additions landingpad
 ; additions_jumptable
 .offset 0x710065a070 ; uses 10 instructions

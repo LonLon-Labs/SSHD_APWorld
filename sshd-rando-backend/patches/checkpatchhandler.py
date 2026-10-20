@@ -268,6 +268,13 @@ def determine_check_patches(
         ):
             continue
 
+        # Don't patch barrels if they're off
+        if (
+            "Barrels" in location.types
+            and world.setting("barrel_shuffle") == "off"
+        ):
+            continue
+
         # Deal with traps
         trapid = 0
         trap_oarcs = None

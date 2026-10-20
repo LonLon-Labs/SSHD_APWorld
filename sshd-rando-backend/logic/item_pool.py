@@ -229,6 +229,15 @@ def generate_starting_item_pool(world: "World"):
             if unlock_choices:
                 starting_items[random.choice(unlock_choices)] += 1
 
+    # Starting with the Loftwing sets story flag 27 at game start (see
+    # startflags.yaml, which sets it when randomize_loftwing == off). The Loftwing
+    # item must then also be a starting item, so it is taken out of the item pool
+    # and precollected by the Archipelago world. Otherwise a redundant Loftwing
+    # stays in the pool and the first Progressive Loftwing the player receives just
+    # hands them the Loftwing they already have.
+    if world.setting("randomize_loftwing") == "off" and starting_items[LOFTWING] == 0:
+        starting_items[LOFTWING] = 1
+
     # Remove Heart Containers/Pieces for starting health
     extra_hearts = world.setting("starting_hearts").value_as_number() - 6
     for _ in range(extra_hearts):

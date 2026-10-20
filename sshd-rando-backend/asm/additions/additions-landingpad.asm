@@ -369,6 +369,10 @@ b.eq apseed_ui_label_hook
 cmp w8, #111
 b.eq apseed_ui_label_ret_hook
 
+; Demise (BLastBoss) defeated: sets the goal storyflag (x0 = boss actor)
+cmp w8, #112
+b.eq demise_defeated_hook
+
 ret ; this should never be reached
 
 ; Wrapper for custom_event_commands.

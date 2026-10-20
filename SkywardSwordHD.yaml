@@ -305,6 +305,7 @@ Skyward Sword HD:
   pot_shuffle: false                    # Pots can contain any item (false = only rupees, hearts, and seeds)
   pumpkin_shuffle: false                # Pumpkins can contain any item (false = only vanilla items)
   barrel_shuffle: false                 # Barrels can contain any item (false = only vanilla items)
+  bird_statues_give_items: false        # Every Bird Statue becomes a check that gives an item the first time it is unlocked (false = statues give nothing)
 
   # Goddess Chest Unlock
   # locked_until_struck: Goddess Chests are activated by striking their goddess cube with a Skyward Strike (vanilla, default)
@@ -441,6 +442,18 @@ Skyward Sword HD:
   # Tablets are randomly selected when count is 1 or 2
   # Count 0 or 3 uses all tablets
   starting_tablets: 0
+  
+  # Bird Statues Need to be Unlocked
+  # false: Every bird statue can be dropped down to as normal (default)
+  # true: Each bird statue has its own unlock item in the item pool, including the Sealed Grounds, Volcano Entrance and Lanayru Mine Entry statues.
+  #       Until its unlock item is obtained you cannot drop down to that statue from the sky, but you can still use it to fly up to the sky.
+  bird_statues_need_unlock: false
+  
+  # Start with a Bird Statue in Each Region
+  # Only has an effect when Bird Statues Need to be Unlocked is true
+  # false: No bird statue is unlocked at the start (default)
+  # true: You start with exactly one unlocked bird statue in each of Faron, Eldin and Lanayru (those statues are removed from the item pool)
+  start_with_region_bird_statues: false
   
   # Random Starting Bird Statues
   # false: The bird statue unlocked at the start for each surface region will be unchanged
