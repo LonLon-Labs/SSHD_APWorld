@@ -54,12 +54,19 @@ BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS = (
     "Lanayru Mine Entry Statue Unlock",
 )
 
+# Statues added after the original 26 (ids 326..=327). Appended last so the
+# unlock flag indices of every earlier statue are unchanged.
+BIRD_STATUE_EXTRA_UNLOCK_ITEMS = (
+    "Inside the Volcano Statue Unlock",
+    "Inside the Fire Sanctuary Statue Unlock",
+)
+
 ALL_BIRD_STATUE_UNLOCK_ITEMS = tuple(
     item
     for region_items in BIRD_STATUE_UNLOCK_ITEMS_BY_REGION.values()
     for item in region_items
     if item not in BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS
-) + BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS
+) + BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS + BIRD_STATUE_EXTRA_UNLOCK_ITEMS
 
 # Custom flag IDs 0..31 are reserved for Bird Statue unlock flags. Each unlock item
 # owns the flag whose ID is its index in ALL_BIRD_STATUE_UNLOCK_ITEMS. These are in

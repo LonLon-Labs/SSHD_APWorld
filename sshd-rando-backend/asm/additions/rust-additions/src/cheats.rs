@@ -482,62 +482,28 @@ const PLAYER_SPEED_OFFSET: usize = 0x64E8;
 static mut SPEED_LAST_BASE: u32 = 0;
 static mut SPEED_LAST_OUT: u32 = 0;
 
-pub fn handle_speed_multiplier() {
-    unsafe {
-        if PLAYER_PTR.is_null() {
-            SPEED_LAST_BASE = 0;
-            SPEED_LAST_OUT = 0;
-            return;
-        }
+/// No-op now. The speed boost used to be written into the movement
+/// accumulator at PLAYER_SPEED_OFFSET every frame, but the game reads and
+/// updates that same field, so the boost compounded and made Link unplayably
+/// fast even at 1.1x. The boost is now applied to the walking-speed targets
+/// instead; see speed_target_scale_hook below and speed-target-scale.asm.
+pub fn handle_speed_multiplier() {}
 
-        let speed_ptr = (PLAYER_PTR as *mut u8).add(PLAYER_SPEED_OFFSET) as *mut f32;
-        let cur_bits = core::ptr::read_unaligned(speed_ptr).to_bits();
-
-        let mult_bits = crate::ipc::AP_IPC_ROOT.cheat_flags.speed_multiplier_bits;
-        let multiplier = f32::from_bits(mult_bits);
-        let enabled = mult_bits != 0
-            && mult_bits != 0x3F800000u32
-            && multiplier.is_finite()
-            && multiplier > 0.0f32;
-
-        if !enabled {
-            // Turned off (or reset to 1.0): if the game hasn't refreshed the
-            // field since our boost, put the original value back.
-            if SPEED_LAST_OUT != 0 && cur_bits == SPEED_LAST_OUT {
-                core::ptr::write_unaligned(speed_ptr, f32::from_bits(SPEED_LAST_BASE));
-            }
-            SPEED_LAST_BASE = 0;
-            SPEED_LAST_OUT = 0;
-            return;
-        }
-
-        // While hovering, handle_hovercraft sets this field itself each frame.
-        if crate::ipc::AP_IPC_ROOT.cheat_flags.hovercraft
-            && input::check_button_held_down(input::BUTTON_INPUTS::X_BUTTON)
-        {
-            return;
-        }
-
-        // If the field still holds our last boosted value, the game hasn't
-        // recomputed it, so scale the remembered base instead of re-scaling
-        // our own output.
-        let base_bits = if SPEED_LAST_OUT != 0 && cur_bits == SPEED_LAST_OUT {
-            SPEED_LAST_BASE
-        } else {
-            cur_bits
-        };
-        let base = f32::from_bits(base_bits);
-        if !(base > 0.1f32 && base < 200.0f32) {
-            SPEED_LAST_BASE = 0;
-            SPEED_LAST_OUT = 0;
-            return;
-        }
-
-        let out = base * multiplier;
-        core::ptr::write_unaligned(speed_ptr, out);
-        SPEED_LAST_BASE = base_bits;
-        SPEED_LAST_OUT = out.to_bits();
+/// Called from the movement function FUN_7100a4cf40 (runtime 0x7100a51058)
+/// through landingpad index 113, with the state's top walking speed in
+/// `target` (13.0 walk, 23.0 or 34.5 for the faster states). Returns that
+/// target scaled by the speed multiplier. The game's acceleration and clamping
+/// are left alone, so the boost cannot feed back into itself.
+#[no_mangle]
+pub extern "C" fn speed_target_scale_hook(target: f32) -> f32 {
+    let bits = unsafe { crate::ipc::AP_IPC_ROOT.cheat_flags.speed_multiplier_bits };
+    let multiplier = f32::from_bits(bits);
+    let enabled =
+        bits != 0 && bits != 0x3F800000u32 && multiplier.is_finite() && multiplier > 0.0f32;
+    if !enabled {
+        return target;
     }
+    target * multiplier
 }
 
 /// Services one-shot DeathLink / BreathLink RECEIVE requests written by the

@@ -7593,6 +7593,18 @@
     - Bird Statues
     - Custom Flag
 
+- name: Eldin Volcano - Inside the Volcano Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
+- name: Fire Sanctuary - Inside Fire Sanctuary Bird Statue
+  original_item: Green Rupee
+  types:
+    - Bird Statues
+    - Custom Flag
+
 - name: Eldin Volcano - Volcano East Bird Statue
   original_item: Green Rupee
   types:
@@ -7749,32 +7761,6 @@
     - Custom Flag
   Paths:
     - stage/B100/r0/l1/Tubo/0xFC12
-
-- name: Skyview Boss Room - Pot 9
-  original_item: Green Rupee
-  types:
-    - Pots
-    - Custom Flag
-  Paths:
-    - stage/B100/r0/l2/Tubo/0xFC10
-    - stage/B100/r0/l4/Tubo/0xFC10
-    - stage/B100/r0/l5/Tubo/0xFC10
-
-- name: Skyview Boss Room - Pot 10
-  original_item: Green Rupee
-  types:
-    - Pots
-    - Custom Flag
-  Paths:
-    - stage/B100/r0/l3/Tubo/0xFC13
-
-- name: Skyview Boss Room - Pot 11
-  original_item: Green Rupee
-  types:
-    - Pots
-    - Custom Flag
-  Paths:
-    - stage/B100/r0/l3/Tubo/0xFC14
 
 - name: LMF After Sand Drain - Pot 1
   original_item: Green Rupee
@@ -10715,30 +10701,6 @@
   Paths:
     - stage/F023/r0/l0/BigTubo/0xFC85
 
-- name: Central Skyloft - Barrel 1
-  original_item: Green Rupee
-  types:
-    - Barrels
-    - Custom Flag
-  Paths:
-    - stage/F000/r0/l10/Barrel/0xFDE0
-
-- name: Central Skyloft - Barrel 2
-  original_item: Green Rupee
-  types:
-    - Barrels
-    - Custom Flag
-  Paths:
-    - stage/F000/r0/l10/Barrel/0xFDE1
-
-- name: Central Skyloft - Barrel 3
-  original_item: Green Rupee
-  types:
-    - Barrels
-    - Custom Flag
-  Paths:
-    - stage/F000/r0/l10/Barrel/0xFDE2
-
 - name: Fire Node - Barrel 1
   original_item: Green Rupee
   types:
@@ -11730,30 +11692,6 @@
     - Custom Flag
   Paths:
     - stage/D301_1/r0/l0/Barrel/0xFC01
-
-- name: Sandship Boss Room - Barrel 3
-  original_item: Green Rupee
-  types:
-    - Barrels
-    - Custom Flag
-  Paths:
-    - stage/D301_1/r0/l0/Barrel/0xFC02
-
-- name: Sandship Boss Room - Barrel 4
-  original_item: Green Rupee
-  types:
-    - Barrels
-    - Custom Flag
-  Paths:
-    - stage/D301_1/r0/l0/Barrel/0xFC03
-
-- name: Sandship Boss Room - Barrel 5
-  original_item: Green Rupee
-  types:
-    - Barrels
-    - Custom Flag
-  Paths:
-    - stage/D301_1/r0/l0/Barrel/0xFC04
 
 - name: Sandship Brig - Barrel 1
   original_item: Green Rupee

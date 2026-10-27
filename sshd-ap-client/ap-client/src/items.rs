@@ -266,6 +266,19 @@ pub const PROGRESSIVE_LOFTWING_CODE: i64 = 2773219;
 /// Game item ids for each Progressive Loftwing tier, in order.
 const PROGRESSIVE_LOFTWING_TIERS: [u16; 2] = [219, 21];
 
+/// AP code of "Progressive Bow" (2773019).
+pub const PROGRESSIVE_BOW_CODE: i64 = 2773019;
+
+/// Game item ids for each Progressive Bow tier, in order:
+/// Bow (19) -> Iron Bow (90) -> Sacred Bow (91). Resolved by the client, so
+/// the game never has to tier it (see item.rs, which spawns these ids as-is).
+const PROGRESSIVE_BOW_TIERS: [u16; 3] = [19, 90, 91];
+
+/// True for AP codes whose tier the client resolves from prior copies.
+pub fn is_client_tiered(ap_code: i64) -> bool {
+    ap_code == PROGRESSIVE_LOFTWING_CODE || ap_code == PROGRESSIVE_BOW_CODE
+}
+
 /// Like `original_id_for_ap_code`, but resolves progressive items the game
 /// can't resolve on its own. `prior_copies` is how many copies of this same
 /// AP item were received before this one (start-inventory copies included).
@@ -273,6 +286,10 @@ pub fn progressive_tier_original_id(ap_code: i64, prior_copies: usize) -> Option
     if ap_code == PROGRESSIVE_LOFTWING_CODE {
         let tier = prior_copies.min(PROGRESSIVE_LOFTWING_TIERS.len() - 1);
         return Some(PROGRESSIVE_LOFTWING_TIERS[tier]);
+    }
+    if ap_code == PROGRESSIVE_BOW_CODE {
+        let tier = prior_copies.min(PROGRESSIVE_BOW_TIERS.len() - 1);
+        return Some(PROGRESSIVE_BOW_TIERS[tier]);
     }
     original_id_for_ap_code(ap_code)
 }

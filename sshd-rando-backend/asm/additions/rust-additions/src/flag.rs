@@ -421,7 +421,10 @@ static mut HAS_SAILCLOTH: u8 = 1;
 pub fn refresh_cached_story_state() {
     unsafe {
         let mut value = 0u8;
-        if !STORYFLAG_MGR.is_null() && !(*STORYFLAG_MGR).funcs.is_null() {
+        if !STORYFLAG_MGR.is_null()
+            && !(*STORYFLAG_MGR).funcs.is_null()
+            && !(*STORYFLAG_MGR).flags_ptr.is_null()
+        {
             // Tutorial: vanilla force-enables a few statues until story
             // flag 0x10 is set, so don't void out then.
             if check_storyflag(0x20F) != 0 && check_storyflag(0x10) == 0 {
@@ -430,7 +433,10 @@ pub fn refresh_cached_story_state() {
         }
         core::ptr::write_volatile(core::ptr::addr_of_mut!(TUTORIAL_FAIL_OPEN), value);
 
-        if !ITEMFLAG_MGR.is_null() && !(*ITEMFLAG_MGR).funcs.is_null() {
+        if !ITEMFLAG_MGR.is_null()
+            && !(*ITEMFLAG_MGR).funcs.is_null()
+            && !(*ITEMFLAG_MGR).flags_ptr.is_null()
+        {
             let has = (check_itemflag(ITEMFLAGS::SAILCLOTH) != 0) as u8;
             core::ptr::write_volatile(core::ptr::addr_of_mut!(HAS_SAILCLOTH), has);
         }

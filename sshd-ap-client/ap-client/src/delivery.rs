@@ -425,7 +425,7 @@ impl DeliveryTracker {
                 continue;
             }
             let ap_code = item.item().id();
-            let prior_copies = if ap_code == items::PROGRESSIVE_LOFTWING_CODE {
+            let prior_copies = if items::is_client_tiered(ap_code) {
                 received[..next].iter().filter(|r| r.item().id() == ap_code).count()
             } else {
                 0
@@ -586,7 +586,7 @@ impl DeliveryTracker {
         // no received index, so they are tracked separately from `in_flight`.
         while self.in_flight.len() + self.ext_in_flight.len() < MAX_IN_FLIGHT {
             let Some(&code) = self.external.front() else { break };
-            let prior_copies = if code == items::PROGRESSIVE_LOFTWING_CODE {
+            let prior_copies = if items::is_client_tiered(code) {
                 received.iter().filter(|r| r.item().id() == code).count()
             } else {
                 0
@@ -646,7 +646,7 @@ impl DeliveryTracker {
             // Loftwing: Loftwing -> Spiral Charge) are resolved here from how
             // many copies were received before this one. Start-inventory
             // copies count too: they are already in the save as earlier tiers.
-            let prior_copies = if ap_code == items::PROGRESSIVE_LOFTWING_CODE {
+            let prior_copies = if items::is_client_tiered(ap_code) {
                 received[..index].iter().filter(|r| r.item().id() == ap_code).count()
             } else {
                 0

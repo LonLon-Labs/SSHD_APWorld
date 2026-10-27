@@ -627,6 +627,8 @@
 - name: Inside the Volcano Statue
   events:
     Unlock Inside the Volcano Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Eldin Volcano - Inside the Volcano Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     Outside Fire Sanctuary: Nothing # Back out of interaction.
@@ -634,6 +636,8 @@
 - name: Inside the Fire Sanctuary Statue
   events:
     Unlock Inside the Fire Sanctuary Statue: Nothing # Approach statue and get autosave.
+  locations:
+    Fire Sanctuary - Inside Fire Sanctuary Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
     The Sky: Sailcloth and (Day or natural_night_connections == off)
     FS In Front of Boss Door: Nothing # Back out of interaction.

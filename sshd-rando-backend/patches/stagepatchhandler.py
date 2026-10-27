@@ -119,9 +119,9 @@ GODDESS_CUBE_STORYFLAGS: list[int] = [
 ]
 
 
-# The 26 "Bird Statues Give Items" locations, in the order the game's Rust additions
+# The "Bird Statues Give Items" locations, in the order the game's Rust additions
 # (item.rs BIRD_STATUES) index the BIRD_STATUE_CUSTOM_FLAGS / BIRD_STATUE_ITEM_IDS
-# tables. Same order as the AP location codes 2773911..=2773936.
+# tables. The AP location codes are 2773911..=2773936.
 BIRD_STATUE_LOCATION_NAMES: list[str] = [
     "Sealed Grounds - Sealed Grounds Bird Statue",
     "Sealed Grounds - Behind the Temple Bird Statue",
@@ -149,6 +149,8 @@ BIRD_STATUE_LOCATION_NAMES: list[str] = [
     "Shipyard - Shipyard Bird Statue",
     "Pirate Stronghold - Pirate Stronghold Bird Statue",
     "Lanayru Gorge - Lanayru Gorge Bird Statue",
+    "Eldin Volcano - Inside the Volcano Bird Statue",
+    "Fire Sanctuary - Inside Fire Sanctuary Bird Statue",
 ]
 
 

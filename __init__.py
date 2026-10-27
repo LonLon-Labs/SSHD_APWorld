@@ -1044,12 +1044,16 @@ class SSHDWorld(World):
             ap_regions[region.name] = region
         
         remapped = 0
+        unmatched_entrances = []
         for sshd_entrance in shuffled_entrances:
             original_name = sshd_entrance.original_name  # "ParentArea -> OriginalDest"
             new_dest_name = sshd_entrance.connected_area.name  # New shuffled destination
             
             ap_entrance = ap_entrances_by_name.get(original_name)
             if not ap_entrance:
+                # Previously skipped silently. A shuffled entrance we cannot find in
+                # the AP graph means AP's logic and the in-game layout disagree.
+                unmatched_entrances.append(sshd_entrance)
                 continue
             
             new_dest_region = ap_regions.get(new_dest_name)
@@ -1078,6 +1082,23 @@ class SSHDWorld(World):
             remapped += 1
         
         print(f"[__init__.py] Entrance rando: remapped {remapped}/{len(shuffled_entrances)} entrances")
+
+        if unmatched_entrances:
+            names = ", ".join(e.original_name for e in unmatched_entrances)
+            msg = (f"[__init__.py] ERROR: {len(unmatched_entrances)} shuffled entrance(s) not found in "
+                   f"AP logic, so AP and the in-game layout disagree: {names}")
+            logging.error(msg)
+            print(msg)
+            self._unmatched_shuffled_entrances = [e.original_name for e in unmatched_entrances]
+
+        # Log the starting statue/spawn so a bad start can be traced from the log alone.
+        start_entrances = [
+            e for e in shuffled_entrances
+            if (e.type or "").endswith(" Region Entrance") or e.type == "Spawn"
+        ]
+        for e in start_entrances:
+            dest = e.connected_area.name if e.connected_area else "None"
+            print(f"[__init__.py] Start point: {e.original_name} -> {dest}")
     
     def _get_excluded_item_types(self) -> set:
         """

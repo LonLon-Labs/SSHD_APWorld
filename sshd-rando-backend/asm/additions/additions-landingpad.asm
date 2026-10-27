@@ -373,6 +373,11 @@ b.eq apseed_ui_label_ret_hook
 cmp w8, #112
 b.eq demise_defeated_hook
 
+; Speed target scale (x0 = unused; s0 = walking-speed target in, scaled target out)
+; Called from speed-target-scale.asm via the stub at 0x7100659ca0.
+cmp w8, #113
+b.eq speed_target_scale_hook
+
 ret ; this should never be reached
 
 ; Wrapper for custom_event_commands.

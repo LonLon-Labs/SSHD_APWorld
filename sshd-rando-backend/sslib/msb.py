@@ -26,6 +26,7 @@ CONTROL_REPLACEMENTS = {
     "<blk<": "\x0e\x00\x03\x02\x0c",  # rupoor
     # start of option token, '-' means cancel (B) option
     "[1]": "\x0e\x01\x00\x02\uffff",
+    "[1-]": "\x0e\x01\x00\x02\x00",
     "[2-]": "\x0e\x01\x01\x02\x00",
     "[2]": "\x0e\x01\x01\x02\uffff",
     "[3-]": "\x0e\x01\x02\x02\x00",

@@ -40,7 +40,6 @@ Volcano Ascent Statue:
 Temple Entrance Statue:
   flag_space: Story
   flag: 807
-# Inside the Volcano and Inside the Fire Sanctuary not included
 Lanayru Mine Entry Statue:
   flag_space: Lanayru Desert
   flag: 68
@@ -77,3 +76,9 @@ Pirate Stronghold Statue:
 Lanayru Gorge Statue:
   flag_space: Lanayru Gorge
   flag: 12
+Inside the Volcano Statue:
+  flag_space: Eldin Volcano
+  flag: 101
+Inside the Fire Sanctuary Statue:
+  flag_space: Fire Sanctuary
+  flag: 114

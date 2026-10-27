@@ -2549,17 +2549,17 @@ pub extern "C" fn check_and_open_trial_gates(collected_item: u16) {
 pub const BIRD_STATUE_UNLOCK_SCENE_INDEX: u16 = 6;
 // Scale applied to the SaveObjectA statue model when it is used as an item.
 const BIRD_STATUE_ITEM_MODEL_SCALE: f32 = 0.2;
-// Bird Statue unlock items occupy ids 300..=325 (26 items, one per statue).
+// Bird Statue unlock items occupy ids 300..=327 (28 items, one per statue).
 // The flag index is `id - 300`, matching the item's index in
 // ALL_BIRD_STATUE_UNLOCK_ITEMS. Keep these in sync with data/items.yaml and
 // custom-items.asm.
 pub const BIRD_STATUE_UNLOCK_FIRST_ITEM_ID: u16 = 300;
-pub const BIRD_STATUE_UNLOCK_LAST_ITEM_ID: u16 = 325;
+pub const BIRD_STATUE_UNLOCK_LAST_ITEM_ID: u16 = 327;
 
 // ---------------------------------------------------------------------------
 // Bird Statues Give Items
 //
-// Each of the 26 surface Bird Statues is a location. Touching one sets a flag
+// Each of the 28 Bird Statues is a location. Touching one sets a flag
 // (a scene flag for most, a story flag 800-807 for some); the three region
 // entrance statues have their flag preset by the randomizer, so they trigger
 // on first being in their region instead. Once the flag reads set, the item
@@ -2599,8 +2599,9 @@ const fn statue(trigger: BirdStatueTrigger, region: BirdStatueRegion) -> BirdSta
 }
 
 /// Same order as BIRD_STATUE_LOCATION_NAMES in stagepatchhandler.py (and the
-/// AP location codes 2773911..=2773936). Flags match bird_statue_data.yaml.
-const BIRD_STATUES: [BirdStatue; 26] = {
+/// AP location codes 2773911..=2773936, then 2774485..=2774486). Flags match
+/// bird_statue_data.yaml.
+const BIRD_STATUES: [BirdStatue; 28] = {
     use BirdStatueRegion::*;
     use BirdStatueTrigger::*;
     [
@@ -2630,6 +2631,8 @@ const BIRD_STATUES: [BirdStatue; 26] = {
         statue(Scene(8, 85), Lanayru), // Shipyard
         statue(Scene(8, 84), Lanayru), // Pirate Stronghold
         statue(Scene(9, 12), Lanayru), // Lanayru Gorge
+        statue(Scene(5, 101), Eldin),  // Inside the Volcano
+        statue(Scene(15, 114), Eldin), // Inside Fire Sanctuary
     ]
 };
 
@@ -2677,12 +2680,8 @@ pub fn handle_bird_statue_items() {
         if PLAYER_PTR.is_null() || ROOM_MGR.is_null() {
             return;
         }
-
         // Every surface statue lives in one of the three regions
-        let region = match current_bird_statue_region() {
-            Some(region) => region,
-            None => return,
-        };
+        let region = current_bird_statue_region();
 
         for index in 0..BIRD_STATUES.len() {
             let custom_flag =
@@ -2692,7 +2691,7 @@ pub fn handle_bird_statue_items() {
             }
 
             let statue = &BIRD_STATUES[index];
-            if statue.region != region {
+            if Some(statue.region) != region {
                 continue;
             }
             let touched = match statue.trigger {
@@ -2740,7 +2739,7 @@ pub fn handle_bird_statue_items() {
     }
 }
 
-/// Unlock flag index for a Bird Statue unlock item (ids 300..=325, in the
+/// Unlock flag index for a Bird Statue unlock item (ids 300..=327, in the
 /// same order as ALL_BIRD_STATUE_UNLOCK_ITEMS, so the flag is `id - 300`).
 pub fn bird_statue_unlock_flag_index(item_id: u16) -> Option<u16> {
     match item_id {
@@ -3074,7 +3073,7 @@ pub extern "C" fn change_model_scale(item_actor: *mut dAcItem, world_matrix: *mu
             215 => 0.3f32, // Scrapper
             // Bird Statue Unlock items: the SaveObjectA statue model is far
             // bigger than a normal item model, so scale it way down.
-            300..=325 => BIRD_STATUE_ITEM_MODEL_SCALE,
+            300..=327 => BIRD_STATUE_ITEM_MODEL_SCALE,
             _ => 1.0f32,
         };
 
@@ -3662,6 +3661,9 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 34u16
             } else if item_id_val == 219
                 || bird_statue_unlock_flag_index(item_id_val as u16).is_some()
+                // Progressive Bow tiers (client-resolved: 19 -> 90 -> 91). The
+                // client already picked the exact tier, so skip vanilla tiering.
+                || matches!(item_id_val, 19 | 90 | 91)
             {
                 // Loftwing and the Bird Statue Unlock items must keep their own
                 // item id for AP delivery. Vanilla determineFinalItemid can remap

@@ -218,6 +218,12 @@
 - name: Item 325 Text
   standard: "You got the <y<Lanayru Mine Entry Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
 
+- name: Item 326 Text
+  standard: "You got the <y<Inside the Volcano Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
+- name: Item 327 Text
+  standard: "You got the <y<Inside the Fire Sanctuary Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+
 - name: Item 220 Text
   standard: "You got the <g<Skyview Temple>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
 
@@ -658,6 +664,18 @@
 - name: Lanayru Mine Entry Statue Unlock
   standard: Lanayru Mine Entry Statue Unlock
   pretty: the <Lanayru Mine Entry Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Inside the Volcano Statue Unlock
+  standard: Inside the Volcano Statue Unlock
+  pretty: the <Inside the Volcano Statue Unlock>
+  cryptic: a <r<key to the sky's edge>>
+  plurality: Singular
+
+- name: Inside the Fire Sanctuary Statue Unlock
+  standard: Inside the Fire Sanctuary Statue Unlock
+  pretty: the <Inside the Fire Sanctuary Statue Unlock>
   cryptic: a <r<key to the sky's edge>>
   plurality: Singular
 
@@ -2918,6 +2936,16 @@
   standard: Lanayru Gorge - Lanayru Gorge Bird Statue
   pretty: Lanayru Gorge - Lanayru Gorge Bird Statue
   cryptic: a <r<winged guardian>> in the <y<sands>>
+
+- name: Eldin Volcano - Inside the Volcano Bird Statue
+  standard: Eldin Volcano - Inside the Volcano Bird Statue
+  pretty: Eldin Volcano - Inside the Volcano Bird Statue
+  cryptic: a <r<winged guardian>> within the <r<burning mountain>>
+
+- name: Fire Sanctuary - Inside Fire Sanctuary Bird Statue
+  standard: Fire Sanctuary - Inside Fire Sanctuary Bird Statue
+  pretty: Fire Sanctuary - Inside Fire Sanctuary Bird Statue
+  cryptic: a <r<winged guardian>> within the <r<burning mountain>>
 
 - name: Sealed Grounds - Bonk Wall between Pillars near Bird Statue
   standard: Sealed Grounds - Bonk Wall between Pillars near Bird Statue

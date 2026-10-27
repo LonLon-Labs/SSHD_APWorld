@@ -43,6 +43,8 @@ _ITEM_NAME_FIXES = {
     "Beedles_Insect_Cage": "Beedle's Insect Cage",
     "Beedle's_Insect_Cage": "Beedle's Insect Cage",
     "Skipper's_Retreat_Statue": "Skipper's Retreat Statue",
+    # Unlock item: logic writes it without an apostrophe, AP item (Items.py) has one
+    "Skippers_Retreat_Statue_Unlock": "Skipper's Retreat Statue Unlock",
     # Event name mismatch: reference has apostrophe, definition doesn't
     "Unlock_Skipper's_Retreat_Statue": "Unlock Skippers Retreat Statue",
     # Song items — YAML drops the apostrophe (Farores vs Farore's)

@@ -167,9 +167,23 @@ pub(crate) fn read_seed_status(mem: &mut impl ProcessMemory, root_addr: usize) -
     // Copy out of the packed struct before use.
     let (patched, saved) = (info.patched_seed, info.save_seed);
     let (has_seed, matched) = (info.save_has_seed, info.seed_match);
+    let patched = u64::from_le_bytes(patched);
+    let saved = u64::from_le_bytes(saved);
+    // The game only ever writes 0 or 1 to these bytes, and only sets
+    // `seed_match` when the saved seed equals the patched one (or the patch has
+    // no seed). Anything else means we're not reading the live AP_IPC_ROOT --
+    // e.g. the emulator restarted the game and this address now holds stale or
+    // reused memory -- so never let it open the gate (a bogus "match" there made
+    // the client report hundreds of locations that were never checked).
+    let plausible = has_seed <= 1
+        && matched <= 1
+        && (matched == 0 || patched == 0 || saved == patched);
+    if !plausible {
+        return Ok(SeedStatus { patched_seed: 0, save_seed: 0, save_has_seed: false, seed_match: false });
+    }
     Ok(SeedStatus {
-        patched_seed:  u64::from_le_bytes(patched),
-        save_seed:     u64::from_le_bytes(saved),
+        patched_seed:  patched,
+        save_seed:     saved,
         save_has_seed: has_seed != 0,
         seed_match:    matched != 0,
     })

@@ -629,8 +629,9 @@ extern "C" fn override_inventory_caption_item_text(
 ///
 /// The three region entrance statues (Sealed Grounds, Volcano Entrance,
 /// Lanayru Mine Entry) have unlock flags 23, 24 and 25 respectively. Measured
-/// in game: Sealed Grounds = 28, Volcano Entrance = 10, inner Eldin statues =
-/// 14 and 15 (no unlock item, -1), Lanayru Mine Entry = 16, Ancient Harbour =
+/// in game: Sealed Grounds = 28, Volcano Entrance = 10, Inside the Volcano =
+/// 14 and Inside Fire Sanctuary = 15 (unlock 26 and 27), Lanayru Mine Entry =
+/// 16, Ancient Harbour =
 /// 23. Remaining unknown slots: 9, 29.
 const BIRD_STATUE_UNLOCK_FLAG_BY_SAVE_OBJ_INDEX: [i8; 30] = [
     0,  // 0  Behind the Temple
@@ -647,8 +648,8 @@ const BIRD_STATUE_UNLOCK_FLAG_BY_SAVE_OBJ_INDEX: [i8; 30] = [
     9,  // 11 Volcano East
     10, // 12 Volcano Ascent
     11, // 13 Temple Entrance
-    -1, // 14
-    -1, // 15
+    26, // 14 Inside the Volcano
+    27, // 15 Inside Fire Sanctuary
     25, // 16 Lanayru Mine Entry
     12, // 17 Desert Entrance
     13, // 18 West Desert
@@ -680,37 +681,82 @@ unsafe fn bird_statue_locked(save_mgr: *mut dLytSaveMgr) -> bool {
     flag_id >= 0 && flag::check_global_sceneflag(6, flag_id as u16) == 0
 }
 
-/// Debug aid for measuring the save object index of each statue. Needs
-/// ASM_DEBUG_PRINT = True in asmpatchhandler.py to be visible in the emulator
-/// log.
-const LOG_BIRD_STATUE_SAVE_OBJ_INDEX: bool = false;
+/// When true, a locked bird statue opens a Cancel-only save menu instead of
+/// the normal Save / Save and quit / Cancel menu. Set to false to revert to
+/// the previous behavior (the Save menu, with the Sky option removed).
+const CANCEL_ONLY_LOCKED_STATUE_MENU: bool = false;
 
-/// TEST (remove when done): when true, a locked bird statue cycles through
-/// the prompt indices in TEST_CYCLE_INDICES. Press Y while the prompt is open
-/// to go to the next index. Each switch is logged. Index 2 is the dungeon
-/// "go outside" prompt and index 3 locks up, so neither is in the list.
-const TEST_CYCLE_ENABLED: bool = false;
-const TEST_CYCLE_INDICES: [u32; 3] = [0, 4, 5];
-static mut TEST_CYCLE_POS: usize = 0;
+/// Save prompt table slot used for the Cancel-only locked-statue menu. The
+/// slot is NULL in vanilla, so it is pointed at the SYS_SAVE_12 label at
+/// runtime. The text behind that label is set to Cancel-only by
+/// add_cancel_only_statue_text_patch in dynamictextpatches.py.
+const CANCEL_ONLY_PROMPT_INDEX: u32 = 6;
+
+/// Writes the SYS_SAVE_12 label pointer into the save prompt table. Done at
+/// runtime (not in the patched blob) so the pointer is a valid runtime
+/// address.
+unsafe fn register_cancel_only_prompt() {
+    let table = core::ptr::addr_of!(dLytSaveMgr__sSavePrompts) as *mut *const c_char;
+    table
+        .add(CANCEL_ONLY_PROMPT_INDEX as usize)
+        .write(c"SYS_SAVE_12".as_ptr());
+}
 
 #[no_mangle]
 pub extern "C" fn require_sailcloth_and_loftwing_to_fly_to_sky(save_mgr: *mut dLytSaveMgr) {
     unsafe {
-        if LOG_BIRD_STATUE_SAVE_OBJ_INDEX && (*save_mgr).save_text_prompt_index == 1 {
-            debug::debug_print_num(
-                c"statue save obj idx: %d".as_ptr(),
-                (*save_mgr).save_obj_name_index as usize,
-            );
+        // Close: the choice sends the menu to the save-file screen (phase 2000).
+        // Jump to phase 2006, the save-file back-out. For this prompt it goes to
+        // phase 100 (the vanilla close), so the save-file screen is never shown.
+        if CANCEL_ONLY_LOCKED_STATUE_MENU
+            && (*save_mgr).save_text_prompt_index == CANCEL_ONLY_PROMPT_INDEX
+            && *((save_mgr as *const u8).add(0x24DC) as *const u32) == 2000
+        {
+            *((save_mgr as *mut u8).add(0x24DC) as *mut u32) = 2006;
         }
-        if TEST_CYCLE_ENABLED && bird_statue_locked(save_mgr) {
-            if input::check_button_pressed_down(input::BUTTON_INPUTS::Y_BUTTON) {
-                TEST_CYCLE_POS = (TEST_CYCLE_POS + 1) % TEST_CYCLE_INDICES.len();
-                debug::debug_print_num(
-                    c"statue test prompt index: %d".as_ptr(),
-                    TEST_CYCLE_INDICES[TEST_CYCLE_POS] as usize,
-                );
-            }
-            (*save_mgr).save_text_prompt_index = TEST_CYCLE_INDICES[TEST_CYCLE_POS];
+        // The 2006 handler waits until the flag at 0x24D1 is set. Set it so the
+        // handler continues to phase 100, the close.
+        if CANCEL_ONLY_LOCKED_STATUE_MENU
+            && (*save_mgr).save_text_prompt_index == CANCEL_ONLY_PROMPT_INDEX
+            && *((save_mgr as *const u8).add(0x24DC) as *const u32) == 2006
+        {
+            *((save_mgr as *mut u8).add(0x24D1) as *mut u8) = 1;
+        }
+        // Clear the flags the prompt setup turned on. d5 (0x24D5) stays set after the
+        // close and keeps the screen dimmed, so clear it with b4 (0x24B4) and d1
+        // (0x24D1).
+        if CANCEL_ONLY_LOCKED_STATUE_MENU
+            && (*save_mgr).save_text_prompt_index == CANCEL_ONLY_PROMPT_INDEX
+            && *((save_mgr as *const u8).add(0x24DC) as *const u32) == 100
+        {
+            *((save_mgr as *mut u8).add(0x24D5) as *mut u8) = 0;
+            *((save_mgr as *mut u8).add(0x24B4) as *mut u32) = 0;
+            *((save_mgr as *mut u8).add(0x24D1) as *mut u8) = 0;
+            // Reset the chosen button to -1. Phase 0 starts a new prompt whenever this
+            // is 0 or more, so leaving the old choice here reopens the menu.
+            *((save_mgr as *mut u8).add(0x24BC) as *mut i32) = -1;
+            // Reset the window state fields that stayed set after the close and seemed
+            // to restart the window: 0x1EA4, 0x1EA8, and the countdown at 0x1EB4.
+            *((save_mgr as *mut u8).add(0x1EA4) as *mut u32) = 0;
+            *((save_mgr as *mut u8).add(0x1EA8) as *mut u32) = 0;
+            *((save_mgr as *mut u8).add(0x1EB4) as *mut u32) = 0;
+        }
+        // While idle (phase 0) for this prompt, keep the chosen button at -1. After
+        // the close, something writes 0 back to it, and phase 0 treats 0 as a new
+        // choice and reopens the menu.
+        if CANCEL_ONLY_LOCKED_STATUE_MENU
+            && (*save_mgr).save_text_prompt_index == CANCEL_ONLY_PROMPT_INDEX
+            && *((save_mgr as *const u8).add(0x24DC) as *const u32) == 0
+            && *((save_mgr as *const u8).add(0x24BC) as *const i32) >= 0
+        {
+            *((save_mgr as *mut u8).add(0x24BC) as *mut i32) = -1;
+        }
+        if CANCEL_ONLY_LOCKED_STATUE_MENU
+            && matches!((*save_mgr).save_text_prompt_index, 0 | 1)
+            && bird_statue_locked(save_mgr)
+        {
+            register_cancel_only_prompt();
+            (*save_mgr).save_text_prompt_index = CANCEL_ONLY_PROMPT_INDEX;
         } else if (*save_mgr).save_text_prompt_index == 1
             && (flag::check_itemflag(flag::ITEMFLAGS::SAILCLOTH) == 0
                 || flag::check_storyflag(27) == 0
@@ -724,9 +770,9 @@ pub extern "C" fn require_sailcloth_and_loftwing_to_fly_to_sky(save_mgr: *mut dL
     }
 }
 
-/// Number of Bird Statue unlock items (flags 0..=25 in scene 6, indices into
+/// Number of Bird Statue unlock items (flags 0..=27 in scene 6, indices into
 /// ALL_BIRD_STATUE_UNLOCK_ITEMS in itemconstants.py).
-const BIRD_STATUE_UNLOCK_FLAG_COUNT: u16 = 26;
+const BIRD_STATUE_UNLOCK_FLAG_COUNT: u16 = 28;
 
 /// Region of a light pillar / the statues it can drop you to.
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -750,25 +796,20 @@ const fn region_unlock_mask(region: PillarRegion) -> u32 {
     match region {
         // flags 0..=8, 23
         PillarRegion::Faron => 0x0080_01FF,
-        // flags 9, 10, 11, 24
-        PillarRegion::Eldin => 0x0100_0E00,
+        // flags 9, 10, 11, 24, 26, 27
+        PillarRegion::Eldin => 0x0D00_0E00,
         // flags 12..=22, 25
         PillarRegion::Lanayru => 0x027F_F000,
     }
 }
 
 /// Maps the `scen_link` of a light pillar's dTgSceneChange (SCEN type 9) to
-/// the region whose landing map it opens. Not measured yet: turn on
-/// LOG_PILLAR_SCEN_LINK, step into each pillar once, and fill in the logged
-/// scen_link values here. Until a pillar is listed it is treated as "any
+/// the region whose landing map it opens. Add each pillar's scen_link here
+/// once measured. Until a pillar is listed it is treated as "any
 /// region", i.e. it only voids out when no statue anywhere is unlocked (the
 /// previous, softlock-safe-but-lenient behavior).
 // (Kept as a plain `match` in `pillar_region` below rather than a const slice,
 // to stay clear of pointer tables in the raw-patched blob.)
-
-/// Debug aid for measuring pillar scen_link values. Needs ASM_DEBUG_PRINT =
-/// True in asmpatchhandler.py to be visible in the emulator log.
-const LOG_PILLAR_SCEN_LINK: bool = false;
 
 fn pillar_region(scen_link: u8) -> Option<PillarRegion> {
     match scen_link {
@@ -789,9 +830,6 @@ fn pillar_region(scen_link: u8) -> Option<PillarRegion> {
 /// vanilla.
 pub fn no_droppable_bird_statues(scen_link: u8) -> bool {
     unsafe {
-        if LOG_PILLAR_SCEN_LINK {
-            debug::debug_print_num(c"pillar scen_link: %d".as_ptr(), scen_link as usize);
-        }
         if RANDOMIZER_SETTINGS.bird_statues_need_unlock == 0 {
             return false;
         }

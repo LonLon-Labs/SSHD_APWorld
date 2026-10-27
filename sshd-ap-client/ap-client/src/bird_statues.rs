@@ -19,9 +19,15 @@ use std::collections::HashSet;
 pub const FIRST_LOCATION_CODE: i64 = 2773911;
 pub const LOCATION_COUNT: i64 = 26;
 
+/// Bird Statue locations outside the contiguous block: Inside the Volcano and
+/// Inside Fire Sanctuary.
+pub const EXTRA_LOCATION_CODES: [i64; 2] = [2774485, 2774486];
+
 /// The AP location codes of all Bird Statue locations.
 pub fn location_codes() -> HashSet<i64> {
-    (FIRST_LOCATION_CODE..FIRST_LOCATION_CODE + LOCATION_COUNT).collect()
+    let mut codes: HashSet<i64> = (FIRST_LOCATION_CODE..FIRST_LOCATION_CODE + LOCATION_COUNT).collect();
+    codes.extend(EXTRA_LOCATION_CODES);
+    codes
 }
 
 #[cfg(test)]
@@ -29,11 +35,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn covers_all_26_statue_locations() {
+    fn covers_all_28_statue_locations() {
         let codes = location_codes();
-        assert_eq!(codes.len(), 26);
+        assert_eq!(codes.len(), 28);
+        assert!(codes.contains(&2774485));
+        assert!(codes.contains(&2774486));
         assert!(codes.contains(&2773911));
         assert!(codes.contains(&2773936));
-        assert!(!codes.contains(&2773937));
     }
 }

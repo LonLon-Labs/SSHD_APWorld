@@ -248,6 +248,27 @@ struct SyncState {
     // (what the game's in-game help menu displays). Throttled since it
     // clones/unions the checked-location sets.
     check_stats_last_write: Option<Instant>,
+    // Locations a poller reported in one burst larger than `CHECK_BURST_LIMIT`.
+    // They are NOT sent to the server automatically (a burst like that has come
+    // from reading a stale/garbage AP_IPC_ROOT while the emulator restarted the
+    // game); `/accept_checks` sends them if they turn out to be real.
+    held_checks: Vec<i64>,
+    accept_held: bool,
+}
+
+/// Most locations a single poll may newly report before it is held back as
+/// suspicious. Real play finds a handful at once at most.
+const CHECK_BURST_LIMIT: usize = 60;
+
+/// True if `root_addr` still holds the live `AP_IPC_ROOT`. A plain "can I read
+/// a byte there" test is not enough: when the emulator restarts the game, the
+/// old address usually stays mapped but holds stale or reused memory, which
+/// the pollers then happily read as (garbage) flags.
+fn root_is_live(mem: &mut impl ProcessMemory, root_addr: usize) -> bool {
+    match mem.read_bytes(root_addr + offsets::MAGIC, ap_ipc::AP_IPC_MAGIC.len()) {
+        Ok(bytes) => bytes.as_slice() == ap_ipc::AP_IPC_MAGIC.as_slice(),
+        Err(_) => false,
+    }
 }
 
 impl SyncState {
@@ -270,6 +291,8 @@ impl SyncState {
             hints: Vec::new(),
             link_monitor: LinkMonitor::new(),
             check_stats_last_write: None,
+            held_checks: Vec::new(),
+            accept_held: false,
         }
     }
 }
@@ -503,8 +526,8 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
             // Cheap liveness check — if this fails, assume the emulator
             // closed (or the game/mod isn't there anymore) and go back
             // to searching.
-            if mem.read_bytes(*root_addr, 1).is_err() {
-                log!(&output, "WARNING: Lost connection to the emulator. Searching again...");
+            if !root_is_live(mem, *root_addr) {
+                log!(&output, "WARNING: Lost connection to the emulator (the game closed or restarted). Searching again...");
                 sync.delivery.game_lost();
                 emulator = None;
                 emulator_search_logged = false;
@@ -1015,6 +1038,23 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                 }
                 }
 
+                // Burst guard: never auto-report an implausibly large batch.
+                if sync.accept_held {
+                    sync.accept_held = false;
+                    newly_checked_all.append(&mut sync.held_checks);
+                } else if newly_checked_all.len() > CHECK_BURST_LIMIT {
+                    log!(
+                        &output,
+                        "[AP] WARNING: {} locations appeared at once -- that looks like a game restart or a bad \
+                         memory read, so they were NOT sent. If they are real (e.g. you played offline), run \
+                         /accept_checks to send them.",
+                        newly_checked_all.len()
+                    );
+                    sync.held_checks.append(&mut newly_checked_all);
+                    sync.held_checks.sort_unstable();
+                    sync.held_checks.dedup();
+                }
+
                 if !newly_checked_all.is_empty() {
                     newly_checked_all.sort_unstable();
                     newly_checked_all.dedup();
@@ -1241,6 +1281,14 @@ fn handle_command(
         },
         "flush_item_datastorage" => cmd_flush_item_datastorage(&args, connection, ap_connected, sync, output),
         "set_delivery_index" => cmd_set_delivery_index(&args, connection, ap_connected, sync, output),
+        "accept_checks" => {
+            if sync.held_checks.is_empty() {
+                log!(output, "No held-back location checks.");
+            } else {
+                log!(output, "Sending {} held-back location check(s)...", sync.held_checks.len());
+                sync.accept_held = true;
+            }
+        },
         "cheats" => cmd_cheats(emulator, output),
         "cheat" => cmd_cheat(&args, emulator, output),
         "hints" => cmd_hints(sync, output),
@@ -1269,6 +1317,7 @@ fn cmd_help(output: &EventSink) {
         "/connect <server> <slot> [password], /disconnect — manage the server connection",
         "/sshd — client status (emulator, server, checks)",
         "/rescan — re-scan for the emulator and AP_IPC_ROOT",
+        "/accept_checks — send location checks that were held back as an implausibly large burst",
         "/flush_item_datastorage confirm — re-give every item you've ever received (local and remote)",
         "/set_delivery_index <n> — declare items 0..n already in your save (re-give n onward); no arg shows status",
         "/cheats — show cheat status;  /cheat <name> — toggle;  /cheat hovercraft <velocity>;  /cheat speed <multiplier|off>",
