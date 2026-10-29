@@ -51,7 +51,7 @@ from .Locations import LOCATION_TABLE
 from .SSHD_Options import SSHDOptions, sshd_option_groups
 from .Rules import set_rules, set_completion_condition
 from .rando.ArcPatcher import patch_archipelago_logo, patch_archipelago_item_oarc, patch_key_item_oarcs
-from .SSHDRWrapper import generate_sshd_rando_mod, extract_location_item_mapping, extract_custom_flag_mapping
+from .SSHDRWrapper import generate_sshd_rando_mod, extract_location_item_mapping, extract_custom_flag_mapping, AP_BLUE_CHEST_PLACEHOLDER
 
 
 def _host_setting_enabled(section: str, key: str) -> bool:
@@ -4806,9 +4806,15 @@ class SSHDWorld(World):
                         print(f"[__init__.py] PROTECTED: '{ap_item_name}' at {location.name} (not replaced)")
                         protected_count += 1
                     else:
-                        # Cross-world item - replace with Archipelago Item
-                        location_item_mapping[location.name] = "Archipelago Item"
-                        print(f"[__init__.py] Note: Cross-world item '{ap_item_name}' at {location.name} -> Archipelago Item")
+                        # Cross-world item - replace with Archipelago Item.
+                        # Progression and useful items use a separate placeholder name so
+                        # the overlay can mark the location; the chest then becomes a big
+                        # blue chest instead of a small brown one.
+                        if location.item.classification & (IC.progression | IC.useful):
+                            location_item_mapping[location.name] = AP_BLUE_CHEST_PLACEHOLDER
+                        else:
+                            location_item_mapping[location.name] = "Archipelago Item"
+                        print(f"[__init__.py] Note: Cross-world item '{ap_item_name}' at {location.name} -> {location_item_mapping[location.name]}")
                         cross_world_count += 1
                 else:
                     # Location has no item - skip

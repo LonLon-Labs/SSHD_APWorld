@@ -68,6 +68,11 @@ SSHD_RANDO_PATH = None
 
 CURRENT_DIR = Path(__file__).parent
 
+# Mapping value used for a cross-world item that is progression or useful. It is overlaid as the
+# normal Archipelago Item placeholder, but the location is flagged (ap_big_chest) so
+# the chest it spawns in is a big blue chest rather than a small brown one.
+AP_BLUE_CHEST_PLACEHOLDER = "Archipelago Item (Blue Chest)"
+
 
 # ---------------------------------------------------------------------------
 # Other mods
@@ -870,6 +875,13 @@ def overlay_multiworld_items(world: Any, location_item_mapping: Dict[str, str]) 
         # Check if this location should have its item replaced
         if location_name in location_item_mapping:
             target_item_name = location_item_mapping[location_name]
+
+            # Progression/useful cross-world items: place the normal placeholder but flag
+            # the location so the chest is a big blue one (see checkpatchhandler).
+            is_ap_big_chest = (target_item_name == AP_BLUE_CHEST_PLACEHOLDER)
+            if is_ap_big_chest:
+                target_item_name = "Archipelago Item"
+            location.ap_big_chest = is_ap_big_chest
             
             # sshd-rando strips apostrophes from item names when storing in item_table
             # So we need to do the same when looking them up

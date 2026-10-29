@@ -441,6 +441,15 @@ def determine_check_patches(
                         elif item.is_dungeon_map:
                             tbox_subtype = 1
 
+                    # Archipelago items: the chest follows the real item. Progression and
+                    # useful items get a big blue chest (0); filler/junk gets a small brown
+                    # one (1). Applies regardless of chest_type_matches_contents, since the
+                    # placeholder's own major/minor status says nothing about the item.
+                    if item.id == AP_PLACEHOLDER_ITEMID:
+                        tbox_subtype = (
+                            0 if getattr(location, "ap_big_chest", False) else 1
+                        )
+
                     # If the post-boko base sword pull chest would CTMC into
                     # a small brown chest actually make it a big blue chest.
                     if stage == "F201_1" and objectid == "73" and tbox_subtype == 1:
