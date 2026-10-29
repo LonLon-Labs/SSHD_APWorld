@@ -2338,3 +2338,91 @@ def create_demise_patches(
                 "object": demise,
             }
         )
+
+
+# Boss and miniboss copies. Each spec describes the original actor and the setting
+# that controls its copies. Copies are placed on the original's layer and room with the
+# original's params. Specs with a despawn_flag get that flag as their untrigger story
+# flag (it's written into params1 bits 21-31), so the copies despawn when the boss's
+# defeat flag is set. known_spots are positions verified in game and are used first;
+# any copies beyond those spawn above the original, 1000 units per copy (like Demise).
+BOSS_COPY_SPECS = [
+    {"setting": "extra_ghirahim_skyview", "stage": "B100", "room": 0, "layer": 1,
+     "name": "BGh", "params1": 0xFFFFC2C0, "params2": 0xFFFFFFFF,
+     "pos": (0, 0, -1950), "despawn_flag": 83,
+     "known": [(-900, 0, -1950), (900, 0, -1950)]},
+    {"setting": "extra_ghirahim_fire_sanctuary", "stage": "B201", "room": 0, "layer": 1,
+     "name": "BGh2", "params1": 0xFFFFC2FC, "params2": 0xFFFFFFFF,
+     "pos": (0, 0, 0), "despawn_flag": 84, "known": []},
+    {"setting": "extra_moldarach", "stage": "B300", "room": 0, "layer": 1,
+     "name": "BMg", "params1": 0xFFFFFFFF, "params2": 0xFFFFFFFF,
+     "pos": (0, 0, -1200), "despawn_flag": 812,
+     "known": [(-900, 0, -1200), (900, 0, -1200)]},
+    {"setting": "extra_stalfos_skyview_first_visit", "stage": "D100", "room": 10, "layer": 1,
+     "name": "ESf", "params1": 0xFFFFFFF2, "params2": 0x05FFFFFF,
+     "pos": (0, -210, -8115), "known": []},
+    {"setting": "extra_stalfos_skyview_second_visit", "stage": "B100", "room": 0, "layer": 3,
+     "name": "ESf", "params1": 0xFFFFFFF0, "params2": 0x26FFFFFF,
+     "pos": (0, 0, -1950), "known": []},
+    {"setting": "extra_stalfos_sky_keep", "stage": "D003_0", "room": 0, "layer": 1,
+     "name": "ESf", "params1": 0xFFFFFFF0, "params2": 0x04FFFFFF,
+     "pos": (-1260, -67, -1867), "known": []},
+    {"setting": "extra_stalmaster_sky_keep", "stage": "D003_0", "room": 0, "layer": 1,
+     "name": "ESf4", "params1": 0xFFFFD4FF, "params2": 0x23FFFFFF,
+     "pos": (-1887, 1, 1469), "known": []},
+    {"setting": "extra_stalmaster_ancient_cistern", "stage": "D101", "room": 10, "layer": 0,
+     "name": "ESf4", "params1": 0xFFFFFFFF, "params2": 0xFFFFFFFF,
+     "pos": (0, -2400, 0), "known": []},
+    {"setting": "extra_dark_lizalfos", "stage": "D201_1", "room": 6, "layer": 0,
+     "name": "ELizaru", "params1": 0xDFFFFFF0, "params2": 0x065FFFFF,
+     "pos": (-2200, 200, -4700), "angles": (17732, 16384, 65535),
+     "known": [(-1600, 200, -4700)]},
+]
+
+
+def create_boss_copy_patches(
+    world: World, stage_patch_handler: StagePatchHandler
+) -> None:
+    """Add extra boss and miniboss copies via stage patches, using the AP count settings."""
+    for spec in BOSS_COPY_SPECS:
+        count = world.setting(spec["setting"]).value_as_number()
+        print(f"[BossCopies] {spec['setting']} = {count}")
+        if count <= 0:
+            continue
+
+        params1 = spec["params1"]
+        if spec.get("despawn_flag") is not None:
+            params1 = (params1 & 0x1FFFFF) | (spec["despawn_flag"] << 21)
+
+        base_x, base_y, base_z = spec["pos"]
+        anglex, angley, anglez = spec.get("angles", (0, 0, 0))
+        patches = stage_patch_handler.stage_patches.setdefault(spec["stage"], [])
+
+        above = 0
+        for idx in range(count):
+            if idx < len(spec["known"]):
+                x, y, z = spec["known"][idx]
+            else:
+                above += 1
+                x, y, z = base_x, base_y + 1000 * above, base_z
+
+            patches.append(
+                {
+                    "name": f"{spec['setting']} copy {idx + 1}",
+                    "type": "objadd",
+                    "room": spec["room"],
+                    "layer": spec["layer"],
+                    "objtype": "OBJ",
+                    "object": {
+                        "name": spec["name"],
+                        "params1": params1,
+                        "params2": spec["params2"],
+                        "posx": x,
+                        "posy": y,
+                        "posz": z,
+                        "anglex": anglex,
+                        "angley": angley,
+                        "anglez": anglez,
+                    },
+                }
+            )

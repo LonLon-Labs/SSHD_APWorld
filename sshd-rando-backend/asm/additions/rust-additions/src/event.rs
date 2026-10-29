@@ -170,6 +170,110 @@ static mut PENDING_AP_ITEM_PTR: *const c_void = core::ptr::null();
 static mut PENDING_AP_PLAYER_PTR: *const c_void = core::ptr::null();
 /// Whether a TextMgr write is pending.
 static mut PENDING_AP_STRING_ARGS: bool = false;
+/// Queue slot of the textbox waiting for its real names (mode A).
+static mut PENDING_AP_SLOT: usize = usize::MAX;
+
+// Queue of AP textboxes. Each cmd 81 call adds one entry with its name
+// pointers and a frame countdown. The head entry's names are written to the
+// TextMgrs every frame; once its countdown has run out, the head is popped and
+// the next box's names take over. Each box keeps its own names, so a box is no
+// longer overwritten by a later item's names.
+const AP_TEXT_QUEUE_LEN: usize = 8;
+
+#[derive(Copy, Clone)]
+struct ApTextEntry {
+    item_ptr:    *const c_void,
+    player_ptr:  *const c_void,
+    frames_left: u16,
+}
+
+static mut AP_TEXT_QUEUE: [ApTextEntry; AP_TEXT_QUEUE_LEN] = [ApTextEntry {
+    item_ptr:    core::ptr::null(),
+    player_ptr:  core::ptr::null(),
+    frames_left: 0,
+}; AP_TEXT_QUEUE_LEN];
+static mut AP_TEXT_QUEUE_HEAD: usize = 0;
+static mut AP_TEXT_QUEUE_COUNT: usize = 0;
+
+/// Add a textbox to the queue. Returns its slot, or usize::MAX if the queue is
+/// full (the box then keeps whatever text it already has).
+unsafe fn ap_text_enqueue(
+    item_ptr: *const c_void,
+    player_ptr: *const c_void,
+    frames: u16,
+) -> usize {
+    if AP_TEXT_QUEUE_COUNT >= AP_TEXT_QUEUE_LEN {
+        return usize::MAX;
+    }
+    let slot = (AP_TEXT_QUEUE_HEAD + AP_TEXT_QUEUE_COUNT) % AP_TEXT_QUEUE_LEN;
+    AP_TEXT_QUEUE[slot] = ApTextEntry {
+        item_ptr,
+        player_ptr,
+        frames_left: frames,
+    };
+    AP_TEXT_QUEUE_COUNT += 1;
+    slot
+}
+
+/// Replace the names of a queued box that is still waiting (used when the
+/// table lookup succeeds late).
+unsafe fn ap_text_update_slot(slot: usize, item_ptr: *const c_void, player_ptr: *const c_void) {
+    if slot == usize::MAX || AP_TEXT_QUEUE_COUNT == 0 {
+        return;
+    }
+    let offset = (slot + AP_TEXT_QUEUE_LEN - AP_TEXT_QUEUE_HEAD) % AP_TEXT_QUEUE_LEN;
+    if offset < AP_TEXT_QUEUE_COUNT {
+        AP_TEXT_QUEUE[slot].item_ptr = item_ptr;
+        AP_TEXT_QUEUE[slot].player_ptr = player_ptr;
+    }
+}
+
+/// Called every frame. Writes the head box's names to the TextMgrs, counts
+/// down every queued box, and pops the head once its countdown was already
+/// finished before this frame.
+unsafe fn ap_text_tick() {
+    if AP_TEXT_QUEUE_COUNT == 0 {
+        PENDING_AP_STRING_ARGS = false;
+        return;
+    }
+
+    let head = AP_TEXT_QUEUE[AP_TEXT_QUEUE_HEAD];
+    if !GLOBAL_TEXT_MGR.is_null() {
+        set_string_arg_safe(GLOBAL_TEXT_MGR, head.item_ptr, 0);
+        set_string_arg_safe(GLOBAL_TEXT_MGR, head.player_ptr, 1);
+    }
+    if !LYT_MSG_WINDOW.is_null() {
+        let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+        if !text_mgr.is_null() {
+            set_string_arg_safe(text_mgr, head.item_ptr, 0);
+            set_string_arg_safe(text_mgr, head.player_ptr, 1);
+        }
+    }
+
+    // Each box's countdown runs from when it was queued, not from when it reached
+    // the head.
+    for i in 0..AP_TEXT_QUEUE_COUNT {
+        let slot = (AP_TEXT_QUEUE_HEAD + i) % AP_TEXT_QUEUE_LEN;
+        if AP_TEXT_QUEUE[slot].frames_left > 0 {
+            AP_TEXT_QUEUE[slot].frames_left -= 1;
+        }
+    }
+
+    if head.frames_left == 0 {
+        AP_TEXT_QUEUE_HEAD = (AP_TEXT_QUEUE_HEAD + 1) % AP_TEXT_QUEUE_LEN;
+        AP_TEXT_QUEUE_COUNT -= 1;
+    }
+    PENDING_AP_STRING_ARGS = AP_TEXT_QUEUE_COUNT > 0;
+}
+
+/// Drop every queued textbox (used when the stage changes).
+unsafe fn ap_text_clear() {
+    AP_TEXT_QUEUE_HEAD = 0;
+    AP_TEXT_QUEUE_COUNT = 0;
+    PENDING_AP_STRING_ARGS = false;
+    PENDING_AP_LOOKUP = false;
+    PENDING_AP_SLOT = usize::MAX;
+}
 
 /// Diagnostic text buffers — shown in the item-216 textbox when the
 /// AP_ITEM_INFO_TABLE lookup fails, displaying the flag_id and table
@@ -238,6 +342,11 @@ unsafe fn set_string_arg_safe(text_mgr: *mut lyt::TextMgr, arg: *const c_void, a
 pub fn apply_pending_ap_string_args() {
     tick_fi_cant_drop();
     unsafe {
+        // A stage change drops every box still waiting, along with its flag ID.
+        if traps::ap_queues_frame_tick() {
+            ap_text_clear();
+        }
+
         // ── Retry path A: table lookup ──────────────────────────────────
         if PENDING_AP_LOOKUP {
             let mut flag_id = PENDING_AP_FLAG_ID;
@@ -246,7 +355,7 @@ pub fn apply_pending_ap_string_args() {
             // the static each frame — setup_traps (in stateWait*GetDemoUpdate)
             // will have written it by the time this retry fires.
             if flag_id == 0xFFFF {
-                flag_id = core::ptr::read_volatile(core::ptr::addr_of!(item::LAST_AP_ITEM_FLAG_ID));
+                flag_id = traps::ap_flag_queue_pop();
                 if flag_id != 0xFFFF {
                     PENDING_AP_FLAG_ID = flag_id; // cache resolved value
                 }
@@ -262,35 +371,8 @@ pub fn apply_pending_ap_string_args() {
                     let ip = core::ptr::addr_of!((*entry_ptr).item_name) as *const c_void;
                     let pp = core::ptr::addr_of!((*entry_ptr).player_name) as *const c_void;
 
-                    if !GLOBAL_TEXT_MGR.is_null() {
-                        set_string_arg_safe(GLOBAL_TEXT_MGR, ip, 0);
-                        set_string_arg_safe(GLOBAL_TEXT_MGR, pp, 1);
-                    }
-                    if !LYT_MSG_WINDOW.is_null() {
-                        let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
-                        if !text_mgr.is_null() {
-                            set_string_arg_safe(text_mgr, ip, 0);
-                            set_string_arg_safe(text_mgr, pp, 1);
-                            PENDING_AP_STRING_ARGS = false; // also clears
-                                                            // mode-B
-                        } else {
-                            // Lookup worked but text_mgr still null → mode B
-                            PENDING_AP_ITEM_PTR = ip;
-                            PENDING_AP_PLAYER_PTR = pp;
-                            PENDING_AP_STRING_ARGS = true;
-                        }
-                    } else {
-                        // Layout torn down — defer to mode B
-                        PENDING_AP_ITEM_PTR = ip;
-                        PENDING_AP_PLAYER_PTR = pp;
-                        PENDING_AP_STRING_ARGS = true;
-                    }
-
-                    // Reset after successful retry (prevent stale values)
-                    core::ptr::write_volatile(
-                        core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
-                        0xFFFFu16,
-                    );
+                    // Point this item's queued textbox at the real names.
+                    ap_text_update_slot(PENDING_AP_SLOT, ip, pp);
                     PENDING_AP_LOOKUP = false;
                 }
                 // else: still not found → keep retrying next frame
@@ -298,16 +380,7 @@ pub fn apply_pending_ap_string_args() {
         }
 
         // ── Retry path B: deferred TextMgr write ───────────────────────
-        if PENDING_AP_STRING_ARGS {
-            if !LYT_MSG_WINDOW.is_null() {
-                let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
-                if !text_mgr.is_null() {
-                    set_string_arg_safe(text_mgr, PENDING_AP_ITEM_PTR, 0);
-                    set_string_arg_safe(text_mgr, PENDING_AP_PLAYER_PTR, 1);
-                    PENDING_AP_STRING_ARGS = false;
-                }
-            }
-        }
+        ap_text_tick();
     }
 }
 
@@ -1142,11 +1215,7 @@ fn set_global_sceneflag_for_ap(event_flow_element: &EventFlowElement) {
         };
         let computed_flag_id =
             (flag_index as u32 & 0x7F) | (scene_raw << 7) | (flag_space_trigger << 9);
-        // Volatile write so the store is committed immediately.
-        core::ptr::write_volatile(
-            core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
-            computed_flag_id as u16,
-        );
+        traps::ap_flag_queue_push(computed_flag_id as u16);
     }
 }
 
@@ -1224,8 +1293,7 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
         // (BEFORE the event system fires).  For NPC-given items, cmd 80
         // sets it in the same event flow.  Either way, the value should be
         // available by the time we get here.
-        let flag_id_ptr = core::ptr::addr_of!(item::LAST_AP_ITEM_FLAG_ID);
-        let flag_id = core::ptr::read_volatile(flag_id_ptr);
+        let flag_id = traps::ap_flag_queue_pop();
 
         let idx = item::lookup_ap_item_index(flag_id);
 
@@ -1277,35 +1345,22 @@ fn set_ap_item_string_args(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
             set_string_arg_safe(text_mgr, player_ptr, 1);
         }
 
-        // ── Reset LAST_AP_ITEM_FLAG_ID after use ────────────────────────
-        // This prevents the STALE value problem: without the reset, the
-        // next item-216 pickup could see the PREVIOUS item's flag_id if
-        // setup_traps hasn't written yet.
-        if idx != usize::MAX {
-            core::ptr::write_volatile(
-                core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
-                0xFFFFu16,
-            );
-        }
-
         // If the lookup failed, schedule main-loop retry so the correct
         // text can be patched in once the flag / table becomes visible.
+        // Queue this box with its own names. The per-frame tick writes them to the
+        // TextMgrs until the box opens, and a later item's box waits its turn.
+        let slot = ap_text_enqueue(
+            item_ptr,
+            player_ptr,
+            if idx != usize::MAX { 10 } else { 40 },
+        );
         if idx == usize::MAX {
             PENDING_AP_FLAG_ID = flag_id;
             PENDING_AP_LOOKUP = true;
+            PENDING_AP_SLOT = slot;
         } else {
             PENDING_AP_LOOKUP = false;
         }
-
-        // Always schedule the deferred re-apply so the per-frame retry
-        // loop keeps writing the resolved (or fallback) pointers to
-        // TextMgrs throughout the delay window.  This ensures the
-        // textbox opens with the correct text even if:
-        //   - text_mgr was null initially but appears during the delay,
-        //   - some intermediate engine processing cleared string_args,
-        //   - retry path A resolves the real data mid-delay.
-        PENDING_AP_ITEM_PTR = item_ptr;
-        PENDING_AP_PLAYER_PTR = player_ptr;
         PENDING_AP_STRING_ARGS = true;
     }
 }

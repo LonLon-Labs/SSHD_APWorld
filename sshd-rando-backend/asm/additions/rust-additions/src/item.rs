@@ -1003,6 +1003,22 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
     unsafe {
         let itemid = (*item_actor).itemid;
 
+        // Debug: log bow pickups (actor id fields + flags at pickup time).
+        {
+            let fin_dbg = (*item_actor).final_determined_itemid;
+            if matches!(fin_dbg, 19 | 90 | 91) || matches!(itemid as u16, 19 | 90 | 91) {
+                debug::debug_print_nums(
+                    c"BOW get id=%d fin=%d f=%d,%d,%d".as_ptr(),
+                    itemid as usize,
+                    fin_dbg as usize,
+                    flag::check_itemflag_raw(19) as usize,
+                    flag::check_itemflag_raw(90) as usize,
+                    flag::check_itemflag_raw(91) as usize,
+                    0,
+                );
+            }
+        }
+
         let mut dungeon_item_mask = 0;
 
         if (itemid >= 25 && itemid <= 27) || (itemid >= 29 && itemid <= 31) {
@@ -3385,8 +3401,10 @@ fn should_force_itemflag_for_buffer_item(item_id: u32) -> bool {
         item_id,
         // Progressive Sword
         9 | 10 | 11 | 12 | 13 | 14 |
-        // Progressive Bow
-        19 | 90 | 91 |
+        // Progressive Bow is intentionally NOT forced here: the client already
+        // resolved the exact tier (19 -> 90 -> 91), and setting the itemflag at
+        // spawn time made the game's own get-time tiering see the flag and bump
+        // the first Bow to the Iron Bow (model was right, item/text were not).
         // Progressive Slingshot
         52 | 105 |
         // Progressive Beetle
@@ -3577,9 +3595,83 @@ fn ap_stage_cooldown_active() -> bool {
     }
 }
 
+/// Progressive Bow tier resolution. The client always sends the marker id 19;
+/// the game picks the tier from the itemflags it really has (19 -> 90 -> 91),
+/// so a fresh save, a restart or `!getitem` copies never disagree with the
+/// received-items history. BOW_RECENT_FRAMES covers a second bow delivered
+/// before the first one's pickup has set its flag.
+static mut BOW_LAST_TIER: u16 = 0;
+static mut BOW_RECENT_FRAMES: u32 = 0;
+// Debug: Progressive Bow diagnostics (spawn counter + flag-change watcher).
+static mut BOW_SPAWN_COUNT: u32 = 0;
+static mut BOW_WATCH_FRAMES: u32 = 0;
+static mut BOW_WATCH_LAST: u32 = 0xFFFF;
+// Test: when flag 90 appears during the bow actor's wait, clear 90/91 once.
+static mut BOW_TEST_ARMED: bool = false;
+
+unsafe fn resolve_progressive_bow_tier() -> u16 {
+    let mut tier: u16 = if flag::check_itemflag_raw(19) == 0 {
+        19
+    } else if flag::check_itemflag_raw(90) == 0 {
+        90
+    } else {
+        91
+    };
+    if BOW_RECENT_FRAMES > 0 && tier <= BOW_LAST_TIER && BOW_LAST_TIER < 91 {
+        tier = if BOW_LAST_TIER == 19 { 90 } else { 91 };
+    }
+    tier
+}
+
 #[no_mangle]
 pub extern "C" fn archipelago_check_item_buffer() {
     unsafe {
+        if BOW_RECENT_FRAMES > 0 {
+            BOW_RECENT_FRAMES -= 1;
+        }
+
+        // Debug: log every change to the bow itemflags for a while after a bow
+        // spawn, so the log shows exactly when flag 90 appears.
+        if BOW_WATCH_FRAMES > 0 {
+            BOW_WATCH_FRAMES -= 1;
+            let w19 = flag::check_itemflag_raw(19) as u32;
+            let w90 = flag::check_itemflag_raw(90) as u32;
+            let w91 = flag::check_itemflag_raw(91) as u32;
+            let packed = (w19 << 8) | (w90 << 4) | w91;
+            if packed != BOW_WATCH_LAST {
+                BOW_WATCH_LAST = packed;
+                debug::debug_print_nums(
+                    c"BOW flags f=%d,%d,%d left=%d".as_ptr(),
+                    w19 as usize,
+                    w90 as usize,
+                    w91 as usize,
+                    BOW_WATCH_FRAMES as usize,
+                    0,
+                    0,
+                );
+            }
+
+            // TEST: 90 just turned on while the bow actor is still waiting
+            // (19 owned, no pickup yet). Clear 90 and 91 once per spawn so the
+            // pickup can be checked for which tier it gives.
+            if BOW_TEST_ARMED && w19 == 1 && w90 == 1 {
+                BOW_TEST_ARMED = false;
+                flag::unset_itemflag_raw(90);
+                flag::unset_itemflag_raw(91);
+                flag::commit_itemflags();
+                debug::debug_print_nums(
+                    c"BOW TEST cleared 90/91 -> f=%d,%d,%d".as_ptr(),
+                    flag::check_itemflag_raw(19) as usize,
+                    flag::check_itemflag_raw(90) as usize,
+                    flag::check_itemflag_raw(91) as usize,
+                    0,
+                    0,
+                    0,
+                );
+                BOW_WATCH_LAST = 0xFFFF;
+            }
+        }
+
         // Items from another seed's save may only be delivered when the client
         // marks the slot AP_SLOT_FLAG_FORCE (used for `!getitem` test items).
         let seed_ok = crate::savefile::save_seed_matches();
@@ -3656,6 +3748,22 @@ pub extern "C" fn archipelago_check_item_buffer() {
             // to their concrete tier based on the player's current inventory
             // so the correct OARC model is loaded and the right item actor
             // is spawned.
+            // Progressive Bow / Progressive Loftwing: the client sends the tier-1
+            // marker id and the game resolves the real tier from its itemflags.
+            let item_id_val: u16 = if item_id_val == 19 {
+                resolve_progressive_bow_tier()
+            } else if item_id_val == 219 {
+                // Loftwing (219) first, Spiral Charge (21) once 219 is owned.
+                // Itemflag 219 is forced right after spawn, so back-to-back
+                // copies resolve correctly too.
+                if flag::check_itemflag_raw(219) == 0 {
+                    219
+                } else {
+                    21
+                }
+            } else {
+                item_id_val
+            };
             let item_id = item_id_val as u64;
             let final_id = if is_buffer_trap {
                 34u16
@@ -3727,6 +3835,39 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 (*item_actor).base.basebase.members.param1 &= !0x200u32;
                 (*item_actor).prevent_timed_despawn = 1;
                 (*item_actor).no_longer_waiting = 1;
+
+                // Debug: one line per bow spawn (a double spawn shows as #1, #2).
+                if matches!(item_id_val, 19 | 90 | 91) {
+                    BOW_SPAWN_COUNT += 1;
+                    let fin_before = (*item_actor).final_determined_itemid;
+                    let s19 = flag::check_itemflag_raw(19) as u32;
+                    let s90 = flag::check_itemflag_raw(90) as u32;
+                    let s91 = flag::check_itemflag_raw(91) as u32;
+                    debug::debug_print_nums(
+                        c"BOW spawn#%d t=%d fin=%d f=%d,%d,%d".as_ptr(),
+                        BOW_SPAWN_COUNT as usize,
+                        item_id_val as usize,
+                        fin_before as usize,
+                        s19 as usize,
+                        s90 as usize,
+                        s91 as usize,
+                    );
+                    BOW_WATCH_FRAMES = 900;
+                    BOW_WATCH_LAST = (s19 << 8) | (s90 << 4) | s91;
+                    BOW_TEST_ARMED = true;
+                }
+
+                // Progressive Bow tiers are resolved by the client (19 -> 90 -> 91).
+                // Force the actor to keep exactly that id: the game's own item
+                // init may re-tier it from the itemflags, which turned the first
+                // Bow into the Iron Bow (right model, wrong text and item).
+                if matches!(item_id_val, 19 | 90 | 91) {
+                    (*item_actor).final_determined_itemid = item_id_val;
+                    (*item_actor).itemid = item_id_val as _;
+                    // Remember the tier only once the spawn really happened.
+                    BOW_LAST_TIER = item_id_val;
+                    BOW_RECENT_FRAMES = 900;
+                }
 
                 // Explicitly set the item flag through the game's FlagMgr
                 // vtable so determineFinalItemid sees it immediately for

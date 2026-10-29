@@ -107,6 +107,7 @@ use process_memory::windows::{find_processes_by_names, WindowsProcessMemory as B
 use crate::actorid;
 use crate::beedle_shop::BeedleShopPoller;
 use crate::bird_statues;
+use crate::bow_storyflags::BowStoryflagSync;
 use crate::boss_defeats;
 use crate::cheat_sync;
 use crate::go_mode;
@@ -195,6 +196,8 @@ macro_rules! vlog {
 struct SyncState {
     /// Crash-safe item delivery position + in-flight tracking (see delivery.rs).
     delivery:             DeliveryTracker,
+    /// Keeps the bow textbox storyflags in line with the bow item flags (see bow_storyflags.rs).
+    bow_flags:            BowStoryflagSync,
     location_poller:      Option<CustomFlagPoller>,
     goddess_chest_poller: Option<GoddessChestPoller>,
     goddess_cube_poller:  Option<GoddessCubePoller>,
@@ -275,6 +278,7 @@ impl SyncState {
     fn new() -> Self {
         SyncState {
             delivery:             DeliveryTracker::new(),
+            bow_flags:            BowStoryflagSync::new(),
             location_poller:      None,
             goddess_chest_poller: None,
             goddess_cube_poller:  None,
@@ -886,6 +890,17 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                         false
                     },
                 };
+
+                // Progressive Bow textbox: keep storyflags 957/945/946 in line with the bow
+                // item flags (see bow_storyflags.rs). Runs before delivery so a stale storyflag
+                // is fixed before a bow can be given into this save.
+                if seed_ok {
+                    match sync.bow_flags.poll(mem, root_addr) {
+                        Ok(Some(line)) => log!(&output, "{}", line),
+                        Ok(None) => {},
+                        Err(e) => vlog!("[BowFlags] check failed: {e}"),
+                    }
+                }
 
                 // Item delivery -- crash-safe, paced, resumable (see delivery.rs).
                 if let Some(client) = conn.client_mut() {

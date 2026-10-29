@@ -4301,6 +4301,19 @@ class SSHDWorld(World):
         settings_dict["require_tim"] = "on" if self.options.require_tim.value else "off"
         settings_dict["require_all_progression_items"] = "on" if self.options.require_all_progression_items.value else "off"
         settings_dict["demise_count"] = str(self.options.demise_count.value)
+        # Boss and miniboss copy counts (read by create_boss_copy_patches in the patcher).
+        for _copy_key in (
+            "extra_ghirahim_skyview",
+            "extra_ghirahim_fire_sanctuary",
+            "extra_moldarach",
+            "extra_stalfos_skyview_first_visit",
+            "extra_stalfos_skyview_second_visit",
+            "extra_stalfos_sky_keep",
+            "extra_stalmaster_sky_keep",
+            "extra_stalmaster_ancient_cistern",
+            "extra_dark_lizalfos",
+        ):
+            settings_dict[_copy_key] = str(getattr(self.options, _copy_key).value)
         
         # Set skip settings based on goal
         goal_value = self.options.goal.value

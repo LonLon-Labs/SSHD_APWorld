@@ -280,6 +280,99 @@ class DemiseCount(Range):
     default = 1
 
 
+class ExtraGhirahimSkyview(Range):
+    """
+    Extra Ghirahim 1 fights in the Skyview Temple boss room.
+    They despawn once the first Ghirahim is defeated.
+    """
+    display_name = "Extra Ghirahim (Skyview Temple)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraGhirahimFireSanctuary(Range):
+    """
+    Extra Ghirahim 2 fights in the Fire Sanctuary boss room.
+    They despawn once the first Ghirahim is defeated.
+    """
+    display_name = "Extra Ghirahim (Fire Sanctuary)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraMoldarach(Range):
+    """
+    Extra Moldarach fights in the Lanayru Mining Facility boss room.
+    They despawn once the first Moldarach is defeated.
+    """
+    display_name = "Extra Moldarach (Lanayru Mining Facility)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraStalfosSkyviewFirstVisit(Range):
+    """
+    Extra Stalfos in the Skyview Temple miniboss room on the first visit.
+    """
+    display_name = "Extra Stalfos (Skyview Temple, first visit)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraStalfosSkyviewSecondVisit(Range):
+    """
+    Extra Stalfos in the Skyview Temple boss room on the second visit.
+    """
+    display_name = "Extra Stalfos (Skyview Temple, second visit)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraStalfosSkyKeep(Range):
+    """
+    Extra Stalfos in the Sky Keep Courage room.
+    """
+    display_name = "Extra Stalfos (Sky Keep)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraStalmasterSkyKeep(Range):
+    """
+    Extra Stalmasters in the Sky Keep Courage room.
+    """
+    display_name = "Extra Stalmaster (Sky Keep)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraStalmasterAncientCistern(Range):
+    """
+    Extra Stalmasters in the Ancient Cistern miniboss room.
+    """
+    display_name = "Extra Stalmaster (Ancient Cistern)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraDarkLizalfos(Range):
+    """
+    Extra Dark Lizalfos in the Fire Sanctuary room.
+    """
+    display_name = "Extra Dark Lizalfos (Fire Sanctuary)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
 # === Randomization Settings ===
 
 class GratitudeCrystalShuffle(Toggle):
@@ -1987,6 +2080,15 @@ class SSHDOptions(PerGameCommonOptions):
     skip_horde: SkipHorde
     skip_ghirahim3: SkipGhirahim3
     demise_count: DemiseCount
+    extra_ghirahim_skyview: ExtraGhirahimSkyview
+    extra_ghirahim_fire_sanctuary: ExtraGhirahimFireSanctuary
+    extra_moldarach: ExtraMoldarach
+    extra_stalfos_skyview_first_visit: ExtraStalfosSkyviewFirstVisit
+    extra_stalfos_skyview_second_visit: ExtraStalfosSkyviewSecondVisit
+    extra_stalfos_sky_keep: ExtraStalfosSkyKeep
+    extra_stalmaster_sky_keep: ExtraStalmasterSkyKeep
+    extra_stalmaster_ancient_cistern: ExtraStalmasterAncientCistern
+    extra_dark_lizalfos: ExtraDarkLizalfos
     
     # Randomization
     gratitude_crystal_shuffle: GratitudeCrystalShuffle
@@ -2455,6 +2557,17 @@ sshd_option_groups = [
         SSHDDeathLink,
         SSHDBreathLink,
     ]),
+    OptionGroup("Boss and Miniboss Copies", [
+        ExtraGhirahimSkyview,
+        ExtraGhirahimFireSanctuary,
+        ExtraMoldarach,
+        ExtraStalfosSkyviewFirstVisit,
+        ExtraStalfosSkyviewSecondVisit,
+        ExtraStalfosSkyKeep,
+        ExtraStalmasterSkyKeep,
+        ExtraStalmasterAncientCistern,
+        ExtraDarkLizalfos,
+    ], start_collapsed=True),
     OptionGroup("Configuration", [
         ExtractPath,
         SshdrSeed,

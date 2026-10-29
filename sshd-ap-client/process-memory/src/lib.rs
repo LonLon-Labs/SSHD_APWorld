@@ -495,7 +495,7 @@ pub fn find_ap_ipc_root<M: ProcessMemory + ?Sized>(
 /// Emulator process names this client knows how to attach to. Mirrors the
 /// candidate list `SSHDClient.py` scans for.
 pub const SUPPORTED_EMULATOR_NAMES: &[&str] =
-    &["Ryujinx", "yuzu", "suyu", "sudachi", "eden"];
+    &["Ryujinx", "yuzu", "suyu", "sudachi", "eden", "skyrecomp"];
 
 // ─────────────────────────────────────────────────────────────────────────
 // Linux backend

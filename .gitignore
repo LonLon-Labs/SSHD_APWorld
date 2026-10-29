@@ -74,6 +74,7 @@ sshd-rando-backend/big_pots.yaml
 sshd-rando-backend/pumpkins.yaml
 sshd-rando-backend/barrels.yaml
 sshd-rando-backend/boss_rooms.yaml
+sshd-rando-backend/minibosses.yaml
 ArchipelagoItem.arc.arc.LZ.bak
 # Might add these patcher scripts in the future, but for now they don't do much
 assets/patch_custom_model.py

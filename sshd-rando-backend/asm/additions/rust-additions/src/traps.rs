@@ -20,6 +20,119 @@ use static_assertions::assert_eq_size;
 const MAX_GROOSE_TRAP_SPAWNS_ACTIVE: u32 = 8;
 static mut DID_SPAWN_EXTRA_DEMISE_THIS_LOAD: bool = false;
 
+// Flag IDs of AP items whose textbox has not been shown yet. setup_traps()
+// (and cmd 80 for NPC items) pushes one per item; cmd 81 pops the oldest one
+// when it builds that item's textbox. A single global here lost every item but
+// the last one when several were picked up at once (crawlspace).
+const AP_FLAG_QUEUE_LEN: usize = 8;
+/// Entries older than this many frames are dropped. A textbox normally follows
+/// its pickup within a few seconds; anything older was orphaned (its item was
+/// lost to a reload or an interrupted pickup) and would shift every later box.
+const AP_FLAG_QUEUE_MAX_AGE: u32 = 300;
+static mut AP_FLAG_QUEUE: [u16; AP_FLAG_QUEUE_LEN] = [0xFFFF; AP_FLAG_QUEUE_LEN];
+static mut AP_FLAG_QUEUE_PUSHED_AT: [u32; AP_FLAG_QUEUE_LEN] = [0; AP_FLAG_QUEUE_LEN];
+static mut AP_FLAG_QUEUE_HEAD: usize = 0;
+static mut AP_FLAG_QUEUE_COUNT: usize = 0;
+static mut AP_FLAG_FRAME: u32 = 0;
+static mut AP_FLAG_QUEUE_STAGE: [u8; 4] = [0; 4];
+
+// Flags whose textbox was already shown recently. setup_traps() can run more
+// than once for the same item while it is still waiting, and without this the
+// second call re-queues the flag after cmd 81 has popped it, so the item shows
+// a second, shifted box. AP items only appear once, so a flag shown recently
+// is never a real new pickup.
+const AP_FLAG_RECENT_LEN: usize = 8;
+const AP_FLAG_RECENT_MAX_AGE: u32 = 600;
+static mut AP_FLAG_RECENT: [u16; AP_FLAG_RECENT_LEN] = [0xFFFF; AP_FLAG_RECENT_LEN];
+static mut AP_FLAG_RECENT_AT: [u32; AP_FLAG_RECENT_LEN] = [0; AP_FLAG_RECENT_LEN];
+static mut AP_FLAG_RECENT_NEXT: usize = 0;
+
+fn ap_flag_was_recently_shown(flag_id: u16) -> bool {
+    unsafe {
+        for i in 0..AP_FLAG_RECENT_LEN {
+            if AP_FLAG_RECENT[i] == flag_id
+                && AP_FLAG_FRAME.wrapping_sub(AP_FLAG_RECENT_AT[i]) <= AP_FLAG_RECENT_MAX_AGE
+            {
+                return true;
+            }
+        }
+        false
+    }
+}
+
+fn ap_flag_mark_shown(flag_id: u16) {
+    unsafe {
+        let slot = AP_FLAG_RECENT_NEXT;
+        AP_FLAG_RECENT[slot] = flag_id;
+        AP_FLAG_RECENT_AT[slot] = AP_FLAG_FRAME;
+        AP_FLAG_RECENT_NEXT = (slot + 1) % AP_FLAG_RECENT_LEN;
+    }
+}
+
+/// Call once per frame. Clears the queue when the stage changes, and returns
+/// true on that frame so the textbox queue can be cleared as well.
+pub fn ap_queues_frame_tick() -> bool {
+    unsafe {
+        AP_FLAG_FRAME = AP_FLAG_FRAME.wrapping_add(1);
+        let stage = [
+            CURRENT_STAGE_NAME[0],
+            CURRENT_STAGE_NAME[1],
+            CURRENT_STAGE_NAME[2],
+            CURRENT_STAGE_NAME[3],
+        ];
+        if stage != AP_FLAG_QUEUE_STAGE {
+            AP_FLAG_QUEUE_STAGE = stage;
+            AP_FLAG_QUEUE_HEAD = 0;
+            AP_FLAG_QUEUE_COUNT = 0;
+            return true;
+        }
+        false
+    }
+}
+
+/// Queue an AP item's flag ID for its textbox. A flag that is already waiting
+/// is not queued twice, since setup_traps can run more than once per item.
+/// If the queue is full, the oldest entry is dropped.
+pub fn ap_flag_queue_push(flag_id: u16) {
+    if ap_flag_was_recently_shown(flag_id) {
+        return;
+    }
+    unsafe {
+        for i in 0..AP_FLAG_QUEUE_COUNT {
+            if AP_FLAG_QUEUE[(AP_FLAG_QUEUE_HEAD + i) % AP_FLAG_QUEUE_LEN] == flag_id {
+                return;
+            }
+        }
+        if AP_FLAG_QUEUE_COUNT >= AP_FLAG_QUEUE_LEN {
+            AP_FLAG_QUEUE_HEAD = (AP_FLAG_QUEUE_HEAD + 1) % AP_FLAG_QUEUE_LEN;
+            AP_FLAG_QUEUE_COUNT -= 1;
+        }
+        let slot = (AP_FLAG_QUEUE_HEAD + AP_FLAG_QUEUE_COUNT) % AP_FLAG_QUEUE_LEN;
+        AP_FLAG_QUEUE[slot] = flag_id;
+        AP_FLAG_QUEUE_PUSHED_AT[slot] = AP_FLAG_FRAME;
+        AP_FLAG_QUEUE_COUNT += 1;
+    }
+}
+
+/// Pop the oldest waiting AP flag ID. Returns 0xFFFF when nothing is waiting.
+pub fn ap_flag_queue_pop() -> u16 {
+    unsafe {
+        while AP_FLAG_QUEUE_COUNT > 0 {
+            let head = AP_FLAG_QUEUE_HEAD;
+            let flag_id = AP_FLAG_QUEUE[head];
+            let age = AP_FLAG_FRAME.wrapping_sub(AP_FLAG_QUEUE_PUSHED_AT[head]);
+            AP_FLAG_QUEUE_HEAD = (AP_FLAG_QUEUE_HEAD + 1) % AP_FLAG_QUEUE_LEN;
+            AP_FLAG_QUEUE_COUNT -= 1;
+            if age <= AP_FLAG_QUEUE_MAX_AGE {
+                ap_flag_mark_shown(flag_id);
+                return flag_id;
+            }
+            // Orphaned entry: skip it and try the next one.
+        }
+        0xFFFF
+    }
+}
+
 // repr(C) prevents rust from reordering struct fields.
 // packed(1) prevents rust from aligning structs to the size of the largest
 // field.
@@ -295,10 +408,7 @@ pub extern "C" fn setup_traps(item_actor: *mut item::dAcItem) -> u16 {
                 // from param2 so it can't drift from the selector tables.
                 let computed_flag_id =
                     item::custom_flag_id_from_item_param2((*item_actor).base.members.base.param2);
-                core::ptr::write_volatile(
-                    core::ptr::addr_of_mut!(item::LAST_AP_ITEM_FLAG_ID),
-                    computed_flag_id,
-                );
+                ap_flag_queue_push(computed_flag_id);
             }
         }
 

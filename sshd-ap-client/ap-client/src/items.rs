@@ -275,8 +275,12 @@ pub const PROGRESSIVE_BOW_CODE: i64 = 2773019;
 const PROGRESSIVE_BOW_TIERS: [u16; 3] = [19, 90, 91];
 
 /// True for AP codes whose tier the client resolves from prior copies.
-pub fn is_client_tiered(ap_code: i64) -> bool {
-    ap_code == PROGRESSIVE_LOFTWING_CODE || ap_code == PROGRESSIVE_BOW_CODE
+pub fn is_client_tiered(_ap_code: i64) -> bool {
+    // Nothing is tiered from the received-items history any more: it does not
+    // match the save (new file, restart, !getitem copies). Progressive Bow and
+    // Progressive Loftwing send their tier-1 marker id (19 / 219) and the game
+    // resolves the real tier from its itemflags (see item.rs).
+    false
 }
 
 /// Like `original_id_for_ap_code`, but resolves progressive items the game

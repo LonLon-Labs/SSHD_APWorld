@@ -39,6 +39,7 @@
 mod actorid;
 mod beedle_shop;
 mod bird_statues;
+mod bow_storyflags;
 mod boss_defeats;
 mod cheat_sync;
 mod colors;

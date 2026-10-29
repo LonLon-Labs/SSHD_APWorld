@@ -806,6 +806,78 @@
   options:
     - 1-10: "Choose how many Demise bosses will spawn in the final fight arena. Setting this higher than 1 spawns additional Demise bosses."
 
+- name: extra_ghirahim_skyview
+  default_option: 0
+  pretty_name: Extra Ghirahim (Skyview Temple)
+  pretty_options:
+    - 0-10
+  options:
+    - 0-10: "Extra Ghirahim fights in the Skyview Temple boss room. They despawn once the first Ghirahim is defeated."
+
+- name: extra_ghirahim_fire_sanctuary
+  default_option: 0
+  pretty_name: Extra Ghirahim (Fire Sanctuary)
+  pretty_options:
+    - 0-10
+  options:
+    - 0-10: "Extra Ghirahim fights in the Fire Sanctuary boss room. They despawn once the first Ghirahim is defeated."
+
+- name: extra_moldarach
+  default_option: 0
+  pretty_name: Extra Moldarach (Lanayru Mining Facility)
+  pretty_options:
+    - 0-10
+  options:
+    - 0-10: "Extra Moldarach fights in the Lanayru Mining Facility boss room. They despawn once the first Moldarach is defeated."
+
+- name: extra_stalfos_skyview_first_visit
+  default_option: 0
+  pretty_name: Extra Stalfos (Skyview Temple first visit)
+  pretty_options:
+    - 0-10
+  options:
+    - 0-10: "Extra Stalfos in the Skyview Temple miniboss room on the first visit."
+
+- name: extra_stalfos_skyview_second_visit
+  default_option: 0
+  pretty_name: Extra Stalfos (Skyview Temple second visit)
+  pretty_options:
+    - 0-10
+  options:
+    - 0-10: "Extra Stalfos in the Skyview Temple boss room on the second visit."
+
+- name: extra_stalfos_sky_keep
+  default_option: 0
+  pretty_name: Extra Stalfos (Sky Keep)
+  pretty_options:
+    - 0-10
+  options:
+    - 0-10: "Extra Stalfos in the Sky Keep Courage room."
+
+- name: extra_stalmaster_sky_keep
+  default_option: 0
+  pretty_name: Extra Stalmaster (Sky Keep)
+  pretty_options:
+    - 0-10
+  options:
+    - 0-10: "Extra Stalmasters in the Sky Keep Courage room."
+
+- name: extra_stalmaster_ancient_cistern
+  default_option: 0
+  pretty_name: Extra Stalmaster (Ancient Cistern)
+  pretty_options:
+    - 0-10
+  options:
+    - 0-10: "Extra Stalmasters in the Ancient Cistern miniboss room."
+
+- name: extra_dark_lizalfos
+  default_option: 0
+  pretty_name: Extra Dark Lizalfos (Fire Sanctuary)
+  pretty_options:
+    - 0-10
+  options:
+    - 0-10: "Extra Dark Lizalfos in the Fire Sanctuary room."
+
 - name: required_dungeons
   default_option: 2
   pretty_name: Required Dungeons
