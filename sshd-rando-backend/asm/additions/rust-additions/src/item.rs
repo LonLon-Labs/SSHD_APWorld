@@ -3,7 +3,6 @@
 #![allow(unused)]
 
 use crate::actor;
-use crate::debug;
 use crate::event;
 use crate::fix;
 use crate::flag;
@@ -1002,22 +1001,6 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
 
     unsafe {
         let itemid = (*item_actor).itemid;
-
-        // Debug: log bow pickups (actor id fields + flags at pickup time).
-        {
-            let fin_dbg = (*item_actor).final_determined_itemid;
-            if matches!(fin_dbg, 19 | 90 | 91) || matches!(itemid as u16, 19 | 90 | 91) {
-                debug::debug_print_nums(
-                    c"BOW get id=%d fin=%d f=%d,%d,%d".as_ptr(),
-                    itemid as usize,
-                    fin_dbg as usize,
-                    flag::check_itemflag_raw(19) as usize,
-                    flag::check_itemflag_raw(90) as usize,
-                    flag::check_itemflag_raw(91) as usize,
-                    0,
-                );
-            }
-        }
 
         let mut dungeon_item_mask = 0;
 
@@ -3602,12 +3585,6 @@ fn ap_stage_cooldown_active() -> bool {
 /// before the first one's pickup has set its flag.
 static mut BOW_LAST_TIER: u16 = 0;
 static mut BOW_RECENT_FRAMES: u32 = 0;
-// Debug: Progressive Bow diagnostics (spawn counter + flag-change watcher).
-static mut BOW_SPAWN_COUNT: u32 = 0;
-static mut BOW_WATCH_FRAMES: u32 = 0;
-static mut BOW_WATCH_LAST: u32 = 0xFFFF;
-// Test: when flag 90 appears during the bow actor's wait, clear 90/91 once.
-static mut BOW_TEST_ARMED: bool = false;
 
 unsafe fn resolve_progressive_bow_tier() -> u16 {
     let mut tier: u16 = if flag::check_itemflag_raw(19) == 0 {
@@ -3628,48 +3605,6 @@ pub extern "C" fn archipelago_check_item_buffer() {
     unsafe {
         if BOW_RECENT_FRAMES > 0 {
             BOW_RECENT_FRAMES -= 1;
-        }
-
-        // Debug: log every change to the bow itemflags for a while after a bow
-        // spawn, so the log shows exactly when flag 90 appears.
-        if BOW_WATCH_FRAMES > 0 {
-            BOW_WATCH_FRAMES -= 1;
-            let w19 = flag::check_itemflag_raw(19) as u32;
-            let w90 = flag::check_itemflag_raw(90) as u32;
-            let w91 = flag::check_itemflag_raw(91) as u32;
-            let packed = (w19 << 8) | (w90 << 4) | w91;
-            if packed != BOW_WATCH_LAST {
-                BOW_WATCH_LAST = packed;
-                debug::debug_print_nums(
-                    c"BOW flags f=%d,%d,%d left=%d".as_ptr(),
-                    w19 as usize,
-                    w90 as usize,
-                    w91 as usize,
-                    BOW_WATCH_FRAMES as usize,
-                    0,
-                    0,
-                );
-            }
-
-            // TEST: 90 just turned on while the bow actor is still waiting
-            // (19 owned, no pickup yet). Clear 90 and 91 once per spawn so the
-            // pickup can be checked for which tier it gives.
-            if BOW_TEST_ARMED && w19 == 1 && w90 == 1 {
-                BOW_TEST_ARMED = false;
-                flag::unset_itemflag_raw(90);
-                flag::unset_itemflag_raw(91);
-                flag::commit_itemflags();
-                debug::debug_print_nums(
-                    c"BOW TEST cleared 90/91 -> f=%d,%d,%d".as_ptr(),
-                    flag::check_itemflag_raw(19) as usize,
-                    flag::check_itemflag_raw(90) as usize,
-                    flag::check_itemflag_raw(91) as usize,
-                    0,
-                    0,
-                    0,
-                );
-                BOW_WATCH_LAST = 0xFFFF;
-            }
         }
 
         // Items from another seed's save may only be delivered when the client
@@ -3835,27 +3770,6 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 (*item_actor).base.basebase.members.param1 &= !0x200u32;
                 (*item_actor).prevent_timed_despawn = 1;
                 (*item_actor).no_longer_waiting = 1;
-
-                // Debug: one line per bow spawn (a double spawn shows as #1, #2).
-                if matches!(item_id_val, 19 | 90 | 91) {
-                    BOW_SPAWN_COUNT += 1;
-                    let fin_before = (*item_actor).final_determined_itemid;
-                    let s19 = flag::check_itemflag_raw(19) as u32;
-                    let s90 = flag::check_itemflag_raw(90) as u32;
-                    let s91 = flag::check_itemflag_raw(91) as u32;
-                    debug::debug_print_nums(
-                        c"BOW spawn#%d t=%d fin=%d f=%d,%d,%d".as_ptr(),
-                        BOW_SPAWN_COUNT as usize,
-                        item_id_val as usize,
-                        fin_before as usize,
-                        s19 as usize,
-                        s90 as usize,
-                        s91 as usize,
-                    );
-                    BOW_WATCH_FRAMES = 900;
-                    BOW_WATCH_LAST = (s19 << 8) | (s90 << 4) | s91;
-                    BOW_TEST_ARMED = true;
-                }
 
                 // Progressive Bow tiers are resolved by the client (19 -> 90 -> 91).
                 // Force the actor to keep exactly that id: the game's own item
