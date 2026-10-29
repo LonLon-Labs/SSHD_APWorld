@@ -771,6 +771,21 @@ class ASMPatchHandler:
             self, "bird_statue_arrays", ([0x3FF] * 26, [0] * 26)
         )
         statue_flags = list(statue_flags) + [0x3FF] * (32 - len(statue_flags))
+        # Mark each region's starting statue (bit 15). Its flag is preset at game
+        # start, so the game only gives its item once the player walks up to the
+        # statue instead of the moment they drop into the region. The statue data
+        # keys are in the same order as BIRD_STATUE_LOCATION_NAMES / item.rs.
+        bird_statue_names = list(yaml_load(BIRD_STATUE_DATA_PATH).keys())
+        for starting_entrance in (
+            "Faron Region Entrance -> Sealed Grounds Statue",
+            "Eldin Region Entrance -> Volcano Entrance Statue",
+            "Lanayru Region Entrance -> Lanayru Mine Entry Statue",
+        ):
+            starting_statue = world.get_entrance(starting_entrance).connected_area.name
+            if starting_statue in bird_statue_names:
+                statue_index = bird_statue_names.index(starting_statue)
+                if statue_flags[statue_index] != 0x3FF:
+                    statue_flags[statue_index] |= 0x8000  # BIRD_STATUE_STARTING_BIT
         statue_item_ids = list(statue_item_ids) + [0] * (32 - len(statue_item_ids))
         statue_flag_bytes: list[int] = []
         for statue_flag in statue_flags:

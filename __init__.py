@@ -53,6 +53,15 @@ from .Rules import set_rules, set_completion_condition
 from .rando.ArcPatcher import patch_archipelago_logo, patch_archipelago_item_oarc, patch_key_item_oarcs
 from .SSHDRWrapper import generate_sshd_rando_mod, extract_location_item_mapping, extract_custom_flag_mapping
 
+
+def _host_setting_enabled(section: str, key: str) -> bool:
+    """Read a server-owner toggle from host.yaml. Missing or unreadable means off."""
+    try:
+        from Utils import get_options
+        return bool((get_options().get(section) or {}).get(key, False))
+    except Exception:
+        return False
+
 try:
     from platform_utils import get_default_sshd_extract_path, get_os_name
 except ImportError:
@@ -3565,6 +3574,9 @@ class SSHDWorld(World):
             option_value = getattr(self.options, field.name)
             slot_data[f"option_{option_name}"] = option_value.value
         
+        # Server-owner setting from host.yaml (not a player option), so the client can check it
+        slot_data["option_allow_kill_other_players"] = _host_setting_enabled("sshd_options", "allow_kill_other_players")
+
         # Build location-to-item mapping for the client
         # This maps Archipelago item codes to SSHD location codes
         location_to_item_map = {}

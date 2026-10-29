@@ -822,7 +822,6 @@ pub fn handle_goddess_cube_items() {
             if check_ap_custom_flag(custom_flag) {
                 continue;
             }
-
             // Wait until Link can actually receive the item, then try again
             if player_is_busy() {
                 return;
@@ -2559,9 +2558,12 @@ pub const BIRD_STATUE_UNLOCK_LAST_ITEM_ID: u16 = 327;
 // Bird Statues Give Items
 //
 // Each of the 28 Bird Statues is a location. Touching one sets a flag
-// (a scene flag for most, a story flag 800-807 for some); the three region
-// entrance statues have their flag preset by the randomizer, so they trigger
-// on first being in their region instead. Once the flag reads set, the item
+// (a scene flag for most, a story flag 800-807 for some). Each region's
+// starting statue has its flag preset at game start, so its flag can't tell us
+// it was touched; the patcher marks those statues (BIRD_STATUE_STARTING_BIT in
+// their custom flag entry) and they only give their item once the player walks
+// up to the statue. Once the flag reads set (and, for a starting statue, the
+// player is next to it), the item
 // the patcher stored for that statue is given with the normal item-get
 // animation (or as a real trap actor), exactly like decoupled Goddess Cubes.
 // ---------------------------------------------------------------------------
@@ -2583,8 +2585,6 @@ enum BirdStatueTrigger {
     Scene(u16, u16),
     /// Story flag
     Story(u16),
-    /// Region entrance statue: triggers while the player is in its region
-    Entrance,
 }
 
 #[derive(Copy, Clone)]
@@ -2604,7 +2604,7 @@ const BIRD_STATUES: [BirdStatue; 28] = {
     use BirdStatueRegion::*;
     use BirdStatueTrigger::*;
     [
-        statue(Entrance, Faron),       // Sealed Grounds
+        statue(Scene(10, 35), Faron),  // Sealed Grounds
         statue(Scene(10, 31), Faron),  // Behind the Temple
         statue(Story(800), Faron),     // Faron Woods Entry
         statue(Story(801), Faron),     // In the Woods
@@ -2614,11 +2614,11 @@ const BIRD_STATUES: [BirdStatue; 28] = {
         statue(Story(803), Faron),     // The Great Tree
         statue(Scene(2, 32), Faron),   // Lake Floria
         statue(Scene(2, 33), Faron),   // Floria Waterfall
-        statue(Entrance, Eldin),       // Volcano Entrance
+        statue(Story(804), Eldin),     // Volcano Entrance
         statue(Story(805), Eldin),     // Volcano East
         statue(Story(806), Eldin),     // Volcano Ascent
         statue(Story(807), Eldin),     // Temple Entrance
-        statue(Entrance, Lanayru),     // Lanayru Mine Entry
+        statue(Scene(7, 68), Lanayru), // Lanayru Mine Entry
         statue(Scene(7, 66), Lanayru), // Desert Entrance
         statue(Scene(7, 51), Lanayru), // West Desert
         statue(Scene(7, 77), Lanayru), // Desert Gorge
@@ -2634,6 +2634,77 @@ const BIRD_STATUES: [BirdStatue; 28] = {
         statue(Scene(15, 114), Eldin), // Inside Fire Sanctuary
     ]
 };
+
+/// Bit 15 of a BIRD_STATUE_CUSTOM_FLAGS entry: this statue is its region's
+/// starting statue (flag preset at game start), so the item is only given once
+/// the player walks up to the statue. Set by the patcher (asmpatchhandler.py).
+const BIRD_STATUE_STARTING_BIT: u16 = 0x8000;
+/// The AP custom flag itself is 10 bits (0x3FF = no flag).
+const BIRD_STATUE_CUSTOM_FLAG_MASK: u16 = 0x3FF;
+/// How close the player has to be to a starting statue (horizontal distance,
+/// then vertical distance) for it to count as walked up to.
+const BIRD_STATUE_APPROACH_RADIUS: f32 = 250.0;
+const BIRD_STATUE_APPROACH_HEIGHT: f32 = 200.0;
+
+/// `dLytSaveMgr.save_obj_name_index` (the OBJ_SAVE actor's param2 low byte) of
+/// every statue, in BIRD_STATUES order. Same mapping as
+/// BIRD_STATUE_UNLOCK_FLAG_BY_SAVE_OBJ_INDEX in lyt.rs.
+const BIRD_STATUE_SAVE_OBJ_INDEX: [u8; 28] = [
+    28, // Sealed Grounds
+    0,  // Behind the Temple
+    1,  // Faron Woods Entry
+    2,  // In the Woods
+    3,  // Viewing Platform
+    6,  // Deep Woods
+    5,  // Forest Temple
+    4,  // The Great Tree
+    7,  // Lake Floria
+    8,  // Floria Waterfall
+    10, // Volcano Entrance
+    11, // Volcano East
+    12, // Volcano Ascent
+    13, // Temple Entrance
+    16, // Lanayru Mine Entry
+    17, // Desert Entrance
+    18, // West Desert
+    21, // Desert Gorge
+    22, // Temple of Time
+    19, // North Desert
+    20, // Stone Cache
+    23, // Ancient Harbour
+    24, // Skipper's Retreat
+    25, // Shipyard
+    26, // Pirate Stronghold
+    27, // Lanayru Gorge
+    14, // Inside the Volcano
+    15, // Inside Fire Sanctuary
+];
+
+/// True if the player is standing next to the loaded statue actor for the
+/// statue at `index` in BIRD_STATUES.
+unsafe fn player_near_bird_statue(index: usize) -> bool {
+    let wanted = BIRD_STATUE_SAVE_OBJ_INDEX[index] as u32;
+    let player_pos = (*PLAYER_PTR).obj_base_members.base.pos;
+    let mut near = false;
+    actor::for_each_actor_by_type(actor::ACTORID::OBJ_SAVE, |statue| {
+        let statue = statue as *mut actor::dAcOBase;
+        let param2 = (*statue).members.base.param2;
+        if (param2 & 0xFF) != wanted {
+            return;
+        }
+        let pos = (*statue).members.base.pos;
+        let dx = pos.x - player_pos.x;
+        let dz = pos.z - player_pos.z;
+        let dy = pos.y - player_pos.y;
+        if dx * dx + dz * dz <= BIRD_STATUE_APPROACH_RADIUS * BIRD_STATUE_APPROACH_RADIUS
+            && dy <= BIRD_STATUE_APPROACH_HEIGHT
+            && dy >= -BIRD_STATUE_APPROACH_HEIGHT
+        {
+            near = true;
+        }
+    });
+    near
+}
 
 /// Which surface region the current stage belongs to (same stage list the AP
 /// client used to use for statue detection).
@@ -2683,9 +2754,10 @@ pub fn handle_bird_statue_items() {
         let region = current_bird_statue_region();
 
         for index in 0..BIRD_STATUES.len() {
-            let custom_flag =
+            let raw_flag =
                 core::ptr::read_volatile(core::ptr::addr_of!(BIRD_STATUE_CUSTOM_FLAGS[index]));
-            if custom_flag == 0x3FF {
+            let custom_flag = raw_flag & BIRD_STATUE_CUSTOM_FLAG_MASK;
+            if custom_flag == BIRD_STATUE_CUSTOM_FLAG_MASK {
                 continue;
             }
 
@@ -2694,13 +2766,17 @@ pub fn handle_bird_statue_items() {
                 continue;
             }
             let touched = match statue.trigger {
-                BirdStatueTrigger::Entrance => true,
                 BirdStatueTrigger::Scene(scene, flag) => {
                     flag::check_global_sceneflag(scene, flag) != 0
                 },
                 BirdStatueTrigger::Story(flag) => flag::check_storyflag(flag) != 0,
             };
             if !touched {
+                continue;
+            }
+            // A starting statue's flag is preset, so it only counts once the
+            // player walks up to it (not the moment they drop into the region)
+            if raw_flag & BIRD_STATUE_STARTING_BIT != 0 && !player_near_bird_statue(index) {
                 continue;
             }
             // Already given (the custom flag is set once the location is checked)

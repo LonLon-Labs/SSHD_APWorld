@@ -594,7 +594,7 @@
   locations:
     Eldin Volcano - Volcano Entrance Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Volcano Entrance: Nothing # Back out of interaction.
 
 - name: Volcano East Statue
@@ -603,7 +603,7 @@
   locations:
     Eldin Volcano - Volcano East Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Volcano East: Nothing # Back out of interaction.
 
 - name: Volcano Ascent Statue
@@ -612,7 +612,7 @@
   locations:
     Eldin Volcano - Volcano Ascent Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Volcano Ascent: Nothing # Back out of interaction.
 
 - name: Temple Entrance Statue
@@ -621,7 +621,7 @@
   locations:
     Eldin Volcano - Temple Entrance Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Near Temple Entrance: Nothing # Back out of interaction.
 
 - name: Inside the Volcano Statue
@@ -630,7 +630,7 @@
   locations:
     Eldin Volcano - Inside the Volcano Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Outside Fire Sanctuary: Nothing # Back out of interaction.
 
 - name: Inside the Fire Sanctuary Statue
@@ -639,5 +639,5 @@
   locations:
     Fire Sanctuary - Inside Fire Sanctuary Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     FS In Front of Boss Door: Nothing # Back out of interaction.

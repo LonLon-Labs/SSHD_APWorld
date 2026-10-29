@@ -515,7 +515,7 @@
   locations:
     Sealed Grounds - Sealed Grounds Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Sealed Grounds: Nothing # Back out of interaction.
 
 - name: Behind the Temple Statue
@@ -524,7 +524,7 @@
   locations:
     Sealed Grounds - Behind the Temple Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Behind the Temple: Nothing # Back out of interaction.
 
 - name: Faron Woods Entry Statue
@@ -533,7 +533,7 @@
   locations:
     Faron Woods - Faron Woods Entry Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Faron Woods Entry: Nothing # Back out of interaction.
 
 - name: Viewing Platform Statue
@@ -542,7 +542,7 @@
   locations:
     Faron Woods - Viewing Platform Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Faron Woods: Nothing # Back out of interaction.
 
 - name: In the Woods Statue
@@ -551,7 +551,7 @@
   locations:
     Faron Woods - In the Woods Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Faron Woods: Nothing # Back out of interaction.
 
 - name: Deep Woods Statue
@@ -560,7 +560,7 @@
   locations:
     Deep Woods - Deep Woods Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Deep Woods: Nothing # Back out of interaction.
 
 - name: Forest Temple Statue
@@ -569,7 +569,7 @@
   locations:
     Deep Woods - Forest Temple Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Deep Woods: Nothing # Back out of interaction.
 
 - name: The Great Tree Statue
@@ -578,7 +578,7 @@
   locations:
     Faron Woods - Great Tree Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Great Tree Exterior Top: Nothing # Back out of interaction.
 
 - name: Lake Floria Statue
@@ -587,7 +587,7 @@
   locations:
     Lake Floria - Lake Floria Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Lake Floria Emerged Area: Nothing # Back out of interaction.
 
 - name: Floria Waterfall Statue
@@ -596,5 +596,5 @@
   locations:
     Floria Waterfall - Floria Waterfall Bird Statue: Nothing # Interact with the statue for the first time.
   exits:
-    The Sky: Sailcloth and (Day or natural_night_connections == off)
+    The Sky: Loftwing and Sailcloth and (Day or natural_night_connections == off)
     Floria Waterfall: Nothing # Back out of interaction.

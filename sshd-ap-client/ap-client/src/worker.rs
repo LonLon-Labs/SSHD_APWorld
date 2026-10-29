@@ -123,6 +123,9 @@ use crate::items;
 use crate::links::{self, LinkMonitor, LinkSignal};
 use crate::locations::{ApItemInfo, CustomFlagPoller, SlotData};
 
+/// Bounce tag for `/kill <SlotName>` requests between SSHD players.
+const KILL_TAG: &str = "SSHDKill";
+
 /// Commands the GUI sends into the running worker thread.
 #[derive(Debug, Clone)]
 pub enum WorkerInput {
@@ -247,6 +250,9 @@ struct SyncState {
     // Watches Link's health/stamina (via AP_IPC_ROOT.player_vitals) and
     // guards against echoing our own DeathLink/BreathLink back at us.
     link_monitor: LinkMonitor,
+    // Whether `/kill <SlotName>` is allowed for this seed (host.yaml
+    // `sshd_options.allow_kill_other_players`, read from slot_data on connect).
+    kill_others_allowed: bool,
     // Last time the check counts were written to `AP_IPC_ROOT.check_stats`
     // (what the game's in-game help menu displays). Throttled since it
     // clones/unions the checked-location sets.
@@ -294,6 +300,7 @@ impl SyncState {
             active_tags: HashSet::from(["AP".to_string()]),
             hints: Vec::new(),
             link_monitor: LinkMonitor::new(),
+            kill_others_allowed: false,
             check_stats_last_write: None,
             held_checks: Vec::new(),
             accept_held: false,
@@ -553,6 +560,7 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                             let slot_data = client.slot_data();
 
                             sync.goal_type = slot_data.option_goal;
+                            sync.kill_others_allowed = slot_data.option_allow_kill_other_players != 0;
                             vlog!(
                                 "[AP] Goal: {} (storyflag {}).",
                                 goal::goal_name(sync.goal_type),
@@ -716,6 +724,33 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                         }
                     },
                     Event::Bounce { tags, data, .. } => {
+                        // /kill <SlotName> from another SSHD player: only the named
+                        // player acts, and only if the host allowed it for this seed.
+                        let is_kill = tags
+                            .as_ref()
+                            .is_some_and(|t| t.iter().any(|x| x.as_str() == KILL_TAG));
+                        if is_kill && sync.kill_others_allowed {
+                            let my_alias = conn
+                                .client()
+                                .map(|c| c.this_player().alias().to_string())
+                                .unwrap_or_default();
+                            let field = |k: &str| {
+                                data.as_ref().and_then(|d| d.get(k)).and_then(|v| v.as_str()).map(str::to_string)
+                            };
+                            let target = field("target").unwrap_or_default();
+                            let source = field("source").unwrap_or_else(|| "Someone".to_string());
+                            if target == my_alias && source != my_alias {
+                                log!(&output, "[Kill] {source} killed you.");
+                                match emulator.as_mut() {
+                                    Some((mem, root_addr)) => {
+                                        if let Err(e) = links::request_kill(mem, *root_addr) {
+                                            log!(&output, "[Kill] failed to kill Link: {e}");
+                                        }
+                                    },
+                                    None => log!(&output, "[Kill] emulator not attached; can't kill Link."),
+                                }
+                            }
+                        }
                         let is_breath = tags
                             .as_ref()
                             .is_some_and(|t| t.iter().any(|x| x.as_str() == "BreathLink"));
@@ -1321,6 +1356,7 @@ fn handle_command(
         "missing" => cmd_location_list(false, connection, ap_connected, output),
         "checked" => cmd_location_list(true, connection, ap_connected, output),
         "players" => cmd_players(connection, ap_connected, output),
+        "kill" => cmd_kill(&args, connection, ap_connected, emulator, sync, output),
         _ => return handle_basic_command(text, connection, ap_connected, output),
     }
     None
@@ -1346,6 +1382,7 @@ fn cmd_help(output: &EventSink) {
         "/player_info — Link's stamina, position, angles, speed, velocity, current action and button flags",
         "/go_mode — victory requirements and whether you have them",
         "/received, /missing, /checked, /players — multiworld info",
+        "/kill — kill your own Link (sends DeathLink if on);  /kill <SlotName> — kill another SSHD player (host must allow it in host.yaml)",
     ] {
         log!(output, "  {line}");
     }
@@ -2414,6 +2451,67 @@ fn cmd_location_list(
     }
     if names.len() > LIST_LINE_CAP {
         log!(output, "  ...and {} more not shown.", names.len() - LIST_LINE_CAP);
+    }
+}
+
+/// `/kill` with no name: asks the game to kill our Link. The link monitor then
+/// reports the resulting death (sent as DeathLink if that's on).
+fn kill_own_link(emulator: &mut Option<(Backend, usize)>, output: &EventSink) {
+    let Some((mem, root_addr)) = require_emulator(emulator, output) else { return };
+    match links::request_kill(mem, root_addr) {
+        Ok(()) => log!(output, "/kill: Link is being killed."),
+        Err(e) => log!(output, "WARNING: /kill failed: {e}"),
+    }
+}
+
+/// `/kill <SlotName>`: asks another Skyward Sword HD player's client to kill their
+/// Link. Needs the host to allow it (`sshd_options.allow_kill_other_players`).
+/// The target's client checks its own seed setting before acting.
+fn cmd_kill(
+    args: &[&str],
+    connection: &mut Option<Connection<SlotData>>,
+    ap_connected: bool,
+    emulator: &mut Option<(Backend, usize)>,
+    sync: &SyncState,
+    output: &EventSink,
+) {
+    let Some(&target) = args.first() else {
+        kill_own_link(emulator, output);
+        return;
+    };
+    if !sync.kill_others_allowed {
+        log!(
+            output,
+            "/kill {target} is disabled for this seed: the host hasn't enabled Allow Kill Other Players (host.yaml: sshd_options.allow_kill_other_players)."
+        );
+        return;
+    }
+    let Some(client) = connection.as_mut().and_then(|c| c.client_mut()).filter(|_| ap_connected) else {
+        log!(output, "Not connected to a server yet.");
+        return;
+    };
+    let my_alias = client.this_player().alias().to_string();
+    if target.eq_ignore_ascii_case(&my_alias) {
+        kill_own_link(emulator, output);
+        return;
+    }
+    let found = client
+        .players()
+        .find(|p| p.alias().eq_ignore_ascii_case(target) || p.name().eq_ignore_ascii_case(target))
+        .map(|p| (p.alias().to_string(), p.game().to_string()));
+    let Some((target_alias, target_game)) = found else {
+        log!(output, "No player named '{target}' in this multiworld. Try /players.");
+        return;
+    };
+    if target_game != "Skyward Sword HD" {
+        log!(output, "{target_alias} isn't playing Skyward Sword HD, so /kill can't reach them.");
+        return;
+    }
+    // Broadcast with the target named in the data; only that player acts on it.
+    let data = serde_json::json!({ "source": my_alias, "target": target_alias });
+    match client.bounce(data, BounceOptions::new().tags([KILL_TAG])) {
+        Ok(()) => log!(output, "Sent /kill to {target_alias}."),
+        Err(e) => log!(output, "[Kill] failed to send: {e}"),
     }
 }
 

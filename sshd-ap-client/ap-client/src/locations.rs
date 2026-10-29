@@ -73,6 +73,12 @@ pub struct SlotData {
     #[serde(default, deserialize_with = "deserialize_lenient_i64", rename = "option_breath_link")]
     pub option_breath_link: i64,
 
+    /// Host-controlled (host.yaml `sshd_options.allow_kill_other_players`, written
+    /// into slot_data at generation). When on, `/kill <SlotName>` may target other
+    /// SSHD players. Not a player YAML option.
+    #[serde(default, deserialize_with = "deserialize_lenient_i64", rename = "option_allow_kill_other_players")]
+    pub option_allow_kill_other_players: i64,
+
     // ── Cheat toggles, mirroring SSHDClient.py's `option_cheat_*` slot_data
     // reads. Sent as 0/1 integers (not JSON booleans), matching Python's
     // `bool(slot_data.get(key, 0))` pattern, so these are `u8` rather than
