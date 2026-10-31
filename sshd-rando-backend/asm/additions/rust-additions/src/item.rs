@@ -1557,6 +1557,11 @@ assert_eq_size!([u8; 12], PumpkinEntry);
 /// drops again until its check is actually collected.
 const PUMPKIN_DROPPED_MARK: u32 = 0xA55A;
 
+/// `param_4` value the delete-branch hook passes (pumpkin.asm). The drop
+/// branch passes 1, so this value is only seen for pumpkins broken without
+/// Link's attack flags set.
+const PUMPKIN_NO_VANILLA_DROP: u32 = 2;
+
 /// Finds a pumpkin's table index from its X/Z position bits.
 fn find_pumpkin_entry(px_bits: u32, pz_bits: u32) -> Option<usize> {
     unsafe {
@@ -1598,8 +1603,14 @@ fn pumpkin_drop_custom_item(
     unsafe {
         let px_bits = (*pumpkin).members.base.pos.x.to_bits();
         let pz_bits = (*pumpkin).members.base.pos.z.to_bits();
+        let start_px_bits = (*pumpkin).members.starting_pos.x.to_bits();
+        let start_pz_bits = (*pumpkin).members.starting_pos.z.to_bits();
 
-        let index = match find_pumpkin_entry(px_bits, pz_bits) {
+        // Pumpkins can be picked up and thrown, so the starting position (where the
+        // table entry was placed) is tried first, then the current position.
+        let index = match find_pumpkin_entry(start_px_bits, start_pz_bits)
+            .or_else(|| find_pumpkin_entry(px_bits, pz_bits))
+        {
             Some(index) => index,
             None => {
                 return false;
@@ -1972,6 +1983,11 @@ pub extern "C" fn pot_spawn_custom_item(
                 {
                     // Bit 0 set = "an item was dropped", same as vanilla
                     return 1;
+                }
+                // Delete-branch hook (pumpkin.asm, w3 = PUMPKIN_NO_VANILLA_DROP): that
+                // branch never dropped a vanilla item, so don't start now.
+                if param_4 == PUMPKIN_NO_VANILLA_DROP {
+                    return 0;
                 }
                 return checkParam2OnDestroy(param2_s0x18, roomid, pos, param_4, param_5);
             }
