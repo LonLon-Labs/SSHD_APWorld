@@ -1,5 +1,6 @@
 import hashlib
 import shutil
+import struct
 import time
 from constants.verificationconstants import BZS_FILE_HASHES
 from patches.stagepatchhelper import patch_additional_properties
@@ -61,7 +62,7 @@ AP_ITEM_OARC_NAMES: frozenset[str] = frozenset({
     "Demo11_01",
     "GetSwordA", "GetHarp",
     "GetBowA", "GetBowB", "GetBowC",
-    "GetHookShot", "GetBirdStatue",
+    "GetHookShot", "GetBirdStatue", "SaveObjectA",
     "GetKeyBoss2A", "GetKeyBoss2B", "GetKeyBoss2C",
     "GetKeyKakera", "GetKeyBossA", "GetKeyBossB", "GetKeyBossC",
     "GetVacuum", "GetPachinkoA", "GetPachinkoB",
@@ -101,7 +102,82 @@ AP_ITEM_OARC_NAMES: frozenset[str] = frozenset({
 # pressure; the extra ~80 OARCs cause a PANIC on SSystem::mDvd.
 # Per-item OARCs from add_arcn_for_check are still applied so randomised
 # check pickups display the correct model.
-_SKIP_AP_OARC_STAGES: frozenset[str] = frozenset({"B400", "F402", "F403", "F404", "F405", "F407"})
+_SKIP_AP_OARC_STAGES: frozenset[str] = frozenset({"B400", "F400", "F402", "F403", "F404", "F405", "F407"})
+
+
+# Silent realm stages, in the order the game's Rust additions (item.rs
+# TRIAL_REWARD_CUSTOM_FLAGS) index the trial reward custom flag table.
+SILENT_REALM_STAGES: list[str] = ["S000", "S100", "S200", "S300"]
+
+
+# Story flags set by striking each of the 27 Goddess Cubes, in ascending order.
+# The game's Rust additions (item.rs GODDESS_CUBE_STORYFLAGS) use the same order to
+# index the GODDESS_CUBE_CUSTOM_FLAGS / GODDESS_CUBE_ITEM_IDS tables.
+GODDESS_CUBE_STORYFLAGS: list[int] = [
+    227, 228, 229, 230, 231, 234, 235, 236, 237, 238, 239, 240, 241, 242,
+    243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 254, 255, 256,
+]
+
+
+# The "Bird Statues Give Items" locations, in the order the game's Rust additions
+# (item.rs BIRD_STATUES) index the BIRD_STATUE_CUSTOM_FLAGS / BIRD_STATUE_ITEM_IDS
+# tables. The AP location codes are 2773911..=2773936.
+BIRD_STATUE_LOCATION_NAMES: list[str] = [
+    "Sealed Grounds - Sealed Grounds Bird Statue",
+    "Sealed Grounds - Behind the Temple Bird Statue",
+    "Faron Woods - Faron Woods Entry Bird Statue",
+    "Faron Woods - In the Woods Bird Statue",
+    "Faron Woods - Viewing Platform Bird Statue",
+    "Deep Woods - Deep Woods Bird Statue",
+    "Deep Woods - Forest Temple Bird Statue",
+    "Faron Woods - Great Tree Bird Statue",
+    "Lake Floria - Lake Floria Bird Statue",
+    "Floria Waterfall - Floria Waterfall Bird Statue",
+    "Eldin Volcano - Volcano Entrance Bird Statue",
+    "Eldin Volcano - Volcano East Bird Statue",
+    "Eldin Volcano - Volcano Ascent Bird Statue",
+    "Eldin Volcano - Temple Entrance Bird Statue",
+    "Lanayru Mine - Mine Entry Bird Statue",
+    "Lanayru Desert - Desert Entrance Bird Statue",
+    "Lanayru Desert - West Desert Bird Statue",
+    "Lanayru Desert - Desert Gorge Bird Statue",
+    "Temple of Time - Temple of Time Bird Statue",
+    "Lanayru Desert - North Desert Bird Statue",
+    "Lanayru Desert - Stone Cache Bird Statue",
+    "Ancient Harbour - Ancient Harbour Bird Statue",
+    "Skipper's Retreat - Skipper's Retreat Bird Statue",
+    "Shipyard - Shipyard Bird Statue",
+    "Pirate Stronghold - Pirate Stronghold Bird Statue",
+    "Lanayru Gorge - Lanayru Gorge Bird Statue",
+    "Eldin Volcano - Inside the Volcano Bird Statue",
+    "Fire Sanctuary - Inside Fire Sanctuary Bird Statue",
+]
+
+
+def patch_goddess_chest_spawn_flag(bzs: dict, spawn_storyflag: int):
+    # Re-points the story flag that unlocks every vanilla Goddess Chest (TBox
+    # subtype 3) in the given layer. Vanilla, this is the story flag set by
+    # striking the chest's corresponding Goddess Cube.
+    #
+    # The chest passes its whole params2 to StoryflagManager::getFlag(u16), so
+    # the flag is the LOW 16 BITS of params2 (verified in the game binary:
+    # dAcTbox create reads actor+0x12C == param2 and calls getFlag with it).
+    # NOTE: this overlaps bits 8-15, which is why patch_tbox must never write a
+    # custom flag to bits 8-17 of a Goddess Chest (it would change the flag).
+    #
+    # This must run BEFORE patch_tbox modifies the chest's item id, since the
+    # vanilla subtype is read from the vanilla item id.
+    for tbox in bzs.get("OBJS", []):
+        if tbox["name"] != "TBox":
+            continue
+        vanilla_itemid = tbox["anglez"] & 0x1FF
+        try:
+            vanilla_subtype = VANILLA_TBOX_SUBTYPES[vanilla_itemid]
+        except (KeyError, IndexError):
+            continue
+        if vanilla_subtype != 3:
+            continue
+        tbox["params2"] = mask_shift_set(tbox["params2"], 0xFFFF, 0, spawn_storyflag)
 
 
 def patch_tbox(
@@ -222,7 +298,7 @@ def patch_freestanding_item(
         )
 
     freestanding_item["params1"] = mask_shift_set(
-        freestanding_item["params1"], 0xFF, 0, itemid
+        freestanding_item["params1"], 0x1FF, 0, itemid
     )
 
     # Unset 9th bit of param1 to force a textbox for freestanding items.
@@ -286,7 +362,7 @@ def patch_dusk_relic(
 
     # Set the scene flag and item id to use in the params
     params1 = 0xFF9C0200
-    params1 = mask_shift_set(params1, 0xFF, 0, itemid)
+    params1 = mask_shift_set(params1, 0x1FF, 0, itemid)
     params1 = mask_shift_set(params1, 0xFF, 10, scene_flag)
     # Unset 9th bit of param1 to force a textbox for freestanding items.
     params1 = mask_shift_set(params1, 0x1, 9, 0)
@@ -324,7 +400,8 @@ def patch_bucha(
         # Makes sure the bit is set if not a trap
         bucha["params2"] = mask_shift_set(bucha["params2"], 0xF, 4, 0xF)
 
-    bucha["params2"] = mask_shift_set(bucha["params2"], 0xFF, 0x8, itemid)
+    # Item id is 9 bits wide: params2 bits 8-16 (read by fix-bucha.asm: load + ubfx).
+    bucha["params2"] = mask_shift_set(bucha["params2"], 0x1FF, 0x8, itemid)
 
     # Encode Archipelago custom_flag into params2 bits 18-27 (10 bits)
     # NOTE: bits 8-15 are occupied by itemid, so custom_flag uses
@@ -387,8 +464,13 @@ def patch_closet(
     closet["params1"] = mask_shift_set(
         closet["params1"], 0xFF, 0, unused_scene_flags[(stage, room, id)]
     )
-    # Patch in the item
-    closet["params1"] = mask_shift_set(closet["params1"], 0xFF, 8, itemid)
+    # Patch in the item: params1 bits 8-15 hold the low 8 bits of the id (that's what
+    # the game's closet code reads). Ids >= 256 additionally clear params2 bit 18
+    # (1 for every other closet) so handle_closet_traps rebuilds the full 9-bit id.
+    closet["params1"] = mask_shift_set(closet["params1"], 0xFF, 8, itemid & 0xFF)
+    closet["params2"] = mask_shift_set(
+        closet["params2"], 0x1, 18, 0 if itemid >= 256 else 1
+    )
     # Tell the closet to interpret the flag as a local scene flag
     closet["params1"] = mask_shift_set(closet["params1"], 0x1, 16, 1)
 
@@ -411,8 +493,14 @@ def patch_ac_key_boko(bzs: dict, itemid: int, object_id_str: str, trapid: int, c
         # Makes sure the bit is set if not a trap
         boko["params2"] = mask_shift_set(boko["params2"], 0xF, 8, 0xF)
 
-    # Store itemid in params2 bits 0-7 (ASM reads from offset 0x12C)
-    boko["params2"] = mask_shift_set(boko["params2"], 0xFF, 0x0, itemid)
+    # Store the low 8 bits of the itemid in params2 bits 0-7 (ASM reads from offset
+    # 0x12C). Ids >= 256 set tag 0 in params2 bits 22-23 so the shared trap hook
+    # (traps.rs handle_ac_boko_and_heartco_and_digspot_traps) rebuilds the full id;
+    # tag 3 (all ones, the unpatched default) means no extended id.
+    boko["params2"] = mask_shift_set(boko["params2"], 0xFF, 0x0, itemid & 0xFF)
+    boko["params2"] = mask_shift_set(
+        boko["params2"], 0x3, 22, 0 if itemid >= 256 else 3
+    )
 
     # Encode Archipelago custom_flag into params2 bits 12-21 (10 bits)
     # Always write (even 0x3FF sentinel) so vanilla bits are overwritten
@@ -443,8 +531,13 @@ def patch_heart_container(bzs: dict, itemid: int, trapid: int, custom_flag: int 
             heart_container["params2"], 0xF, 8, 0xF
         )
 
+    # Low 8 bits of the itemid in params1 bits 16-23; ids >= 256 set tag 1 in
+    # params2 bits 22-23 (see the boko patch / traps.rs); 3 = no extended id.
     heart_container["params1"] = mask_shift_set(
-        heart_container["params1"], 0xFF, 16, itemid
+        heart_container["params1"], 0xFF, 16, itemid & 0xFF
+    )
+    heart_container["params2"] = mask_shift_set(
+        heart_container["params2"], 0x3, 22, 1 if itemid >= 256 else 3
     )
 
     # Encode Archipelago custom_flag into params2 bits 12-21 (10 bits)
@@ -466,6 +559,17 @@ def patch_chandelier_item(bzs: dict, itemid: int, trapid: int, custom_flag: int 
     # Don't use fake itemid yet, this needs patching properly first
     if trapid:
         itemid = 34  # rupoor
+
+    # The chandelier's asm reads its item id with a single byte load (params1 bits
+    # 8-15) and there is no spare instruction there to widen it, so ids >= 256 (the
+    # Bird Statue unlock items) can't be placed here. The AP world forbids that
+    # placement (EXTENDED_ITEM_ID_UNSUPPORTED_LOCATIONS in __init__.py); fail loudly
+    # rather than silently placing the wrong item if it ever happens anyway.
+    if itemid > 0xFF:
+        raise Exception(
+            f"Chandelier item id {itemid} doesn't fit in 8 bits; only item ids 0-255 "
+            "can be placed on the chandelier."
+        )
 
     chandelier["params1"] = mask_shift_set(chandelier["params1"], 0xFF, 8, itemid)
 
@@ -491,7 +595,8 @@ def patch_tree_of_life(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0
         tree["params2"] = mask_shift_set(tree["params2"], 0xF, 4, trapbits)
     # No need for other checks as params2 is always 0xFFFFFFFF
 
-    tree["params1"] = mask_shift_set(tree["params1"], 0xFF, 24, itemid)
+    # Item id: params1 bits 23-31 (9 bits). Read by Rust (spawn_tree_of_life_item).
+    tree["params1"] = mask_shift_set(tree["params1"], 0x1FF, 23, itemid)
 
     # Encode Archipelago custom_flag into params2 bits 8-17 (10 bits)
     # The Rust spawn_tree_of_life_item() passes param2 directly to the spawned
@@ -526,9 +631,13 @@ def patch_digspot_item(bzs: dict, itemid: int, object_id_str: str, trapid: int, 
 
     # patch digspot to be the same as key piece digspots in all ways except it keeps it's initial sceneflag
     digspot["params1"] = (digspot["params1"] & 0xFF0) | 0xFF0B1004
-    # Store itemid in params2 bits 24-31 (ASM reads from offset 0x12F)
-    # Bits 0-7 are preserved for vanilla dAcOsoil::init behaviour.
-    digspot["params2"] = mask_shift_set(digspot["params2"], 0xFF, 0x18, itemid)
+    # Store the low 8 bits of the itemid in params2 bits 24-31 (ASM reads from offset
+    # 0x12F). Bits 0-7 are preserved for vanilla dAcOsoil::init behaviour. Ids >= 256
+    # set tag 2 in params2 bits 22-23 (see the boko patch / traps.rs); 3 = none.
+    digspot["params2"] = mask_shift_set(digspot["params2"], 0xFF, 0x18, itemid & 0xFF)
+    digspot["params2"] = mask_shift_set(
+        digspot["params2"], 0x3, 22, 2 if itemid >= 256 else 3
+    )
 
     # Encode Archipelago custom_flag into params2 bits 12-21 (10 bits)
     # Always write (even 0x3FF sentinel) so vanilla bits are overwritten
@@ -548,8 +657,11 @@ def patch_goddess_crest(bzs: dict, itemid: int, index: str, trapid: int, custom_
     if trapid:
         itemid = 34  # rupoor
 
-    # 3 items patched into same object at different points in the params
-    # Item IDs: params1[24:31], params1[16:23], params2[24:31]
+    # Item ids are 9 bits wide. The low 8 bits stay in the original byte of each
+    # field and the 9th bit lives in spare params2 bits 21-23 (crest rewards are
+    # read by Rust, see handle_crest_hit_give_item / item_id_9bit).
+    # Item IDs: params1[24:31] + params2[22], params1[16:23] + params2[21],
+    # params2[24:31] + params2[23]
     #
     # IMPORTANT: Do NOT write Archipelago custom flags into params1 or params2.
     # The game engine reads low bits of params1 (and possibly params2) during
@@ -561,14 +673,19 @@ def patch_goddess_crest(bzs: dict, itemid: int, index: str, trapid: int, custom_
     # Custom flags for the three crest rewards are instead stored in the
     # CREST_CUSTOM_FLAGS Rust static (populated via init_global_variables)
     # and propagated to spawned item actors via the NEXT_CUSTOM_FLAG mechanism.
+    hi_bit = (itemid >> 8) & 1
+    low8 = itemid & 0xFF
+    params2 = crest.get("params2", 0xFFFFFFFF)
     if index == "0":
-        crest["params1"] = mask_shift_set(crest["params1"], 0xFF, 0x18, itemid)
+        crest["params1"] = mask_shift_set(crest["params1"], 0xFF, 0x18, low8)
+        params2 = mask_shift_set(params2, 0x1, 22, hi_bit)
     elif index == "1":
-        crest["params1"] = mask_shift_set(crest["params1"], 0xFF, 0x10, itemid)
+        crest["params1"] = mask_shift_set(crest["params1"], 0xFF, 0x10, low8)
+        params2 = mask_shift_set(params2, 0x1, 21, hi_bit)
     elif index == "2":
-        crest["params2"] = mask_shift_set(
-            crest.get("params2", 0xFFFFFFFF), 0xFF, 0x18, itemid
-        )
+        params2 = mask_shift_set(params2, 0xFF, 0x18, low8)
+        params2 = mask_shift_set(params2, 0x1, 23, hi_bit)
+    crest["params2"] = params2
 
 
 def patch_squirrels(bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int = 0x3FF):
@@ -585,7 +702,12 @@ def patch_squirrels(bzs: dict, itemid: int, object_id_str: str, trapid: int, cus
     if trapid:
         itemid = 34  # rupoor
 
-    squirrel_tag["params2"] = mask_shift_set(squirrel_tag["params2"], 0xFF, 0, itemid)
+    # Item id: params2 bits 0-7 + bit 18 (9th bit), read by Rust (give_squirrel_item).
+    # The 9th bit is always written so a vanilla 1 there is never misread.
+    squirrel_tag["params2"] = mask_shift_set(squirrel_tag["params2"], 0xFF, 0, itemid & 0xFF)
+    squirrel_tag["params2"] = mask_shift_set(
+        squirrel_tag["params2"], 0x1, 18, (itemid >> 8) & 1
+    )
 
     if custom_flag != 0x3FF:
         # AP mode: encode the 10-bit custom flag into bits 8-17 (same 3-part
@@ -616,6 +738,7 @@ def patch_tadtone_group(bzs: dict, itemid: int, groupid_str: str, trapid: int, c
     if trapid:
         itemid = 34  # rupoor
 
+    # Item id is stored as the whole 9-bit value in the z rotation (u16).
     for clef in clefs:
         clef["anglez"] = mask_shift_set(clef["anglez"], 0xFFFF, 0, itemid)
 
@@ -638,7 +761,8 @@ def patch_trial_gate(bzs: dict, itemid: int, trapid: int):
     if trapid:
         itemid = 34  # rupoor
 
-    trial_gate["params1"] = mask_shift_set(trial_gate["params1"], 0xFF, 0x18, itemid)
+    # Item id: params1 bits 23-31 (9 bits). Read by Rust (archipelago_silent_realm_tear_fix).
+    trial_gate["params1"] = mask_shift_set(trial_gate["params1"], 0x1FF, 0x17, itemid)
 
 
 def patch_tgreact(
@@ -670,13 +794,220 @@ def patch_tgreact(
     else:
         tgreact["params2"] = mask_shift_set(tgreact["params2"], 1, 18, 0)
 
-    # THEN, patch item id
-    tgreact["params1"] = mask_shift_set(tgreact["params1"], 0xFF, 8, itemid)
+    # THEN, patch item id: params1 bits 8-15 + params2 bit 23 (9th bit, always
+    # written; read by Rust, see item_id_9bit)
+    tgreact["params1"] = mask_shift_set(tgreact["params1"], 0xFF, 8, itemid & 0xFF)
+    tgreact["params2"] = mask_shift_set(tgreact["params2"], 0x1, 23, (itemid >> 8) & 1)
 
     if custom_flag != -1:
         tgreact["params2"] = mask_shift_set(tgreact["params2"], 0x3FF, 8, custom_flag)
     else:
         tgreact["params2"] = mask_shift_set(tgreact["params2"], 0x3FF, 8, 0x3FF)
+
+
+def patch_pot(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+):
+    """Pot sanity (Tubo, dAcOtubo_c). Read by pot_spawn_custom_item in item.rs.
+
+    A pot's param1 has no free bits, so everything goes in params2 (the top byte
+    keeps the vanilla drop id and bits 0-23 are 0xFFFFFF in every vanilla pot):
+      bits 0-7   item id (low 8 bits), bit 23 = 9th bit
+      bits 8-17  custom flag (0x3FF = unpatched, vanilla drop)
+      bit 18     velocity flag (item pops out of the pot)
+      bits 19-22 trap id (0xF = not a trap)
+    """
+    id = int(object_id_str, 16)
+
+    pot: dict | None = next(
+        filter(lambda x: x["name"] == "Tubo" and x["id"] == id, bzs["OBJ "]), None
+    )
+
+    if pot is None:
+        raise Exception(f"No pot (Tubo) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla drop
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return
+
+    # The pot's params2 only has room for the low 10 bits of the flag. The game
+    # treats every pot flag as an extended (group 1, bit 10) flag, so a group 0
+    # flag here would make the pot set a different location's flag.
+    if not (custom_flag & 0x400):
+        raise Exception(
+            f"Pot '{hex(id)}' was given group 0 custom flag {custom_flag:#x}; "
+            "pots must use group 1 flags (bit 10 set)."
+        )
+    custom_flag &= 0x3FF
+
+    # Need to check this as itemid is the itemid of the fake item model when trapid > 0
+    if trapid:
+        trapbits = 254 - trapid
+        pot["params2"] = mask_shift_set(pot["params2"], 0xF, 19, trapbits)
+    else:
+        pot["params2"] = mask_shift_set(pot["params2"], 0xF, 19, 0xF)
+
+    # Item pops out of the pot
+    pot["params2"] = mask_shift_set(pot["params2"], 1, 18, 1)
+
+    pot["params2"] = mask_shift_set(pot["params2"], 0xFF, 0, itemid & 0xFF)
+    pot["params2"] = mask_shift_set(pot["params2"], 0x1, 23, (itemid >> 8) & 1)
+    pot["params2"] = mask_shift_set(pot["params2"], 0x3FF, 8, custom_flag)
+
+
+def _f32_bits(value: float) -> int:
+    return struct.unpack("<I", struct.pack("<f", value))[0]
+
+
+def patch_pumpkin(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+) -> tuple[int, int, int, int] | None:
+    """Pumpkin shuffle (Pumpkin, dAcPumpkin_c).
+
+    Unlike pots, nothing is stored in the pumpkin's params: at runtime the
+    actor's params1 and the low 16 bits of params2 are wiped by shared actor
+    setup code, so anything written there never reaches the break routine. The
+    BZS object is left untouched and this returns a table entry instead, keyed
+    by the pumpkin's position (X/Z as raw f32 bits, which survive actor
+    creation unchanged). The entries are written to the PUMPKIN_TABLE_* config
+    block by init_global_variables and looked up by pot_spawn_custom_item in
+    item.rs when the pumpkin is broken.
+
+    Returns (px_bits, pz_bits, item_word, flag), or None to keep the vanilla
+    drop. item_word: bits 0-8 item id, bits 9-12 trap nibble (0xF = not a
+    trap). flag: the low 10 bits of the group 1 custom flag.
+    """
+    id = int(object_id_str, 16)
+
+    pumpkin: dict | None = next(
+        filter(lambda x: x["name"] == "Pumpkin" and x["id"] == id, bzs["OBJ "]), None
+    )
+
+    if pumpkin is None:
+        raise Exception(f"No pumpkin (Pumpkin) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla drop
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return None
+
+    # Like pots, the game treats every pumpkin flag as an extended (group 1,
+    # bit 10) flag; only the low 10 bits are stored.
+    if not (custom_flag & 0x400):
+        raise Exception(
+            f"Pumpkin '{hex(id)}' was given group 0 custom flag {custom_flag:#x}; "
+            "pumpkins must use group 1 flags (bit 10 set)."
+        )
+    custom_flag &= 0x3FF
+
+    # Need to check this as itemid is the itemid of the fake item model when trapid > 0
+    trap_nibble = (254 - trapid) if trapid else 0xF
+    if not (0 <= trap_nibble <= 0xF):
+        raise Exception(f"Pumpkin '{hex(id)}' has invalid trap id {trapid}.")
+    if not (0 <= itemid <= 0x1FF):
+        raise Exception(f"Pumpkin '{hex(id)}' has item id {itemid} that doesn't fit in 9 bits.")
+
+    item_word = (itemid & 0x1FF) | (trap_nibble << 9)
+    return (_f32_bits(pumpkin["posx"]), _f32_bits(pumpkin["posz"]), item_word, custom_flag)
+
+
+def patch_big_pot(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+) -> tuple[int, int, int, int] | None:
+    """Big pot shuffle (BigTubo, dAcOTuboBig_c; actor profile TuboBig).
+
+    All 15 big pots have identical params (params1 0xFFFFFFF0, params2
+    0xFFFFFFFF: no scene flag, no drop id), so there is nothing per-pot to
+    write into the BZS object. Like pumpkins, this leaves the object untouched
+    and returns a table entry keyed by the pot's position (X/Z as raw f32
+    bits). The entries are written to the BIG_POT_TABLE_* config block by
+    init_global_variables and looked up by pot_spawn_custom_item in item.rs.
+
+    Returns (px_bits, pz_bits, item_word, flag), or None to keep the vanilla
+    behavior (no drop). item_word: bits 0-8 item id, bits 9-12 trap nibble
+    (0xF = not a trap). flag: the low 10 bits of the group 1 custom flag.
+    """
+    id = int(object_id_str, 16)
+
+    big_pot: dict | None = next(
+        filter(lambda x: x["name"] == "BigTubo" and x["id"] == id, bzs["OBJ "]), None
+    )
+
+    if big_pot is None:
+        raise Exception(f"No big pot (BigTubo) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla drop
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return None
+
+    # Like pots, the game treats every big pot flag as an extended (group 1,
+    # bit 10) flag; only the low 10 bits are stored.
+    if not (custom_flag & 0x400):
+        raise Exception(
+            f"Big pot '{hex(id)}' was given group 0 custom flag {custom_flag:#x}; "
+            "big pots must use group 1 flags (bit 10 set)."
+        )
+    custom_flag &= 0x3FF
+
+    trap_nibble = (254 - trapid) if trapid else 0xF
+    if not (0 <= trap_nibble <= 0xF):
+        raise Exception(f"Big pot '{hex(id)}' has invalid trap id {trapid}.")
+    if not (0 <= itemid <= 0x1FF):
+        raise Exception(f"Big pot '{hex(id)}' has item id {itemid} that doesn't fit in 9 bits.")
+
+    item_word = (itemid & 0x1FF) | (trap_nibble << 9)
+    return (_f32_bits(big_pot["posx"]), _f32_bits(big_pot["posz"]), item_word, custom_flag)
+
+
+def patch_barrel(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+) -> tuple[int, int, int, int] | None:
+    """Barrel shuffle (Barrel, dAcOBarrel_c; actor profile OBJ_BARREL, 0x209).
+
+    Barrel params2 is 0xFFFFFF in the low 24 bits for every barrel and the drop
+    mode lives in params1, so there is nothing usable to write into the BZS
+    object. Like pumpkins and big pots, this leaves the object untouched and
+    returns a table entry keyed by the barrel's position (X/Z as raw f32 bits).
+    The entries are written to the BARREL_TABLE_* config block by
+    init_global_variables and looked up by pot_spawn_custom_item in item.rs.
+
+    The same physical barrel can appear on several layers of a room with the
+    same position (e.g. F001r and F303 layers 2/3/4); those share ONE table
+    entry and one location, so only one of them has to be passed here.
+
+    Returns (px_bits, pz_bits, item_word, flag), or None to keep the vanilla
+    behavior. item_word: bits 0-8 item id, bits 9-12 trap nibble (0xF = not a
+    trap). flag: the low 10 bits of the group 1 custom flag.
+    """
+    id = int(object_id_str, 16)
+
+    barrel: dict | None = next(
+        filter(lambda x: x["name"] == "Barrel" and x["id"] == id, bzs["OBJ "]), None
+    )
+
+    if barrel is None:
+        raise Exception(f"No barrel (Barrel) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla behavior
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return None
+
+    # Like pots, the game treats every barrel flag as an extended (group 1,
+    # bit 10) flag; only the low 10 bits are stored.
+    if not (custom_flag & 0x400):
+        raise Exception(
+            f"Barrel '{hex(id)}' was given group 0 custom flag {custom_flag:#x}; "
+            "barrels must use group 1 flags (bit 10 set)."
+        )
+    custom_flag &= 0x3FF
+
+    trap_nibble = (254 - trapid) if trapid else 0xF
+    if not (0 <= trap_nibble <= 0xF):
+        raise Exception(f"Barrel '{hex(id)}' has invalid trap id {trapid}.")
+    if not (0 <= itemid <= 0x1FF):
+        raise Exception(f"Barrel '{hex(id)}' has item id {itemid} that doesn't fit in 9 bits.")
+
+    item_word = (itemid & 0x1FF) | (trap_nibble << 9)
+    return (_f32_bits(barrel["posx"]), _f32_bits(barrel["posz"]), item_word, custom_flag)
 
 
 def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0x3FF):
@@ -692,7 +1023,12 @@ def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0
     if trapid:
         itemid = 34  # rupoor
 
-    academy_bell["params1"] = mask_shift_set(academy_bell["params1"], 0xFF, 0, itemid)
+    # Item id: params1 bits 0-7 + params2 bit 18 (9th bit, always written; read
+    # by Rust, see item_id_9bit)
+    academy_bell["params1"] = mask_shift_set(academy_bell["params1"], 0xFF, 0, itemid & 0xFF)
+    academy_bell["params2"] = mask_shift_set(
+        academy_bell.get("params2", 0xFFFFFFFF), 0x1, 18, (itemid >> 8) & 1
+    )
 
     # Encode Archipelago custom_flag into params2 bits 8-17 (10 bits)
     if custom_flag != 0x3FF:
@@ -722,7 +1058,10 @@ def patch_hrphint(bzs: dict, itemid: int, object_id_str: str, trapid: int, custo
         # Makes sure the bit is set if not a trap
         hrphint["params2"] = mask_shift_set(hrphint["params2"], 0xF, 0, 0xF)
 
-    hrphint["params2"] = mask_shift_set(hrphint["params2"], 0xFF, 4, itemid)
+    # Item id: params2 bits 4-11 + bit 22 (9th bit, always written; read by Rust,
+    # see item_id_9bit)
+    hrphint["params2"] = mask_shift_set(hrphint["params2"], 0xFF, 4, itemid & 0xFF)
+    hrphint["params2"] = mask_shift_set(hrphint["params2"], 0x1, 22, (itemid >> 8) & 1)
 
     # Encode AP custom_flag (10 bits) into bits 12-21.
     # Sentinel 0x3FF means no AP flag (vanilla sceneflag path in Rust).
@@ -1056,9 +1395,63 @@ class StagePatchHandler:
         # Populated during handle_stage_patches() when SwSB check patches are processed.
         # Written to the CREST_CUSTOM_FLAGS Rust static via init_global_variables.
         self.crest_custom_flags: list[int] = [0x3FF, 0x3FF, 0x3FF]
+        # Silent realm "Collect all Tears Reward" custom flags, indexed by
+        # SILENT_REALM_STAGES (S000, S100, S200, S300). Populated while handling the
+        # trial gate (WarpObj) check patches and written to the
+        # TRIAL_REWARD_CUSTOM_FLAGS Rust static via init_global_variables.
+        self.trial_reward_custom_flags: list[int] = [0x3FF] * len(SILENT_REALM_STAGES)
+        # Decoupled Goddess Cubes: story flag -> (item id, AP custom flag).
+        # Written to the GODDESS_CUBE_* Rust statics via init_global_variables;
+        # the game hands out the item when the cube's story flag gets set.
+        self.goddess_cube_items: dict[int, tuple[int, int]] = {}
+        # Bird Statues Give Items: statue index (BIRD_STATUE_LOCATION_NAMES) ->
+        # (item id, AP custom flag). Written to the BIRD_STATUE_* Rust statics via
+        # init_global_variables; the game hands out the item when the statue is touched.
+        self.bird_statue_items: dict[int, tuple[int, int]] = {}
+        # Pumpkin Shuffle: (px_bits, pz_bits, item_word, flag) per patched pumpkin,
+        # keyed in the game by the pumpkin's position. Written to the PUMPKIN_TABLE_*
+        # config block via init_global_variables (see patch_pumpkin).
+        self.pumpkin_entries: list[tuple[int, int, int, int]] = []
+        # Big Pot Shuffle: (px_bits, pz_bits, item_word, flag) per patched big pot,
+        # keyed in the game by position. Written to the BIG_POT_TABLE_* config block
+        # via init_global_variables (see patch_big_pot). Max 16 entries.
+        self.big_pot_entries: list[tuple[int, int, int, int]] = []
+        # Barrel Shuffle: (px_bits, pz_bits, item_word, flag) per patched barrel,
+        # keyed in the game by position. Written to the BARREL_TABLE_* config block
+        # via init_global_variables (see patch_barrel). Max 192 entries.
+        self.barrel_entries: list[tuple[int, int, int, int]] = []
         # Global symbol initializers consumed by ASM global init.
         # Format: {"type": "symbol", "symbol": <name>, "value": <int>}.
         self.global_patches: list[dict] = []
+        # Story flag that gates the spawning of every Goddess Chest, or None to
+        # leave the vanilla per-chest gate (the chest's Goddess Cube) untouched.
+        # Set by determine_check_patches based on the Goddess Chest Unlock setting.
+        self.goddess_chest_spawn_storyflag: int | None = None
+
+    def add_goddess_cube_item(self, storyflag: int, itemid: int, custom_flag: int):
+        self.goddess_cube_items[storyflag] = (itemid, custom_flag)
+
+    def add_bird_statue_item(self, statue_index: int, itemid: int, custom_flag: int):
+        self.bird_statue_items[statue_index] = (itemid, custom_flag)
+
+    def get_bird_statue_arrays(self) -> tuple[list[int], list[int]]:
+        # (custom flags, item ids), one entry per statue in BIRD_STATUE_LOCATION_NAMES
+        # order. Unused slots are 0x3FF (no custom flag), which the game skips.
+        flags = [0x3FF] * len(BIRD_STATUE_LOCATION_NAMES)
+        items = [0] * len(BIRD_STATUE_LOCATION_NAMES)
+        for index, (itemid, custom_flag) in self.bird_statue_items.items():
+            items[index], flags[index] = itemid, custom_flag
+        return flags, items
+
+    def get_goddess_cube_arrays(self) -> tuple[list[int], list[int]]:
+        # (custom flags, item ids), one entry per cube in GODDESS_CUBE_STORYFLAGS
+        # order. Unused slots are 0x3FF (no custom flag), which the game skips.
+        flags = [0x3FF] * len(GODDESS_CUBE_STORYFLAGS)
+        items = [0] * len(GODDESS_CUBE_STORYFLAGS)
+        for index, storyflag in enumerate(GODDESS_CUBE_STORYFLAGS):
+            if storyflag in self.goddess_cube_items:
+                items[index], flags[index] = self.goddess_cube_items[storyflag]
+        return flags, items
 
     def handle_stage_patches(self, onlyif_handler: ConditionalPatchHandler):
         for stage in self.stage_patches:
@@ -1208,6 +1601,12 @@ class StagePatchHandler:
                             f"Unsupported patch type '{patch_type}' found.\nPatch: {patch}"
                         )
 
+                if self.goddess_chest_spawn_storyflag is not None:
+                    for layer_bzs in room_bzs["LAY "].values():
+                        patch_goddess_chest_spawn_flag(
+                            layer_bzs, self.goddess_chest_spawn_storyflag
+                        )
+
                 for (
                     room,
                     object_name,
@@ -1330,6 +1729,13 @@ class StagePatchHandler:
                             itemid,
                             trapid,
                         )
+                        # Record this realm's reward custom flag so the game reads
+                        # the real flag from TRIAL_REWARD_CUSTOM_FLAGS instead of a
+                        # hardcoded one (written via init_global_variables).
+                        if stage_name in SILENT_REALM_STAGES and custom_flag != 0x3FF:
+                            self.trial_reward_custom_flags[
+                                SILENT_REALM_STAGES.index(stage_name)
+                            ] = custom_flag
                     elif object_name == "TgReact":
                         patch_tgreact(
                             room_bzs["LAY "][f"l{layer}"],
@@ -1338,6 +1744,71 @@ class StagePatchHandler:
                             trapid,
                             custom_flag,
                         )
+                    elif object_name == "Tubo":
+                        patch_pot(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                    elif object_name == "Pumpkin":
+                        pumpkin_entry = patch_pumpkin(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                        if pumpkin_entry is not None:
+                            for existing in self.pumpkin_entries:
+                                if existing[0] == pumpkin_entry[0] and existing[1] == pumpkin_entry[1]:
+                                    raise Exception(
+                                        f"Two pumpkins share the position {pumpkin_entry[0]:#010x}/{pumpkin_entry[1]:#010x}; "
+                                        "the position-keyed pumpkin table needs unique positions."
+                                    )
+                            self.pumpkin_entries.append(pumpkin_entry)
+                    elif object_name == "BigTubo":
+                        big_pot_entry = patch_big_pot(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                        if big_pot_entry is not None:
+                            for existing in self.big_pot_entries:
+                                if existing[0] == big_pot_entry[0] and existing[1] == big_pot_entry[1]:
+                                    raise Exception(
+                                        f"Two big pots share the position {big_pot_entry[0]:#010x}/{big_pot_entry[1]:#010x}; "
+                                        "the position-keyed big pot table needs unique positions."
+                                    )
+                            if len(self.big_pot_entries) >= 16:
+                                raise Exception(
+                                    "More than 16 big pots have items; BIG_POT_TABLE_ENTRIES only holds 16."
+                                )
+                            self.big_pot_entries.append(big_pot_entry)
+                    elif object_name == "Barrel":
+                        barrel_entry = patch_barrel(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                        if barrel_entry is not None:
+                            for existing in self.barrel_entries:
+                                if existing[0] == barrel_entry[0] and existing[1] == barrel_entry[1]:
+                                    raise Exception(
+                                        f"Two barrels share the position {barrel_entry[0]:#010x}/{barrel_entry[1]:#010x}; "
+                                        "the position-keyed barrel table needs unique positions (the same "
+                                        "barrel on several layers must be one location)."
+                                    )
+                            if len(self.barrel_entries) >= 192:
+                                raise Exception(
+                                    "More than 192 barrels have items; BARREL_TABLE_ENTRIES only holds 192."
+                                )
+                            self.barrel_entries.append(barrel_entry)
                     elif object_name == "Bell":
                         patch_academy_bell(
                             room_bzs["LAY "][f"l{layer}"],
@@ -1867,3 +2338,91 @@ def create_demise_patches(
                 "object": demise,
             }
         )
+
+
+# Boss and miniboss copies. Each spec describes the original actor and the setting
+# that controls its copies. Copies are placed on the original's layer and room with the
+# original's params. Specs with a despawn_flag get that flag as their untrigger story
+# flag (it's written into params1 bits 21-31), so the copies despawn when the boss's
+# defeat flag is set. known_spots are positions verified in game and are used first;
+# any copies beyond those spawn above the original, 1000 units per copy (like Demise).
+BOSS_COPY_SPECS = [
+    {"setting": "extra_ghirahim_skyview", "stage": "B100", "room": 0, "layer": 1,
+     "name": "BGh", "params1": 0xFFFFC2C0, "params2": 0xFFFFFFFF,
+     "pos": (0, 0, -1950), "despawn_flag": 83,
+     "known": [(-900, 0, -1950), (900, 0, -1950)]},
+    {"setting": "extra_ghirahim_fire_sanctuary", "stage": "B201", "room": 0, "layer": 1,
+     "name": "BGh2", "params1": 0xFFFFC2FC, "params2": 0xFFFFFFFF,
+     "pos": (0, 0, 0), "despawn_flag": 84, "known": []},
+    {"setting": "extra_moldarach", "stage": "B300", "room": 0, "layer": 1,
+     "name": "BMg", "params1": 0xFFFFFFFF, "params2": 0xFFFFFFFF,
+     "pos": (0, 0, -1200), "despawn_flag": 812,
+     "known": [(-900, 0, -1200), (900, 0, -1200)]},
+    {"setting": "extra_stalfos_skyview_first_visit", "stage": "D100", "room": 10, "layer": 1,
+     "name": "ESf", "params1": 0xFFFFFFF2, "params2": 0x05FFFFFF,
+     "pos": (0, -210, -8115), "known": []},
+    {"setting": "extra_stalfos_skyview_second_visit", "stage": "B100", "room": 0, "layer": 3,
+     "name": "ESf", "params1": 0xFFFFFFF0, "params2": 0x26FFFFFF,
+     "pos": (0, 0, -1950), "known": []},
+    {"setting": "extra_stalfos_sky_keep", "stage": "D003_0", "room": 0, "layer": 1,
+     "name": "ESf", "params1": 0xFFFFFFF0, "params2": 0x04FFFFFF,
+     "pos": (-1260, -67, -1867), "known": []},
+    {"setting": "extra_stalmaster_sky_keep", "stage": "D003_0", "room": 0, "layer": 1,
+     "name": "ESf4", "params1": 0xFFFFD4FF, "params2": 0x23FFFFFF,
+     "pos": (-1887, 1, 1469), "known": []},
+    {"setting": "extra_stalmaster_ancient_cistern", "stage": "D101", "room": 10, "layer": 0,
+     "name": "ESf4", "params1": 0xFFFFFFFF, "params2": 0xFFFFFFFF,
+     "pos": (0, -2400, 0), "known": []},
+    {"setting": "extra_dark_lizalfos", "stage": "D201_1", "room": 6, "layer": 0,
+     "name": "ELizaru", "params1": 0xDFFFFFF0, "params2": 0x065FFFFF,
+     "pos": (-2200, 200, -4700), "angles": (17732, 16384, 65535),
+     "known": [(-1600, 200, -4700)]},
+]
+
+
+def create_boss_copy_patches(
+    world: World, stage_patch_handler: StagePatchHandler
+) -> None:
+    """Add extra boss and miniboss copies via stage patches, using the AP count settings."""
+    for spec in BOSS_COPY_SPECS:
+        count = world.setting(spec["setting"]).value_as_number()
+        print(f"[BossCopies] {spec['setting']} = {count}")
+        if count <= 0:
+            continue
+
+        params1 = spec["params1"]
+        if spec.get("despawn_flag") is not None:
+            params1 = (params1 & 0x1FFFFF) | (spec["despawn_flag"] << 21)
+
+        base_x, base_y, base_z = spec["pos"]
+        anglex, angley, anglez = spec.get("angles", (0, 0, 0))
+        patches = stage_patch_handler.stage_patches.setdefault(spec["stage"], [])
+
+        above = 0
+        for idx in range(count):
+            if idx < len(spec["known"]):
+                x, y, z = spec["known"][idx]
+            else:
+                above += 1
+                x, y, z = base_x, base_y + 1000 * above, base_z
+
+            patches.append(
+                {
+                    "name": f"{spec['setting']} copy {idx + 1}",
+                    "type": "objadd",
+                    "room": spec["room"],
+                    "layer": spec["layer"],
+                    "objtype": "OBJ",
+                    "object": {
+                        "name": spec["name"],
+                        "params1": params1,
+                        "params2": spec["params2"],
+                        "posx": x,
+                        "posy": y,
+                        "posz": z,
+                        "anglex": anglex,
+                        "angley": angley,
+                        "anglez": anglez,
+                    },
+                }
+            )

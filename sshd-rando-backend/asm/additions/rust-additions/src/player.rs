@@ -500,6 +500,9 @@ assert_eq_size!([u8; 0x1A50], dBird);
 // IMPORTANT: when using vanilla code, the start point must be declared in
 // symbols.yaml and then added to this extern block.
 extern "C" {
+    static PLAYER_PTR: *mut dPlayer;
+    static CURRENT_STAGE_NAME: [u8; 8];
+
     // Functions
     fn debugPrint_128(string: *const c_char, fstr: *const c_char, ...);
 }
@@ -511,3 +514,125 @@ extern "C" {
 ////////////////////////
 // ADD FUNCTIONS HERE //
 ////////////////////////
+
+// ---------------------------------------------------------------------------
+// Stamina pointer (shared by the stamina cheat, BreathLink and the IPC mirror)
+//
+// In a few stages the player's stamina does not live at
+// `dPlayer.stamina_amount` and a per-stage offset from PLAYER_PTR is used
+// instead (F103 Flooded Faron Woods, B301 Tentalus). Those offsets were found
+// empirically and are NOT a real struct member, so writing through them
+// blindly can corrupt unrelated memory. That is exactly what crashed entering
+// Flooded Faron Woods with the client connected: the infinite stamina cheat
+// wrote 1_000_000 (0xF4240) over a code pointer, and the game later jumped to
+// 0xF4240.
+//
+// To make that impossible, `stamina_ptr()`:
+//   * returns None for STAMINA_STAGE_SETTLE_FRAMES after the stage or the
+//     player pointer changes (CURRENT_STAGE_NAME is updated before the new
+//     player exists, so PLAYER_PTR is stale or half-initialised while
+//     loading), and
+//   * for the stage-specific offsets, only returns the pointer when the value
+//     currently stored there looks like a stamina value.
+// ---------------------------------------------------------------------------
+
+/// Frames to wait after a stage/player change before touching stamina
+/// (~1.5 s at 60 fps, same idea as the item buffer's stage cooldown).
+const STAMINA_STAGE_SETTLE_FRAMES: u32 = 90;
+
+/// Stamina is 1_000_000 when full. At a stage-specific offset, anything
+/// outside 1..=STAMINA_PLAUSIBLE_MAX is not treated as stamina.
+///
+/// The lower bound matters: the offsets are relative to PLAYER_PTR and can
+/// land on a NULL pointer slot. 0 passes an "is it <= max" check, so the cheat
+/// wrote 1_000_000 over a null function pointer, and the game later jumped to
+/// 0xF4240 (the crash in Flooded Faron Woods). A null slot is never accepted.
+const STAMINA_PLAUSIBLE_MIN: u32 = 1;
+const STAMINA_PLAUSIBLE_MAX: u32 = 3_000_000;
+
+static mut STAMINA_LAST_STAGE: [u8; 8] = [0u8; 8];
+static mut STAMINA_LAST_PLAYER: usize = 0;
+static mut STAMINA_SETTLE: u32 = STAMINA_STAGE_SETTLE_FRAMES;
+
+/// Call exactly once per frame from the main loop, before anything that uses
+/// `stamina_ptr()`.
+pub fn tick_stamina_stage_settle() {
+    unsafe {
+        let stage = core::ptr::read_volatile(core::ptr::addr_of!(CURRENT_STAGE_NAME));
+        let player = core::ptr::read_volatile(core::ptr::addr_of!(PLAYER_PTR)) as usize;
+
+        if player == 0 || stage != STAMINA_LAST_STAGE || player != STAMINA_LAST_PLAYER {
+            STAMINA_LAST_STAGE = stage;
+            STAMINA_LAST_PLAYER = player;
+            STAMINA_SETTLE = STAMINA_STAGE_SETTLE_FRAMES;
+        } else if STAMINA_SETTLE > 0 {
+            STAMINA_SETTLE -= 1;
+        }
+    }
+}
+
+/// Pointer to the player's stamina value for the current stage, or None when
+/// it can't be trusted right now (no player, stage still loading, or the
+/// stage-specific offset doesn't currently point at a stamina-like value).
+///
+/// Callers must treat None as "do nothing this frame". Use `read_unaligned` /
+/// `write_unaligned` on the returned pointer.
+pub unsafe fn stamina_ptr() -> Option<*mut u32> {
+    let player = core::ptr::read_volatile(core::ptr::addr_of!(PLAYER_PTR));
+    if player.is_null() || STAMINA_SETTLE > 0 {
+        return None;
+    }
+
+    // Ghidra (FUN_7100a196cc and the other dPlayer stamina users) reads and
+    // writes stamina at dPlayer+0x64D8 (== `stamina_amount`; full = 1_000_000)
+    // in every stage, including F103 (Flooded Faron Woods) and B301 (Tentalus).
+    // The old per-stage offsets (-0x7FA8 / +0x5CD8) are not stamina anywhere in
+    // the game code; writing through them is what crashed.
+    Some(core::ptr::addr_of_mut!((*player).stamina_amount))
+}
+
+/// Offset of the player's movement-speed f32 inside dPlayer (past the end of
+/// the mapped struct, so addressed by raw offset). Same field the speed cheat
+/// scales; see `PLAYER_SPEED_OFFSET` in cheats.rs.
+const PLAYER_MOVE_SPEED_OFFSET: usize = 0x64E8;
+
+/// Copies the player actor's state into `AP_IPC_ROOT.player_info` for the
+/// client's `/player_info`. Called once per frame from the main loop. When
+/// there is no player (title screen, loading) only `valid` is cleared, so the
+/// client can tell the rest is stale.
+pub fn refresh_player_info() {
+    unsafe {
+        let info = core::ptr::addr_of_mut!(crate::ipc::AP_IPC_ROOT.player_info);
+        let player = PLAYER_PTR;
+        if player.is_null() {
+            (*info).valid = 0;
+            return;
+        }
+
+        let rot = (*player).obj_base_members.base.rot;
+        let pos = (*player).obj_base_members.base.pos;
+        let vel = (*player).obj_base_members.velocity;
+
+        (*info).rot_x = rot.x;
+        (*info).rot_y = rot.y;
+        (*info).rot_z = rot.z;
+        (*info).pos_x = pos.x;
+        (*info).pos_y = pos.y;
+        (*info).pos_z = pos.z;
+        (*info).vel_x = vel.x;
+        (*info).vel_y = vel.y;
+        (*info).vel_z = vel.z;
+        (*info).forward_speed = (*player).obj_base_members.forward_speed;
+        (*info).move_speed = core::ptr::read_unaligned(
+            (player as *const u8).add(PLAYER_MOVE_SPEED_OFFSET) as *const f32,
+        );
+        // Read the action as a raw u32 rather than through the enum, so a value
+        // outside PLAYER_ACTIONS can't be materialized as an invalid enum.
+        (*info).current_action =
+            core::ptr::read_unaligned(core::ptr::addr_of!((*player).current_action) as *const u32);
+        (*info).held_buttons = (*player).held_buttons;
+        (*info).triggered_buttons = (*player).triggered_buttons;
+        (*info).current_pressed_button_flags = (*player).current_pressed_button_flags;
+        (*info).valid = 1;
+    }
+}

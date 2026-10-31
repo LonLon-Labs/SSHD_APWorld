@@ -1,12 +1,13 @@
 ; Give randomized item in init function
+; The item id is 9 bits wide: params2 bits 8-16 (the vanilla function that got the
+; item id used a byte load of bits 8-15). Rewritten as load + extract, so the id
+; now goes through dAcItem__determineFinalItemid at its new address.
 .offset 0x71005c204c
-ldrb w0, [x19, #0x12D] ; load 00 00 FF 00 from param2 (the patched itemid)
-; let the vanilla function get called
-
-.offset 0x71005c2054
+ldr w0, [x19, #0x12C] ; params2
+ubfx w0, w0, #8, #9   ; the patched itemid (params2 bits 8-16)
+bl 0x71004ea050       ; dAcItem__determineFinalItemid
 ; setup param1
-mov w2, #0x3000 ; set sceneflag 12 on collection
-bfxil w2, w0, #0x0, #0x9
+orr w2, w0, #0x3000   ; set sceneflag 12 on collection
 
 ; branch over 7 unused instructions
 b 0x71005c207c ; this instruction space is used for the dAcItem__spawnRandoItemWithParams custom function
@@ -15,14 +16,12 @@ b 0x71005c207c ; this instruction space is used for the dAcItem__spawnRandoItemW
 ; Give randomized item in update function
 .offset 0x71005c4e24 ; starts 1 instruction back to prevent self getting overwritten
 nop
-ldrb w0, [x19, #0x12D] ; load 00 00 FF 00 from param2 (the patched itemid)
-; let the vanilla function get called
-
-.offset 0x71005c4e30
+ldr w0, [x19, #0x12C] ; params2
+ubfx w0, w0, #8, #9   ; the patched itemid (params2 bits 8-16)
+bl 0x71004ea050       ; dAcItem__determineFinalItemid
 ; setup param1
-mov w2, #0x3000 ; set sceneflag 12 on collection
-movk w2, #0x0, LSL #16
-bfxil w2, w0, #0x0, #0x9
+orr w2, w0, #0x3000   ; set sceneflag 12 on collection
+nop
 
 ; replaced instruction
 ldrsb w19, [x19, #0x17c]

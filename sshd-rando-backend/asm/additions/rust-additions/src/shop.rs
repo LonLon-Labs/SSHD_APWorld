@@ -241,6 +241,60 @@ pub extern "C" fn set_shop_display_height() -> f32 {
     }
 }
 
+// Extra height (in game units) added to the spot where a shop item floats
+// while the player decides whether to buy it (the "buy decide" pose). Positive
+// moves the item up, negative moves it down. This is separate from
+// `display_height_offset`, which only affects the item sitting on the counter.
+//
+// Add an entry here for any item whose model origin makes it float too high or
+// too low next to the shop menu. Items not listed here use no extra offset.
+const BIRD_STATUE_BUY_DECIDE_HEIGHT_OFFSET: f32 = -45.0;
+
+fn get_buy_decide_height_offset(item_id: u16) -> f32 {
+    match item_id {
+        // Bird Statue Unlock items (ids 300..=322)
+        300..=322 => BIRD_STATUE_BUY_DECIDE_HEIGHT_OFFSET,
+        _ => 0.0f32,
+    }
+}
+
+// Replaces the virtual call below in the shop item mover's per-frame update
+// (the three instructions are replaced by a jumptable call + nop):
+//
+//     ldr x8, [x0]            ; x0 = mover
+//     ldr x8, [x8]            ; vtable function 0
+//     blr x8                  ; x1 = key, x2 = out vec3 (destination)
+//
+// Vtable function 0 asks the shop menu where the item should be. The mover
+// overwrites its stored destination with this answer every frame, which is why
+// the offset is added here instead of once when the item is picked up.
+#[no_mangle]
+pub extern "C" fn get_shop_item_move_target(mover: *mut c_void, key: *mut c_void, out: *mut f32) {
+    unsafe {
+        // Replaced instructions
+        let vtable = *(mover as *const *const extern "C" fn(*mut c_void, *mut c_void, *mut f32));
+        (*vtable)(mover, key, out);
+
+        // The mover stores the dAcShopSample that owns it at +0x8.
+        let shop_sample = *((mover as *const u8).add(0x8) as *const *mut dAcShopSample);
+        if shop_sample.is_null() {
+            return;
+        }
+
+        let current_model = (*shop_sample).model_holder.current_model;
+        if !current_model.is_null() && !(*shop_sample).model_holder.use_sold_out_model {
+            let item_index = (*current_model).item_index as usize;
+
+            // 0x7F is the sold out placeholder and 30+ is Luv's potion shop.
+            if item_index < 30 {
+                let item_id = SHOP_ITEMS[item_index].itemid as u16;
+                // out[1] is the Y (up) coordinate.
+                *out.add(1) += get_buy_decide_height_offset(item_id);
+            }
+        }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn set_shop_sold_out_storyflag() {
     unsafe {

@@ -37,3 +37,8 @@ mov x0, #0x0
 ; Don't give lanayru gorge bird statue from storyflag
 .offset 0x71013a25f0
 .short -1
+
+; Layout for the locked statue prompt (save prompt index 6): 2 options.
+; Table at Ghidra 0x710139f0d4, index 6 = +0x18, runtime = Ghidra + 0x4000.
+.offset 0x71013a30ec
+.word 0x00000001

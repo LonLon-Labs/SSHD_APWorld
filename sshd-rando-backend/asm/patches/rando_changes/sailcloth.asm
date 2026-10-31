@@ -3,7 +3,7 @@
 mov w8, #99
 b additions_jumptable
 
-; Require Sailcloth to fly to the sky from bird statues
+; Require Sailcloth and Loftwing to fly to the sky from bird statues
 .offset 0x7100d88730
 mov w8, #100
 bl additions_jumptable

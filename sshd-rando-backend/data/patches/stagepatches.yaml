@@ -5099,6 +5099,13 @@ D100: # Skyview Temple
       posy: -210
 
 B100: # Ghirahim 1 Boss Room
+  - name: Remove Skyview pot 9 on layer 5
+    type: objdelete
+    ids:
+      - 0xFC10
+    layer: 5
+    room: 0
+    objtype: OBJ
   # Removed flags 67 (Triple Stalfos Defeated), 206 (Obtained Water Dragon's Scale), and 5 (Beat Skyview Temple)
   - name: Layer override
     type: layeroverride
@@ -6188,6 +6195,15 @@ D301: # Sandship A (main)
       anglez: 933 # untriggerstoryflag, defeat tentalus
 
 D301_1: # Sandship B (escape)
+  - name: Remove Sandship boss room barrels 3-5 (break on ship tilt)
+    type: objdelete
+    ids:
+      - 0xFC02
+      - 0xFC03
+      - 0xFC04
+    layer: 0
+    room: 0
+    objtype: OBJ
   - name: Fi texts before tentalus
     type: objdelete
     ids:

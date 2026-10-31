@@ -32,6 +32,11 @@
     FS First Magmanos Room Balcony: Mogma_Mitts and Sword
     FS First Outside Section: Nothing # Open the lower door.
   locations:
+    FS First Magmanos Room - Pot 1: Nothing
+    FS First Magmanos Room - Pot 2: Nothing
+    FS First Magmanos Room - Pot 3: Nothing
+    FS First Magmanos Room - Pot 4: Nothing
+    FS First Magmanos Room - Pot 5: Nothing
     Fire Sanctuary - Chest in Second Room: Nothing # Run towards the door to FS First Outside Section and follow the spiral past the door.
 
 - name: FS First Magmanos Room Balcony
@@ -39,6 +44,8 @@
   exits:
     FS First Magmanos Room: Mogma_Mitts # Assumes lava is lowered from defeating the Magmanos.
   locations:
+    FS First Magmanos Room Balcony - Pot 1: Nothing
+    FS First Magmanos Room Balcony - Pot 2: Nothing
     Fire Sanctuary - Chest on Balcony after Single Magmanos Fight: Nothing # Open the chest.
 
 - name: FS South Bridge
@@ -82,6 +89,8 @@
     FS Room with First Lava River Past River: count(2, Fire_Sanctuary_Small_Key) or small_keys == removed
     FS Water Fruit Room After Frog: Sword
   locations:
+    FS Water Fruit Room - Pot 1: Nothing
+    FS Water Fruit Room - Pot 2: Nothing
     Fire Sanctuary - Lower Chest in Water Fruit Room: Nothing # Walk around the room and open the chest.
     Fire Sanctuary - Raised Chest in Water Fruit Room: Nothing # Walk around the room and open the chest.
 
@@ -122,6 +131,8 @@
     FS Under Magmanos Fight Room Past Sliding Door: "'Move_First_FS_Sliding_Gate'"
     FS West of Boss Door Before Lava River: count(3, Fire_Sanctuary_Small_Key) or small_keys == removed
   locations:
+    FS Under Magmanos Fight Room - Pot 1: Nothing
+    FS Under Magmanos Fight Room - Pot 2: Nothing
     Fire Sanctuary - Underground Rupee beneath Double Magmanos Room 1: Mogma_Mitts
     Fire Sanctuary - Underground Rupee beneath Double Magmanos Room 2: Mogma_Mitts
     Fire Sanctuary - Underground Rupee beneath Double Magmanos Room 3: Mogma_Mitts
@@ -162,6 +173,12 @@
   exits:
     FS North Bridge East Side: Nothing # Open the door to the outside bridges.
   locations:
+    FS Second Trapped Mogma Room - Pot 1: Nothing
+    FS Second Trapped Mogma Room - Pot 2: Nothing
+    FS Second Trapped Mogma Room - Pot 3: Nothing
+    FS Second Trapped Mogma Room - Pot 4: Nothing
+    FS Second Trapped Mogma Room - Pot 5: Nothing
+    FS Second Trapped Mogma Room - Pot 6: Nothing
     Fire Sanctuary - Chest from Second Trapped Mogma: Mogma_Mitts and Sword # Mitts to move gate; sword for water pod.
     Fire Sanctuary - Underground Rupee behind Bombable Wall: Mogma_Mitts and Sword and Bomb_Bag
     Fire Sanctuary - Chest after Bombable Wall: Mogma_Mitts and Sword and Bomb_Bag
@@ -182,6 +199,8 @@
     FS In Front of Boss Door: Can_Hit_High_Water_Plant and 'FS_Release_Second_Lava_River'
     FS West of Boss Door Before Lava River: Can_Hit_High_Water_Plant
   locations:
+    FS West of Boss Door After Lava River - Pot 1: Nothing
+    FS West of Boss Door After Lava River - Pot 2: Nothing
     Fire Sanctuary - Plats' Chest: Mogma_Mitts and Can_Hit_High_Water_Plant
 
 - name: FS In Front of Boss Door
@@ -191,6 +210,22 @@
     Fire Sanctuary Boss Room: Fire_Sanctuary_Boss_Key or boss_keys == removed
     FS Lizalfos Fight Room: Can_Survive_Long_Fall or (Can_Survive_Short_Fall and logic_precise_falls)
     FS West of Boss Door After Lava River: Nothing # Drop down.
+  locations:
+    FS In Front of Boss Door - Pot 1: Nothing
+    FS In Front of Boss Door - Pot 2: Nothing
+    FS In Front of Boss Door - Pot 3: Nothing
+    FS In Front of Boss Door - Pot 4: Nothing
+    FS In Front of Boss Door - Pot 5: Nothing
+    FS In Front of Boss Door - Pot 6: Nothing
+    FS In Front of Boss Door - Pot 7: Nothing
+    FS In Front of Boss Door - Pot 8: Nothing
+    FS In Front of Boss Door - Pot 9: Nothing
+    FS In Front of Boss Door - Pot 10: Nothing
+    FS In Front of Boss Door - Pot 11: Nothing
+    FS In Front of Boss Door - Pot 12: Nothing
+    FS In Front of Boss Door - Pot 13: Nothing
+    FS In Front of Boss Door - Pot 14: Nothing
+    FS In Front of Boss Door - Pot 15: Nothing
 
 - name: FS In Front of Boss Door Past Bars
   dungeon: Fire Sanctuary

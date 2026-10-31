@@ -10,7 +10,9 @@ from Options import (
     DefaultOnToggle,
     FreeText,
     ItemDict,
+    LocationSet,
     OptionGroup,
+    OptionList,
     PerGameCommonOptions,
     Range,
     Toggle,
@@ -278,6 +280,99 @@ class DemiseCount(Range):
     default = 1
 
 
+class ExtraGhirahimSkyview(Range):
+    """
+    Extra Ghirahim 1 fights in the Skyview Temple boss room.
+    They despawn once the first Ghirahim is defeated.
+    """
+    display_name = "Extra Ghirahim (Skyview Temple)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraGhirahimFireSanctuary(Range):
+    """
+    Extra Ghirahim 2 fights in the Fire Sanctuary boss room.
+    They despawn once the first Ghirahim is defeated.
+    """
+    display_name = "Extra Ghirahim (Fire Sanctuary)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraMoldarach(Range):
+    """
+    Extra Moldarach fights in the Lanayru Mining Facility boss room.
+    They despawn once the first Moldarach is defeated.
+    """
+    display_name = "Extra Moldarach (Lanayru Mining Facility)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraStalfosSkyviewFirstVisit(Range):
+    """
+    Extra Stalfos in the Skyview Temple miniboss room on the first visit.
+    """
+    display_name = "Extra Stalfos (Skyview Temple, first visit)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraStalfosSkyviewSecondVisit(Range):
+    """
+    Extra Stalfos in the Skyview Temple boss room on the second visit.
+    """
+    display_name = "Extra Stalfos (Skyview Temple, second visit)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraStalfosSkyKeep(Range):
+    """
+    Extra Stalfos in the Sky Keep Courage room.
+    """
+    display_name = "Extra Stalfos (Sky Keep)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraStalmasterSkyKeep(Range):
+    """
+    Extra Stalmasters in the Sky Keep Courage room.
+    """
+    display_name = "Extra Stalmaster (Sky Keep)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraStalmasterAncientCistern(Range):
+    """
+    Extra Stalmasters in the Ancient Cistern miniboss room.
+    """
+    display_name = "Extra Stalmaster (Ancient Cistern)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
+class ExtraDarkLizalfos(Range):
+    """
+    Extra Dark Lizalfos in the Fire Sanctuary room.
+    """
+    display_name = "Extra Dark Lizalfos (Fire Sanctuary)"
+    range_start = 0
+    range_end = 10
+    default = 0
+
+
 # === Randomization Settings ===
 
 class GratitudeCrystalShuffle(Toggle):
@@ -291,6 +386,18 @@ class StaminaFruitShuffle(Toggle):
 class NpcClosetShuffle(Toggle):
     """Shuffle NPC closets."""
     display_name = "NPC Closet Shuffle"
+
+class PotShuffle(Toggle):
+    """Shuffle pots. Breaking a pot can give a randomized item."""
+    display_name = "Pot Shuffle"
+
+class PumpkinShuffle(Toggle):
+    """Shuffle pumpkins. Breaking a pumpkin in the Skyloft pumpkin patches or at Lumpy Pumpkin can give a randomized item."""
+    display_name = "Pumpkin Shuffle"
+
+class BarrelShuffle(Toggle):
+    """Shuffle barrels. Breaking a barrel can give a randomized item. The exploding barrels in the Sand Sea are not included."""
+    display_name = "Barrel Shuffle"
 
 class HiddenItemShuffle(Toggle):
     """Shuffle hidden items."""
@@ -308,6 +415,26 @@ class RupeeShuffle(Choice):
 class GoddessChestShuffle(Toggle):
     """Shuffle goddess chests."""
     display_name = "Goddess Chest Shuffle"
+
+class GoddessChestUnlock(Choice):
+    """Controls how goddess chests are unlocked.
+
+    Locked Until Struck: Chests are activated by striking their goddess cube (vanilla).
+    Unlocked After Goddess Sword: All goddess chests are activated once you obtain the Goddess Sword.
+    Unlocked From Start: All goddess chests are activated from the start of the game."""
+    display_name = "Goddess Chest Unlock"
+    option_locked_until_struck = 0
+    option_unlocked_after_goddess_sword = 1
+    option_unlocked_from_start = 2
+    default = 0
+
+class DecoupleGoddessCubesAndChests(Toggle):
+    """Decouple goddess cubes from goddess chests.
+
+    When enabled, striking a goddess cube gives a randomized item (each cube becomes a location).
+    If Goddess Chest Unlock is Locked Until Struck, striking a cube also still activates its chest.
+    When disabled, cubes only activate their chest (or do nothing if chests are already unlocked)."""
+    display_name = "Decouple Goddess Cubes and Chests"
 
 class TrialTreasureShuffle(Range):
     """Number of trial treasures to shuffle (0-10)."""
@@ -483,6 +610,7 @@ class CustomStartingItems(ItemDict):
 class RandomStartingStatues(Toggle):
     """
     Randomize which bird statue is unlocked at the start for each surface region.
+    Has no effect on which statues are unlocked when Bird Statues Need to be Unlocked is enabled (use Start with a Bird Statue in Each Region instead).
     """
     display_name = "Random Starting Statues"
 
@@ -903,6 +1031,33 @@ class RandomizeLoftwing(Choice):
     option_off = 0
     option_on = 1
     default = "random"
+
+
+class BirdStatuesGiveItems(Toggle):
+    """
+    If enabled, every Bird Statue becomes a check. Unlocking a Bird Statue for the first time gives an item.
+    This does not gate the statues: unless Bird Statues Need to be Unlocked is also enabled, every statue can still be dropped down to as normal.
+    """
+    display_name = "Bird Statues Give Items"
+
+
+class BirdStatuesNeedUnlock(Toggle):
+    """
+    If enabled, each Bird Statue has its own unlock item that is added to the item pool, including the Sealed Grounds, Volcano Entrance and Lanayru Mine Entry statues.
+    Until its unlock item is obtained you cannot drop down to that statue from the sky, but you can still use it to fly up to the sky.
+    No statue is unlocked for free: the only ones you start with are the ones given by Start with a Bird Statue in Each Region.
+    """
+    display_name = "Bird Statues Need to be Unlocked"
+
+
+class StartWithRegionBirdStatues(Toggle):
+    """
+    Only has an effect when Bird Statues Need to be Unlocked is enabled.
+    If enabled, you start with exactly one unlocked Bird Statue in each of Faron, Eldin and Lanayru.
+    Those statues are removed from the item pool.
+    If disabled, no Bird Statue is unlocked at the start.
+    """
+    display_name = "Start with a Bird Statue in Each Region"
 
 
 class NaturalNightConnections(DefaultOnToggle):
@@ -1707,6 +1862,31 @@ class SshdrSeed(FreeText):
     display_name = "SSHD-Rando Seed"
     default = ""
 
+
+class OtherMods(OptionList):
+    """
+    Names of other mods to merge into the randomizer output, as a YAML list.
+    Each entry is the name of a folder inside your other_mods folder that contains
+    that mod's romfs folder. The sshd-rando GUI fills this in for you when you
+    tick mods in its Advanced tab and generate a YAML.
+    Mods that modify the exefs folder are not supported.
+    This feature is EXPERIMENTAL. Mods that edit the same files as each other
+    (and that can't be combined) will cause patching to fail.
+    """
+    display_name = "Other Mods"
+    default = []
+
+
+class OtherModsPath(FreeText):
+    """
+    Folder that contains the mod folders listed in Other Mods.
+    Leave blank to use the other_mods folder next to your extract path
+    (e.g. C:\\ProgramData\\Archipelago\\other_mods on Windows).
+    The sshd-rando GUI fills this in with its own other_mods folder.
+    """
+    display_name = "Other Mods Path"
+    default = ""
+
 # === Cheats ===
 
 class CheatInfiniteHealth(Toggle):
@@ -1856,6 +2036,15 @@ class SSHDBreathLink(Toggle):
     display_name = "Breath Link"
 
 
+class ExcludedLocations(LocationSet):
+    """
+    Alias of Archipelago's standard `exclude_locations`, accepted so YAMLs using the
+    sshd-rando config.yaml spelling work. Listed locations can only receive
+    filler/trap items, exactly like `exclude_locations`. Both options are merged.
+    """
+    display_name = "Excluded Locations"
+
+
 @dataclass
 class SSHDOptions(PerGameCommonOptions):
     """
@@ -1864,6 +2053,7 @@ class SSHDOptions(PerGameCommonOptions):
     # Core Logic
     logic_rules: LogicRules
     item_pool: ItemPool
+    excluded_locations: ExcludedLocations
     
     # Completion
     required_dungeon_count: RequiredDungeonCount
@@ -1890,14 +2080,28 @@ class SSHDOptions(PerGameCommonOptions):
     skip_horde: SkipHorde
     skip_ghirahim3: SkipGhirahim3
     demise_count: DemiseCount
+    extra_ghirahim_skyview: ExtraGhirahimSkyview
+    extra_ghirahim_fire_sanctuary: ExtraGhirahimFireSanctuary
+    extra_moldarach: ExtraMoldarach
+    extra_stalfos_skyview_first_visit: ExtraStalfosSkyviewFirstVisit
+    extra_stalfos_skyview_second_visit: ExtraStalfosSkyviewSecondVisit
+    extra_stalfos_sky_keep: ExtraStalfosSkyKeep
+    extra_stalmaster_sky_keep: ExtraStalmasterSkyKeep
+    extra_stalmaster_ancient_cistern: ExtraStalmasterAncientCistern
+    extra_dark_lizalfos: ExtraDarkLizalfos
     
     # Randomization
     gratitude_crystal_shuffle: GratitudeCrystalShuffle
     stamina_fruit_shuffle: StaminaFruitShuffle
     npc_closet_shuffle: NpcClosetShuffle
+    pot_shuffle: PotShuffle
+    pumpkin_shuffle: PumpkinShuffle
+    barrel_shuffle: BarrelShuffle
     hidden_item_shuffle: HiddenItemShuffle
     rupee_shuffle: RupeeShuffle
     goddess_chest_shuffle: GoddessChestShuffle
+    goddess_chest_unlock: GoddessChestUnlock
+    decouple_goddess_cubes_and_chests: DecoupleGoddessCubesAndChests
     trial_treasure_shuffle: TrialTreasureShuffle
     tadtone_shuffle: TadtoneShuffle
     gossip_stone_treasure_shuffle: GossipStoneTreasureShuffle
@@ -1948,6 +2152,9 @@ class SSHDOptions(PerGameCommonOptions):
     unlock_all_groosenator_destinations: UnlockAllGroosenatorDestinations
     allow_flying_at_night: AllowFlyingAtNight
     randomize_loftwing: RandomizeLoftwing
+    bird_statues_give_items: BirdStatuesGiveItems
+    bird_statues_need_unlock: BirdStatuesNeedUnlock
+    start_with_region_bird_statues: StartWithRegionBirdStatues
     natural_night_connections: NaturalNightConnections
     dungeons_include_sky_keep: DungeonsIncludeSkyKeep
     empty_unrequired_dungeons: EmptyUnrequiredDungeons
@@ -2083,6 +2290,8 @@ class SSHDOptions(PerGameCommonOptions):
     # Configuration
     extract_path: ExtractPath
     sshdr_seed: SshdrSeed
+    other_mods: OtherMods
+    other_mods_path: OtherModsPath
     
     # Cheats
     cheat_infinite_health: CheatInfiniteHealth
@@ -2136,9 +2345,14 @@ sshd_option_groups = [
         GratitudeCrystalShuffle,
         StaminaFruitShuffle,
         NpcClosetShuffle,
+        PotShuffle,
+        PumpkinShuffle,
+        BarrelShuffle,
         HiddenItemShuffle,
         RupeeShuffle,
         GoddessChestShuffle,
+        GoddessChestUnlock,
+        DecoupleGoddessCubesAndChests,
         TrialTreasureShuffle,
         TadtoneShuffle,
         GossipStoneTreasureShuffle,
@@ -2248,6 +2462,9 @@ sshd_option_groups = [
         UnlockAllGroosenatorDestinations,
         AllowFlyingAtNight,
         RandomizeLoftwing,
+        BirdStatuesGiveItems,
+        BirdStatuesNeedUnlock,
+        StartWithRegionBirdStatues,
         RandomTrialObjectPositions,
         EnableBackInTime,
         UndergroundRupeeShufle,
@@ -2340,8 +2557,21 @@ sshd_option_groups = [
         SSHDDeathLink,
         SSHDBreathLink,
     ]),
+    OptionGroup("Boss and Miniboss Copies", [
+        ExtraGhirahimSkyview,
+        ExtraGhirahimFireSanctuary,
+        ExtraMoldarach,
+        ExtraStalfosSkyviewFirstVisit,
+        ExtraStalfosSkyviewSecondVisit,
+        ExtraStalfosSkyKeep,
+        ExtraStalmasterSkyKeep,
+        ExtraStalmasterAncientCistern,
+        ExtraDarkLizalfos,
+    ], start_collapsed=True),
     OptionGroup("Configuration", [
         ExtractPath,
         SshdrSeed,
+        OtherMods,
+        OtherModsPath,
     ]),
 ]
