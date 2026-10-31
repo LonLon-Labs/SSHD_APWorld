@@ -2982,6 +2982,13 @@ class SSHDWorld(World):
                 end_loc_names: set[str] = set()
                 for dungeon in selected_dungeons:
                     end_loc_names.update(DUNGEON_END_LOCATIONS.get(dungeon, []))
+                # Sky Keep's Sacred Power rooms must not be forced end-of-dungeon slots.
+                # They are gated by the same progression items placed here, so pinning
+                # every progression item to dungeon ends (9 items into 9 slots) leaves
+                # no slack and can make the seed unbeatable. Let normal fill place them.
+                if "Sky Keep" in selected_dungeons:
+                    end_loc_names -= set(DUNGEON_END_LOCATIONS.get("Sky Keep", []))
+                    print("[__init__.py] pre_fill: Excluding Sky Keep Sacred Power locations from forced end-of-dungeon placement")
 
                 def _get_unfilled_end_locations() -> list:
                     return [
