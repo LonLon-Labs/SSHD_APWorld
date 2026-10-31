@@ -926,16 +926,9 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                     },
                 };
 
-                // Progressive Bow textbox: keep storyflags 957/945/946 in line with the bow
-                // item flags (see bow_storyflags.rs). Runs before delivery so a stale storyflag
-                // is fixed before a bow can be given into this save.
-                if seed_ok {
-                    match sync.bow_flags.poll(mem, root_addr) {
-                        Ok(Some(line)) => log!(&output, "{}", line),
-                        Ok(None) => {},
-                        Err(e) => vlog!("[BowFlags] check failed: {e}"),
-                    }
-                }
+                // (Progressive Bow textbox storyflags are set per delivery in the game
+                // code now; the periodic bow_storyflags reconcile was removed because it
+                // set the cumulative flags after the pickup had already read them.)
 
                 // Item delivery -- crash-safe, paced, resumable (see delivery.rs).
                 if let Some(client) = conn.client_mut() {

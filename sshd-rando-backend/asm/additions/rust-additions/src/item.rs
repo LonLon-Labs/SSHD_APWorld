@@ -1124,6 +1124,17 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
         // set LAST_AP_ITEM_FLAG_ID BEFORE the event fires, which is the
         // correct timing.
 
+        // Progressive Bow spawned by AP: give the tier the client asked for. The
+        // game re-tiers the actor from the item flags, which made the first Bow
+        // pick up as an Iron Bow. The tag is only trusted inside the window that
+        // BOW_RECENT_FRAMES covers, so a reused actor address can't match later.
+        if BOW_RECENT_FRAMES > 0 && item_actor == AP_BOW_ACTOR && AP_BOW_TIER != 0 {
+            (*item_actor).final_determined_itemid = AP_BOW_TIER;
+            (*item_actor).itemid = AP_BOW_TIER as _;
+            AP_BOW_ACTOR = core::ptr::null_mut();
+            return AP_BOW_TIER;
+        }
+
         return (*item_actor).final_determined_itemid;
     }
 }
@@ -3662,6 +3673,37 @@ fn ap_stage_cooldown_active() -> bool {
 static mut BOW_LAST_TIER: u16 = 0;
 static mut BOW_RECENT_FRAMES: u32 = 0;
 
+/// The bow actor the buffer handler spawned for AP, and the tier it was
+/// spawned as. The pickup (handle_custom_item_get) gives this tier instead of
+/// whatever the game re-tiered the actor to from the item flags.
+static mut AP_BOW_ACTOR: *mut dAcItem = core::ptr::null_mut();
+static mut AP_BOW_TIER: u16 = 0;
+
+/// Set at a bow spawn. While it's armed and the bow actor is still waiting,
+/// flag 90 turning on (with 19 owned) gets cleared once, so the pickup gives
+/// the tier the client asked for. This is the fix that made the first Bow work
+/// in commit 8129cfc; it was removed by mistake with the debug logging in
+/// a0c5bad.
+static mut BOW_WATCH_FRAMES: u32 = 0;
+static mut BOW_TEST_ARMED: bool = false;
+
+/// Textbox storyflags for Bow / Iron Bow / Sacred Bow (see the bow table in
+/// the client's bow_storyflags.rs).
+const BOW_TEXTBOX_STORYFLAGS: [u16; 3] = [957, 945, 946];
+
+/// Sets the textbox storyflag for the bow tier being given and clears the
+/// other two, so the pickup text matches the item. Must run before the item
+/// actor is spawned, because the pickup event reads these flags as it starts.
+unsafe fn set_bow_textbox_storyflag(keep: u16) {
+    for sf in BOW_TEXTBOX_STORYFLAGS {
+        if sf == keep {
+            flag::set_storyflag(sf);
+        } else {
+            flag::unset_storyflag(sf);
+        }
+    }
+}
+
 unsafe fn resolve_progressive_bow_tier() -> u16 {
     let mut tier: u16 = if flag::check_itemflag_raw(19) == 0 {
         19
@@ -3681,6 +3723,30 @@ pub extern "C" fn archipelago_check_item_buffer() {
     unsafe {
         if BOW_RECENT_FRAMES > 0 {
             BOW_RECENT_FRAMES -= 1;
+        }
+
+        if BOW_WATCH_FRAMES > 0 {
+            BOW_WATCH_FRAMES -= 1;
+            // Something sets 945 a moment after the spawn, before the pickup, and
+            // the pickup reads whichever flag is set. So while this bow's actor is
+            // still waiting, re-apply the exclusive set for its tier every frame.
+            if !AP_BOW_ACTOR.is_null() {
+                let keep = match AP_BOW_TIER {
+                    90 => 945,
+                    91 => 946,
+                    _ => 957,
+                };
+                set_bow_textbox_storyflag(keep);
+            }
+            if BOW_TEST_ARMED
+                && flag::check_itemflag_raw(19) == 1
+                && flag::check_itemflag_raw(90) == 1
+            {
+                BOW_TEST_ARMED = false;
+                flag::unset_itemflag_raw(90);
+                flag::unset_itemflag_raw(91);
+                flag::commit_itemflags();
+            }
         }
 
         // Items from another seed's save may only be delivered when the client
@@ -3764,10 +3830,12 @@ pub extern "C" fn archipelago_check_item_buffer() {
             let item_id_val: u16 = if item_id_val == 19 {
                 resolve_progressive_bow_tier()
             } else if item_id_val == 219 {
-                // Loftwing (219) first, Spiral Charge (21) once 219 is owned.
-                // Itemflag 219 is forced right after spawn, so back-to-back
-                // copies resolve correctly too.
-                if flag::check_itemflag_raw(219) == 0 {
+                // Loftwing (219) first, Spiral Charge (21) once Loftwing is owned.
+                // "Owned" is storyflag 27 (the Loftwing-gotten flag that the
+                // 003_219 item-get event sets), not itemflag 219: the natural
+                // Loftwing pickup never sets itemflag 219, so checking it made
+                // every copy resolve to Loftwing.
+                if flag::check_storyflag(27) == 0 {
                     219
                 } else {
                     21
@@ -3813,6 +3881,16 @@ pub extern "C" fn archipelago_check_item_buffer() {
             // All item OARCs are now in ObjectPack (loaded globally at boot),
             // so no async pre-load is needed — spawn immediately.
 
+            // Bow pickup text: the event reads its textbox from these storyflags,
+            // so set the one for the tier being given and clear the rest before
+            // the actor exists. A failed spawn just retries with the same tier.
+            match spawn_id {
+                19 => set_bow_textbox_storyflag(957),
+                90 => set_bow_textbox_storyflag(945),
+                91 => set_bow_textbox_storyflag(946),
+                _ => {},
+            }
+
             AP_FORCE_FALLBACK_MODEL = true;
 
             // Safety: ROOM_MGR can be null during scene transitions.
@@ -3857,6 +3935,17 @@ pub extern "C" fn archipelago_check_item_buffer() {
                     // Remember the tier only once the spawn really happened.
                     BOW_LAST_TIER = item_id_val;
                     BOW_RECENT_FRAMES = 900;
+                    AP_BOW_ACTOR = item_actor;
+                    AP_BOW_TIER = item_id_val;
+                    BOW_WATCH_FRAMES = 900;
+                    BOW_TEST_ARMED = true;
+                }
+
+                // Loftwing: mark it owned right away, so the next Progressive
+                // Loftwing resolves to Spiral Charge even before this pickup's
+                // event has run (the 003_219 event sets the same flag later).
+                if spawn_id == 219 {
+                    flag::set_storyflag(27);
                 }
 
                 // Explicitly set the item flag through the game's FlagMgr
