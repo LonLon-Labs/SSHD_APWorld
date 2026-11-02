@@ -829,10 +829,10 @@ pub fn handle_goddess_cube_items() {
 
             let item_id =
                 core::ptr::read_volatile(core::ptr::addr_of!(GODDESS_CUBE_ITEM_IDS[index]));
-            // Trap pseudo-items (250..=254, trap id = 254 - item id) are given as a
+            // Trap pseudo-items (249..=254, trap id = 254 - item id) are given as a
             // real trap actor: a Rupoor carrying the trap id, so the effect fires
             // instead of showing the generic Archipelago item.
-            let item_actor = if (250..=254).contains(&item_id) {
+            let item_actor = if (249..=254).contains(&item_id) {
                 give_item_with_archipelago_flag_and_trap(34, custom_flag, (254 - item_id) as u8)
             } else {
                 give_item_with_archipelago_flag(item_id, custom_flag)
@@ -2818,9 +2818,9 @@ pub fn handle_bird_statue_items() {
 
             let item_id =
                 core::ptr::read_volatile(core::ptr::addr_of!(BIRD_STATUE_ITEM_IDS[index]));
-            // Trap pseudo-items (250..=254, trap id = 254 - item id) are given as a
+            // Trap pseudo-items (249..=254, trap id = 254 - item id) are given as a
             // real trap actor: a Rupoor carrying the trap id.
-            let item_actor = if (250..=254).contains(&item_id) {
+            let item_actor = if (249..=254).contains(&item_id) {
                 give_item_with_archipelago_flag_and_trap(34, custom_flag, (254 - item_id) as u8)
             } else {
                 give_item_with_archipelago_flag(item_id, custom_flag)
@@ -3826,11 +3826,11 @@ pub extern "C" fn archipelago_check_item_buffer() {
                 return;
             }
 
-            // Trap pseudo-items (250..=254) are AP-only IDs and are not valid
+            // Trap pseudo-items (249..=254) are AP-only IDs and are not valid
             // vanilla item IDs.  Convert them into a normal rupoor item actor
             // and encode the trap id in param2 bits 4-7 so setup_traps can set
             // TRAP_ID and fire the runtime effect (e.g., Groose spawn).
-            let is_buffer_trap = (250..=254).contains(&item_id_val);
+            let is_buffer_trap = (249..=254).contains(&item_id_val);
             let trap_id = if is_buffer_trap {
                 (254u16 - item_id_val) as u32
             } else {
@@ -4280,6 +4280,7 @@ pub extern "C" fn refresh_ipc_addresses() {
         // entrance, night, trial, fade frames, ...) for the client's
         // `/stage_info` command.
         crate::entrance::refresh_stage_info();
+        crate::traps::record_stage_history();
 
         // Seed info for the client's send/receive gating. A save without a
         // stored seed (created before this feature) adopts the installed

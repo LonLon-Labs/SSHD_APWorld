@@ -657,4 +657,5 @@ TRAP_SETTING_TO_ITEM = {
     "noise_traps": NOISE_TRAP,
     "groose_traps": GROOSE_TRAP,
     "health_traps": HEALTH_TRAP,
+    "teleport_traps": TELEPORT_TRAP,
 }

@@ -1005,6 +1005,24 @@
     - "off": "Traps that reduce your health to 1 will not be added to the item pool."
     - "on": "Traps that reduce your health to 1 can be picked when replacing items with traps (controlled by the Trap Mode setting)."
 
+- name: teleport_traps
+  default_option: "off"
+  pretty_name: Teleport Traps
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Traps that teleport you to a random stage you have previously visited will not be added to the item pool."
+    - "on": "Traps that teleport you to a random stage you have previously visited can be picked when replacing items with traps (controlled by the Trap Mode setting). The teleport happens once you close the textbox."
+
+- name: teleport_trap_duration
+  default_option: 0
+  pretty_name: Teleport Trap Duration (Seconds)
+  pretty_options:
+    - 0-60
+  options:
+    - 0-60: "How many seconds you stay in the teleported-to stage before being teleported back. 0 means you are never teleported back."
+
 - name: ammo_availability
   default_option: plentiful
   pretty_name: Ammo Availability

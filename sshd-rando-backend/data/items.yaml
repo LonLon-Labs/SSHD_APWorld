@@ -1799,6 +1799,11 @@
 
 # - id: 240+ == traps
 
+- id: 249
+  name: Teleport Trap
+  types:
+    - Traps
+  oarc: null
 - id: 250
   name: Health Trap
   types:

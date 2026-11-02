@@ -4,6 +4,7 @@
 
 use crate::actor;
 use crate::debug;
+use crate::entrance;
 use crate::event;
 use crate::flag;
 use crate::item;
@@ -11,6 +12,7 @@ use crate::math;
 use crate::mem;
 use crate::player;
 use crate::savefile;
+use crate::settings;
 
 use core::arch::asm;
 use core::ffi::{c_char, c_void};
@@ -189,6 +191,8 @@ extern "C" {
         heap: *mut mem::Heap,
     ) -> bool;
     static WORK2_HEAP: *mut mem::Heap;
+
+    static RANDOMIZER_SETTINGS: settings::RandomizerSettings;
 }
 
 // IMPORTANT: when adding functions here that need to get called from the game,
@@ -386,6 +390,176 @@ pub extern "C" fn spawn_actor_manual_current_stage(
     }
 }
 
+// ─── Teleport trap (trap id 5) ─────────────────────────────────────────
+// Sends the player to a random stage from STAGE_HISTORY. The teleport waits
+// until the textbox that announced the trap is closed (see teleport_tick,
+// which runs after handle_effect_timers' event check). If the Teleport Trap
+// Duration setting is non-zero, the player is sent back to the stage they were
+// in when the trap fired after that many seconds. 0 means never sent back.
+
+const TELEPORT_TRAP_ID: u8 = 5;
+const STAGE_HISTORY_MAX: usize = 256;
+
+/// The /stage_info data for one stage load (see ipc::ApStageInfo's CURRENT_*
+/// fields). Used both to record visited stages and to remember where to
+/// return.
+#[derive(Copy, Clone)]
+pub struct StageHistoryEntry {
+    pub stage_name:   [u8; 8],
+    pub stage_suffix: [u8; 4],
+    pub fade_frames:  u16,
+    pub room:         u8,
+    pub layer:        u8,
+    pub entrance:     u8,
+    pub night:        u8,
+    pub trial:        u8,
+    pub unk:          u8,
+    pub layer_copy:   u8,
+    pub respawn_type: u8,
+}
+
+static mut STAGE_HISTORY: [StageHistoryEntry; STAGE_HISTORY_MAX] = [StageHistoryEntry {
+    stage_name:   [0; 8],
+    stage_suffix: [0; 4],
+    fade_frames:  0,
+    room:         0,
+    layer:        0,
+    entrance:     0,
+    night:        0,
+    trial:        0,
+    unk:          0,
+    layer_copy:   0,
+    respawn_type: 0,
+}; STAGE_HISTORY_MAX];
+static mut STAGE_HISTORY_COUNT: usize = 0;
+
+static mut TELEPORT_PENDING: bool = false;
+static mut TELEPORT_RETURN: Option<StageHistoryEntry> = None;
+static mut TELEPORT_RETURN_FRAMES: u32 = 0;
+
+/// Snapshot of the currently loaded stage, or None while no stage is loaded.
+fn snapshot_current_stage() -> Option<StageHistoryEntry> {
+    unsafe {
+        let info =
+            core::ptr::read_unaligned(core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.stage_info));
+        if info.stage_mgr_valid == 0 || info.stage_name[0] == 0 {
+            return None;
+        }
+        // The title screen (F000 layer 28) is never a teleport destination or
+        // return point: warping there softlocks the game.
+        if &info.stage_name[..5] == b"F000\0" && info.layer == 28 {
+            return None;
+        }
+        Some(StageHistoryEntry {
+            stage_name:   info.stage_name,
+            stage_suffix: info.stage_suffix,
+            fade_frames:  info.fade_frames,
+            room:         info.room,
+            layer:        info.layer,
+            entrance:     info.entrance,
+            night:        info.night,
+            trial:        info.trial,
+            unk:          info.unk,
+            layer_copy:   info.layer_copy,
+            respawn_type: info.respawn_type,
+        })
+    }
+}
+
+fn same_stage(a: &StageHistoryEntry, b: &StageHistoryEntry) -> bool {
+    a.stage_name == b.stage_name
+        && a.stage_suffix == b.stage_suffix
+        && a.room == b.room
+        && a.layer == b.layer
+        && a.entrance == b.entrance
+        && a.night == b.night
+        && a.trial == b.trial
+}
+
+/// Called once per frame from item::refresh_ipc_addresses (after the stage
+/// info has been refreshed). Adds the current stage to STAGE_HISTORY if it
+/// isn't already there. Each distinct stage/room/entrance/night/trial is kept
+/// once.
+pub fn record_stage_history() {
+    let Some(entry) = snapshot_current_stage() else {
+        return;
+    };
+    unsafe {
+        for i in 0..STAGE_HISTORY_COUNT {
+            let existing = STAGE_HISTORY[i];
+            if same_stage(&existing, &entry) {
+                return;
+            }
+        }
+        if STAGE_HISTORY_COUNT < STAGE_HISTORY_MAX {
+            STAGE_HISTORY[STAGE_HISTORY_COUNT] = entry;
+            STAGE_HISTORY_COUNT += 1;
+        }
+    }
+}
+
+/// Runs once per frame after the textbox/event check in handle_effect_timers.
+/// Performs a pending teleport, then counts down the return timer.
+fn teleport_tick() {
+    unsafe {
+        if TELEPORT_PENDING {
+            // Still in the item-get pose: wait until Link can move again.
+            if PLAYER_PTR.is_null()
+                || core::ptr::read_unaligned(
+                    core::ptr::addr_of!((*PLAYER_PTR).current_action) as *const u32
+                ) == player::PLAYER_ACTIONS::ITEM_GET as u32
+            {
+                return;
+            }
+            TELEPORT_PENDING = false;
+
+            if STAGE_HISTORY_COUNT == 0 {
+                return;
+            }
+
+            let duration = RANDOMIZER_SETTINGS.teleport_trap_duration as u32;
+            if duration == 0 {
+                TELEPORT_RETURN = None;
+                TELEPORT_RETURN_FRAMES = 0;
+            } else if TELEPORT_RETURN.is_none() {
+                // Remember home only when not already away from it, so a second
+                // teleport doesn't overwrite where the player should return to.
+                TELEPORT_RETURN = snapshot_current_stage();
+                TELEPORT_RETURN_FRAMES = duration * 60;
+            } else {
+                TELEPORT_RETURN_FRAMES = duration * 60;
+            }
+
+            let index = (s_rng as usize) % STAGE_HISTORY_COUNT;
+            let dest = STAGE_HISTORY[index];
+            let _ = entrance::warp_to_stage(
+                dest.stage_name,
+                dest.layer,
+                dest.room,
+                dest.entrance,
+                None,
+                None,
+            );
+        }
+
+        if TELEPORT_RETURN.is_some() && TELEPORT_RETURN_FRAMES > 0 {
+            TELEPORT_RETURN_FRAMES -= 1;
+            if TELEPORT_RETURN_FRAMES == 0 {
+                if let Some(home) = TELEPORT_RETURN.take() {
+                    let _ = entrance::warp_to_stage(
+                        home.stage_name,
+                        home.layer,
+                        home.room,
+                        home.entrance,
+                        None,
+                        None,
+                    );
+                }
+            }
+        }
+    }
+}
+
 // Traps
 #[no_mangle]
 pub extern "C" fn setup_traps(item_actor: *mut item::dAcItem) -> u16 {
@@ -528,6 +702,11 @@ pub extern "C" fn update_traps() {
                 (*PLAYER_PTR).something_we_use_for_stamina = 0x5A; // Make player exhausted?
                 (*PLAYER_PTR).stamina_recovery_timer = 64;
             },
+            // Teleport trap: only arms the teleport. It fires in teleport_tick()
+            // once the textbox is closed.
+            TELEPORT_TRAP_ID => {
+                TELEPORT_PENDING = true;
+            },
             _ => (),
         }
 
@@ -550,6 +729,8 @@ pub extern "C" fn handle_effect_timers() -> u32 {
 
             return 1;
         }
+
+        teleport_tick();
 
         if TRAP_DURATION > 0 {
             TRAP_DURATION -= 1;

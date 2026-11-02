@@ -37,7 +37,9 @@ pub struct RandomizerSettings {
                                         * Triforce pieces are owned
                                         * (flag::handle_triforce_door_flag);
                                         * 0 = nothing to do */
-    pub _pad:                      [u8; 1],
+    pub teleport_trap_duration:    u8, /* Teleport Trap Duration in seconds before the player is
+                                        * sent back to where the trap fired. 0 = never.
+                                        * Was padding; the struct size is unchanged. */
     pub ap_seed:                   [u8; 8], // u64 LE, 0 = unknown
     pub ap_slot_name:              [u16; 17], // UTF-16, null terminated
 }

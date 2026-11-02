@@ -953,6 +953,25 @@ class HealthTraps(Toggle):
     display_name = "Health Traps"
 
 
+class TeleportTraps(Toggle):
+    """
+    If enabled, traps that teleport you to a random stage you have previously visited can appear.
+    The teleport happens once you close the textbox.
+    """
+    display_name = "Teleport Traps"
+
+
+class TeleportTrapDuration(Range):
+    """
+    How many seconds you stay in the teleported-to stage before being teleported back.
+    0 means you are never teleported back.
+    """
+    display_name = "Teleport Trap Duration (Seconds)"
+    range_start = 0
+    range_end = 60
+    default = 0
+
+
 # === Advanced Options ===
 
 class FullWalletUpgrades(Toggle):
@@ -2141,6 +2160,8 @@ class SSHDOptions(PerGameCommonOptions):
     noise_traps: NoiseTraps
     groose_traps: GrooseTraps
     health_traps: HealthTraps
+    teleport_traps: TeleportTraps
+    teleport_trap_duration: TeleportTrapDuration
     
     # Advanced Options
     full_wallet_upgrades: FullWalletUpgrades
@@ -2398,6 +2419,8 @@ sshd_option_groups = [
         NoiseTraps,
         GrooseTraps,
         HealthTraps,
+        TeleportTraps,
+        TeleportTrapDuration,
     ]),
     OptionGroup("Quality of Life", [
         OpenThunderhead,

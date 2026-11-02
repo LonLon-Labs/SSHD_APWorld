@@ -1654,6 +1654,12 @@
   cryptic: a <r<pyrotechnician's delight>>
   plurality: Singular
 
+- name: Teleport Trap
+  standard: Trap
+  pretty: a <Teleport Trap>
+  cryptic: a <r<sudden change of scenery>>
+  plurality: Singular
+
 - name: Game Beatable
   standard: Game Beatable
   pretty: Game Beatable

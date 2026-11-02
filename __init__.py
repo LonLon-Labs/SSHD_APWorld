@@ -654,6 +654,8 @@ class SSHDWorld(World):
         "noise_traps": ("noise_traps", "toggle", None),
         "groose_traps": ("groose_traps", "toggle", None),
         "health_traps": ("health_traps", "toggle", None),
+        "teleport_traps": ("teleport_traps", "toggle", None),
+        "teleport_trap_duration": ("teleport_trap_duration", "range", None),
         # Advanced Options
         "full_wallet_upgrades": ("full_wallet_upgrades", "toggle", None),
         "chest_type_matches_contents": ("chest_type_matches_contents", "choice", {"off": 0, "only_dungeon_items": 1, "all_contents": 2}),
@@ -1606,7 +1608,7 @@ class SSHDWorld(World):
                 print(f"[__init__.py] Starting pool: {sum(sshd_starting_pool.values())} items")
                 
                 # Log trap counts
-                trap_names = {"Health Trap", "Groose Trap", "Noise Trap", "Curse Trap", "Burn Trap"}
+                trap_names = {"Health Trap", "Groose Trap", "Noise Trap", "Curse Trap", "Burn Trap", "Teleport Trap"}
                 trap_count = sum(count for name, count in sshd_item_pool.items() if name in trap_names)
                 if trap_count > 0:
                     print(f"[__init__.py] Traps in pool: {trap_count}")
@@ -1821,6 +1823,8 @@ class SSHDWorld(World):
             enabled_traps.append("Groose Trap")
         if self.options.health_traps.value:
             enabled_traps.append("Health Trap")
+        if self.options.teleport_traps.value:
+            enabled_traps.append("Teleport Trap")
 
         if not enabled_traps:
             return
@@ -4441,6 +4445,8 @@ class SSHDWorld(World):
         settings_dict["noise_traps"] = "on" if self.options.noise_traps.value else "off"
         settings_dict["groose_traps"] = "on" if self.options.groose_traps.value else "off"
         settings_dict["health_traps"] = "on" if self.options.health_traps.value else "off"
+        settings_dict["teleport_traps"] = "on" if self.options.teleport_traps.value else "off"
+        settings_dict["teleport_trap_duration"] = str(self.options.teleport_trap_duration.value)
         
         # Advanced Options
         settings_dict["full_wallet_upgrades"] = "on" if self.options.full_wallet_upgrades.value else "off"

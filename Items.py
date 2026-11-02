@@ -225,6 +225,7 @@ ITEM_TABLE: dict[str, SSHDItem] = {
     "Noise Trap": SSHDItem("Noise Trap", 2773252, IC.trap, 252),
     "Curse Trap": SSHDItem("Curse Trap", 2773253, IC.trap, 253),
     "Burn Trap": SSHDItem("Burn Trap", 2773254, IC.trap, 254),
+    "Teleport Trap": SSHDItem("Teleport Trap", 2773249, IC.trap, 249),
     "Game Beatable": SSHDItem("Game Beatable", 2773256, IC.progression, 256),
     "Faron Woods Goddess Cube on West Great Tree near Exit": SSHDItem("Faron Woods Goddess Cube on West Great Tree near Exit", 2773257, IC.progression, 257),
     "Faron Woods Goddess Cube on East Great Tree with Clawshots Target": SSHDItem("Faron Woods Goddess Cube on East Great Tree with Clawshots Target", 2773258, IC.progression, 258),

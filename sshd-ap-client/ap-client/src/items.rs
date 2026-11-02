@@ -194,6 +194,7 @@ const ITEM_CODE_TO_ORIGINAL_ID: &[(i64, u16)] = &[
     (2773225, 225), // Sky Keep Key Ring
     (2773226, 226), // Lanayru Caves Key Ring
     (2773227, 227), // Skeleton Key
+    (2773249, 249), // Teleport Trap
     (2773250, 250), // Health Trap
     (2773251, 251), // Groose Trap
     (2773252, 252), // Noise Trap
@@ -360,6 +361,7 @@ mod tests {
         assert_eq!(original_id_for_ap_code(2773092), Some(92)); // Bomb Bag
         assert_eq!(original_id_for_ap_code(2773219), Some(219)); // Progressive Loftwing (tier 1)
         assert_eq!(original_id_for_ap_code(2773254), Some(254)); // Burn Trap
+        assert_eq!(original_id_for_ap_code(2773249), Some(249)); // Teleport Trap (trap id 5)
     }
 
     #[test]

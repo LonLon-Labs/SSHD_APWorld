@@ -650,11 +650,20 @@ class ASMPatchHandler:
         triforce_door_dynamic = 0
         if world.setting("triforce_required") == "on":
             try:
-                _door_pieces = int(str(world.setting("triforce_door_pieces")))
+                _door_pieces = world.setting("triforce_door_pieces").value_as_number()
             except (TypeError, ValueError):
                 _door_pieces = 3
             if _door_pieces in (1, 2):
                 triforce_door_dynamic = _door_pieces
+
+        # Teleport Trap duration (seconds, 0 = never return). Written into the
+        # repurposed padding byte at index 7 of RANDOMIZER_SETTINGS, which must match
+        # `teleport_trap_duration` in settings.rs. Clamped to the option's 0-60 range.
+        try:
+            _teleport_duration = world.setting("teleport_trap_duration").value_as_number()
+        except (TypeError, ValueError):
+            _teleport_duration = 0
+        _teleport_duration = max(0, min(60, _teleport_duration))
 
         init_rw_globals_dict = {
             0x712E54B6BC: [
@@ -671,7 +680,7 @@ class ASMPatchHandler:
                 goddess_chest_unlock_mode,
                 1 if world.setting("bird_statues_need_unlock") == "on" else 0,
                 triforce_door_dynamic,
-                0,
+                _teleport_duration,
             ]
             + list(struct.pack("<Q", int(getattr(world, "ap_seed", 0) or 0) & 0xFFFFFFFFFFFFFFFF))
             + list(
