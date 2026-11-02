@@ -3290,9 +3290,8 @@ pub extern "C" fn get_silent_realm_item_glow_color(item_id: u32) -> u32 {
                 // Item is a tear, return expected subtype
                 43..=46 => return ((CURRENT_STAGE_NAME[1] as u32) + 3) & 3,
 
-                // Item is stamina fruit | light fruit | dusk relic, return 4 for no
-                // glow
-                42 | 47 | 168 => return 4,
+                // Item is stamina fruit | light fruit, return 4 for no glow
+                42 | 47 => return 4,
 
                 // For all other cases, return the subtype for the opposite color from the expected
                 // one for this realm

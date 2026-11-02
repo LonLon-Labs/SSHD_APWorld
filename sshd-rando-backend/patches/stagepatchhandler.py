@@ -324,8 +324,10 @@ def patch_dusk_relic(
     original_itemid: int = 0,
 ) -> None:
 
-    # Don't change anything if this is a dusk relic
-    if itemid == 168:
+    # Vanilla dusk relics with no AP custom flag are left alone. A dusk relic that
+    # has an AP custom flag must still be patched, otherwise its check is never
+    # detected and the item never sends.
+    if itemid == 168 and (custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF):
         return
 
     object_id_str, sceneflag_str = object_id_and_scene_flag_str.split("-")
