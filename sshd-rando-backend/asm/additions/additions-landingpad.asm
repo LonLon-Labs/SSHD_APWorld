@@ -378,6 +378,12 @@ b.eq demise_defeated_hook
 cmp w8, #113
 b.eq speed_target_scale_hook
 
+; Ganbari gauge hide (x0 = dLytMeterGanbariGauge_c). Called from
+; ganbari-gauge-hide.asm on entry to execute(). Hides the stamina/air gauge
+; while infinite stamina is on (lyt.rs).
+cmp w8, #114
+b.eq ganbari_gauge_execute_hook
+
 ret ; this should never be reached
 
 ; Wrapper for custom_event_commands.

@@ -129,6 +129,58 @@ pub extern "C" fn set_top_dowsing_icon() -> u32 {
     }
 }
 
+// ============================================================================
+// Hide the stamina / air gauge while infinite stamina is on
+// ============================================================================
+//
+// The stamina wheel and the air meter are both drawn by
+// dLytMeterGanbariGauge_c. Its execute() (Ghidra 0x7100cce9c0) returns early
+// when mpOwnerPane is null, and otherwise drops to InvisibleWait when the
+// owner pane (nw4r Pane) is hidden. Clearing that pane's visible bit therefore
+// removes the gauge the same way the Wii "remove meter" cheat does (which
+// nulls the owner pane pointer), but it can be undone.
+//
+// Called on entry to execute() from ganbari-gauge-hide.asm with x0 = the
+// gauge.
+
+/// dLytMeterGanbariGauge_c::mpOwnerPane (HD, 64-bit pointers).
+const GANBARI_OWNER_PANE_OFFSET: usize = 0x8C0;
+/// nw4r::lyt::Pane visible flag byte; bit 0 is what IsVisible() reads.
+const PANE_VISIBLE_FLAG_OFFSET: usize = 0xEB;
+
+/// Owner pane this hook hid, or 0 when nothing is hidden by the cheat. Used
+/// so the pane is only restored if we are the ones who hid it.
+static mut GANBARI_HIDDEN_PANE: usize = 0;
+
+#[no_mangle]
+pub extern "C" fn ganbari_gauge_execute_hook(gauge: *mut u8) {
+    unsafe {
+        if gauge.is_null() {
+            return;
+        }
+        let pane = core::ptr::read_unaligned(gauge.add(GANBARI_OWNER_PANE_OFFSET) as *const usize)
+            as *mut u8;
+
+        if crate::ipc::AP_IPC_ROOT.cheat_flags.infinite_stamina {
+            if pane.is_null() {
+                return;
+            }
+            let flags = pane.add(PANE_VISIBLE_FLAG_OFFSET);
+            if *flags & 1 != 0 {
+                *flags &= !1;
+                GANBARI_HIDDEN_PANE = pane as usize;
+            }
+        } else if GANBARI_HIDDEN_PANE != 0 {
+            // Only restore the pane we hid. If the gauge was rebuilt in the
+            // meantime, the new pane is already in its normal state.
+            if !pane.is_null() && GANBARI_HIDDEN_PANE == pane as usize {
+                *pane.add(PANE_VISIBLE_FLAG_OFFSET) |= 1;
+            }
+            GANBARI_HIDDEN_PANE = 0;
+        }
+    }
+}
+
 const COMPLETE_TEXT: *const c_void = wch!(u16, "Completed\0").as_ptr() as *const c_void;
 const INCOMPLETE_TEXT: *const c_void = wch!(u16, "Incomplete\0").as_ptr() as *const c_void;
 const OBTAINED_TEXT: *const c_void = wch!(u16, "Obtained\0").as_ptr() as *const c_void;
