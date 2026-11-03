@@ -353,26 +353,27 @@ pub static mut AP_IPC_ROOT: ApIpcRoot = ApIpcRoot {
     },
 
     cheat_flags: ApCheatFlags {
-        magic:                   [0x43, 0x46, 0x00, 0x01], /* "CF\x00\x01" (legacy, unused for
-                                                            * discovery now) */
-        moon_jump:               false,
-        hovercraft:              false,
-        _pad:                    [0u8; 2],
-        hover_vel_y_bits:        0x3FECCCCDu32, // 1.85f32 — cancels gravity at 60 Hz
-        infinite_health:         false,
-        infinite_stamina:        false,
-        infinite_ammo:           false,
-        infinite_bugs:           false,
-        infinite_materials:      false,
-        infinite_shield:         false,
-        infinite_skyward_strike: false,
-        infinite_rupees:         false,
-        infinite_loftwing:       false,
-        no_electric_stun:        false,
-        spawn_demise_request:    false,
-        _pad2:                   [0u8; 1],
-        speed_multiplier_bits:   0u32,
-        no_enemy_damage:         false,
+        magic:                      [0x43, 0x46, 0x00, 0x01], /* "CF\x00\x01" (legacy, unused
+                                                               * for
+                                                               * discovery now) */
+        moon_jump:                  false,
+        hovercraft:                 false,
+        _pad:                       [0u8; 2],
+        hover_vel_y_bits:           0x3FECCCCDu32, // 1.85f32 — cancels gravity at 60 Hz
+        infinite_health:            false,
+        infinite_stamina:           false,
+        infinite_ammo:              false,
+        infinite_bugs:              false,
+        infinite_materials:         false,
+        infinite_shield:            false,
+        infinite_skyward_strike:    false,
+        infinite_rupees:            false,
+        infinite_loftwing:          false,
+        no_electric_stun:           false,
+        spawn_demise_request:       false,
+        infinite_silent_realm_time: false,
+        speed_multiplier_bits:      0u32,
+        no_enemy_damage:            false,
     },
 
     check_stats: ApCheckStats {

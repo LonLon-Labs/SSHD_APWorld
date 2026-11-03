@@ -13,6 +13,7 @@ use static_assertions::assert_eq_size;
 
 // ─── Extern symbols ──────────────────────────────────────────────────────
 
+#[allow(non_upper_case_globals)]
 extern "C" {
     static PLAYER_PTR: *mut player::dPlayer;
     static FILE_MGR: *mut savefile::FileMgr;
@@ -40,32 +41,32 @@ extern "C" {
 //   +20  infinite_loftwing    bool
 //   +21  no_electric_stun     bool
 //   +22  spawn_demise_request bool     — one-shot trigger from /sapwn_demise
-//   +23  _pad2                [u8; 1]
+//   +23  infinite_silent_realm_time bool
 //   +24  speed_multiplier_bits u32     — f32 bits; 0 or 0x3F800000 = disabled
 //   +28  no_enemy_damage      bool     — blocks enemy damage + knockback
 // reactions
 
 #[repr(C, packed(1))]
 pub struct ApCheatFlags {
-    pub magic:                   [u8; 4], // +0  "CF\x00\x01" — Python magic scan key
-    pub moon_jump:               bool,    // +4  toggled by /cheat moon_jump
-    pub hovercraft:              bool,    // +5  toggled by /cheat hovercraft
-    pub _pad:                    [u8; 2], // +6..7 alignment
-    pub hover_vel_y_bits:        u32,     // +8  f32 bits for hover sustain clamp
-    pub infinite_health:         bool,    // +12
-    pub infinite_stamina:        bool,    // +13
-    pub infinite_ammo:           bool,    // +14
-    pub infinite_bugs:           bool,    // +15
-    pub infinite_materials:      bool,    // +16
-    pub infinite_shield:         bool,    // +17
-    pub infinite_skyward_strike: bool,    // +18
-    pub infinite_rupees:         bool,    // +19
-    pub infinite_loftwing:       bool,    // +20
-    pub no_electric_stun:        bool,    // +21
-    pub spawn_demise_request:    bool,    // +22 one-shot manual spawn trigger
-    pub _pad2:                   [u8; 1], // +23 alignment
-    pub speed_multiplier_bits:   u32,     // +24 f32 bits; 0 or 0x3F800000 = disabled
-    pub no_enemy_damage:         bool,    // +28 blocks enemy damage + knockback
+    pub magic:                      [u8; 4], // +0  "CF\x00\x01" — Python magic scan key
+    pub moon_jump:                  bool,    // +4  toggled by /cheat moon_jump
+    pub hovercraft:                 bool,    // +5  toggled by /cheat hovercraft
+    pub _pad:                       [u8; 2], // +6..7 alignment
+    pub hover_vel_y_bits:           u32,     // +8  f32 bits for hover sustain clamp
+    pub infinite_health:            bool,    // +12
+    pub infinite_stamina:           bool,    // +13
+    pub infinite_ammo:              bool,    // +14
+    pub infinite_bugs:              bool,    // +15
+    pub infinite_materials:         bool,    // +16
+    pub infinite_shield:            bool,    // +17
+    pub infinite_skyward_strike:    bool,    // +18
+    pub infinite_rupees:            bool,    // +19
+    pub infinite_loftwing:          bool,    // +20
+    pub no_electric_stun:           bool,    // +21
+    pub spawn_demise_request:       bool,    // +22 one-shot manual spawn trigger
+    pub infinite_silent_realm_time: bool,    // +23 toggled by /cheat silent_realm
+    pub speed_multiplier_bits:      u32,     // +24 f32 bits; 0 or 0x3F800000 = disabled
+    pub no_enemy_damage:            bool,    // +28 blocks enemy damage + knockback
 }
 assert_eq_size!([u8; 29], ApCheatFlags);
 

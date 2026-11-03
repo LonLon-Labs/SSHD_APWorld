@@ -1,6 +1,8 @@
 main:
     PLAYER_PTR: 0x7102bfd940
     LOFTWING_PTR: 0x7101821fa0
+    # dTgSiren_c::sInstance: silent realm trial timer owner (Ghidra DAT_7102bf9a70)
+    dTgSiren_c__sInstance: 0x7102bfda70
 
     s_rng: 0x710168c3e0
 

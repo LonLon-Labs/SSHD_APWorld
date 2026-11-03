@@ -1455,6 +1455,7 @@ class SSHDClientCommandProcessor(ClientCommandProcessor):
         "loftwing":        "cheat_infinite_loftwing",
         "no_electric_stun": "cheat_no_electric_stun",
         "no_enemy_damage": "cheat_no_enemy_damage",
+        "silent_realm_time": "cheat_infinite_silent_realm_time",
     }
     
     def __init__(self, ctx: CommonContext):
@@ -2057,6 +2058,7 @@ class SSHDContext(CommonContext):
         self.cheat_infinite_loftwing: bool = False
         self.cheat_no_electric_stun: bool = False
         self.cheat_no_enemy_damage: bool = False
+        self.cheat_infinite_silent_realm_time: bool = False
         self.cheat_speed_multiplier: float = 1.0  # 1.0 = normal
         self.default_forward_speed: Optional[float] = None  # Cached normal speed
         self.beetle_patch_applied: bool = False  # Track if beetle code patch was written
@@ -2224,6 +2226,7 @@ class SSHDContext(CommonContext):
         self.cheat_infinite_loftwing        = bool(game_section.get('cheat_infinite_loftwing', False))
         self.cheat_no_electric_stun         = bool(game_section.get('cheat_no_electric_stun', False))
         self.cheat_no_enemy_damage          = bool(game_section.get('cheat_no_enemy_damage', False))
+        self.cheat_infinite_silent_realm_time = bool(game_section.get('cheat_infinite_silent_realm_time', False))
         self.beetle_patch_applied = False
 
         speed_raw = game_section.get('cheat_speed_multiplier', 10)
@@ -2245,6 +2248,7 @@ class SSHDContext(CommonContext):
         if self.cheat_infinite_loftwing:        active.append("Infinite Loftwing")
         if self.cheat_no_electric_stun:         active.append("No Electric Stun")
         if self.cheat_no_enemy_damage:          active.append("No Enemy Damage")
+        if self.cheat_infinite_silent_realm_time: active.append("Infinite Silent Realm Time")
         if self.cheat_speed_multiplier != 1.0:  active.append(f"Speed x{self.cheat_speed_multiplier:.1f}")
         if active:
             logger.info(f"Cheats loaded from YAML: {', '.join(active)}")
@@ -3162,6 +3166,7 @@ class SSHDContext(CommonContext):
             self.cheat_infinite_loftwing = bool(slot_data.get("option_cheat_infinite_loftwing", 0))
             self.cheat_no_electric_stun = bool(slot_data.get("option_cheat_no_electric_stun", 0))
             self.cheat_no_enemy_damage = bool(slot_data.get("option_cheat_no_enemy_damage", 0))
+            self.cheat_infinite_silent_realm_time = bool(slot_data.get("option_cheat_infinite_silent_realm_time", 0))
             self.beetle_patch_applied = False  # Reset so patch is re-applied on reconnect
             # Speed multiplier: stored as integer x10 (10=1.0x, 20=2.0x, etc.)
             speed_raw = slot_data.get("option_cheat_speed_multiplier", 10)
@@ -3182,6 +3187,7 @@ class SSHDContext(CommonContext):
             if self.cheat_infinite_loftwing: active_cheats.append("Infinite Loftwing")
             if self.cheat_no_electric_stun: active_cheats.append("No Electric Stun")
             if self.cheat_no_enemy_damage: active_cheats.append("No Enemy Damage")
+            if self.cheat_infinite_silent_realm_time: active_cheats.append("Infinite Silent Realm Time")
             if self.cheat_speed_multiplier != 1.0: active_cheats.append(f"Speed x{self.cheat_speed_multiplier:.1f}")
             if active_cheats:
                 logger.info(f"Cheats enabled: {', '.join(active_cheats)}")
@@ -4570,6 +4576,7 @@ class SSHDContext(CommonContext):
             self.cheat_hovercraft or
             self.cheat_infinite_beetle or
             self.cheat_infinite_loftwing or self.cheat_no_electric_stun or
+            self.cheat_infinite_silent_realm_time or
             self.cheat_speed_multiplier != 1.0
         )
         if not any_cheat:
@@ -5230,6 +5237,9 @@ class SSHDContext(CommonContext):
             # +28: no_enemy_damage (u8 bool)
             no_enemy_damage_byte = bytes([1 if self.cheat_no_enemy_damage else 0])
             self.memory.pm.write_bytes(flags_addr + 28, no_enemy_damage_byte, 1)
+            # +23: infinite_silent_realm_time (u8 bool; was _pad2)
+            silent_realm_byte = bytes([1 if self.cheat_infinite_silent_realm_time else 0])
+            self.memory.pm.write_bytes(flags_addr + 23, silent_realm_byte, 1)
         except Exception as e:
             logger.debug(f"Could not write cheat flags: {e}")
             # If the write failed with an access violation (ERROR_NOACCESS / 998)

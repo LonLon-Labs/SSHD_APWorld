@@ -2027,6 +2027,14 @@ class CheatNoEnemyDamage(Toggle):
     display_name = "No Enemy Damage"
 
 
+class CheatInfiniteSilentRealmTime(Toggle):
+    """
+    When enabled, the Silent Realm trial timer never runs out.
+    The timer is frozen while a trial is running, so it never reaches zero and the siren never chases you.
+    """
+    display_name = "Infinite Silent Realm Time"
+
+
 class CheatSpeedMultiplier(Range):
     """
     Multiplies Link's forward movement speed.
@@ -2329,6 +2337,7 @@ class SSHDOptions(PerGameCommonOptions):
     cheat_infinite_loftwing: CheatInfiniteLoftwing
     cheat_no_electric_stun: CheatNoElectricStun
     cheat_no_enemy_damage: CheatNoEnemyDamage
+    cheat_infinite_silent_realm_time: CheatInfiniteSilentRealmTime
     cheat_speed_multiplier: CheatSpeedMultiplier
     
     # Archipelago
@@ -2574,6 +2583,7 @@ sshd_option_groups = [
         CheatInfiniteLoftwing,
         CheatNoElectricStun,
         CheatNoEnemyDamage,
+        CheatInfiniteSilentRealmTime,
         CheatSpeedMultiplier,
     ], start_collapsed=True),
     OptionGroup("Archipelago", [

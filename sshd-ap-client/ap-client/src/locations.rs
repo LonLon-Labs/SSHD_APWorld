@@ -115,6 +115,9 @@ pub struct SlotData {
     pub option_cheat_no_electric_stun: u8,
     #[serde(default, rename = "option_cheat_no_enemy_damage")]
     pub option_cheat_no_enemy_damage: u8,
+    /// Keeps the silent realm trial countdown full (see `cheats.rs`).
+    #[serde(default, rename = "option_cheat_infinite_silent_realm_time")]
+    pub option_cheat_infinite_silent_realm_time: u8,
     /// Stored as integer x10 (10 = 1.0x, 20 = 2.0x, ...), matching Python's
     /// `speed_raw / 10.0` convention exactly. Defaults to 10 (1.0x, i.e.
     /// no change) when absent, same as Python's `.get(..., 10)`.

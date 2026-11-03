@@ -43,6 +43,7 @@ pub fn apply_cheat_flags(
     flags.infinite_rupees = slot_data.option_cheat_infinite_rupees;
     flags.moon_jump = slot_data.option_cheat_moon_jump;
     flags.hovercraft = slot_data.option_cheat_hovercraft;
+    flags.infinite_silent_realm_time = slot_data.option_cheat_infinite_silent_realm_time;
     flags.infinite_loftwing = slot_data.option_cheat_infinite_loftwing;
     flags.no_electric_stun = slot_data.option_cheat_no_electric_stun;
     flags.no_enemy_damage = slot_data.option_cheat_no_enemy_damage;
@@ -95,6 +96,9 @@ pub fn apply_cheat_flags(
     if flags.no_enemy_damage != 0 {
         active.push("No Enemy Damage".to_string());
     }
+    if flags.infinite_silent_realm_time != 0 {
+        active.push("Infinite Silent Realm Time".to_string());
+    }
     if speed_multiplier != 1.0 {
         active.push(format!("Speed x{speed_multiplier:.1}"));
     }
@@ -124,6 +128,7 @@ pub const TOGGLEABLE_CHEAT_NAMES: &[&str] = &[
     "loftwing",
     "no_electric_stun",
     "no_enemy_damage",
+    "silent_realm_time",
 ];
 
 /// Returns the current value of the named boolean cheat field, or `None`
@@ -143,6 +148,7 @@ pub fn get_cheat_field(flags: &ap_ipc::ApCheatFlags, name: &str) -> Option<u8> {
         "loftwing" => flags.infinite_loftwing,
         "no_electric_stun" => flags.no_electric_stun,
         "no_enemy_damage" => flags.no_enemy_damage,
+        "silent_realm_time" => flags.infinite_silent_realm_time,
         _ => return None,
     })
 }
@@ -165,6 +171,7 @@ pub fn set_cheat_field(flags: &mut ap_ipc::ApCheatFlags, name: &str, value: u8) 
         "loftwing" => flags.infinite_loftwing = value,
         "no_electric_stun" => flags.no_electric_stun = value,
         "no_enemy_damage" => flags.no_enemy_damage = value,
+        "silent_realm_time" => flags.infinite_silent_realm_time = value,
         _ => return false,
     }
     true

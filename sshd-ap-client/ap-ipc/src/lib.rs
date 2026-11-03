@@ -155,7 +155,7 @@ pub struct ApCheatFlags {
     pub infinite_loftwing:       u8,
     pub no_electric_stun:        u8,
     pub spawn_demise_request:    u8,
-    pub _pad2:                   [u8; 1],
+    pub infinite_silent_realm_time: u8,
     pub speed_multiplier_bits:   u32,
     pub no_enemy_damage:         u8,
 }
@@ -179,7 +179,7 @@ impl Default for ApCheatFlags {
             infinite_loftwing:       0,
             no_electric_stun:        0,
             spawn_demise_request:    0,
-            _pad2:                   [0; 1],
+            infinite_silent_realm_time: 0,
             speed_multiplier_bits:   0,
             no_enemy_damage:         0,
         }
