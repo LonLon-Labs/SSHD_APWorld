@@ -21,8 +21,62 @@
 use std::collections::HashMap;
 
 use ap_ipc::{custom_flag, offsets};
+use crate::hints::NoteFlag;
+
+/// Which of `flag_ids` (custom flag encodings, see `ap_ipc::custom_flag`) are set
+/// in the save right now. Reads the same batched arrays as `CustomFlagPoller::poll`,
+/// so it's one memory read per array rather than one round trip per flag.
+pub fn flags_set(
+    mem: &mut impl ProcessMemory,
+    root_addr: usize,
+    flag_ids: &[u16],
+) -> Result<std::collections::HashSet<u16>, MemError> {
+    let mut set = std::collections::HashSet::new();
+    if flag_ids.is_empty() {
+        return Ok(set);
+    }
+    let sceneflags = mem.read_bytes(root_addr + offsets::SCENEFLAGS, FLAG_ARRAY_BYTES)?;
+    let dungeonflags = mem.read_bytes(root_addr + offsets::DUNGEONFLAGS, FLAG_ARRAY_BYTES)?;
+    let ext = mem.read_bytes(root_addr + offsets::EXT_FLAGS, EXT_FLAG_ARRAY_BYTES * 2)?;
+    let (ext_sceneflags, ext_dungeonflags) = ext.split_at(EXT_FLAG_ARRAY_BYTES);
+    for &flag_id in flag_ids {
+        let d = custom_flag::decode(flag_id);
+        let (array, scene_base) = match (d.group1, d.is_dungeonflag) {
+            (false, false) => (&sceneflags[..], 0u16),
+            (false, true) => (&dungeonflags[..], 0u16),
+            (true, false) => (ext_sceneflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
+            (true, true) => (ext_dungeonflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
+        };
+        let byte_offset = ((d.scene_index - scene_base) as usize) * 16 + d.array_index * 2;
+        let Some(bytes) = array.get(byte_offset..byte_offset + 2) else {
+            continue;
+        };
+        let value = u16::from_le_bytes([bytes[0], bytes[1]]);
+        if (value >> d.bit_index) & 1 == 1 {
+            set.insert(flag_id);
+        }
+    }
+    Ok(set)
+}
 use process_memory::{MemError, ProcessMemory};
 use serde::Deserialize;
+
+/// One item-hint candidate from `slot_data["hint_pool_gossip"]` or
+/// `slot_data["hint_pool_fi"]`. The APWorld
+/// samples these from every game in the multiworld (progression/useful items
+/// only), so the client picks a random one per stone interaction and hints it
+/// by ID.
+#[derive(Debug, Clone, Deserialize)]
+pub struct HintPoolEntry {
+    /// Display name of the player (slot) whose world holds the location.
+    pub player: String,
+    /// Slot number of that player, used when creating the hint.
+    pub player_id: i64,
+    /// Location name, for display.
+    pub location: String,
+    /// Location ID (address), used when creating the hint.
+    pub location_id: i64,
+}
 
 /// Slot data received from the Archipelago server on connect. Only fields
 /// this client currently uses are declared — serde ignores any other keys
@@ -66,6 +120,25 @@ pub struct SlotData {
     /// `{"<location_code>": {"item_id": ..., "player": ...}}`.
     #[serde(default, deserialize_with = "deserialize_location_item_map")]
     pub location_to_item_map: HashMap<i64, LocationItem>,
+
+    /// Gossip-stone hints: this player's share of the multiworld item hints when
+    /// gossip stones are on (see `HintPoolEntry`). Empty when they're off.
+    #[serde(default)]
+    pub hint_pool_gossip: Vec<HintPoolEntry>,
+
+    /// Fi hints: this player's share when Fi is on. Same shape as the gossip list.
+    /// Empty when Fi hints are off.
+    #[serde(default)]
+    pub hint_pool_fi: Vec<HintPoolEntry>,
+
+    /// Gossip stones the player switched off, as stone indices (param1 of the
+    /// stone's flow). Those stones never give a hint.
+    #[serde(default)]
+    pub excluded_gossip_stones: Vec<i64>,
+    /// Fi notes: one custom flag per progression or useful location in this world.
+    /// Hinting one sets its flag, which lives in the save (see `hints::NoteFlag`).
+    #[serde(default)]
+    pub note_flags: Vec<NoteFlag>,
 
     /// DeathLink / BreathLink slot options (enable the matching tag on connect).
     #[serde(default, deserialize_with = "deserialize_lenient_i64", rename = "option_death_link")]

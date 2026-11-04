@@ -54,6 +54,7 @@ mod ipc_requests;
 mod item_info;
 mod items;
 mod links;
+mod hints;
 mod locations;
 mod player_actions;
 mod stages;

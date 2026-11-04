@@ -34,7 +34,7 @@ See [Quick Start → Option B](#1-install-the-apworld-and-client) below.
 
 ## System Requirements
 - **Archipelago**: Version 0.5.0 or higher (Tested with 0.6.6+)
-- **Emulator**: Ryujinx (Tested on [1.1.1376](https://drive.randomstuff.cc/s/dAX3VyrrTcKoatU))
+- **Emulator**: Ryujinx (Tested on [1.1.1376](https://drive.randomstuff.cc/s/dAX3VyrrTcKoatU)), Yuzu, Suyu, Sudachi, or Eden
 - **Game**: The Legend of Zelda: Skyward Sword HD and Update Data (dumped from your Switch)
 
 > **Note**: Python is **not** required for players using the pre-built release. Python is only needed if you are building from source.  
@@ -126,7 +126,7 @@ The host does **not** need the ROM to generate — the `.apsshd` files will be l
 1. Upload the generated `.zip` file to [archipelago.gg](https://archipelago.gg)
 2. Host locally (ADVANCED - requires port forwarding, a VPN, or everyone being on the same LAN)
 
-### 5. Open Ryujinx
+### 5. Open Emulator
 Make sure the mod and 1.0.1 update are enabled and open Skyward Sword HD
 
 You should see the custom Archipelago logo - that means it's working

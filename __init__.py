@@ -1650,8 +1650,7 @@ class SSHDWorld(World):
                 if resolved_settings:
                     print(f"[__init__.py] Resolved settings from sshd-rando (random values expanded):")
                     # Show only the settings that might have been random
-                    potentially_random = ['small_keys_in_fancy_chests', 'barren_hints_on_gossip_stones', 
-                                        'location_hints_on_gossip_stones', 'item_hints_on_gossip_stones', 
+                    potentially_random = ['small_keys_in_fancy_chests', 'item_hints_on_gossip_stones', 
                                         'health_traps']
                     for name in potentially_random:
                         if name in resolved_settings:
@@ -3627,6 +3626,12 @@ class SSHDWorld(World):
         # This lets the client set custom flags to trigger vanilla item pickups
         location_to_custom_flag = {loc_code: flag for flag, loc_code in self._custom_flag_mapping.items()}
         slot_data["location_to_custom_flag"] = location_to_custom_flag
+
+        # Fi notes: one free custom flag per progression/useful location in this
+        # world. Hinting one of these locations sets its flag, which lives in the
+        # save file, so the notes are per save. See _build_note_flags().
+        slot_data["note_flags"] = self._build_note_flags()
+        print(f"[__init__.py] Added {len(slot_data['note_flags'])} Fi note flags to slot_data")
         
         # Build AP item info for cross-world items (item 216 locations)
         # Maps custom_flag_id -> {"item": item_name, "player": player_name}
@@ -3683,9 +3688,161 @@ class SSHDWorld(World):
                         }
         
         slot_data["ap_item_info"] = ap_item_info
+
+        # Item hint pools: seeded samples of progression/useful locations from the
+        # whole multiworld (every game), one list each for gossip stones and Fi.
+        # Sizes come from the item hint options. See _build_hint_pools().
+        pools = self._build_hint_pools()
+        slot_data["hint_pool_gossip"] = pools["gossip"]
+        slot_data["hint_pool_fi"] = pools["fi"]
+        # Gossip stones the player switched off, as indices into GOSSIP_STONE_ORDER.
+        # The client never gives those stones a hint.
+        slot_data["excluded_gossip_stones"] = [
+            self.GOSSIP_STONE_ORDER.index(name)
+            for name in sorted(self.options.excluded_hint_locations.value)
+            if name in self.GOSSIP_STONE_ORDER
+        ]
+        print(f"[__init__.py] Added {len(pools['gossip'])} gossip and {len(pools['fi'])} Fi hint pool entries to slot_data")
         print(f"[__init__.py] Added {len(ap_item_info)} AP item info entries to slot_data")
         
         return slot_data
+
+    # Gossip stone location names in stone-index order. The index is the stone's
+    # param1 in data/patches/eventpatches.yaml ("Gossip Hint Stone N"), which the
+    # client sends when a stone is read. Index 17 is Central Skyloft (flow in
+    # 124-Town6, entered from start node 50).
+    GOSSIP_STONE_ORDER = (
+        "Upper Eldin Cave - West Gossip Stone Treasure",
+        "Lower Eldin Cave - East Gossip Stone Treasure",
+        "Volcano Summit - Gossip Stone Treasure between Small Thirsty Frogs",
+        "Bamboo Island Interior - Gossip Stone Treasure behind Bamboo Pole",
+        "Inside the Thunderhead - Gossip Stone Treasure near Bug Heaven",
+        "Sealed Grounds - Gossip Stone Treasure Behind the Temple",
+        "Eldin Volcano - Gossip Stone Treasure on Cliff West of Temple",
+        "Deep Woods - Gossip Stone Treasure before Temple",
+        "Thrill Digger Cave - Gossip Stone Treasure near Tubert the Thrill Digger Operator",
+        "Lanayru Caves - Gossip Stone Treasure in Center",
+        "Temple of Time - Gossip Stone Treasure near Robot",
+        "Volcano Summit - Gossip Stone Treasure on Cliff near Waterfall",
+        "Lumpy Pumpkin - Gossip Stone Treasure near Back Door",
+        "Floria Waterfall - Gossip Stone Treasure near Bird Statue",
+        "Lanayru Caves - Gossip Stone Treasure towards Lanayru Gorge",
+        "Volcanic Island - Gossip Stone Treasure inside Island",
+        "Shipyard - Gossip Stone Treasure after First Minecart Track",
+        "Central Skyloft - Gossip Stone Treasure on Waterfall Island",
+    )
+
+    def _build_note_flags(self) -> list[dict]:
+        """Assign a free custom flag to each progression/useful location in this world.
+
+        Only flags the APWorld and the patcher don't use are free. Group 0 and
+        group 1 flags are both candidates, skipping the Bird Statue reserve (0-31),
+        flag number 0 ("no flag") and 127, and any flag already in the mapping.
+        Each entry is {"flag_id", "location_id", "location", "item", "receiver"}.
+        """
+        used = set(self._custom_flag_mapping.keys()) | set(range(32))
+
+        candidates: list[int] = []
+        for flag in range(32, 1024):              # group 0 (bit 10 clear)
+            if (flag & 0x7F) not in (0, 0x7F) and flag not in used:
+                candidates.append(flag)
+        for selector in range(4):                 # group 1 (bit 10 set)
+            for space in (0, 1):                  # bit 9: scene space or dungeon space
+                for number in range(1, 127):
+                    flag = 0x400 | (selector << 7) | (space << 9) | number
+                    if flag not in used:
+                        candidates.append(flag)
+
+        locations = sorted(
+            (
+                loc for loc in self.multiworld.get_locations(self.player)
+                if loc.address is not None and loc.item is not None
+                and (loc.item.classification & (IC.progression | IC.useful))
+            ),
+            key=lambda loc: loc.name,
+        )
+        if len(locations) > len(candidates):
+            print(f"[__init__.py] WARNING: {len(locations)} note locations but only "
+                  f"{len(candidates)} free custom flags; the extra notes won't be recorded.")
+            locations = locations[:len(candidates)]
+
+        return [
+            {
+                "flag_id": flag,
+                "location_id": loc.address,
+                "location": loc.name,
+                "item": loc.item.name,
+                "receiver": self.multiworld.get_player_name(loc.item.player),
+            }
+            for flag, loc in zip(candidates, locations)
+        ]
+
+    def _hint_split(self) -> tuple[int, int]:
+        """Return (gossip stone hints, Fi hints) for this player.
+
+        The total is the Item Hints option. When both sources are on, the hints
+        are split evenly, with gossip stones taking the extra one on an odd count.
+        With one source on, it gets them all. With both off, there are none.
+        """
+        total = int(self.options.item_hints.value)
+        gossip_on = bool(self.options.item_hints_on_gossip_stones.value)
+        fi_on = bool(self.options.item_hints_on_fi.value)
+        if total <= 0 or not (gossip_on or fi_on):
+            return 0, 0
+        if gossip_on and fi_on:
+            return (total + 1) // 2, total // 2
+        return (total, 0) if gossip_on else (0, total)
+
+    def _build_hint_pools(self) -> dict[str, list[dict[str, str]]]:
+        """Return seeded samples of hintable locations for gossip stones and Fi.
+
+        A location qualifies when its item is progression or useful, and the
+        location is a real check (it has an address). Each entry is
+        {"player": <slot name>, "player_id": ..., "location": ..., "location_id": ...},
+        so the client can hint a location in any game. Gossip and Fi entries come
+        from one sample, so no location is in both lists. The sample is seeded from
+        the multiworld seed and this player's slot, so the same seed always gives
+        the same pools.
+        """
+        import random
+
+        gossip_n, fi_n = self._hint_split()
+        if gossip_n + fi_n == 0:
+            return {"gossip": [], "fi": []}
+
+        # The server only accepts a hint for an item sent to us or a location in our
+        # own world. So candidates are limited to those; anything else is refused.
+        candidates = []
+        for location in self.multiworld.get_locations():
+            item = location.item
+            if location.address is None or item is None:
+                continue
+            if location.player != self.player and item.player != self.player:
+                continue
+            if not (item.classification & (IC.progression | IC.useful)):
+                continue
+            candidates.append((location.player, location.name))
+        candidates.sort()
+
+        rng = random.Random(f"{self.multiworld.seed}-hint-pool-{self.player}")
+        # Gossip hints come first, then Fi from the rest, so no location is in both.
+        gossip_sample = rng.sample(candidates, min(gossip_n, len(candidates)))
+        chosen = set(gossip_sample)
+        fi_pool = [c for c in candidates if c not in chosen]
+        fi_sample = rng.sample(fi_pool, min(fi_n, len(fi_pool)))
+        sample = gossip_sample + fi_sample
+        # Names are for display; the IDs are what the client hints with (player slot
+        # number and location address).
+        entries = [
+            {
+                "player": self.multiworld.get_player_name(player),
+                "player_id": player,
+                "location": name,
+                "location_id": self.multiworld.get_location(name, player).address,
+            }
+            for player, name in sample
+        ]
+        return {"gossip": entries[:len(gossip_sample)], "fi": entries[len(gossip_sample):]}
 
     def modify_multidata(self, multidata: "MultiData") -> None:
         """Inject goddess chest scene flags computed in generate_output() into slot_data.
@@ -4654,6 +4811,9 @@ class SSHDWorld(World):
         settings_dict["item_hints"] = "0"
         settings_dict["song_hints"] = "off"
         settings_dict["impa_sot_hint"] = "off"
+        settings_dict["cryptic_hint_text"] = "off"
+        settings_dict["always_hints"] = "off"
+        settings_dict["hint_importance"] = "off"
         
         # Configuration
         settings_dict["extract_path"] = self.options.extract_path.value or str(get_default_sshd_extract_path())

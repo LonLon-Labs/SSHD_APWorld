@@ -46,7 +46,7 @@ use static_assertions::assert_eq_size;
 /// a breaking change to `ApIpcRoot`'s layout so old/new clients don't
 /// silently misread each other).
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_VERSION: u16 = 14;
+pub const AP_IPC_VERSION: u16 = 15;
 
 /// Live BY-VALUE COPY of the player's health and stamina, refreshed every
 /// frame by `item::refresh_ipc_addresses()`. Lets the host client detect
@@ -188,6 +188,23 @@ pub struct ApPlayerInfo {
 }
 assert_eq_size!([u8; 52], ApPlayerInfo);
 
+/// Gossip-stone hint text block (IPC version 15). The game writes
+/// `request_state = HINT_STATE_REQUESTED` and `stone_index` when a stone is
+/// used. The client answers by writing the three string args (UTF-16,
+/// null-terminated, `HINT_ARG_LEN` units each) and `result_code`, then sets
+/// `request_state = HINT_STATE_READY`. The game's hint command polls this and
+/// shows the matching text from `en_US.yaml`.
+#[repr(C, packed(1))]
+pub struct ApHintText {
+    pub request_state: u8,
+    pub result_code:   u8,
+    pub stone_index:   u16,
+    pub arg0:          [u16; 96],
+    pub arg1:          [u16; 96],
+    pub arg2:          [u16; 96],
+}
+assert_eq_size!([u8; 580], ApHintText);
+
 #[repr(C, packed(1))]
 pub struct ApIpcRoot {
     /// External client scans for this ONCE to find everything below.
@@ -305,6 +322,10 @@ pub struct ApIpcRoot {
     // ── Rust-write / client-read: live player actor state copy (see
     //    `ApPlayerInfo`). Appended at the END. Added in IPC version 14.
     pub player_info: ApPlayerInfo,
+
+    // ── Rust-write / client-read & client-write: gossip-stone hint text
+    //    block (see `ApHintText`). Appended at the END. Added in IPC version 15.
+    pub hint_text: ApHintText,
 }
 
 #[no_mangle]
@@ -482,6 +503,15 @@ pub static mut AP_IPC_ROOT: ApIpcRoot = ApIpcRoot {
         current_pressed_button_flags: 0,
         _pad1:                        [0; 2],
     },
+
+    hint_text: ApHintText {
+        request_state: 0,
+        result_code:   0,
+        stone_index:   0,
+        arg0:          [0u16; 96],
+        arg1:          [0u16; 96],
+        arg2:          [0u16; 96],
+    },
 };
 
 // Self-check: catches accidental layout drift at compile time. Update this
@@ -507,6 +537,7 @@ assert_eq_size!(
         + 128
         + 24
         + 16
-        + 52],
+        + 52
+        + 580],
     ApIpcRoot
 );

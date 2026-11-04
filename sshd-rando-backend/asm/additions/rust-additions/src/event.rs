@@ -381,6 +381,13 @@ pub fn apply_pending_ap_string_args() {
 
         // ── Retry path B: deferred TextMgr write ───────────────────────
         ap_text_tick();
+
+        // Gossip-stone hint args (see gossip_hint_poll): keep them in the
+        // TextMgrs until the hint box has opened.
+        if HINT_ARG_FRAMES > 0 {
+            write_hint_args();
+            HINT_ARG_FRAMES -= 1;
+        }
     }
 }
 
@@ -448,6 +455,9 @@ pub extern "C" fn custom_event_commands(
         80 => set_global_sceneflag_for_ap(event_flow_element),
         // Set string args for Archipelago Item (216) textbox.
         81 => set_ap_item_string_args(actor_event_flow_mgr),
+        // Gossip-stone hint: 86 requests a hint for stone param1; 87 polls for it.
+        86 => gossip_hint_request(event_flow_element.param1),
+        87 => gossip_hint_poll(actor_event_flow_mgr),
         // Is a Fi "can't drop down" message pending? (result 0 = no, 1 = yes)
         82 => fi_cant_drop_check(actor_event_flow_mgr),
         // Is the pending message a no-Sailcloth one? (0 = no statue, 1 = Sailcloth).
@@ -1177,6 +1187,155 @@ fn fi_cant_drop_variant_bit(actor_event_flow_mgr: *mut ActorEventFlowMgr, bit: u
 #[inline(never)]
 fn fi_cant_drop_finish() {
     fi_cant_drop_set_state(FI_CANT_DROP_DONE);
+}
+
+// ---------------------------------------------------------------------------
+// Gossip-stone hints (custom commands 86 and 87). The client side is in
+// sshd-ap-client (hints.rs / worker.rs); the shared block is `ApHintText` in
+// ipc.rs.
+//
+//   86 (param1 = stone index): request a hint. Clears the previous result and
+//      sets request_state = REQUESTED so the client picks and sends one.
+//   87: poll. While the client is still working it returns 0 and holds the box
+//      for one frame, so the flow loops back to 87. Once READY it returns
+//      1 = hint shown, 2 = not enough hint points, 3 = no hints left. It also
+//      returns 3 after HINT_WAIT_TIMEOUT_FRAMES, which covers a client that
+//      never answers.
+// ---------------------------------------------------------------------------
+
+const HINT_STATE_IDLE: u8 = 0;
+const HINT_STATE_REQUESTED: u8 = 1;
+const HINT_STATE_READY: u8 = 2;
+/// 15 s at 60 fps.
+const HINT_WAIT_TIMEOUT_FRAMES: u16 = 900;
+/// Frames to keep re-applying the hint args to the TextMgrs after READY.
+const HINT_ARG_HOLD_FRAMES: u16 = 30;
+
+static mut HINT_WAIT_FRAMES: u16 = 0;
+static mut HINT_ARG_FRAMES: u16 = 0;
+
+#[inline(never)]
+fn gossip_hint_request(stone_index: u16) {
+    unsafe {
+        let hint = core::ptr::addr_of_mut!(crate::ipc::AP_IPC_ROOT.hint_text);
+        core::ptr::write_volatile(core::ptr::addr_of_mut!((*hint).result_code), 0u8);
+        core::ptr::write_unaligned(core::ptr::addr_of_mut!((*hint).stone_index), stone_index);
+        core::ptr::write_volatile(
+            core::ptr::addr_of_mut!((*hint).request_state),
+            HINT_STATE_REQUESTED,
+        );
+        HINT_WAIT_FRAMES = 0;
+    }
+}
+
+/// Outcome storyflags for the hint branches in eventpatches.yaml. The game
+/// sets them from the client's result code when a hint is ready. Stones
+/// (including Central Skyloft) and Fi each have a "not enough points" and a
+/// "no hints left" flag. If neither is set, the hint text is shown.
+const HINT_STONE_NOT_ENOUGH_FLAG: u16 = 309;
+const HINT_STONE_NONE_LEFT_FLAG: u16 = 310;
+const HINT_FI_NOT_ENOUGH_FLAG: u16 = 311;
+const HINT_FI_NONE_LEFT_FLAG: u16 = 312;
+/// Fi notes ready flag (set by the client, see worker.rs
+/// FI_NOTE_READY_STORYFLAG).
+const FI_NOTE_READY_FLAG: u16 = 307;
+/// Request indices sent by the client through `stone_index` (see worker.rs).
+const NOTE_RESET_INDEX: u16 = 0xFFFE;
+const NOTE_NEXT_INDEX: u16 = 0xFFFD;
+const FI_HINT_INDEX: u16 = 100;
+
+fn set_hint_flag(id: u16, on: bool) {
+    if on {
+        flag::set_storyflag(id as _);
+    } else {
+        flag::unset_storyflag(id as _);
+    }
+}
+
+/// Sets the outcome flags for a finished hint request. `code` is the client's
+/// result code: 0 = hint shown, 1 = not enough points, 2 or more = no hints
+/// left. Notes requests are skipped; they use FI_NOTE_READY_FLAG.
+fn apply_hint_outcome(index: u16, code: u8) {
+    if index == NOTE_RESET_INDEX || index == NOTE_NEXT_INDEX {
+        return;
+    }
+    let (not_enough_flag, none_left_flag) = if index == FI_HINT_INDEX {
+        (HINT_FI_NOT_ENOUGH_FLAG, HINT_FI_NONE_LEFT_FLAG)
+    } else {
+        (HINT_STONE_NOT_ENOUGH_FLAG, HINT_STONE_NONE_LEFT_FLAG)
+    };
+    set_hint_flag(not_enough_flag, code == 1);
+    set_hint_flag(none_left_flag, code >= 2);
+}
+
+#[inline(never)]
+fn gossip_hint_poll(actor_event_flow_mgr: *mut ActorEventFlowMgr) {
+    unsafe {
+        let hint = core::ptr::addr_of_mut!(crate::ipc::AP_IPC_ROOT.hint_text);
+        let state = core::ptr::read_volatile(core::ptr::addr_of!((*hint).request_state));
+
+        let result: u32 = if state == HINT_STATE_READY {
+            let code = core::ptr::read_volatile(core::ptr::addr_of!((*hint).result_code));
+            core::ptr::write_volatile(
+                core::ptr::addr_of_mut!((*hint).request_state),
+                HINT_STATE_IDLE,
+            );
+            HINT_WAIT_FRAMES = 0;
+            HINT_ARG_FRAMES = if code == 0 { HINT_ARG_HOLD_FRAMES } else { 0 };
+            if code == 0 {
+                write_hint_args();
+            }
+            let index = core::ptr::read_unaligned(core::ptr::addr_of!((*hint).stone_index));
+            apply_hint_outcome(index, code);
+            1
+        } else {
+            let frames = HINT_WAIT_FRAMES.saturating_add(1);
+            HINT_WAIT_FRAMES = frames;
+            if frames >= HINT_WAIT_TIMEOUT_FRAMES {
+                core::ptr::write_volatile(
+                    core::ptr::addr_of_mut!((*hint).request_state),
+                    HINT_STATE_IDLE,
+                );
+                let index = core::ptr::read_unaligned(core::ptr::addr_of!((*hint).stone_index));
+                if index == NOTE_RESET_INDEX || index == NOTE_NEXT_INDEX {
+                    set_hint_flag(FI_NOTE_READY_FLAG, false);
+                } else {
+                    apply_hint_outcome(index, 2);
+                }
+                HINT_WAIT_FRAMES = 0;
+                1
+            } else {
+                // Hold the box for one frame and come back to this command.
+                (*actor_event_flow_mgr).next_flow_delay_timer = 1;
+                0
+            }
+        };
+        (*actor_event_flow_mgr).result_from_previous_check = result;
+    }
+}
+
+/// Writes the three hint string args into both TextMgrs. Reads the client's
+/// buffers in place, the same way the item-text path reads item_info_table.
+unsafe fn write_hint_args() {
+    let hint = core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.hint_text);
+    let args: [*const c_void; 3] = [
+        core::ptr::addr_of!((*hint).arg0) as *const c_void,
+        core::ptr::addr_of!((*hint).arg1) as *const c_void,
+        core::ptr::addr_of!((*hint).arg2) as *const c_void,
+    ];
+    if !GLOBAL_TEXT_MGR.is_null() {
+        for (i, arg) in args.iter().enumerate() {
+            set_string_arg_safe(GLOBAL_TEXT_MGR, *arg, i as u32);
+        }
+    }
+    if !LYT_MSG_WINDOW.is_null() {
+        let text_mgr = (*LYT_MSG_WINDOW).text_mgr;
+        if !text_mgr.is_null() {
+            for (i, arg) in args.iter().enumerate() {
+                set_string_arg_safe(text_mgr, *arg, i as u32);
+            }
+        }
+    }
 }
 
 /// Set global flag for Archipelago custom flag detection.

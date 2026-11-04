@@ -18,7 +18,7 @@ use std::mem::size_of;
 
 /// 8-byte discovery marker the client scans for exactly once.
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_SUPPORTED_VERSION: u16 = 14;
+pub const AP_IPC_SUPPORTED_VERSION: u16 = 15;
 
 // ─── Sub-structs (mirror commands.rs / item.rs) ────────────────────────────
 
@@ -324,6 +324,51 @@ pub struct ApPlayerInfo {
     pub _pad1:                        [u8; 2],
 }
 
+/// Gossip-stone hint text block (IPC version 15). Mirrors `ApHintText` in the
+/// game's ipc.rs. The game sets `request_state` to `HINT_STATE_REQUESTED` and
+/// `stone_index`; the client writes the three string args (UTF-16,
+/// null-terminated, `HINT_ARG_LEN` units each), then `result_code`, then sets
+/// `request_state` to `HINT_STATE_READY`.
+#[repr(C, packed)]
+#[derive(Copy, Clone, Debug)]
+pub struct ApHintText {
+    pub request_state: u8,
+    pub result_code:   u8,
+    pub stone_index:   u16,
+    pub arg0:          [u16; HINT_ARG_LEN],
+    pub arg1:          [u16; HINT_ARG_LEN],
+    pub arg2:          [u16; HINT_ARG_LEN],
+}
+
+/// Units per hint string argument (matches the game's `[u16; 96]` fields).
+pub const HINT_ARG_LEN: usize = 96;
+
+/// `ApHintText.request_state` values.
+pub const HINT_STATE_IDLE: u8 = 0;
+pub const HINT_STATE_REQUESTED: u8 = 1;
+pub const HINT_STATE_READY: u8 = 2;
+
+/// `ApHintText.result_code` values.
+/// A hint was picked and sent; `arg0..arg2` hold the text.
+pub const HINT_RESULT_OK: u8 = 0;
+/// Not enough hint points for one hint.
+pub const HINT_RESULT_NOT_ENOUGH_POINTS: u8 = 1;
+/// Every candidate location is already hinted or checked.
+pub const HINT_RESULT_NONE_LEFT: u8 = 2;
+
+impl Default for ApHintText {
+    fn default() -> Self {
+        ApHintText {
+            request_state: HINT_STATE_IDLE,
+            result_code:   HINT_RESULT_OK,
+            stone_index:   0,
+            arg0:          [0u16; HINT_ARG_LEN],
+            arg1:          [0u16; HINT_ARG_LEN],
+            arg2:          [0u16; HINT_ARG_LEN],
+        }
+    }
+}
+
 #[repr(C, packed)]
 #[derive(Copy, Clone, Debug)]
 pub struct ApIpcRoot {
@@ -411,6 +456,9 @@ pub struct ApIpcRoot {
 
     // Live player actor state (IPC version 14+). Appended at the end.
     pub player_info: ApPlayerInfo,
+
+    // Gossip-stone hint text block (IPC version 15). Appended at the END.
+    pub hint_text: ApHintText,
 }
 
 impl Default for ApIpcRoot {
@@ -439,6 +487,7 @@ impl Default for ApIpcRoot {
             seed_info:       ApSeedInfo::default(),
             teleport_request: ApTeleportRequest::default(),
             player_info: ApPlayerInfo::default(),
+            hint_text: ApHintText::default(),
         }
     }
 }
@@ -472,7 +521,8 @@ pub mod offsets {
     pub const SEED_INFO: usize = EXT_FLAGS + size_of::<ApExtFlags>();
     pub const TELEPORT_REQUEST: usize = SEED_INFO + size_of::<ApSeedInfo>();
     pub const PLAYER_INFO: usize = TELEPORT_REQUEST + size_of::<ApTeleportRequest>();
-    pub const TOTAL_SIZE: usize = PLAYER_INFO + size_of::<ApPlayerInfo>();
+    pub const HINT_TEXT: usize = PLAYER_INFO + size_of::<ApPlayerInfo>();
+    pub const TOTAL_SIZE: usize = HINT_TEXT + size_of::<ApHintText>();
 
     pub fn item_buffer_slot(index: usize) -> usize {
         ITEM_BUFFER + index * size_of::<ArchipelagoItemSlot>()
@@ -625,6 +675,7 @@ mod tests {
         assert_eq!(size_of::<ApSeedInfo>(), 24);
         assert_eq!(size_of::<ApTeleportRequest>(), 16);
         assert_eq!(size_of::<ApPlayerInfo>(), 52);
+        assert_eq!(size_of::<ApHintText>(), 580);
     }
 
     #[test]
@@ -650,7 +701,7 @@ mod tests {
         assert_eq!(offsets::EXT_FLAGS, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44);
         assert_eq!(offsets::TELEPORT_REQUEST, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24);
         assert_eq!(offsets::PLAYER_INFO, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24 + 16);
-        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24 + 16 + 52);
+        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24 + 16 + 52 + 580);
         assert_eq!(size_of::<ApIpcRoot>(), offsets::TOTAL_SIZE);
     }
 

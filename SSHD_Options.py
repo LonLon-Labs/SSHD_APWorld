@@ -2047,6 +2047,37 @@ class CheatSpeedMultiplier(Range):
     default = 10
 
 
+# === Hints ===
+# Only item hints are configurable. Path, barren, location, song, Impa, cryptic,
+# always and importance options were removed; sshd-rando forces those off in
+# __init__.py. Placement is split into Fi / gossip stone toggles, as in the GUI.
+
+class ItemHints(Range):
+    """How many item hints to generate, split between gossip stones and Fi."""
+    display_name = "Item Hints"
+    range_start = 0
+    range_end = 50
+    default = 10
+
+
+class ItemHintsOnFi(Toggle):
+    """If enabled, item hints can be placed on Fi."""
+    display_name = "Item Hints on Fi"
+
+
+class ItemHintsOnGossipStones(DefaultOnToggle):
+    """If enabled, item hints can be placed on gossip stones."""
+    display_name = "Item Hints on Gossip Stones"
+
+
+class ExcludedHintLocations(LocationSet):
+    """
+    Gossip stones listed here will never give a hint. Fi is not affected.
+    Like sshd-rando's excluded hint locations, this lists the stones themselves.
+    """
+    display_name = "Excluded Hint Locations"
+
+
 # === Archipelago-specific ===
 
 class SSHDDeathLink(DeathLink):
@@ -2344,6 +2375,12 @@ class SSHDOptions(PerGameCommonOptions):
     death_link: SSHDDeathLink
     breath_link: SSHDBreathLink
 
+    # Hints
+    item_hints: ItemHints
+    item_hints_on_fi: ItemHintsOnFi
+    item_hints_on_gossip_stones: ItemHintsOnGossipStones
+    excluded_hint_locations: ExcludedHintLocations
+
 
 sshd_option_groups = [
     OptionGroup("Completion Requirements", [
@@ -2601,6 +2638,12 @@ sshd_option_groups = [
         ExtraStalmasterAncientCistern,
         ExtraDarkLizalfos,
     ], start_collapsed=True),
+    OptionGroup("Hints", [
+        ItemHints,
+        ItemHintsOnFi,
+        ItemHintsOnGossipStones,
+        ExcludedHintLocations,
+    ]),
     OptionGroup("Configuration", [
         ExtractPath,
         SshdrSeed,

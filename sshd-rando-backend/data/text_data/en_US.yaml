@@ -79,6 +79,39 @@
 - name: Eldin SotH text
   standard: "You learned the <y<Fire Dragon's Song>>!\nThis is a part of the <y<Song of the Hero>>!"
 
+- name: Hint Not Enough Points Text
+  standard: "The goddess cannot share her wisdom yet.\nYou don't have enough hint points for a hint."
+
+- name: Hint No More Available Text
+  standard: "There are no more hints to be found\nat this time."
+
+- name: Gossip Hint Text
+  standard: "<string arg0>'s <string arg1>\nis at <string arg2>."
+
+- name: Fi Gossip Hint Text
+  standard: "<string arg0>'s <string arg1>\nis at <string arg2>."
+
+- name: Fi Hint Not Enough Points Text
+  standard: "Master, you do not have enough hint points."
+
+- name: Fi Hint No More Available Text
+  standard: "There are no more hints to be found\nat this time."
+
+- name: Central Gossip Hint Text
+  standard: "<string arg0>'s <string arg1>\nis at <string arg2>."
+
+- name: Central Hint Not Enough Points Text
+  standard: "The goddess cannot share her wisdom yet.\nYou don't have enough hint points for a hint."
+
+- name: Central Hint No More Available Text
+  standard: "There are no more hints to be found\nat this time."
+
+- name: Fi Note Text
+  standard: "<string arg1> gets <string arg2>\nat <string arg0>."
+
+- name: Fi Note End Text
+  standard: "There are no more notes to read."
+
 - name: Lanayru SotH text
   standard: "You learned the <y<Thunder Dragon's Song>>!\nThis is a part of the <y<Song of the Hero>>!"
 

@@ -89,8 +89,14 @@ use std::collections::{HashMap, HashSet};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use ap_ipc::{offsets, AP_IPC_SUPPORTED_VERSION};
-use archipelago_rs::{BounceOptions, ClientStatus, Connection, ConnectionOptions, DeathLinkOptions, Error, Event};
+use ap_ipc::{
+    offsets, ApHintText, AP_IPC_SUPPORTED_VERSION, HINT_ARG_LEN, HINT_RESULT_NONE_LEFT,
+    HINT_RESULT_NOT_ENOUGH_POINTS, HINT_RESULT_OK, HINT_STATE_READY, HINT_STATE_REQUESTED,
+};
+use archipelago_rs::{
+    BounceOptions, Client, ClientStatus, Connection, ConnectionOptions, DeathLinkOptions, Error, Event, Print,
+};
+use std::mem::offset_of;
 use iced::futures::channel::mpsc;
 use iced::futures::{SinkExt, StreamExt};
 use iced::stream;
@@ -121,6 +127,7 @@ use crate::goddess_cubes::GoddessCubePoller;
 use crate::item_info;
 use crate::items;
 use crate::links::{self, LinkMonitor, LinkSignal};
+use crate::hints::{self, FiNotes, NoteFlag};
 use crate::locations::{ApItemInfo, CustomFlagPoller, SlotData};
 
 /// Bounce tag for `/kill <SlotName>` requests between SSHD players.
@@ -263,6 +270,14 @@ struct SyncState {
     // game); `/accept_checks` sends them if they turn out to be real.
     held_checks: Vec<i64>,
     accept_held: bool,
+    // Fi Notes: hints about locations in this player's own world (hints.rs).
+    fi_notes: FiNotes,
+    // Locations we've already asked the server to hint, so a stone never repeats one.
+    hinted_locations: HashSet<i64>,
+    // A stone hint we requested and are waiting on the server to echo back.
+    stone_wait: Option<StoneWait>,
+    // Bumped on every stone pick so consecutive picks get different seeds.
+    hint_counter: u64,
 }
 
 /// Most locations a single poll may newly report before it is held back as
@@ -304,6 +319,10 @@ impl SyncState {
             check_stats_last_write: None,
             held_checks: Vec::new(),
             accept_held: false,
+            fi_notes: FiNotes::new(),
+            hinted_locations: HashSet::new(),
+            stone_wait: None,
+            hint_counter: 0,
         }
     }
 }
@@ -777,6 +796,43 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                         }
                     },
                     Event::Print(print) => {
+                        if let Print::Hint { item, .. } = &print {
+                            // Fi Notes: hints about progression or useful items in our own world.
+                            let own_slot = conn.client().map(|c| c.this_player().slot());
+                            if own_slot == Some(item.sender().slot()) && (item.is_progression() || item.is_useful()) {
+                                let location_id = item.location().id();
+                                sync.fi_notes.record(location_id);
+                                // The note's save flag is what keeps it across reloads.
+                                if let (Some(client), Some((mem, root_addr))) = (conn.client(), emulator.as_mut()) {
+                                    if let Some(note) = client.slot_data().note_flags.iter().find(|n| n.location_id == location_id) {
+                                        if let Err(e) = set_note_flag(mem, *root_addr, note.flag_id) {
+                                            log!(&output, "[Hint] Failed to record a Fi note: {e}");
+                                        }
+                                    }
+                                }
+                            }
+                            // A stone is waiting on this hint: show its text now.
+                            if let Some(wait) = sync.stone_wait {
+                                if item.location().id() == wait.location_id
+                                    && item.sender().slot() == wait.owner_slot
+                                {
+                                    sync.stone_wait = None;
+                                    let args = [
+                                        item.receiver().alias().to_string(),
+                                        item.item().name().to_string(),
+                                        format!("{} ({})", item.location().name(), item.sender().alias()),
+                                    ];
+                                    match emulator.as_mut() {
+                                        Some((mem, root_addr)) => {
+                                            if let Err(e) = write_stone_result(mem, *root_addr, HINT_RESULT_OK, Some(args)) {
+                                                log!(&output, "[Hint] Failed to show the stone text: {e}");
+                                            }
+                                        },
+                                        None => log!(&output, "[Hint] Emulator not attached; the stone will time out."),
+                                    }
+                                }
+                            }
+                        }
                         let print_spans = colors::print_to_spans(&print, &own_name);
                         // Remember server hint messages for `/hints`.
                         let plain: String = print_spans.iter().map(|s| s.text.as_str()).collect();
@@ -929,6 +985,11 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                 // (Progressive Bow textbox storyflags are set per delivery in the game
                 // code now; the periodic bow_storyflags reconcile was removed because it
                 // set the cumulative flags after the pickup had already read them.)
+
+                // Gossip stones (hints.rs): answer a stone the player just read.
+                if let Some(client) = conn.client_mut() {
+                    service_gossip_stone(mem, root_addr, client, &mut sync, &reported_locations, &output);
+                }
 
                 // Item delivery -- crash-safe, paced, resumable (see delivery.rs).
                 if let Some(client) = conn.client_mut() {
@@ -1167,6 +1228,232 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
 
         thread::sleep(Duration::from_millis(16)); // ~60 Hz, matching the game's frame rate — fine
                                                    // here, this is a real OS thread, not an async task.
+    }
+}
+
+/// A stone hint the server has been asked for and hasn't echoed yet.
+#[derive(Clone, Copy)]
+struct StoneWait {
+    location_id: i64,
+    owner_slot:  u32,
+    started:     Instant,
+}
+
+/// Stone index the Fi hint request sends in place of a stone's index. Must match
+/// `param1` of the "Fi Hint Request" flow in eventpatches.yaml.
+const FI_HINT_REQUEST: u16 = 100;
+
+/// Fi notes requests: reset the visit, and serve the next note. Must match the
+/// `param1` of the "Fi Notes Reset" and "Fi Notes Next" flows in eventpatches.yaml.
+const NOTE_RESET: u16 = 0xFFFE;
+const NOTE_NEXT: u16 = 0xFFFD;
+/// Storyflags that drive the Fi Notes branches in eventpatches.yaml. The flow only
+/// uses plain 0/1 checks on these, because multi-value switches misroute 2 and 3.
+/// READY: 1 while a note is ready to show, 0 when the visit is over.
+/// MORE: 1 while more notes follow the one just shown.
+const FI_NOTE_READY_STORYFLAG: u16 = 307;
+const FI_NOTE_MORE_STORYFLAG: u16 = 308;
+
+const STONE_ECHO_TIMEOUT: Duration = Duration::from_secs(5);
+
+/// UTF-16, null-terminated, cut to fit one argument buffer.
+fn encode_hint_arg(text: &str) -> Vec<u8> {
+    let mut units: Vec<u16> = text.encode_utf16().take(HINT_ARG_LEN - 1).collect();
+    units.resize(HINT_ARG_LEN, 0);
+    units.iter().flat_map(|u| u.to_le_bytes()).collect()
+}
+
+/// Writes the stone's text (if any) and result, then READY last so the game
+/// never reads READY with stale args.
+fn write_stone_result(
+    mem: &mut Backend,
+    root_addr: usize,
+    result_code: u8,
+    args: Option<[String; 3]>,
+) -> Result<(), String> {
+    let base = root_addr + offsets::HINT_TEXT;
+    if let Some(args) = args {
+        let fields = [
+            offset_of!(ApHintText, arg0),
+            offset_of!(ApHintText, arg1),
+            offset_of!(ApHintText, arg2),
+        ];
+        for (field, text) in fields.iter().zip(args.iter()) {
+            mem.write_bytes(base + field, &encode_hint_arg(text)).map_err(|e| e.to_string())?;
+        }
+    }
+    mem.write_bytes(base + offset_of!(ApHintText, result_code), &[result_code])
+        .map_err(|e| e.to_string())?;
+    mem.write_bytes(base + offset_of!(ApHintText, request_state), &[HINT_STATE_READY])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Sets a Fi note's save flag (`SlotData::note_flags`), so the note survives a
+/// reload. The flag is written to the save like any other story flag.
+fn set_note_flag(mem: &mut Backend, root_addr: usize, flag_id: u16) -> Result<(), String> {
+    let d = ap_ipc::custom_flag::decode(flag_id);
+    let flag_type = if d.is_dungeonflag {
+        ap_ipc::FLAG_TYPE_DUNGEONFLAG
+    } else {
+        ap_ipc::FLAG_TYPE_SCENEFLAG
+    };
+    ipc_requests::flag_request(mem, root_addr, flag_type, ap_ipc::FLAG_OP_SET, d.flag_num, 1, d.scene_index)
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+}
+
+/// Sets or unsets a storyflag through the game's own flag manager (flag_request).
+fn set_storyflag(mem: &mut Backend, root_addr: usize, flag_id: u16, on: bool) -> Result<(), String> {
+    let op = if on { ap_ipc::FLAG_OP_SET } else { ap_ipc::FLAG_OP_UNSET };
+    ipc_requests::flag_request(mem, root_addr, ap_ipc::FLAG_TYPE_STORYFLAG, op, flag_id, 0, ap_ipc::SCENE_INDEX_CURRENT)
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+}
+
+/// Serves the next Fi note of the current visit: writes its text and reports OK,
+/// or reports that none are left. A note counts only while its save flag is set
+/// and its location is still unchecked.
+fn serve_fi_note(
+    mem: &mut Backend,
+    root_addr: usize,
+    client: &mut Client<SlotData>,
+    sync: &mut SyncState,
+    reported_locations: &HashSet<i64>,
+) {
+    let flag_ids: Vec<u16> = client.slot_data().note_flags.iter().map(|n| n.flag_id).collect();
+    let set = match crate::locations::flags_set(mem, root_addr, &flag_ids) {
+        Ok(set) => set,
+        Err(_) => {
+            let _ = set_storyflag(mem, root_addr, FI_NOTE_READY_STORYFLAG, false);
+            let _ = write_stone_result(mem, root_addr, HINT_RESULT_OK, None);
+            return;
+        },
+    };
+    let checked: HashSet<i64> = reported_locations
+        .iter()
+        .copied()
+        .chain(client.checked_locations().map(|l| l.id()))
+        .collect();
+    let live: Vec<NoteFlag> = client
+        .slot_data()
+        .note_flags
+        .iter()
+        .filter(|n| set.contains(&n.flag_id) && !checked.contains(&n.location_id))
+        .cloned()
+        .collect();
+    let ordered: Vec<NoteFlag> = sync.fi_notes.ordered(&live).into_iter().cloned().collect();
+    // Every reply is HINT_RESULT_OK. The game branches on the two storyflags
+    // instead: READY (a note to show) and MORE (another note follows).
+    match sync.fi_notes.take_next(&ordered) {
+        Some(index) => {
+            let more = sync.fi_notes.has_unserved(&ordered);
+            let _ = set_storyflag(mem, root_addr, FI_NOTE_READY_STORYFLAG, true);
+            let _ = set_storyflag(mem, root_addr, FI_NOTE_MORE_STORYFLAG, more);
+            let note = &ordered[index];
+            // Text args: location, who receives the item, the item.
+            let args = [note.location.clone(), note.receiver.clone(), note.item.clone()];
+            let _ = write_stone_result(mem, root_addr, HINT_RESULT_OK, Some(args));
+        },
+        None => {
+            // The visit is over. The next visit starts again from the newest note.
+            sync.fi_notes.start_visit();
+            let _ = set_storyflag(mem, root_addr, FI_NOTE_READY_STORYFLAG, false);
+            let _ = set_storyflag(mem, root_addr, FI_NOTE_MORE_STORYFLAG, false);
+            let _ = write_stone_result(mem, root_addr, HINT_RESULT_OK, None);
+        },
+    }
+}
+
+/// Answers a gossip stone the player just used (state REQUESTED).
+fn service_gossip_stone(
+    mem: &mut Backend,
+    root_addr: usize,
+    client: &mut Client<SlotData>,
+    sync: &mut SyncState,
+    reported_locations: &HashSet<i64>,
+    output: &EventSink,
+) {
+    let base = root_addr + offsets::HINT_TEXT;
+    let state = match mem.read_bytes(base + offset_of!(ApHintText, request_state), 1) {
+        Ok(bytes) => bytes[0],
+        Err(_) => return,
+    };
+    if state != HINT_STATE_REQUESTED {
+        return;
+    }
+
+    // Which source asked: a stone's index, or the Fi marker.
+    let index_bytes = match mem.read_bytes(base + offset_of!(ApHintText, stone_index), 2) {
+        Ok(bytes) => bytes,
+        Err(_) => return,
+    };
+    let stone_index = u16::from_le_bytes([index_bytes[0], index_bytes[1]]);
+    let is_fi = stone_index == FI_HINT_REQUEST;
+    // Fi notes requests share the same request/poll chain; they don't touch hints.
+    if stone_index == NOTE_RESET {
+        sync.fi_notes.start_visit();
+        let _ = write_stone_result(mem, root_addr, HINT_RESULT_OK, None);
+        return;
+    }
+    if stone_index == NOTE_NEXT {
+        serve_fi_note(mem, root_addr, client, sync, reported_locations);
+        return;
+    }
+    // Stones the player switched off never give a hint. Fi is not affected.
+    if !is_fi && client.slot_data().excluded_gossip_stones.contains(&i64::from(stone_index)) {
+        let _ = write_stone_result(mem, root_addr, HINT_RESULT_NONE_LEFT, None);
+        return;
+    }
+
+    // One pick at a time. If the echo is late, give up on that location and re-pick.
+    if let Some(wait) = sync.stone_wait {
+        if wait.started.elapsed() < STONE_ECHO_TIMEOUT {
+            return;
+        }
+        log!(output, "[Hint] The server didn't confirm a hint; trying another location.");
+        sync.hinted_locations.insert(wait.location_id);
+        sync.stone_wait = None;
+    }
+
+    if !hints::can_afford(client.hint_points(), client.points_per_hint()) {
+        let _ = write_stone_result(mem, root_addr, HINT_RESULT_NOT_ENOUGH_POINTS, None);
+        return;
+    }
+
+    let mut excluded: HashSet<i64> = reported_locations.clone();
+    excluded.extend(client.checked_locations().map(|l| l.id()));
+    excluded.extend(sync.hinted_locations.iter().copied());
+
+    sync.hint_counter = sync.hint_counter.wrapping_add(1);
+    let seed = hints::fresh_seed(sync.hint_counter);
+    let pool = if is_fi {
+        &client.slot_data().hint_pool_fi
+    } else {
+        &client.slot_data().hint_pool_gossip
+    };
+    let picked = hints::pick_hint(pool, &excluded, seed).map(|e| {
+        (e.location_id, e.player_id as u32, e.player.clone(), e.location.clone())
+    });
+    let Some((location_id, owner_slot, owner_name, location_name)) = picked else {
+        let _ = write_stone_result(mem, root_addr, HINT_RESULT_NONE_LEFT, None);
+        return;
+    };
+
+    // `!hint_location` is what the server charges hint points for and broadcasts to
+    // everyone. The location ID is global across worlds, so this works for your own
+    // locations and for locations in other worlds. The server's echo of the hint is
+    // what shows the stone text (see the Print::Hint handler in worker.rs's event loop).
+    match client.say(format!("!hint_location {location_id}")) {
+        Ok(()) => {
+            sync.stone_wait = Some(StoneWait { location_id, owner_slot, started: Instant::now() });
+            let source = if is_fi { "Fi" } else { "Stone" };
+            vlog!("[Hint] {source} hint requested: {owner_name}'s {location_name} (location {location_id}).");
+        },
+        Err(e) => {
+            log!(output, "[Hint] Could not request a stone hint: {e}");
+            let _ = write_stone_result(mem, root_addr, HINT_RESULT_NONE_LEFT, None);
+        },
     }
 }
 
