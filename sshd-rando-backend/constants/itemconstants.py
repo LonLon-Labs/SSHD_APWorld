@@ -403,7 +403,6 @@ STARTABLE_ITEMS: list[str] = (
         GUST_BELLOWS,
     ]
     + [PROGRESSIVE_POUCH] * 5
-    + [SAILCLOTH]
     + [PROGRESSIVE_MITTS] * 2
     + [
         WATER_DRAGON_SCALE,

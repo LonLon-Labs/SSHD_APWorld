@@ -708,6 +708,16 @@
     - "off": "You will not be able to fly at night. If the Require Natural Night Connections setting is disabled, night flying will be enabled to facilitate this."
     - "on": "You will be able to call your loftwing and fly in The Sky at night."
 
+- name: start_with_sailcloth
+  default_option: "off"
+  pretty_name: Start with Sailcloth
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "You will not start with the Sailcloth. It will be shuffled into the item pool like any other major item."
+    - "on": "You will start the game with the Sailcloth. It will not be placed in the item pool."
+
 - name: randomize_loftwing
   default_option: "on"
   pretty_name: Start with Loftwing

@@ -167,6 +167,11 @@ def generate_item_pool(world: "World") -> None:
 def generate_starting_item_pool(world: "World"):
     starting_items = world.setting_map.starting_inventory.copy()
 
+    # Sailcloth has its own setting. Granting it before the random starting items
+    # below stops a random pick from adding a second copy.
+    if world.setting("start_with_sailcloth") == "on":
+        starting_items[SAILCLOTH] = 1
+
     # Add starting swords
     starting_sword_setting = world.setting_map.settings.get("starting_sword")
 
