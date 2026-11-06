@@ -732,6 +732,40 @@
       param3: 3
       param4: Item 325 Text
 
+  - name: Statue Unlock 326 Entry
+    type: entryadd
+    entry:
+      name: "003_326"
+      value: Show Item 326 Text
+  - name: Item 326 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 326 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 326 Text
+
+  - name: Statue Unlock 327 Entry
+    type: entryadd
+    entry:
+      name: "003_327"
+      value: Show Item 327 Text
+  - name: Item 327 Text
+    type: textadd
+    textboxtype: 5
+    unk2: 1
+  - name: Show Item 327 Text
+    type: flowadd
+    flow:
+      type: type1
+      next: -1
+      param3: 3
+      param4: Item 327 Text
+
   - name: Give Scrapper Storyflag
     type: flowadd
     flow:

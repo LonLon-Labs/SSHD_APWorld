@@ -899,7 +899,7 @@ class ASMPatchHandler:
     #
     # Every surface statue has an unlock item, including the region entrance
     # statues (Sealed Grounds, Volcano Entrance, Lanayru Mine Entry). Only the two
-    # inner dungeon statues are left alone. Values are each statue's table index.
+    # inner Eldin statues (slots 4 and 5) are included too. Values are each statue's table index.
     BIRD_STATUE_MAP_TABLES = (
         (
             0x71013A2434,  # Faron
@@ -925,6 +925,8 @@ class ASMPatchHandler:
                 "Volcano East Statue": 1,
                 "Volcano Ascent Statue": 2,
                 "Temple Entrance Statue": 3,
+                "Inside the Volcano Statue": 4,
+                "Inside Fire Sanctuary Statue": 5,
             },
         ),
         (

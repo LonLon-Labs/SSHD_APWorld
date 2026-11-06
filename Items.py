@@ -219,7 +219,7 @@ ITEM_TABLE: dict[str, SSHDItem] = {
     "Volcano Entrance Statue Unlock": SSHDItem("Volcano Entrance Statue Unlock", 2773324, IC.progression, 324),
     "Lanayru Mine Entry Statue Unlock": SSHDItem("Lanayru Mine Entry Statue Unlock", 2773325, IC.progression, 325),
     "Inside the Volcano Statue Unlock": SSHDItem("Inside the Volcano Statue Unlock", 2773326, IC.progression, 326),
-    "Inside the Fire Sanctuary Statue Unlock": SSHDItem("Inside the Fire Sanctuary Statue Unlock", 2773327, IC.progression, 327),
+    "Inside Fire Sanctuary Statue Unlock": SSHDItem("Inside Fire Sanctuary Statue Unlock", 2773327, IC.progression, 327),
     "Health Trap": SSHDItem("Health Trap", 2773250, IC.trap, 250),
     "Groose Trap": SSHDItem("Groose Trap", 2773251, IC.trap, 251),
     "Noise Trap": SSHDItem("Noise Trap", 2773252, IC.trap, 252),

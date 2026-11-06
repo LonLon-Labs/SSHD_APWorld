@@ -255,7 +255,7 @@
   standard: "You got the <y<Inside the Volcano Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
 
 - name: Item 327 Text
-  standard: "You got the <y<Inside the Fire Sanctuary Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
+  standard: "You got the <y<Inside Fire Sanctuary Statue Unlock>>!\nYou can now dive down and fly to the\nsky from this <y<Bird Statue>>."
 
 - name: Item 220 Text
   standard: "You got the <g<Skyview Temple>> Key Ring!\nAll <r<small-key doors>> in this dungeon\nare now unlocked."
@@ -706,9 +706,9 @@
   cryptic: a <r<key to the sky's edge>>
   plurality: Singular
 
-- name: Inside the Fire Sanctuary Statue Unlock
-  standard: Inside the Fire Sanctuary Statue Unlock
-  pretty: the <Inside the Fire Sanctuary Statue Unlock>
+- name: Inside Fire Sanctuary Statue Unlock
+  standard: Inside Fire Sanctuary Statue Unlock
+  pretty: the <Inside Fire Sanctuary Statue Unlock>
   cryptic: a <r<key to the sky's edge>>
   plurality: Singular
 

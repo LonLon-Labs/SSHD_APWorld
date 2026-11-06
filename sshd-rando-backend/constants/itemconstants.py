@@ -58,7 +58,7 @@ BIRD_STATUE_ENTRANCE_UNLOCK_ITEMS = (
 # unlock flag indices of every earlier statue are unchanged.
 BIRD_STATUE_EXTRA_UNLOCK_ITEMS = (
     "Inside the Volcano Statue Unlock",
-    "Inside the Fire Sanctuary Statue Unlock",
+    "Inside Fire Sanctuary Statue Unlock",
 )
 
 ALL_BIRD_STATUE_UNLOCK_ITEMS = tuple(

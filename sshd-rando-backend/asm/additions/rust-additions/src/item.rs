@@ -2159,7 +2159,7 @@ pub extern "C" fn fix_freestanding_item_y_offset(item_actor: *mut dAcItem) {
                 // Clawshots | Spiral Charge | Loftwing | Mogma Mitts | Life Tree Seedling
                 20 | 21 | 219 | 99 | 197 => y_offset = 25.0,
                 // Bird Statue Unlocks
-                300..=325 => y_offset = 5.0,
+                300..=327 => y_offset = 5.0,
                 // AC BK | FS BK
                 25 | 26 => y_offset = 30.0,
                 // SSH BK, ET Key, SVT BK, ET BK | Amber Tablet
@@ -2296,7 +2296,7 @@ pub extern "C" fn fix_freestanding_item_horizontal_offset(item_actor: *mut dAcIt
                     angle_change_y = 0x2400;
                 },
                 // Spiral Charge | Loftwing | Bird Statue Unlocks
-                21 | 219 | 300..=325 => {
+                21 | 219 | 300..=327 => {
                     h_offset = 27.0;
                     angle_change_y = 0x3000;
                     angle_change_z = 0x0300;
@@ -2854,7 +2854,7 @@ pub fn bird_statue_unlock_flag_index(item_id: u16) -> Option<u16> {
 
 #[no_mangle]
 // NOTE: `collected_item` is a raw item id (u16), NOT `flag::ITEMFLAGS`. Custom
-// item ids (Bird Statue unlocks 300..=325, key rings, ...) are not variants of
+// item ids (Bird Statue unlocks 300..=327, key rings, ...) are not variants of
 // that enum, and a repr(u16) enum with out-of-range values is undefined
 // behavior: rustc attaches a valid-range to it, so the optimizer can delete
 // the `300..=325` branch below and the unlock flag is never set.
@@ -2891,7 +2891,7 @@ pub extern "C" fn resolve_progressive_item_models(
             model_name = match item_id {
                 15 => c"Demo11_01".as_ptr(),
                 21 | 219 => c"GetBirdStatue".as_ptr(),
-                300..=325 => c"SaveObjectA".as_ptr(),
+                300..=327 => c"SaveObjectA".as_ptr(),
                 214 => c"Onp".as_ptr(),
                 215 => c"DesertRobot".as_ptr(),
                 216 => {
@@ -2922,7 +2922,7 @@ pub extern "C" fn resolve_progressive_item_models(
                 21 | 219 => c"GetBirdStatue".as_ptr(),
                 // The Bird Statue unlock items use the statue's own model
                 // (SaveObjectA is already in ObjectPack).
-                300..=325 => c"SaveObjectA".as_ptr(),
+                300..=327 => c"SaveObjectA".as_ptr(),
                 // Randomly pick which of the two tadtone models is used for fun :p
                 214 if (s_rng & 1) == 0 => c"OnpA".as_ptr(),
                 214 => c"OnpB".as_ptr(),

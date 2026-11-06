@@ -398,7 +398,7 @@
   shop_model_name: SaveObjectA
   advancement: true
 - id: 327
-  name: Inside the Fire Sanctuary Statue Unlock
+  name: Inside Fire Sanctuary Statue Unlock
   types:
     - Major Items
     - Main Quest Items
