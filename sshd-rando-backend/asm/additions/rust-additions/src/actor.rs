@@ -1350,6 +1350,115 @@ pub fn count_actors_by_type(actorid: ACTORID, max_count: u32) -> u32 {
     }
 }
 
+/// Calls `f` once for every live actor of the given type in the actor tree.
+/// `f` must not create or delete actors.
+pub fn for_each_actor_by_type<F: FnMut(*mut dBase)>(actorid: ACTORID, mut f: F) {
+    unsafe {
+        let mut cur_node: *mut ActorTreeNode = CONNECT_MGR.root;
+
+        while !cur_node.is_null() {
+            let owner = (*cur_node).owner;
+            if !owner.is_null() && (*owner).members.members.actorid == actorid as u16 {
+                f(owner);
+            }
+
+            let mut cursor: *mut TreeNode = &mut (*cur_node).tree_node;
+            if !(*cursor).child.is_null() {
+                cur_node = (*cursor).child as *mut ActorTreeNode;
+                continue;
+            }
+
+            while !cursor.is_null() && (*cursor).next.is_null() {
+                cursor = (*cursor).parent;
+            }
+
+            if cursor.is_null() {
+                break;
+            }
+
+            cur_node = (*cursor).next as *mut ActorTreeNode;
+        }
+    }
+}
+
+// dAcTbox field offsets (dAcTbox::create @ 0x7100b09014, per-frame update @
+// 0x7100b0b9d4, initial state picker @ 0x7100b0c80c).
+const TBOX_OPENED: usize = 0x1994; // 1 = chest already opened
+const TBOX_SUBTYPE: usize = 0x1999; // 3 = Goddess Chest
+const TBOX_STATE_PICKED: usize = 0x199E; // latch: initial state was chosen
+const TBOX_SPECIAL_VARIANT: usize = 0x199F; // != 0: picker uses a non-goddess state
+const TBOX_GODDESS_ANIM: usize = 0x6D0; // anim, frame 0 = locked, 1.0 = unlocked
+                                        // Embedded anim object at +0x638 (vtable at +0x638, its resource pointer at
+                                        // +0x640). It is only bound in the model init (@ 0x7100b0a91c) when the
+                                        // Goddess Chest flag is already set at
+                                        // load time and the chest is unopened. The per-frame
+                                        // update (0x7100b0b358 and the in-event variant 0x7100b0b9d4) calls
+                                        // (*(tbox+0x638)->vtable[4])() every frame once the anim above reads exactly
+                                        // 1.0, and that call dereferences +0x640 without a null check (0x7100f18274).
+const TBOX_UNLOCK_ANIM_RES: usize = 0x640;
+const TBOX_SUBTYPE_GODDESS: u8 = 3;
+
+/// Makes every loaded, unopened Goddess Chest match the Goddess Chest unlock
+/// storyflag right now, without reloading the stage.
+///
+/// A Goddess Chest only reads its flag in dAcTbox::create (to set the
+/// "lit" anim frame) and in the initial state picker (0x7100b0c80c), which
+/// chooses StateID_GoddessWaitOn (interactable) or StateID_GoddessWaitOff
+/// (inert) once, guarded by the latch at +0x199E. So we redo both: set the
+/// anim frame exactly like create does, then clear the latch so the game's own
+/// picker runs again next frame and does a normal state transition (the old
+/// state's leave + the new state's init).
+pub fn refresh_goddess_chests(unlocked: bool) {
+    for_each_actor_by_type(ACTORID::TBOX, |actor| unsafe {
+        let base = actor as *mut u8;
+
+        if *base.add(TBOX_SUBTYPE) != TBOX_SUBTYPE_GODDESS {
+            return;
+        }
+        // Opened chests stay opened whatever the flag says.
+        if *base.add(TBOX_OPENED) != 0 {
+            return;
+        }
+        // Still being created: create/the picker will read the new flag
+        // themselves.
+        if *base.add(TBOX_STATE_PICKED) == 0 {
+            return;
+        }
+        if *base.add(TBOX_SPECIAL_VARIANT) != 0 {
+            return;
+        }
+        // A chest that loaded locked never had the +0x638 anim bound. The game's
+        // update calls into that object whenever the anim reads exactly 1.0, which
+        // crashes on a null deref if it is unbound. So for unbound chests use the
+        // largest f32 below 1.0: visually the same pose, but never equal to 1.0.
+        let unlock_anim_bound =
+            (base.add(TBOX_UNLOCK_ANIM_RES) as *const usize).read_unaligned() != 0;
+        let lit_frame: f32 = if unlock_anim_bound {
+            1.0
+        } else {
+            f32::from_bits(1.0f32.to_bits() - 1)
+        };
+
+        // Same as the end of dAcTbox::create: anim->res->setFrame(v);
+        // anim->frame = v;
+        let anim = (base.add(TBOX_GODDESS_ANIM) as *const *mut u8).read_unaligned();
+        if !anim.is_null() {
+            let res = (anim.add(0x8) as *const *mut c_void).read_unaligned();
+            if !res.is_null() {
+                let vtable = (res as *const *const usize).read_unaligned();
+                let set_frame: extern "C" fn(*mut c_void, f32) =
+                    core::mem::transmute(*vtable.add(0x30 / 8));
+                let frame: f32 = if unlocked { lit_frame } else { 0.0 };
+                set_frame(res, frame);
+                (anim.add(0x50) as *mut f32).write_unaligned(frame);
+            }
+        }
+
+        // Make the game's initial state picker run again.
+        *base.add(TBOX_STATE_PICKED) = 0;
+    });
+}
+
 #[no_mangle]
 pub extern "C" fn should_spawn_eldin_platforms(
     platform_actor_maybe: *mut dAcORockBoatMaybe,

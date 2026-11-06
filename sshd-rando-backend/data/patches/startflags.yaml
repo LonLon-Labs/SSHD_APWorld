@@ -11,6 +11,8 @@ Storyflags:
   - 60 # Fi text before Yerbal
   - 81 # Tadtone Dowsing
   - 82 # Tadtones music scroll
+  - goddess_chest_unlock == unlocked_from_start:
+    - 95 # All Goddess Chests Unlocked
   - 96 # Skip 1st time getting a map Fi text
   - 108 # Heart Dowsing
   - 115 # Full Lake Floria map

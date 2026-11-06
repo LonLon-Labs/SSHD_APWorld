@@ -721,6 +721,7 @@ SKELETON_KEY = "Skeleton Key"
 # 248
 
 # 249
+TELEPORT_TRAP = "Teleport " + TRAP
 
 # 250
 HEALTH_TRAP = "Health " + TRAP

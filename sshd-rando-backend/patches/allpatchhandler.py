@@ -18,6 +18,7 @@ from patches.entrancepatchhandler import (
 )
 from patches.stagepatchhandler import (
     StagePatchHandler,
+    create_boss_copy_patches,
     create_demise_patches,
     create_shuffled_trial_object_patches,
 )
@@ -110,6 +111,7 @@ class AllPatchHandler:
         update_progress_value(59)
         create_shuffled_trial_object_patches(self.world, self.stage_patch_handler)
         create_demise_patches(self.world, self.stage_patch_handler)
+        create_boss_copy_patches(self.world, self.stage_patch_handler)
 
         update_progress_value(60)
         print_progress_text("Patching Stages")
@@ -152,6 +154,24 @@ class AllPatchHandler:
         # init_global_variables can write them into the CREST_CUSTOM_FLAGS
         # Rust static.
         self.asm_patch_handler.crest_custom_flags = self.stage_patch_handler.crest_custom_flags
+        self.asm_patch_handler.trial_reward_custom_flags = (
+            self.stage_patch_handler.trial_reward_custom_flags
+        )
+        self.asm_patch_handler.goddess_cube_arrays = (
+            self.stage_patch_handler.get_goddess_cube_arrays()
+        )
+        self.asm_patch_handler.bird_statue_arrays = (
+            self.stage_patch_handler.get_bird_statue_arrays()
+        )
+        self.asm_patch_handler.pumpkin_entries = (
+            self.stage_patch_handler.pumpkin_entries
+        )
+        self.asm_patch_handler.big_pot_entries = (
+            self.stage_patch_handler.big_pot_entries
+        )
+        self.asm_patch_handler.barrel_entries = (
+            self.stage_patch_handler.barrel_entries
+        )
         # Pass global symbol initializers collected during stage patch setup
         # (e.g. EXTRA_DEMISE_COUNT) so init_global_variables can emit them.
         self.asm_patch_handler.global_symbol_values = (

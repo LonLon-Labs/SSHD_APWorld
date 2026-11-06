@@ -249,8 +249,12 @@ REGION_CONNECTIONS: Dict[str, List[Tuple[str, str]]] = {
     "Pirate Stronghold": [
         ("Lanayru Gorge", None),
         ("Pirate Stronghold Interior", None),
+        ("Pirate Stronghold Dock", None),
     ],
     "Pirate Stronghold Interior": [
+        ("Pirate Stronghold", None),
+    ],
+    "Pirate Stronghold Dock": [
         ("Pirate Stronghold", None),
     ],
     "Skipper's Retreat": [

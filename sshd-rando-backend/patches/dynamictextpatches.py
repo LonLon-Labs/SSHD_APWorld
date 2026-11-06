@@ -16,6 +16,8 @@ def add_dynamic_text_patches(
 
     add_song_text_patches(world, event_patch_handler)
 
+    add_cancel_only_statue_text_patch(event_patch_handler)
+
     add_sky_keep_goal_loc_patches(world)
 
     add_rando_hash(world, event_patch_handler)
@@ -336,6 +338,21 @@ def add_fi_text_patches(world: World, event_patch_handler: EventPatchHandler) ->
     #                 "text": f"{DUNGEON_COLORS[SK]}Sky Keep>>\nSmall Keys: <numeric arg0>\n\nDungeon Map: <string arg1>",
     #             }
     #         )
+
+
+def add_cancel_only_statue_text_patch(event_patch_handler: EventPatchHandler) -> None:
+    # The SYS_SAVE_12 label (002-System text index 29) is the label that lyt.rs
+    # points the Cancel-only locked-statue save prompt at. Vanilla leaves it
+    # blank. "[1-]" is the single cancel option.
+    event_patch_handler.append_to_event_patches(
+        "002-System",
+        {
+            "name": "Cancel-only locked statue prompt",
+            "type": "textpatch",
+            "index": 29,
+        },
+    )
+    add_text_data("Cancel-only locked statue prompt", Text("<string arg0>\n[1-]Cancel[2-]Cancel"))
 
 
 def add_gossip_stone_text_patches(

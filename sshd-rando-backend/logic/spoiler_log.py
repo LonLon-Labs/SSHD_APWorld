@@ -7,12 +7,21 @@ from constants.randoconstants import VERSION
 import os
 
 
+def is_vanilla_goddess_cube(location: Location) -> bool:
+    # Goddess Cubes are only dummy "Strike Goddess Cube" locations
+    # when they aren't decoupled from their chests
+    return (
+        "Goddess Cube" in location.types
+        and location.world.setting("decouple_goddess_cubes_and_chests") == "off"
+    )
+
+
 def spoiler_format_location(
     location: Location, longest_name_length: int, override_item_name: str | None = None
 ) -> str:
     spaces = longest_name_length - len(f"{location}")
 
-    if "Goddess Cube" in location.types:
+    if is_vanilla_goddess_cube(location):
         return f"{location}: {spaces * ' '}Strike Goddess Cube"
 
     if override_item_name == None:
@@ -178,7 +187,7 @@ def generate_spoiler_log(worlds: list[World]) -> None:
         # Recalculate longest name length for all locations
         longest_name_length = 0
         for location in worlds[0].location_table.values():
-            if "Goddess Cube" not in location.types:
+            if not is_vanilla_goddess_cube(location):
                 longest_name_length = max(longest_name_length, len(f"{location}"))
 
         # Output all enabled locations
@@ -194,7 +203,7 @@ def generate_spoiler_log(worlds: list[World]) -> None:
                 if "Gratitude Crystals" in location.types or (
                     location not in disabled_shuffle_locations
                     and "Hint Location" not in location.types
-                    and "Goddess Cube" not in location.types
+                    and not is_vanilla_goddess_cube(location)
                 ):
                     formatted_location_name = spoiler_format_location(
                         location,
@@ -281,7 +290,7 @@ def generate_spoiler_log(worlds: list[World]) -> None:
         # Recalculate longest name length for all locations
         longest_name_length = 0
         for location in worlds[0].location_table.values():
-            if "Goddess Cube" not in location.types:
+            if not is_vanilla_goddess_cube(location):
                 longest_name_length = max(longest_name_length, len(f"{location}"))
 
         # Output all disabled locations
