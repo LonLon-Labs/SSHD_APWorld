@@ -33,7 +33,8 @@
 //! observe a non-zero count paired with still-empty/sentinel entries.
 //!
 //! # Entry order
-//! The table holds at most `AP_ITEM_TABLE_MAX` (512) entries. Entries are
+//! The table holds at most `NORMAL_ITEM_TABLE_MAX` (1528) entries; its last
+//! `BLADE_RESERVED_SLOTS` belong to blade names. Entries are
 //! written in a deterministic order -- Beedle's Airshop entries (bit 15
 //! set) first, then ascending flag id -- so if a huge seed ever exceeds the
 //! cap, what gets dropped is predictable (highest custom flags) rather
@@ -44,12 +45,24 @@ use std::collections::HashMap;
 use ap_ipc::offsets;
 use process_memory::{MemError, ProcessMemory};
 
-use crate::locations::ApItemInfo;
+use crate::locations::{ApItemInfo, SlotData};
 
 /// Flag ids with this bit set are Beedle's Airshop entries
 /// (`0x8000 | sold_out_storyflag`), matching `__init__.py` and
 /// `shop.rs::handle_shop_traps`.
 pub const BEEDLE_FLAG_BIT: u16 = 0x8000;
+
+/// Normal item-info entries stop short of the table's end. The last
+/// BLADE_RESERVED_SLOTS entries belong to the game's blade-name lookup
+/// (`BLADE_RESERVED_KEY_BASE` in item.rs), which loads each blade's names into
+/// them at pickup time.
+pub const BLADE_RESERVED_SLOTS: usize = 8;
+pub const NORMAL_ITEM_TABLE_MAX: usize = ap_ipc::AP_ITEM_TABLE_MAX - BLADE_RESERVED_SLOTS;
+
+/// Limits for the blade-name block; must match `ApBladeNames` in ap-ipc / the game.
+pub const BLADE_MAX: usize = 16384;
+pub const BLADE_ITEM_NAME_MAX: usize = 384;
+pub const BLADE_PLAYER_NAME_MAX: usize = 64;
 
 /// Encodes `s` as UTF-16, truncated to fit `N` `u16`s with room left over
 /// for a trailing null, and null-pads the rest -- mirrors the Python
@@ -72,8 +85,8 @@ fn decode_utf16_fixed(buf: &[u16]) -> String {
 /// Writes every `(flag_id -> item/player name)` entry from `item_info`
 /// (i.e. `SlotData::ap_item_info`) into `AP_IPC_ROOT.item_info_table`,
 /// then the table's `count` field last (see module doc). Returns the
-/// number of entries written, capped at `ap_ipc::AP_ITEM_TABLE_MAX` (512)
-/// -- same cap the table itself has.
+/// number of entries written, capped at `NORMAL_ITEM_TABLE_MAX` (1528).
+/// The last `BLADE_RESERVED_SLOTS` table entries are left for blade names.
 pub fn write_item_info_table(
     mem: &mut impl ProcessMemory,
     root_addr: usize,
@@ -88,7 +101,7 @@ pub fn write_item_info_table(
     let mut sorted: Vec<(&u16, &ApItemInfo)> = item_info.iter().collect();
     sorted.sort_by_key(|(id, _)| (**id & BEEDLE_FLAG_BIT == 0, **id));
 
-    let count = sorted.len().min(ap_ipc::AP_ITEM_TABLE_MAX);
+    let count = sorted.len().min(NORMAL_ITEM_TABLE_MAX);
     for (i, (&flag_id, info)) in sorted.into_iter().take(count).enumerate() {
         let entry = ap_ipc::ApItemInfoEntry {
             flag_id,
@@ -104,12 +117,105 @@ pub fn write_item_info_table(
     Ok(count)
 }
 
+/// Writes the grass-blade name block (`ApBladeNames`, IPC v18) at
+/// `offsets::BLADE_NAMES`.
+///
+/// `indexes[n]` is `[item_index, player_index]` into `item_names` /
+/// `player_names` for blade number n; out-of-range pairs are written as
+/// `0xFFFF` (no name). Built as raw little-endian bytes instead of through
+/// the packed struct, so no field references are taken. Returns the number
+/// of blades written.
+pub fn write_blade_names(
+    mem: &mut impl ProcessMemory,
+    root_addr: usize,
+    item_names: &[String],
+    player_names: &[String],
+    indexes: &[[u16; 2]],
+    item_ids: &[u16],
+) -> Result<usize, MemError> {
+    const INDEX_OFF: usize = 8;
+    const ITEM_OFF: usize = INDEX_OFF + BLADE_MAX * 4;
+    const PLAYER_OFF: usize = ITEM_OFF + BLADE_ITEM_NAME_MAX * 64;
+    const ITEM_IDS_OFF: usize = PLAYER_OFF + BLADE_PLAYER_NAME_MAX * 32;
+    const TOTAL: usize = ITEM_IDS_OFF + BLADE_MAX * 2;
+    debug_assert_eq!(TOTAL, std::mem::size_of::<ap_ipc::ApBladeNames>());
+
+    let blade_count = indexes.len().min(BLADE_MAX);
+    let item_count = item_names.len().min(BLADE_ITEM_NAME_MAX);
+    let player_count = player_names.len().min(BLADE_PLAYER_NAME_MAX);
+
+    let mut out = vec![0u8; TOTAL];
+    out[0..2].copy_from_slice(&(blade_count as u16).to_le_bytes());
+    out[2..4].copy_from_slice(&(item_count as u16).to_le_bytes());
+    out[4..6].copy_from_slice(&(player_count as u16).to_le_bytes());
+    // Unused index slots mean "no name".
+    for slot in out[INDEX_OFF..ITEM_OFF].chunks_exact_mut(2) {
+        slot.copy_from_slice(&0xFFFFu16.to_le_bytes());
+    }
+
+    for (n, pair) in indexes.iter().take(blade_count).enumerate() {
+        let (item_i, player_i) = (pair[0], pair[1]);
+        let item_ok = (item_i as usize) < item_count;
+        let player_ok = (player_i as usize) < player_count;
+        let (a, b) = if item_ok && player_ok { (item_i, player_i) } else { (0xFFFF, 0xFFFF) };
+        let at = INDEX_OFF + n * 4;
+        out[at..at + 2].copy_from_slice(&a.to_le_bytes());
+        out[at + 2..at + 4].copy_from_slice(&b.to_le_bytes());
+    }
+
+    for (i, name) in item_names.iter().take(item_count).enumerate() {
+        let units: [u16; 32] = encode_utf16_fixed(name);
+        let base = ITEM_OFF + i * 64;
+        for (j, u) in units.iter().enumerate() {
+            out[base + j * 2..base + j * 2 + 2].copy_from_slice(&u.to_le_bytes());
+        }
+    }
+    for (i, name) in player_names.iter().take(player_count).enumerate() {
+        let units: [u16; 16] = encode_utf16_fixed(name);
+        let base = PLAYER_OFF + i * 32;
+        for (j, u) in units.iter().enumerate() {
+            out[base + j * 2..base + j * 2 + 2].copy_from_slice(&u.to_le_bytes());
+        }
+    }
+
+    // Game item id per blade (0 = spawn the placeholder).
+    for n in 0..blade_count {
+        let id = item_ids.get(n).copied().unwrap_or(0);
+        let at = ITEM_IDS_OFF + n * 2;
+        out[at..at + 2].copy_from_slice(&id.to_le_bytes());
+    }
+
+    mem.write_bytes(root_addr + offsets::BLADE_NAMES, &out)?;
+    Ok(blade_count)
+}
+
+/// Convenience wrapper: pulls the three blade-name lists out of `slot_data`.
+/// Skips the write entirely when the seed has no blade locations, so non-blade
+/// seeds don't pay for a ~122 KB write on every connect.
+pub fn write_blade_names_from_slot_data(
+    mem: &mut impl ProcessMemory,
+    root_addr: usize,
+    slot_data: &SlotData,
+) -> Result<usize, MemError> {
+    if slot_data.blade_name_indexes.is_empty() {
+        return Ok(0);
+    }
+    write_blade_names(
+        mem,
+        root_addr,
+        &slot_data.blade_item_names,
+        &slot_data.blade_player_names,
+        &slot_data.blade_name_indexes,
+        &slot_data.blade_game_item_ids,
+    )
+}
+
 /// What `verify_item_info_table` found in game memory.
 #[derive(Debug, Clone)]
 pub struct VerifyReport {
     /// The `count` field as currently stored in the game.
     pub count_in_game:    u16,
-    /// How many entries we expect (`item_info.len()`, capped at 512).
+    /// How many entries we expect (`item_info.len()`, capped at 1528).
     pub expected:         usize,
     /// Expected entries present in the game with the right item name.
     pub matched:          usize,
@@ -149,7 +255,7 @@ pub fn verify_item_info_table(
 
     let mut report = VerifyReport {
         count_in_game,
-        expected: item_info.len().min(ap_ipc::AP_ITEM_TABLE_MAX),
+        expected: item_info.len().min(NORMAL_ITEM_TABLE_MAX),
         matched: 0,
         beedle_expected: 0,
         beedle_matched: 0,
@@ -187,7 +293,7 @@ pub fn refresh_item_info_table(
     item_info: &HashMap<u16, ApItemInfo>,
 ) -> Result<bool, MemError> {
     let table_addr = root_addr + offsets::ITEM_INFO_TABLE;
-    let expected = item_info.len().min(ap_ipc::AP_ITEM_TABLE_MAX);
+    let expected = item_info.len().min(NORMAL_ITEM_TABLE_MAX);
 
     let count_raw = mem.read_bytes(table_addr + 4, 2)?;
     let in_game = u16::from_le_bytes([count_raw[0], count_raw[1]]) as usize;

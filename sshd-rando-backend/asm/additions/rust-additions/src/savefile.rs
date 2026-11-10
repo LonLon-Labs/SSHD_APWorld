@@ -57,12 +57,12 @@ pub struct SaveFile {
     // group (see GROUP1_FIRST_SCENE_INDEX in item.rs). Keep the total size of
     // each array + its padding at 4096 bytes.
     pub dungeonflags:              [[u16; 8]; 30],
-    pub _1:                        [u8; 3568],
+    pub dungeonflags_ext:          [[u16; 8]; 223], // dungeon indexes 30-252 (unused by game)
     // Archipelago seed/slot block, stored in the unused tail of the dungeonflag
     // array's 0x1000 byte reservation (indexes 253-255, never used by the game).
     pub ap_save_data:              ApSaveData,
     pub sceneflags:                [[u16; 8]; 30],
-    pub _2:                        [u8; 0xE20],
+    pub sceneflags_ext:            [[u16; 8]; 226], // scene indexes 30-255 (unused by game)
     pub tboxflags:                 [[u8; 4]; 26],
     pub _3:                        [u8; 0x498],
     pub enemy_kill_counters:       [u16; 100],

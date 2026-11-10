@@ -96,12 +96,17 @@ pub fn ap_queues_frame_tick() -> bool {
 /// is not queued twice, since setup_traps can run more than once per item.
 /// If the queue is full, the oldest entry is dropped.
 pub fn ap_flag_queue_push(flag_id: u16) {
-    if ap_flag_was_recently_shown(flag_id) {
+    // Blade keys are reused round-robin, and each pickup queues its key once
+    // (see setup_traps), so they skip the duplicate checks below.
+    let is_blade_key = flag_id >= item::BLADE_RESERVED_KEY_BASE;
+    if !is_blade_key && ap_flag_was_recently_shown(flag_id) {
         return;
     }
     unsafe {
         for i in 0..AP_FLAG_QUEUE_COUNT {
-            if AP_FLAG_QUEUE[(AP_FLAG_QUEUE_HEAD + i) % AP_FLAG_QUEUE_LEN] == flag_id {
+            if !is_blade_key
+                && AP_FLAG_QUEUE[(AP_FLAG_QUEUE_HEAD + i) % AP_FLAG_QUEUE_LEN] == flag_id
+            {
                 return;
             }
         }
@@ -575,7 +580,14 @@ pub extern "C" fn setup_traps(item_actor: *mut item::dAcItem) -> u16 {
         // set this — stateGet runs AFTER the event fires, so writing there
         // would leave stale values for the next item pickup.
         let itemid = (*item_actor).itemid;
-        if itemid == 216 || itemid == 217 || itemid == 218 {
+        if itemid == 216 && item::blade_side_contains(item_actor as *mut c_void) {
+            // Grass blade: its names come from the blade's own reserved slot.
+            // Queue it here, before the textbox event, not in handle_custom_item_get
+            // (which runs too late). The first call loads the names and returns the key.
+            if let Some(key) = item::blade_first_textbox_key(item_actor as *mut c_void) {
+                ap_flag_queue_push(key);
+            }
+        } else if itemid == 216 || itemid == 217 || itemid == 218 {
             let params = item::unpack_custom_item_params(item_actor);
             if params.flag != 0x7F {
                 // Full custom flag ID including the group bit, rebuilt straight

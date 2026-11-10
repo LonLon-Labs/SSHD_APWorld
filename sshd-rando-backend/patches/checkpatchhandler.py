@@ -46,6 +46,13 @@ AP_PLACEHOLDER_ITEMID = 216
 # ap-ipc crate, the Python client and _build_custom_flag_mapping in the APWorld.
 CUSTOM_FLAG_GROUP1 = 0x400
 
+# Custom flag "group 2" bit (bit 11 of the full custom flag ID). Group 2 lives in
+# save-file scene indexes 30-33 and dungeon indexes 30-33, which are reserved
+# padding in the save struct (see savefile.rs). Only grass patches use it: their
+# params2 has room for all 12 bits (see patch_grass and item.rs). Keep in sync with
+# CUSTOM_FLAG_GROUP2 in item.rs and the AP world's group 2 pool.
+CUSTOM_FLAG_GROUP2 = 0x800
+
 # Local IDs available to group 1: selector (bits 7-8) 0-3, bit 9 (flag space)
 # 0 = scene flags / 1 = dungeon flags, bit within page 0-126. Both flag spaces
 # exist for save-file scene indexes 26-29 (verified in game: sceneflags and
@@ -146,6 +153,11 @@ def determine_check_patches(
     group1_flags = [CUSTOM_FLAG_GROUP1 | i for i in GROUP1_LOCAL_FLAGS]
     group1_flags.reverse()
 
+    # Grass shuffle draws from group 2 (see CUSTOM_FLAG_GROUP2). The local IDs are the
+    # same 1015 as group 1, so grass gets its own pool of 1009 patches' worth.
+    group2_flags = [CUSTOM_FLAG_GROUP2 | i for i in GROUP1_LOCAL_FLAGS]
+    group2_flags.reverse()
+
     location_table = world.location_table
 
     # Remove flags already injected by Archipelago to prevent collisions.
@@ -158,6 +170,7 @@ def determine_check_patches(
     if injected_flags:
         custom_flags = [f for f in custom_flags if f not in injected_flags]
         group1_flags = [f for f in group1_flags if f not in injected_flags]
+        group2_flags = [f for f in group2_flags if f not in injected_flags]
 
     # A set is okay here because it doesn't touch any randomization
     playthrough_items = set()
@@ -189,6 +202,21 @@ def determine_check_patches(
             elif "Pumpkins" in location.types:
                 # Unshuffled pumpkins are never patched. Pumpkin shuffle is new,
                 # so there are no existing seeds to keep stable: burn nothing.
+                custom_flag = 0x3FF
+            elif "Grass Blade" in location.types:
+                # Grass blades get their 16-bit flag from the APWorld's blade table
+                # (blade_flag_to_location), never from the 10-bit pools, and are
+                # never patched with a stage path. Burn nothing.
+                custom_flag = 0x3FF
+            elif (
+                "Grass" in location.types
+                and world.setting("grass_shuffle") == "bundles"
+            ):
+                # Grass patches each get their own group 2 flag (bundles mode only;
+                # blades mode uses per-blade "Grass Blade" locations instead)
+                custom_flag = group2_flags.pop()
+            elif "Grass" in location.types:
+                # Unshuffled grass (off, or blades mode) is never patched: burn nothing.
                 custom_flag = 0x3FF
             elif (
                 "Barrels" in location.types
@@ -241,6 +269,21 @@ def determine_check_patches(
                     f"{custom_flag:#x}; pots, pumpkins and barrels must use group 1."
                 )
 
+        # Group 2 flags are only for grass patches, and every shuffled grass patch
+        # must carry one. A mismatch would make a check set another location's flag.
+        if custom_flag != 0x3FF:
+            is_group2 = bool(custom_flag & CUSTOM_FLAG_GROUP2)
+            if is_group2 and "Grass" not in location.types:
+                raise Exception(
+                    f'"{location.name}" has group 2 custom flag {custom_flag:#x} '
+                    "but isn't a grass patch."
+                )
+            if "Grass" in location.types and not is_group2:
+                raise Exception(
+                    f'"{location.name}" has custom flag {custom_flag:#x} but grass '
+                    "patches must use group 2."
+                )
+
         original_itemid = 0
 
         if "Stamina Fruits" in location.types:
@@ -266,6 +309,10 @@ def determine_check_patches(
             "Pumpkins" in location.types
             and world.setting("pumpkin_shuffle") == "off"
         ):
+            continue
+
+        # Don't patch per-patch grass unless bundles mode is on
+        if "Grass" in location.types and world.setting("grass_shuffle") != "bundles":
             continue
 
         # Don't patch barrels if they're off
@@ -386,6 +433,22 @@ def determine_check_patches(
                 BIRD_STATUE_LOCATION_NAMES.index(location.name),
                 statue_itemid,
                 custom_flag,
+            )
+
+        # Blade mode: the patch object's params2 gets its blade base once, from blade 1
+        # (blades of one patch are contiguous, so blade 1 has the lowest index).
+        grass_blade = getattr(location, "grass_blade", None)
+        if (
+            grass_blade is not None
+            and grass_blade["blade"] == 1
+            and world.setting("grass_shuffle") == "blades"
+        ):
+            stage_patch_handler.add_grass_blade_base(
+                grass_blade["stage"],
+                grass_blade["room"],
+                str(grass_blade["object_id"]),
+                grass_blade["index"],
+                grass_blade["count"],
             )
 
         for path in location.patch_paths:

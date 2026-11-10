@@ -18,7 +18,7 @@ use std::mem::size_of;
 
 /// 8-byte discovery marker the client scans for exactly once.
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_SUPPORTED_VERSION: u16 = 15;
+pub const AP_IPC_SUPPORTED_VERSION: u16 = 18;
 
 // ─── Sub-structs (mirror commands.rs / item.rs) ────────────────────────────
 
@@ -264,6 +264,54 @@ impl Default for ApExtFlags {
     }
 }
 
+/// Grass blade flags (IPC version 16). Scene indexes 34-255 and dungeon indexes
+/// 34-252, 16 bytes per index, read by byte offset from index 34. Mirrors
+/// `ApBladeFlags` in ipc.rs.
+#[repr(C, packed)]
+#[derive(Copy, Clone, Debug)]
+pub struct ApBladeFlags {
+    pub sceneflags:   [u8; 3552],
+    pub dungeonflags: [u8; 3504],
+}
+
+impl Default for ApBladeFlags {
+    fn default() -> Self {
+        ApBladeFlags { sceneflags: [0; 3552], dungeonflags: [0; 3504] }
+    }
+}
+
+/// Grass blade names (IPC version 17). `index[n]` is `[item_index, player_index]` for
+/// blade number n (0xFFFF = no name). Names are UTF-16, null-terminated. Mirrors
+/// `ApBladeNames` in ipc.rs.
+#[repr(C, packed)]
+#[derive(Copy, Clone, Debug)]
+pub struct ApBladeNames {
+    pub count:        u16,
+    pub item_count:   u16,
+    pub player_count: u16,
+    pub _pad:         u16,
+    pub index:        [[u16; 2]; 16384],
+    pub item_names:   [[u16; 32]; 384],
+    pub player_names: [[u16; 16]; 64],
+    /// Game item id to spawn for each blade (own-game items only; 0 = placeholder).
+    pub item_ids:     [u16; 16384],
+}
+
+impl Default for ApBladeNames {
+    fn default() -> Self {
+        ApBladeNames {
+            count: 0,
+            item_count: 0,
+            player_count: 0,
+            _pad: 0,
+            index: [[0; 2]; 16384],
+            item_names: [[0; 32]; 384],
+            player_names: [[0; 16]; 64],
+            item_ids: [0; 16384],
+        }
+    }
+}
+
 /// Seed gating info (IPC version 12+). Mirrors `ApSeedInfo` in ipc.rs.
 #[repr(C, packed)]
 #[derive(Copy, Clone, Debug, Default)]
@@ -459,6 +507,16 @@ pub struct ApIpcRoot {
 
     // Gossip-stone hint text block (IPC version 15). Appended at the END.
     pub hint_text: ApHintText,
+
+    // Extended custom flag pages, group 2 (scene/dungeon indexes 30-33).
+    // Appended at the END, after hint_text, so earlier offsets are unchanged.
+    pub ext2_flags: ApExtFlags,
+
+    // Grass blade flags (IPC version 16). Appended at the END.
+    pub blade_flags: ApBladeFlags,
+
+    // Grass blade names (IPC version 17). Appended at the END.
+    pub blade_names: ApBladeNames,
 }
 
 impl Default for ApIpcRoot {
@@ -488,6 +546,9 @@ impl Default for ApIpcRoot {
             teleport_request: ApTeleportRequest::default(),
             player_info: ApPlayerInfo::default(),
             hint_text: ApHintText::default(),
+            ext2_flags: ApExtFlags::default(),
+            blade_flags: ApBladeFlags::default(),
+            blade_names: ApBladeNames::default(),
         }
     }
 }
@@ -522,7 +583,10 @@ pub mod offsets {
     pub const TELEPORT_REQUEST: usize = SEED_INFO + size_of::<ApSeedInfo>();
     pub const PLAYER_INFO: usize = TELEPORT_REQUEST + size_of::<ApTeleportRequest>();
     pub const HINT_TEXT: usize = PLAYER_INFO + size_of::<ApPlayerInfo>();
-    pub const TOTAL_SIZE: usize = HINT_TEXT + size_of::<ApHintText>();
+    pub const EXT2_FLAGS: usize = HINT_TEXT + size_of::<ApHintText>();
+    pub const BLADE_FLAGS: usize = EXT2_FLAGS + size_of::<ApExtFlags>();
+    pub const BLADE_NAMES: usize = BLADE_FLAGS + size_of::<ApBladeFlags>();
+    pub const TOTAL_SIZE: usize = BLADE_NAMES + size_of::<ApBladeNames>();
 
     pub fn item_buffer_slot(index: usize) -> usize {
         ITEM_BUFFER + index * size_of::<ArchipelagoItemSlot>()
@@ -583,6 +647,10 @@ pub mod custom_flag {
     pub const GROUP1_FIRST_SCENE_INDEX: u16 = 26;
     /// Group bit in a full custom flag ID.
     pub const GROUP1_BIT: u16 = 0x400;
+    /// First save-file scene index of group 2 (selector `n` is `30 + n`).
+    pub const GROUP2_FIRST_SCENE_INDEX: u16 = 30;
+    /// Group 2 bit in a full custom flag ID (indexes 30-33, reserved padding).
+    pub const GROUP2_BIT: u16 = 0x800;
 
     pub struct Decoded {
         /// `true` = dungeonflag, `false` = sceneflag — matches
@@ -590,6 +658,8 @@ pub mod custom_flag {
         pub is_dungeonflag: bool,
         /// `true` = group 1 (extended pages, read from `ext_flags`).
         pub group1:         bool,
+        /// `true` = group 2 (pages 30-33, read from `ext2_flags`).
+        pub group2:         bool,
         /// Flag number (0-127) — this is the `flag_id` to pass to
         /// `check_global_sceneflag`/`check_global_dungeonflag` (and
         /// therefore to a `flag_request` with the matching `FLAG_TYPE_*`).
@@ -610,7 +680,10 @@ pub mod custom_flag {
         let scene_selector = ((flag_id >> 7) & 0x03) as usize;
         let is_dungeonflag = ((flag_id >> 9) & 0x01) != 0;
         let group1 = flag_id & GROUP1_BIT != 0;
-        let scene_index = if group1 {
+        let group2 = flag_id & GROUP2_BIT != 0;
+        let scene_index = if group2 {
+            GROUP2_FIRST_SCENE_INDEX + scene_selector as u16
+        } else if group1 {
             GROUP1_FIRST_SCENE_INDEX + scene_selector as u16
         } else {
             SCENE_INDEX_MAP[scene_selector]
@@ -618,6 +691,7 @@ pub mod custom_flag {
         Decoded {
             is_dungeonflag,
             group1,
+            group2,
             flag_num,
             scene_index,
             array_index: (flag_num / 16) as usize,
@@ -667,11 +741,13 @@ mod tests {
         assert_eq!(size_of::<ApCheckStats>(), 12);
         assert_eq!(size_of::<ArchipelagoItemSlot>(), 4);
         assert_eq!(size_of::<ApItemInfoEntry>(), 98);
-        assert_eq!(size_of::<ApItemInfoTable>(), 8 + 98 * 1536);
+        assert_eq!(size_of::<ApItemInfoTable>(), 8 + 98 * AP_ITEM_TABLE_MAX);
         assert_eq!(size_of::<ApPlayerVitals>(), 10);
         assert_eq!(size_of::<ApLinkRequests>(), 2);
         assert_eq!(size_of::<ApStageInfo>(), 44);
         assert_eq!(size_of::<ApExtFlags>(), 128);
+        assert_eq!(size_of::<ApBladeFlags>(), 7056);
+        assert_eq!(size_of::<ApBladeNames>(), 124936);
         assert_eq!(size_of::<ApSeedInfo>(), 24);
         assert_eq!(size_of::<ApTeleportRequest>(), 16);
         assert_eq!(size_of::<ApPlayerInfo>(), 52);
@@ -695,13 +771,13 @@ mod tests {
         assert_eq!(offsets::CURRENT_STAGE_NAME, 1087);
         assert_eq!(offsets::ITEM_BUFFER, 1095);
         assert_eq!(offsets::ITEM_INFO_TABLE, 1095 + 4 * 1024);
-        assert_eq!(offsets::PLAYER_VITALS, 1095 + 4 * 1024 + 8 + 98 * 1536);
-        assert_eq!(offsets::LINK_REQUESTS, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10);
-        assert_eq!(offsets::STAGE_INFO, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2);
-        assert_eq!(offsets::EXT_FLAGS, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44);
-        assert_eq!(offsets::TELEPORT_REQUEST, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24);
-        assert_eq!(offsets::PLAYER_INFO, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24 + 16);
-        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * 1536 + 10 + 2 + 44 + 128 + 24 + 16 + 52 + 580);
+        assert_eq!(offsets::PLAYER_VITALS, 1095 + 4 * 1024 + 8 + 98 * AP_ITEM_TABLE_MAX);
+        assert_eq!(offsets::LINK_REQUESTS, 1095 + 4 * 1024 + 8 + 98 * AP_ITEM_TABLE_MAX + 10);
+        assert_eq!(offsets::STAGE_INFO, 1095 + 4 * 1024 + 8 + 98 * AP_ITEM_TABLE_MAX + 10 + 2);
+        assert_eq!(offsets::EXT_FLAGS, 1095 + 4 * 1024 + 8 + 98 * AP_ITEM_TABLE_MAX + 10 + 2 + 44);
+        assert_eq!(offsets::TELEPORT_REQUEST, 1095 + 4 * 1024 + 8 + 98 * AP_ITEM_TABLE_MAX + 10 + 2 + 44 + 128 + 24);
+        assert_eq!(offsets::PLAYER_INFO, 1095 + 4 * 1024 + 8 + 98 * AP_ITEM_TABLE_MAX + 10 + 2 + 44 + 128 + 24 + 16);
+        assert_eq!(offsets::TOTAL_SIZE, 1095 + 4 * 1024 + 8 + 98 * AP_ITEM_TABLE_MAX + 10 + 2 + 44 + 128 + 24 + 16 + 52 + 580 + 128 + 7056 + 124936);
         assert_eq!(size_of::<ApIpcRoot>(), offsets::TOTAL_SIZE);
     }
 

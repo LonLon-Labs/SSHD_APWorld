@@ -171,7 +171,7 @@ extern "C" {
     static mut GAME_RELOADER_PTR: *mut actor::GameReloader;
 
     // Functions
-    fn debugPrint_128(string: *const c_char, fstr: *const c_char, ...);
+
     fn sinf(x: f32) -> f32;
     fn cosf(x: f32) -> f32;
     fn GameReloader__triggerExit(
@@ -616,15 +616,24 @@ pub extern "C" fn hide_appearing_chest(tbox: *mut dAcTbox) {
 pub const CUSTOM_FLAG_NONE: u16 = 0x3FF;
 /// Group bit in a full (u16) custom flag ID.
 pub const CUSTOM_FLAG_GROUP1: u16 = 0x400;
+/// Group bit for custom flag group 2 (scene/dungeon indexes 30-33, which sit
+/// in reserved padding in the save file; see savefile.rs). Full u16 IDs only.
+pub const CUSTOM_FLAG_GROUP2: u16 = 0x800;
 /// Marker stored in an item actor's param2 bits 18-23 meaning "this custom
 /// flag belongs to group 1". Bits 18-23 normally hold the original item id
 /// (values 0-5) or 0x3F for actors spawned with param2 = 0xFFFFFFFF, so 0x20
 /// (only bit 23 set) never occurs for group 0.
 pub const GROUP1_PARAM2_MARK: u32 = 0x20 << 18;
+/// Marker stored in an item actor's param2 bits 18-23 meaning "this custom
+/// flag belongs to group 2" (grass shuffle). 0x22 is unused by the other
+/// markers.
+pub const GROUP2_PARAM2_MARK: u32 = 0x22 << 18;
 const PARAM2_ORIGINAL_ITEM_FIELD: u32 = 0x3F << 18;
 
 const GROUP0_SCENE_INDEXES: [u16; 4] = [6, 13, 16, 19];
 pub const GROUP1_FIRST_SCENE_INDEX: u16 = 26;
+/// First scene/dungeon index of custom flag group 2 (indexes 30-33).
+pub const GROUP2_FIRST_SCENE_INDEX: u16 = 30;
 
 /// Splits a custom flag ID into (flag_space, scene_index, bit).
 #[inline]
@@ -632,7 +641,9 @@ pub fn decode_custom_flag(custom_flag: u16) -> (u16, u16, u16) {
     let bit = custom_flag & 0x7F;
     let selector = (custom_flag >> 7) & 0x3;
     let flag_space = (custom_flag >> 9) & 0x1;
-    let sceneindex = if custom_flag & CUSTOM_FLAG_GROUP1 != 0 {
+    let sceneindex = if custom_flag & CUSTOM_FLAG_GROUP2 != 0 {
+        GROUP2_FIRST_SCENE_INDEX + selector
+    } else if custom_flag & CUSTOM_FLAG_GROUP1 != 0 {
         GROUP1_FIRST_SCENE_INDEX + selector
     } else {
         GROUP0_SCENE_INDEXES[selector as usize]
@@ -646,6 +657,12 @@ pub fn param2_is_group1(param2: u32) -> bool {
     (param2 & PARAM2_ORIGINAL_ITEM_FIELD) == GROUP1_PARAM2_MARK
 }
 
+/// True if an item actor's param2 carries the group 2 marker.
+#[inline]
+pub fn param2_is_group2(param2: u32) -> bool {
+    (param2 & PARAM2_ORIGINAL_ITEM_FIELD) == GROUP2_PARAM2_MARK
+}
+
 /// The full custom flag ID (including the group bit) stored in an item
 /// actor's param2. Returns the low 10 bits unchanged for the sentinel.
 #[inline]
@@ -653,6 +670,8 @@ pub fn custom_flag_id_from_item_param2(param2: u32) -> u16 {
     let local = ((param2 >> 8) & 0x3FF) as u16;
     if local != CUSTOM_FLAG_NONE && param2_is_group1(param2) {
         local | CUSTOM_FLAG_GROUP1
+    } else if local != CUSTOM_FLAG_NONE && param2_is_group2(param2) {
+        local | CUSTOM_FLAG_GROUP2
     } else {
         local
     }
@@ -1104,6 +1123,17 @@ pub extern "C" fn handle_custom_item_get(item_actor: *mut dAcItem) -> u16 {
         //
         // Spirit Vessel is managed entirely by archipelago_silent_realm_tear_fix()
         // (main loop, every frame) using the Dungeonflags.
+        // Grass blade item (blade mode): set the blade's own 16-bit flag (see
+        // grass_blade_cut).
+        if ((*item_actor).base.members.base.param2 & PARAM2_ORIGINAL_ITEM_FIELD)
+            == BLADE_PARAM2_MARK
+        {
+            if let Some(blade_flag) = blade_side_take(item_actor as *mut c_void) {
+                // The blade's names were queued for its textbox in setup_traps.
+                set_blade_flag(blade_flag);
+            }
+        }
+
         // No per-tear FlagMgr writes are needed here.
         if !is_trial_tear && raw_custom_flag != 0 && raw_custom_flag != 0x3FF {
             // Use different flag spaces depending on the value of the
@@ -1156,16 +1186,19 @@ pub extern "C" fn unpack_custom_item_params(item_actor: *mut dAcItem) -> Unpacke
         let selector: u32 = (param2 & (0x00018000)) >> 15;
         let flag_space_trigger: u32 = (param2 & (0x00020000)) >> 17;
         let is_group1 = param2_is_group1(param2);
+        let is_group2 = param2_is_group2(param2);
         // Group 1 items carry GROUP1_PARAM2_MARK in bits 18-23 instead of an
         // original item id.
-        let mut original_itemid: u32 = if is_group1 {
+        let mut original_itemid: u32 = if is_group1 || is_group2 {
             0
         } else {
             (param2 & PARAM2_ORIGINAL_ITEM_FIELD) >> 18
         };
 
         // Transform the selector into one of the unused scene indexes
-        let sceneindex: u32 = if is_group1 {
+        let sceneindex: u32 = if is_group2 {
+            (GROUP2_FIRST_SCENE_INDEX as u32) + selector
+        } else if is_group1 {
             (GROUP1_FIRST_SCENE_INDEX as u32) + selector
         } else {
             GROUP0_SCENE_INDEXES[selector as usize] as u32
@@ -1378,6 +1411,26 @@ unsafe fn spawn_item_on_destroy(
     param2: u32,
     group1: bool,
 ) -> *mut dAcItem {
+    spawn_item_on_destroy_marked(
+        roomid,
+        pos,
+        rot_y,
+        itemid,
+        param2,
+        if group1 { GROUP1_PARAM2_MARK } else { 0 },
+    )
+}
+
+/// Same as `spawn_item_on_destroy`, but `mark` is the param2 marker (group 1,
+/// group 2 or 0) instead of a bool.
+unsafe fn spawn_item_on_destroy_marked(
+    roomid: u32,
+    pos: math::Vec3f,
+    rot_y: u16,
+    itemid: u16,
+    param2: u32,
+    mark: u32,
+) -> *mut dAcItem {
     let item_actor_param1: u32 = (itemid as u32) | 0xFF1FFE00;
 
     let mut actor_pos = pos;
@@ -1409,10 +1462,7 @@ unsafe fn spawn_item_on_destroy(
         actor_pos_ptr,
         item_rot_ptr,
         core::ptr::null_mut(),
-        0xFF00000F
-            | (param2 & 0x3FF00)
-            | (trapid << 4)
-            | if group1 { GROUP1_PARAM2_MARK } else { 0 },
+        0xFF00000F | (param2 & 0x3FF00) | (trapid << 4) | mark,
     ) as *mut dAcItem;
 
     if item_actor.is_null() {
@@ -1935,6 +1985,507 @@ fn barrel_drop_custom_item(
         (*barrel).members.base.param2 =
             ((*barrel).members.base.param2 & 0xFFFF0000) | BARREL_DROPPED_MARK;
         true
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Grass shuffle (dTgMassObj_c "grass patches"). Four hooks, called from
+// grass.asm through landingpads #115-#118:
+//   115 grass_cut_drop_hook    replaces the checkParam2OnDestroy call in
+//                              checkForHit's cut branch (x5 = blade base)
+//   116 grass_blade_init_hook  runs after each blade is created (x0 = blade
+// base)   117 grass_patch_begin_hook runs at the start of actorPostCreate (x0
+// = patch)   118 grass_spawn_skip_hook  runs at the start of spawnSingleGrass;
+// returns 1                              to skip a collected patch, so it
+// stays cut
+//
+// A patch's packed value is copied into each of its blades' field_0x24
+// (blade base + 0x38), and uses the same layout as the patch's params2 low
+// bits:   bits 0-11   group 2 custom flag (0x800 | 10-bit local ID)
+//   bits 12-20  item id (9 bits)
+//   bits 21-24  trap nibble
+// Vanilla grass has params2 low bits 0xFFF, which fail the group 2 check and
+// keep the vanilla drop.
+//
+// Only one item drops per patch until it is picked up or the stage reloads:
+// GRASS_PENDING marks flags whose item is on the ground. patch_begin clears
+// the bit when the patch is created, so a reload makes the grass spawn again.
+// ---------------------------------------------------------------------------
+const GRASS_BLADE_VALUE_OFFSET: usize = 0x38;
+const GRASS_PATCH_PARAMS2_OFFSET: usize = 0x12C;
+static mut GRASS_CURRENT_BLADE_VALUE: u32 = 0;
+// Grass blades (blade mode). Each cut blade spawns an AP item (placeholder
+// 216) with BLADE_PARAM2_MARK. The item's param2 can't hold a 16-bit flag, so
+// the flag is kept in a small side table keyed by the item actor's address,
+// and taken on pickup.
+const GRASS_BLADE_MODE_BIT: u32 = 0x8000_0000;
+const BLADE_PARAM2_MARK: u32 = 0x23 << 18;
+const BLADE_ITEM_ID: u16 = 216;
+// (1 << 18) matches the group 2 items (forward toss); trap nibble 0xF = not a
+// trap; bits 8-17 = 0x3FF = no custom flag, so the normal custom flag path
+// does nothing.
+const BLADE_SYNTHETIC_PARAM2: u32 = (1 << 18) | (0xF << 19) | (0x3FF << 8);
+const BLADE_SCENE_BLOCK_FLAGS: u32 = 222 * 128;
+const BLADE_CAPACITY: u32 = (222 + 219) * 128;
+const BLADE_SIDE_LEN: usize = 1024;
+static mut BLADE_SIDE_PTR: [usize; BLADE_SIDE_LEN] = [0; BLADE_SIDE_LEN];
+static mut BLADE_SIDE_FLAG: [u16; BLADE_SIDE_LEN] = [0; BLADE_SIDE_LEN];
+static mut BLADE_SIDE_NEXT: usize = 0;
+/// Textbox key loaded for each side-table entry; 0 = not loaded yet.
+static mut BLADE_SIDE_KEY: [u16; BLADE_SIDE_LEN] = [0; BLADE_SIDE_LEN];
+
+/// Blade number n (global, from the APWorld / patcher) to its 16-bit flag.
+/// Scene space comes first (save indexes 34-255), then dungeon space (34-252).
+/// Same numbering as _build_custom_flag_mapping in the APWorld.
+#[inline]
+pub fn blade_number_to_flag(n: u32) -> u16 {
+    let (space, local) = if n < BLADE_SCENE_BLOCK_FLAGS {
+        (0u32, n)
+    } else {
+        (1u32, n - BLADE_SCENE_BLOCK_FLAGS)
+    };
+    let index = 34 + local / 128;
+    let bit = local % 128;
+    ((space << 15) | (index << 7) | bit) as u16
+}
+
+unsafe fn blade_side_insert(actor: *mut c_void, flag: u16) {
+    let slot = BLADE_SIDE_NEXT % BLADE_SIDE_LEN;
+    BLADE_SIDE_PTR[slot] = actor as usize;
+    BLADE_SIDE_FLAG[slot] = flag;
+    BLADE_SIDE_KEY[slot] = 0;
+    BLADE_SIDE_NEXT = BLADE_SIDE_NEXT.wrapping_add(1);
+}
+
+/// Returns the blade flag stored for this item actor and forgets it. None if
+/// the actor has no entry (not a blade item, or it was already taken).
+unsafe fn blade_side_take(actor: *mut c_void) -> Option<u16> {
+    let p = actor as usize;
+    if p == 0 {
+        return None;
+    }
+    for i in 0..BLADE_SIDE_LEN {
+        if BLADE_SIDE_PTR[i] == p {
+            BLADE_SIDE_PTR[i] = 0;
+            return Some(BLADE_SIDE_FLAG[i]);
+        }
+    }
+    None
+}
+
+/// True if `actor` is a grass blade item that is still waiting to be picked
+/// up.
+pub unsafe fn blade_side_contains(actor: *mut c_void) -> bool {
+    let p = actor as usize;
+    if p == 0 {
+        return false;
+    }
+    for i in 0..BLADE_SIDE_LEN {
+        if BLADE_SIDE_PTR[i] == p {
+            return true;
+        }
+    }
+    false
+}
+
+/// The textbox key for a grass blade item, returned on the first call only.
+/// That call loads the blade's names into a reserved slot, so setup_traps can
+/// queue the textbox once per pickup. Later calls return None.
+pub unsafe fn blade_first_textbox_key(actor: *mut c_void) -> Option<u16> {
+    let p = actor as usize;
+    if p == 0 {
+        return None;
+    }
+    for i in 0..BLADE_SIDE_LEN {
+        if BLADE_SIDE_PTR[i] == p {
+            if BLADE_SIDE_KEY[i] != 0 {
+                return None;
+            }
+            let key = load_blade_name(BLADE_SIDE_FLAG[i]);
+            BLADE_SIDE_KEY[i] = key;
+            return Some(key);
+        }
+    }
+    None
+}
+
+/// Cut hook for a blade in blade mode. Spawns the blade's AP item and records
+/// its flag.
+unsafe fn grass_blade_cut(blade: *mut u8, roomid: u32, pos: *mut math::Vec3f, packed: u32) -> u32 {
+    let flag = (packed & 0xFFFF) as u16;
+    if pos.is_null() {
+        return 0;
+    }
+    // A collected blade is never spawned (see grass_spawn_skip_hook), so this only
+    // guards against a stale value.
+    if check_blade_flag(flag) {
+        return 0;
+    }
+    // Own-game items spawn as their real item, resolved the same way the pots
+    // do. Other players' items keep the placeholder (216).
+    let own_id = blade_game_item_id(flag);
+    // Trap pseudo-items (249..=254) are not models, so they spawn as a Rupoor
+    // carrying the trap id (254 - item id) in param2 bits 19-22. spawn_item_on_
+    // destroy_marked moves that into bits 4-7, where setup_traps reads it. This
+    // is the same encoding as give_item_with_archipelago_flag_and_trap and the
+    // item buffer path. 0xF means "not a trap".
+    let trap_id: u32 = if (249..=254).contains(&own_id) {
+        (254 - own_id) as u32
+    } else {
+        0xF
+    };
+    let spawn_id = if trap_id != 0xF {
+        34
+    } else if own_id == 0 {
+        BLADE_ITEM_ID
+    } else if own_id == 219 || bird_statue_unlock_flag_index(own_id).is_some() {
+        own_id
+    } else {
+        dAcItem__determineFinalItemid(own_id as u64) as u16
+    };
+    let blade_param2 = (BLADE_SYNTHETIC_PARAM2 & !(0xF << 19)) | (trap_id << 19);
+    let item_actor =
+        spawn_item_on_destroy_marked(roomid, *pos, 0, spawn_id, blade_param2, BLADE_PARAM2_MARK);
+    if item_actor.is_null() {
+        return 0;
+    }
+    blade_side_insert(item_actor as *mut c_void, flag);
+    1
+}
+
+// Blade mode. A blade patch's params2 is 0x80000000 | (count << 14) | base
+// (see stagepatchhandler.patch_grass_blade_base). GRASS_ATTEMPT counts the
+// spawn attempts on the current patch; attempt a (0-based) is blade base + a.
+static mut GRASS_PATCH_IS_BLADE: bool = false;
+static mut GRASS_PATCH_BLADE_BASE: u32 = 0;
+static mut GRASS_PATCH_BLADE_COUNT: u32 = 0;
+static mut GRASS_ATTEMPT: u32 = 0;
+static mut GRASS_PATCH_SKIP: u32 = 0;
+static mut GRASS_PENDING: [u32; 2048] = [0; 2048];
+
+#[inline]
+fn grass_is_group2_flag(flag: u16) -> bool {
+    (flag & CUSTOM_FLAG_GROUP2) != 0
+        && (flag & CUSTOM_FLAG_GROUP1) == 0
+        && (flag & 0x3FF) != CUSTOM_FLAG_NONE
+}
+
+// Grass blade flags are 16-bit: bit 15 = flag space (0 scene, 1 dungeon), bits
+// 7-14 = save index (34-255 scene, 34-252 dungeon), bits 0-6 = bit within the
+// page. They match blade_flag_to_location in the APWorld. The index can be any
+// save index, so the existing flag accessors (which reach indexes 30+ through
+// scene_page / dungeon_page) are used as they are.
+#[inline]
+pub fn decode_blade_flag(flag: u16) -> (u16, u16, u16) {
+    ((flag >> 15) & 1, (flag >> 7) & 0xFF, flag & 0x7F)
+}
+
+// Blade names (IPC version 17). The name lists and per-blade index live in
+// AP_IPC_ROOT.blade_names; the textbox reads one reserved slot of the
+// item-name table (the last entry) for the blade being picked up.
+/// Blade textbox keys. Each pickup takes the next of these reserved slots, in
+/// turn, so a few quick pickups keep their own names. The slots are the last
+/// BLADE_RESERVED_SLOTS entries of the item-name table.
+pub const BLADE_RESERVED_SLOTS: usize = 8;
+pub const BLADE_RESERVED_KEY_BASE: u16 = 0xFFF0;
+pub const BLADE_RESERVED_INDEX_BASE: usize = AP_ITEM_TABLE_MAX - BLADE_RESERVED_SLOTS;
+static mut BLADE_NAME_NEXT: usize = 0;
+
+/// Blade number of a blade flag: scene blades first, then dungeon blades. This
+/// is the order the APWorld assigns flags in, and the index into the name
+/// index.
+pub fn blade_number(flag: u16) -> Option<usize> {
+    let (space, index, bit) = decode_blade_flag(flag);
+    if index < 34 {
+        return None;
+    }
+    let local = ((index as usize) - 34) * 128 + bit as usize;
+    Some(
+        if space == 0 {
+            local
+        } else {
+            BLADE_SCENE_BLOCK_FLAGS as usize + local
+        },
+    )
+}
+
+/// Copies the names for `blade_flag` into the next round-robin reserved slot
+/// and returns that slot's textbox key. Blades with no name get the generic
+/// "Archipelago Item" / "another player" text.
+pub unsafe fn load_blade_name(blade_flag: u16) -> u16 {
+    let slot_no = BLADE_NAME_NEXT % BLADE_RESERVED_SLOTS;
+    BLADE_NAME_NEXT = BLADE_NAME_NEXT.wrapping_add(1);
+    let key = BLADE_RESERVED_KEY_BASE + slot_no as u16;
+    let slot = core::ptr::addr_of_mut!(
+        crate::ipc::AP_IPC_ROOT.item_info_table.entries[BLADE_RESERVED_INDEX_BASE + slot_no]
+    );
+
+    let mut item_buf = [0u16; 32];
+    let mut player_buf = [0u16; 16];
+    if !resolve_blade_names(blade_flag, &mut item_buf, &mut player_buf) {
+        for (i, b) in b"Archipelago Item".iter().enumerate() {
+            item_buf[i] = *b as u16;
+        }
+        for (i, b) in b"another player".iter().enumerate() {
+            player_buf[i] = *b as u16;
+        }
+    }
+    core::ptr::copy_nonoverlapping(
+        item_buf.as_ptr() as *const u8,
+        core::ptr::addr_of_mut!((*slot).item_name) as *mut u8,
+        64,
+    );
+    core::ptr::copy_nonoverlapping(
+        player_buf.as_ptr() as *const u8,
+        core::ptr::addr_of_mut!((*slot).player_name) as *mut u8,
+        32,
+    );
+    core::ptr::write_unaligned(core::ptr::addr_of_mut!((*slot).flag_id), key);
+    key
+}
+
+/// Reads the item and player names for `blade_flag` from the names block.
+/// Returns false if the blade has no valid name entry.
+unsafe fn resolve_blade_names(
+    blade_flag: u16,
+    item_out: &mut [u16; 32],
+    player_out: &mut [u16; 16],
+) -> bool {
+    let Some(n) = blade_number(blade_flag) else {
+        return false;
+    };
+    let names = core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.blade_names);
+    let count = core::ptr::read_unaligned(core::ptr::addr_of!((*names).count)) as usize;
+    if n >= count {
+        return false;
+    }
+    let pair = core::ptr::addr_of!((*names).index[n]) as *const u16;
+    let item_idx = core::ptr::read_unaligned(pair) as usize;
+    let player_idx = core::ptr::read_unaligned(pair.add(1)) as usize;
+    let item_count = core::ptr::read_unaligned(core::ptr::addr_of!((*names).item_count)) as usize;
+    let player_count =
+        core::ptr::read_unaligned(core::ptr::addr_of!((*names).player_count)) as usize;
+    if item_idx >= item_count || player_idx >= player_count {
+        return false;
+    }
+    // The name arrays are packed, so copy them as bytes instead of taking
+    // references into them.
+    core::ptr::copy_nonoverlapping(
+        core::ptr::addr_of!((*names).item_names[item_idx]) as *const u16,
+        item_out.as_mut_ptr(),
+        32,
+    );
+    core::ptr::copy_nonoverlapping(
+        core::ptr::addr_of!((*names).player_names[player_idx]) as *const u16,
+        player_out.as_mut_ptr(),
+        16,
+    );
+    true
+}
+
+/// The game item id a blade should spawn as: its own item's id when the item
+/// belongs to this game, 0 when it is another player's item.
+pub unsafe fn blade_game_item_id(blade_flag: u16) -> u16 {
+    let Some(n) = blade_number(blade_flag) else {
+        return 0;
+    };
+    let names = core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.blade_names);
+    let count = core::ptr::read_unaligned(core::ptr::addr_of!((*names).count)) as usize;
+    if n >= count {
+        return 0;
+    }
+    core::ptr::read_unaligned(core::ptr::addr_of!((*names).item_ids[n]))
+}
+
+pub unsafe fn set_blade_flag(flag: u16) {
+    let (space, index, bit) = decode_blade_flag(flag);
+    if space == 0 {
+        flag::set_global_sceneflag(index, bit);
+    } else {
+        flag::set_global_dungeonflag(index, bit);
+    }
+}
+
+pub unsafe fn check_blade_flag(flag: u16) -> bool {
+    let (space, index, bit) = decode_blade_flag(flag);
+    if space == 0 {
+        flag::check_global_sceneflag(index, bit) != 0
+    } else {
+        flag::check_global_dungeonflag(index, bit) != 0
+    }
+}
+
+unsafe fn grass_pending_bit(flag: u16) -> (usize, u32) {
+    // Covers every 16-bit flag: patch-mode IDs (0x800 | local) and blade IDs.
+    let idx = (flag as usize) >> 5;
+    let bit = 1u32 << ((flag & 0x1F) as u32);
+    (idx, bit)
+}
+
+#[no_mangle]
+pub extern "C" fn grass_patch_begin_hook(patch: *mut c_void) {
+    unsafe {
+        let params2 =
+            ((patch as *const u8).add(GRASS_PATCH_PARAMS2_OFFSET) as *const u32).read_unaligned();
+        let flag = (params2 & 0xFFF) as u16;
+        GRASS_PATCH_IS_BLADE = false;
+        if (params2 & GRASS_BLADE_MODE_BIT) != 0 && (params2 & 0xFFFFFF) != 0xFFFFFF {
+            // Blade mode. Vanilla grass (low 24 bits all set, bit 31 maybe set) is
+            // excluded above.
+            GRASS_PATCH_IS_BLADE = true;
+            GRASS_PATCH_BLADE_BASE = params2 & 0x3FFF;
+            GRASS_PATCH_BLADE_COUNT = (params2 >> 14) & 0xFF;
+            GRASS_ATTEMPT = 0;
+            GRASS_CURRENT_BLADE_VALUE = 0;
+            GRASS_PATCH_SKIP = 0;
+        } else if grass_is_group2_flag(flag) {
+            let item = (params2 >> 12) & 0x1FF;
+            let trap = (params2 >> 21) & 0xF;
+            GRASS_CURRENT_BLADE_VALUE = (flag as u32) | (item << 12) | (trap << 21);
+            GRASS_PATCH_SKIP = check_ap_custom_flag(flag) as u32;
+            // Recreating the patch means any item from an earlier cut is gone.
+            let (idx, bit) = grass_pending_bit(flag);
+            GRASS_PENDING[idx] &= !bit;
+        } else {
+            GRASS_CURRENT_BLADE_VALUE = 0;
+            GRASS_PATCH_SKIP = 0;
+        }
+    }
+}
+
+/// Guest heap range that the grass-kind objects and blades were seen in. Any
+/// pointer outside it is treated as corrupt so the hook never reads it.
+#[inline]
+fn grass_guest_ptr_ok(p: u64) -> bool {
+    (0x0800_0000..0x1000_0000).contains(&p) && (p & 7) == 0
+}
+
+/// True when the free list at shared+0x50 is empty (head is the anchor at
+/// +0x48) or the head node's prev link points back at the anchor.
+/// spawnSingleGrass's pop relies on that link (it writes the head slot when
+/// prev == anchor). Range checks alone are not enough: the Rust debug string
+/// buffers sit inside the guest heap range and were accepted as nodes.
+unsafe fn grass_free_list_ok(shared: *const u8) -> bool {
+    let anchor = shared.add(0x48) as u64;
+    let head = (shared.add(0x50) as *const u64).read_unaligned();
+    if head == anchor {
+        return true;
+    }
+    if !grass_guest_ptr_ok(head) {
+        return false;
+    }
+    let prev = (head as *const u64).read_unaligned();
+    let next = ((head + 8) as *const u64).read_unaligned();
+    if prev != anchor {
+        return false;
+    }
+    if next == anchor {
+        return true;
+    }
+    grass_guest_ptr_ok(next) && (next as *const u64).read_unaligned() == head
+}
+
+#[no_mangle]
+pub extern "C" fn grass_spawn_skip_hook(_shared: *mut c_void) -> u32 {
+    unsafe {
+        // spawnSingleGrass pops a blade from the shared grass-kind object's free
+        // list (sentinel +0x48, head +0x50) without checking it. If the list is
+        // not a valid linked list the guest dereferences garbage and crashes. Skip
+        // the patch instead of walking a corrupt list.
+        if _shared.is_null() {
+            return 1;
+        }
+        let shared = _shared as *const u8;
+        let ok = grass_free_list_ok(shared);
+        if !ok {
+            return 1;
+        }
+        // spawnSingleGrass gets a shared grass-kind object here, not the patch, so
+        // params2 can't be read from it. grass_patch_begin_hook runs with the real
+        // patch and already set GRASS_CURRENT_BLADE_VALUE and GRASS_PATCH_SKIP.
+        if GRASS_PATCH_IS_BLADE {
+            let attempt = GRASS_ATTEMPT;
+            GRASS_ATTEMPT = attempt.wrapping_add(1);
+            if attempt >= GRASS_PATCH_BLADE_COUNT {
+                // Past the blade count the APWorld knows for this patch: keep the vanilla
+                // behaviour.
+                GRASS_CURRENT_BLADE_VALUE = 0;
+                return 0;
+            }
+            let n = GRASS_PATCH_BLADE_BASE + attempt;
+            if n >= BLADE_CAPACITY {
+                GRASS_CURRENT_BLADE_VALUE = 0;
+                return 0;
+            }
+            let flag = blade_number_to_flag(n);
+            if check_blade_flag(flag) {
+                // Collected earlier: report success without creating the blade (code 2).
+                GRASS_CURRENT_BLADE_VALUE = 0;
+                return 2;
+            }
+            GRASS_CURRENT_BLADE_VALUE = GRASS_BLADE_MODE_BIT | (flag as u32);
+            return 0;
+        }
+        GRASS_PATCH_SKIP
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn grass_blade_init_hook(blade: *mut u8) {
+    unsafe {
+        (blade.add(GRASS_BLADE_VALUE_OFFSET) as *mut u32)
+            .write_unaligned(GRASS_CURRENT_BLADE_VALUE);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn grass_cut_drop_hook(
+    param2_s0x18: u8,
+    roomid: u32,
+    pos: *mut math::Vec3f,
+    param_4: u32,
+    param_5: *mut c_void,
+    blade: *mut u8,
+) -> u32 {
+    unsafe {
+        let packed = (blade.add(GRASS_BLADE_VALUE_OFFSET) as *const u32).read_unaligned();
+        if (packed & GRASS_BLADE_MODE_BIT) != 0 {
+            return grass_blade_cut(blade, roomid, pos, packed);
+        }
+        let flag = (packed & 0xFFF) as u16;
+        if !grass_is_group2_flag(flag) {
+            return checkParam2OnDestroy(param2_s0x18, roomid, pos, param_4, param_5);
+        }
+        // Every cut blade drops its own item (no one-item-per-patch limit).
+        let (idx, bit) = grass_pending_bit(flag);
+        if pos.is_null() {
+            return 0;
+        }
+
+        let item_id = ((packed >> 12) & 0x1FF) as u16;
+        let trap_nibble = (packed >> 21) & 0xF;
+        let new_itemid = if item_id == 219 || bird_statue_unlock_flag_index(item_id).is_some() {
+            item_id
+        } else {
+            dAcItem__determineFinalItemid(item_id as u64) as u16
+        };
+        let local_flag = (flag & 0x3FF) as u32;
+        let synthetic_param2: u32 =
+            (0xFF << 24) | (1 << 18) | (trap_nibble << 19) | (local_flag << 8);
+
+        let item_actor = spawn_item_on_destroy_marked(
+            roomid,
+            *pos,
+            0,
+            new_itemid,
+            synthetic_param2,
+            GROUP2_PARAM2_MARK,
+        );
+        if item_actor.is_null() {
+            return 0;
+        }
+        GRASS_PENDING[idx] |= bit;
+        1
     }
 }
 
@@ -4210,6 +4761,28 @@ pub extern "C" fn refresh_ipc_addresses() {
                     as *const [u8; 64];
             crate::ipc::AP_IPC_ROOT.ext_flags.dungeonflags =
                 core::ptr::read_unaligned(ext_dungeon_ptr);
+
+            // Extended custom flag pages (group 2): scene/dungeon indexes 30-33.
+            // Read by byte offset: the declared arrays stop at index 29, and
+            // indexes 30-255 are reserved padding in the same save struct.
+            let scene_base = core::ptr::addr_of!((*FILE_MGR).FA.sceneflags) as *const u8;
+            crate::ipc::AP_IPC_ROOT.ext2_flags.sceneflags = core::ptr::read_unaligned(
+                scene_base.add(GROUP2_FIRST_SCENE_INDEX as usize * 16) as *const [u8; 64],
+            );
+            let dungeon_base = core::ptr::addr_of!((*FILE_MGR).FA.dungeonflags) as *const u8;
+            crate::ipc::AP_IPC_ROOT.ext2_flags.dungeonflags = core::ptr::read_unaligned(
+                dungeon_base.add(GROUP2_FIRST_SCENE_INDEX as usize * 16) as *const [u8; 64],
+            );
+
+            // Grass blade flags (IPC v16): scene indexes 34-255 and dungeon indexes
+            // 34-252, read by byte offset from index 34 (16 bytes per index).
+            // The scene copy ends at byte 4096 (end of the scene block) and
+            // the dungeon copy at 4048 (before the AP save block), so neither
+            // reads past its own array.
+            crate::ipc::AP_IPC_ROOT.blade_flags.sceneflags =
+                core::ptr::read_unaligned(scene_base.add(34 * 16) as *const [u8; 3552]);
+            crate::ipc::AP_IPC_ROOT.blade_flags.dungeonflags =
+                core::ptr::read_unaligned(dungeon_base.add(34 * 16) as *const [u8; 3504]);
         }
 
         // STATIC_TBOXFLAGS doesn't depend on FILE_MGR (it's a fixed .bss
@@ -4308,6 +4881,11 @@ pub extern "C" fn refresh_ipc_addresses() {
 /// (pymem/WriteProcessMemory) and the emulator's JIT may otherwise cache stale
 /// values from the initial zeroed static.
 pub fn lookup_ap_item_index(flag_id: u16) -> usize {
+    if flag_id >= BLADE_RESERVED_KEY_BASE
+        && ((flag_id - BLADE_RESERVED_KEY_BASE) as usize) < BLADE_RESERVED_SLOTS
+    {
+        return BLADE_RESERVED_INDEX_BASE + (flag_id - BLADE_RESERVED_KEY_BASE) as usize;
+    }
     unsafe {
         let count_ptr = core::ptr::addr_of!(crate::ipc::AP_IPC_ROOT.item_info_table.count);
         let count = core::ptr::read_volatile(count_ptr) as usize;

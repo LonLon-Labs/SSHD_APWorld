@@ -857,6 +857,90 @@ def patch_pot(
     pot["params2"] = mask_shift_set(pot["params2"], 0x3FF, 8, custom_flag)
 
 
+def patch_grass(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+) -> None:
+    """Grass shuffle (MassTag, dTgMassObj_c; one grass patch = one location).
+
+    Unlike pumpkins and barrels, the patch's own params2 carries the data: the
+    game reads it at actorPostCreate entry (grass.asm hook A), before any shared
+    setup code runs. The packed layout is the one grass_patch_begin_hook in
+    item.rs reads:
+      bits 0-11   group 2 custom flag (bit 11 set, bit 10 clear, 10-bit local ID)
+      bits 12-20  item id (9 bits)
+      bits 21-24  trap nibble (0xF = not a trap)
+    Bits 25-31 are cleared, so the vanilla drop id no longer applies to a shuffled
+    patch. Unshuffled patches (no custom flag) are left untouched.
+    """
+    id = int(object_id_str, 0)
+
+    grass_patch: dict | None = next(
+        filter(
+            lambda x: x["name"] == "MassTag" and x["id"] == id,
+            bzs.get("STAS", []),
+        ),
+        None,
+    )
+
+    if grass_patch is None:
+        raise Exception(f"No grass patch (MassTag) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla drop
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return
+
+    if (custom_flag & 0x800) == 0 or (custom_flag & 0x400) != 0:
+        raise Exception(
+            f"Grass patch '{hex(id)}' was given custom flag {custom_flag:#x}; "
+            "grass patches must use group 2 flags (bit 11 set, bit 10 clear)."
+        )
+
+    trap_nibble = (254 - trapid) if trapid else 0xF
+    if not (0 <= trap_nibble <= 0xF):
+        raise Exception(f"Grass patch '{hex(id)}' has invalid trap id {trapid}.")
+    if not (0 <= itemid <= 0x1FF):
+        raise Exception(f"Grass patch '{hex(id)}' has item id {itemid} that doesn't fit in 9 bits.")
+
+    grass_patch["params2"] = (
+        (custom_flag & 0xFFF)
+        | ((itemid & 0x1FF) << 12)
+        | (trap_nibble << 21)
+    )
+
+
+def patch_grass_blade_base(room_layers: dict, objectid: str, base: int, count: int) -> None:
+    """Blade mode (grass_shuffle == "blades"): store a patch's blade base and blade count.
+
+    params2 becomes 0x80000000 | (count << 14) | base:
+      bit 31       blade-mode mark
+      bits 14-21   number of blades in this patch (1..255)
+      bits 0-13    global index of the patch's first blade (0..12301)
+    Patch mode never sets bit 31 (patch_grass clears bits 25-31), and vanilla grass
+    has its low 24 bits all set (0xFFFFFF in phaseA-F300.log), so the cases are:
+      low 24 bits == 0xFFFFFF -> vanilla, not shuffled
+      bit 31 set              -> blade mode
+      otherwise               -> patch mode (bits 0-11 as in patch_grass)
+    The object is found by its MassTag id across all layers of the room.
+    """
+    id = int(objectid, 0)
+    if not (0 <= base < (1 << 14)):
+        raise Exception(f"Grass blade base {base} for patch '{hex(id)}' doesn't fit in 14 bits.")
+    if not (1 <= count <= 255):
+        raise Exception(f"Grass blade count {count} for patch '{hex(id)}' doesn't fit in 8 bits.")
+
+    matches = [
+        tag
+        for layer_bzs in room_layers.values()
+        for tag in layer_bzs.get("STAS", [])
+        if tag["name"] == "MassTag" and tag["id"] == id
+    ]
+    if len(matches) != 1:
+        raise Exception(
+            f"Expected exactly one grass patch (MassTag) with id '{hex(id)}' in this room, found {len(matches)}."
+        )
+    matches[0]["params2"] = 0x80000000 | (count << 14) | base
+
+
 def _f32_bits(value: float) -> int:
     return struct.unpack("<I", struct.pack("<f", value))[0]
 
@@ -1811,6 +1895,18 @@ class StagePatchHandler:
                                     "More than 192 barrels have items; BARREL_TABLE_ENTRIES only holds 192."
                                 )
                             self.barrel_entries.append(barrel_entry)
+                    elif object_name == "MassTag":
+                        patch_grass(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                    elif object_name == "MassTagBlade":
+                        # Blade mode: itemid carries the blade base and trapid the blade count
+                        # (see add_grass_blade_base).
+                        patch_grass_blade_base(room_bzs["LAY "], objectid, itemid, trapid)
                     elif object_name == "Bell":
                         patch_academy_bell(
                             room_bzs["LAY "][f"l{layer}"],
@@ -2152,6 +2248,16 @@ class StagePatchHandler:
                 original_itemid,
                 tbox_subtype,
             )
+        )
+
+    def add_grass_blade_base(self, stage: str, room: int, objectid: str, base: int, count: int):
+        """Blade mode: write a grass patch's blade base and count into its params2.
+
+        Queued as a check patch with object_name "MassTagBlade". The base goes in the
+        itemid slot and the count in the trapid slot, since both are plain ints.
+        """
+        self.check_patches[stage].append(
+            (room, "MassTagBlade", -1, objectid, base, count, 0x3FF, 0, -1)
         )
 
     def add_global_patch(self, patch: dict):

@@ -39,13 +39,21 @@ pub fn flags_set(
     let dungeonflags = mem.read_bytes(root_addr + offsets::DUNGEONFLAGS, FLAG_ARRAY_BYTES)?;
     let ext = mem.read_bytes(root_addr + offsets::EXT_FLAGS, EXT_FLAG_ARRAY_BYTES * 2)?;
     let (ext_sceneflags, ext_dungeonflags) = ext.split_at(EXT_FLAG_ARRAY_BYTES);
+    // Group 2 flags (scene/dungeon indexes 30-33) live in `ext2_flags`.
+    let ext2 = mem.read_bytes(root_addr + offsets::EXT2_FLAGS, EXT_FLAG_ARRAY_BYTES * 2)?;
+    let (ext2_sceneflags, ext2_dungeonflags) = ext2.split_at(EXT_FLAG_ARRAY_BYTES);
     for &flag_id in flag_ids {
         let d = custom_flag::decode(flag_id);
-        let (array, scene_base) = match (d.group1, d.is_dungeonflag) {
-            (false, false) => (&sceneflags[..], 0u16),
-            (false, true) => (&dungeonflags[..], 0u16),
-            (true, false) => (ext_sceneflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
-            (true, true) => (ext_dungeonflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
+        let (array, scene_base) = if d.group2 {
+            let arr = if d.is_dungeonflag { ext2_dungeonflags } else { ext2_sceneflags };
+            (arr, custom_flag::GROUP2_FIRST_SCENE_INDEX)
+        } else {
+            match (d.group1, d.is_dungeonflag) {
+                (false, false) => (&sceneflags[..], 0u16),
+                (false, true) => (&dungeonflags[..], 0u16),
+                (true, false) => (ext_sceneflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
+                (true, true) => (ext_dungeonflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
+            }
         };
         let byte_offset = ((d.scene_index - scene_base) as usize) * 16 + d.array_index * 2;
         let Some(bytes) = array.get(byte_offset..byte_offset + 2) else {
@@ -90,6 +98,11 @@ pub struct SlotData {
     #[serde(default, deserialize_with = "deserialize_u16_keyed_map")]
     pub custom_flag_to_location: HashMap<u16, i64>,
 
+    /// Grass blade flags (16-bit, see `BladeFlagPoller`) -> AP location code,
+    /// one entry per blade location in blade mode. Empty in other modes.
+    #[serde(default, deserialize_with = "deserialize_u16_keyed_map")]
+    pub blade_flag_to_location: HashMap<u16, i64>,
+
     /// AP location code -> (scene_index, chestflag), for goddess chests.
     /// The server sends this as `{"<location_code>": [scene_index,
     /// chestflag]}`.
@@ -113,6 +126,20 @@ pub struct SlotData {
     /// this as `{"<flag_id>": {"item": ..., "player": ...}}`.
     #[serde(default, deserialize_with = "deserialize_item_info_map")]
     pub ap_item_info: HashMap<u16, ApItemInfo>,
+
+    /// Grass blade names (see `item_info::write_blade_names`). `blade_name_indexes[n]`
+    /// is `[item_index, player_index]` into the two name lists for blade n.
+    #[serde(default)]
+    pub blade_item_names: Vec<String>,
+    #[serde(default)]
+    pub blade_player_names: Vec<String>,
+    #[serde(default)]
+    pub blade_name_indexes: Vec<[u16; 2]>,
+
+    /// Game item id to spawn for each blade, in the same order as
+    /// `blade_name_indexes` (0 = placeholder; own-game items only).
+    #[serde(default)]
+    pub blade_game_item_ids: Vec<u16>,
 
     /// AP location code -> the item placed there and the slot that owns it.
     /// Used by `/go_mode` to count items sitting in locations you've already
@@ -428,15 +455,23 @@ impl CustomFlagPoller {
         let (ext_sceneflags, ext_dungeonflags) = ext.split_at(EXT_FLAG_ARRAY_BYTES);
 
         let is_first_poll = !self.initialized;
+        // Group 2 flags (scene/dungeon indexes 30-33) live in `ext2_flags`.
+        let ext2 = mem.read_bytes(root_addr + offsets::EXT2_FLAGS, EXT_FLAG_ARRAY_BYTES * 2)?;
+        let (ext2_sceneflags, ext2_dungeonflags) = ext2.split_at(EXT_FLAG_ARRAY_BYTES);
         let mut newly_checked = Vec::new();
 
         for (&flag_id, &location_code) in &self.flag_to_location {
             let d = custom_flag::decode(flag_id);
-            let (array, scene_base) = match (d.group1, d.is_dungeonflag) {
-                (false, false) => (&sceneflags[..], 0u16),
-                (false, true) => (&dungeonflags[..], 0u16),
-                (true, false) => (ext_sceneflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
-                (true, true) => (ext_dungeonflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
+            let (array, scene_base) = if d.group2 {
+                let arr = if d.is_dungeonflag { ext2_dungeonflags } else { ext2_sceneflags };
+                (arr, custom_flag::GROUP2_FIRST_SCENE_INDEX)
+            } else {
+                match (d.group1, d.is_dungeonflag) {
+                    (false, false) => (&sceneflags[..], 0u16),
+                    (false, true) => (&dungeonflags[..], 0u16),
+                    (true, false) => (ext_sceneflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
+                    (true, true) => (ext_dungeonflags, custom_flag::GROUP1_FIRST_SCENE_INDEX),
+                }
             };
             let byte_offset = ((d.scene_index - scene_base) as usize) * 16 + d.array_index * 2;
             let Some(bytes) = array.get(byte_offset..byte_offset + 2) else {
@@ -453,6 +488,83 @@ impl CustomFlagPoller {
             match previous {
                 None if is_first_poll && bit == 1 => newly_checked.push(location_code),
                 Some(0) if bit == 1 => newly_checked.push(location_code),
+                _ => {},
+            }
+        }
+
+        self.initialized = true;
+        Ok(newly_checked)
+    }
+}
+
+// ─── Grass blade flags (16-bit) ────────────────────────────────────────────
+//
+// A blade flag is 16 bits: bit 15 = flag space (0 scene, 1 dungeon), bits 7-14 =
+// save index (34-255 scene, 34-252 dungeon), bits 0-6 = bit within the 128-bit
+// page. The bit within a page uses the same convention as `custom_flag`:
+// word = bit / 16, bit within the word = bit % 16. This matches the APWorld's
+// `blade_flag_to_location` keys and the game's `blade_flags` mirror in ap-ipc.
+const BLADE_FIRST_INDEX: u16 = 34;
+const BLADE_SCENE_BYTES: usize = (256 - 34) * 16; // 3552: indexes 34-255
+const BLADE_DUNGEON_BYTES: usize = (253 - 34) * 16; // 3504: indexes 34-252
+
+/// Reads blade flags from the `blade_flags` mirror and returns the location
+/// codes that have just been set. Same first-poll and already-checked rules
+/// as `CustomFlagPoller`.
+pub struct BladeFlagPoller {
+    flag_to_location: HashMap<u16, i64>,
+    previous_state:   HashMap<u16, u8>,
+    initialized:      bool,
+}
+
+impl BladeFlagPoller {
+    pub fn new(flag_to_location: HashMap<u16, i64>) -> Self {
+        BladeFlagPoller { flag_to_location, previous_state: HashMap::new(), initialized: false }
+    }
+
+    pub fn location_count(&self) -> usize {
+        self.flag_to_location.len()
+    }
+
+    pub fn poll(
+        &mut self,
+        mem: &mut impl ProcessMemory,
+        root_addr: usize,
+        already_checked: &impl Fn(i64) -> bool,
+    ) -> Result<Vec<i64>, MemError> {
+        if self.flag_to_location.is_empty() {
+            return Ok(Vec::new());
+        }
+        let bytes = mem.read_bytes(
+            root_addr + offsets::BLADE_FLAGS,
+            BLADE_SCENE_BYTES + BLADE_DUNGEON_BYTES,
+        )?;
+        let (scene, dungeon) = bytes.split_at(BLADE_SCENE_BYTES);
+        let is_first_poll = !self.initialized;
+        let mut newly_checked = Vec::new();
+
+        for (&flag_id, &location_code) in &self.flag_to_location {
+            let is_dungeon = (flag_id >> 15) & 1 == 1;
+            let index = (flag_id >> 7) & 0xFF;
+            let bit = (flag_id & 0x7F) as usize;
+            if index < BLADE_FIRST_INDEX {
+                continue;
+            }
+            let array = if is_dungeon { dungeon } else { scene };
+            let byte_offset = ((index - BLADE_FIRST_INDEX) as usize) * 16 + (bit / 16) * 2;
+            let Some(word_bytes) = array.get(byte_offset..byte_offset + 2) else {
+                continue;
+            };
+            let word = u16::from_le_bytes([word_bytes[0], word_bytes[1]]);
+            let bit_now = ((word >> (bit % 16)) & 1) as u8;
+
+            let previous = self.previous_state.insert(flag_id, bit_now);
+            if already_checked(location_code) {
+                continue;
+            }
+            match previous {
+                None if is_first_poll && bit_now == 1 => newly_checked.push(location_code),
+                Some(0) if bit_now == 1 => newly_checked.push(location_code),
                 _ => {},
             }
         }

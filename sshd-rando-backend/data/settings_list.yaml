@@ -107,6 +107,19 @@
     - "off": "Barrels will drop their vanilla items."
     - "on": "Breaking a barrel can give a randomized item. The exploding barrels in the Sand Sea are not included. Barrels revert to their vanilla drop after the item has been collected."
 
+- name: grass_shuffle
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Grass Shuffle
+  pretty_options:
+    - "Off"
+    - "Bundles"
+    - "Blades"
+  options:
+    - "off": "Grass drops only vanilla items and nothing is sent to the server."
+    - "bundles": "One item per grass patch. Each patch is one location. Patches revert to their vanilla drop after the item has been collected."
+    - "blades": "Every blade in every grass patch drops its own item and is its own location."
+
 - name: hidden_item_shuffle
   tracker_important: true
   default_option: "off"

@@ -607,6 +607,7 @@ class SSHDWorld(World):
         "pot_shuffle": ("pot_shuffle", "toggle", None),
         "pumpkin_shuffle": ("pumpkin_shuffle", "toggle", None),
         "barrel_shuffle": ("barrel_shuffle", "toggle", None),
+        "grass_shuffle": ("grass_shuffle", "choice", {"off": 0, "bundles": 1, "blades": 2}),
         "npc_closet_shuffle": ("npc_closet_shuffle", "toggle_custom", {"randomized": 1, "vanilla": 0}),
         "hidden_item_shuffle": ("hidden_item_shuffle", "toggle", None),
         "rupee_shuffle": ("rupee_shuffle", "choice", {"vanilla": 0, "beginner": 1, "intermediate": 2, "advanced": 3}),
@@ -1147,6 +1148,17 @@ class SSHDWorld(World):
                 if opt is not None and not opt.value:
                     excluded.add(loc_type)
 
+        # Grass shuffle is a 3-way setting: off / bundles (one location per patch,
+        # type "Grass") / blades (one location per blade, type "Grass Blade").
+        if s:
+            grass_mode = s.get("grass_shuffle", "off")
+        else:
+            grass_mode = {0: "off", 1: "bundles", 2: "blades"}.get(self.options.grass_shuffle.value, "off")
+        if grass_mode != "bundles":
+            excluded.add("Grass")
+        if grass_mode != "blades":
+            excluded.add("Grass Blade")
+
         # NPC Closet shuffle
         if s:
             if s.get("npc_closet_shuffle", "vanilla") == "vanilla":
@@ -1405,6 +1417,12 @@ class SSHDWorld(World):
                     for loc_type, skey in _toggle_map.items():
                         if skey in sm and sm[skey].value not in ("on", "randomized"):
                             excluded_loc_types.add(loc_type)
+                    # Grass: off / bundles ("Grass" type) / blades ("Grass Blade" type)
+                    _grass_mode = sm["grass_shuffle"].value if "grass_shuffle" in sm else "off"
+                    if _grass_mode != "bundles":
+                        excluded_loc_types.add("Grass")
+                    if _grass_mode != "blades":
+                        excluded_loc_types.add("Grass Blade")
                     if "npc_closet_shuffle" in sm and sm["npc_closet_shuffle"].value == "vanilla":
                         excluded_loc_types.add("Closets")
                     if "beedle_shop_shuffle" in sm and sm["beedle_shop_shuffle"].value == "vanilla":
@@ -3620,6 +3638,9 @@ class SSHDWorld(World):
         self._custom_flag_mapping = self._build_custom_flag_mapping()
         
         slot_data["custom_flag_to_location"] = self._custom_flag_mapping
+        # Grass blade flags (16-bit): flag -> location code, and location code -> blade number.
+        slot_data["blade_flag_to_location"] = dict(getattr(self, "_blade_flag_to_location", {}))
+        slot_data["blade_index_by_location"] = dict(getattr(self, "_blade_index_by_location", {}))
         print(f"[__init__.py] Added {len(self._custom_flag_mapping)} custom flag -> location mappings to slot_data")
         
         # Build reverse mapping: location -> custom_flag for item giving
@@ -3687,6 +3708,55 @@ class SSHDWorld(World):
                             "player": player_name,
                         }
         
+        # Grass blades (blade mode): compact name lists. Each blade gets an index pair
+        # [item_index, player_index] into the unique item and player name lists. The game
+        # copies the names for the blade being picked up into one reserved name slot.
+        # Blade number n is the same n the blade flags were assigned from.
+        blade_index_by_location = getattr(self, "_blade_index_by_location", {})
+        slot_data["blade_item_names"] = []
+        slot_data["blade_player_names"] = []
+        slot_data["blade_name_indexes"] = []
+        slot_data["blade_game_item_ids"] = []
+        if blade_index_by_location:
+            if len(blade_index_by_location) > 16384:
+                raise OptionError(
+                    f"SSHD: {len(blade_index_by_location)} blade locations, the name index holds 16384."
+                )
+            by_address = {
+                loc.address: loc for loc in self.multiworld.get_locations(self.player)
+                if loc.address is not None
+            }
+            item_idx, player_idx = {}, {}
+            pairs = []
+            # Parallel to pairs: the game item ID each blade spawns when it is this
+            # player's own item. Other players' items (and missing locations) use 0,
+            # which the game treats as the Archipelago Item (216) placeholder.
+            game_ids = []
+            for loc_code, n in sorted(blade_index_by_location.items(), key=lambda kv: kv[1]):
+                loc = by_address.get(loc_code)
+                if loc is None or not loc.item:
+                    pairs.append([0xFFFF, 0xFFFF])
+                    game_ids.append(0)
+                    continue
+                if loc.item.name not in item_idx:
+                    item_idx[loc.item.name] = len(item_idx)
+                pname = self.multiworld.get_player_name(loc.item.player)
+                if pname not in player_idx:
+                    player_idx[pname] = len(player_idx)
+                pairs.append([item_idx[loc.item.name], player_idx[pname]])
+                if loc.item.player == self.player and loc.item.name in ITEM_TABLE:
+                    game_ids.append(ITEM_TABLE[loc.item.name].original_id)
+                else:
+                    game_ids.append(0)
+            if len(item_idx) > 384:
+                raise OptionError(f"SSHD: {len(item_idx)} unique blade item names, the table holds 384.")
+            if len(player_idx) > 64:
+                raise OptionError(f"SSHD: {len(player_idx)} players hold blade items, the table holds 64.")
+            slot_data["blade_item_names"] = list(item_idx.keys())
+            slot_data["blade_player_names"] = list(player_idx.keys())
+            slot_data["blade_name_indexes"] = pairs
+            slot_data["blade_game_item_ids"] = game_ids
+
         slot_data["ap_item_info"] = ap_item_info
 
         # Item hint pools: seeded samples of progression/useful locations from the
@@ -4526,6 +4596,7 @@ class SSHDWorld(World):
         settings_dict["pot_shuffle"] = "on" if self.options.pot_shuffle.value else "off"
         settings_dict["pumpkin_shuffle"] = "on" if self.options.pumpkin_shuffle.value else "off"
         settings_dict["barrel_shuffle"] = "on" if self.options.barrel_shuffle.value else "off"
+        settings_dict["grass_shuffle"] = {0: "off", 1: "bundles", 2: "blades"}[self.options.grass_shuffle.value]
         settings_dict["npc_closet_shuffle"] = "randomized" if self.options.npc_closet_shuffle.value else "vanilla"
         settings_dict["hidden_item_shuffle"] = "on" if self.options.hidden_item_shuffle.value else "off"
         
@@ -4884,6 +4955,10 @@ class SSHDWorld(World):
         ]
         
         custom_flag_to_location = {}
+        # Grass patches use the group 2 pool (bit 11 set, scene/dungeon indexes 30-33).
+        # Same 1015 local IDs as group 1, same order (dungeon space first).
+        CUSTOM_FLAG_GROUP2 = 0x800
+        group2_flags = [CUSTOM_FLAG_GROUP2 | (f & 0x3FF) for f in group1_flags]
         
         # Get ALL locations - every location needs a custom flag for Archipelago
         all_locations = []
@@ -4897,8 +4972,17 @@ class SSHDWorld(World):
         pot_locations = [
             loc for loc in all_locations if any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels"))
         ]
+        # Patch-mode grass ("Grass" type): one location per patch, group 2 pool.
+        grass_locations = [
+            loc for loc in all_locations
+            if "Grass" in LOCATION_TABLE[loc.name].types and "Grass Blade" not in LOCATION_TABLE[loc.name].types
+        ]
+        # Blade-mode grass ("Grass Blade" type): one location per blade, 16-bit flags.
+        blade_locations = [
+            loc for loc in all_locations if "Grass Blade" in LOCATION_TABLE[loc.name].types
+        ]
         other_locations = [
-            loc for loc in all_locations if not any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels"))
+            loc for loc in all_locations if not any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels", "Grass", "Grass Blade"))
         ]
         
         # Fail early with a clear message instead of producing a seed where some
@@ -4916,6 +5000,41 @@ class SSHDWorld(World):
                 f"{len(group1_flags)} extended custom flags exist."
             )
 
+        if len(grass_locations) > len(group2_flags):
+            raise OptionError(
+                f"SSHD: {len(grass_locations)} grass locations are enabled but only "
+                f"{len(group2_flags)} grass custom flags exist. Turn off grass shuffle "
+                f"or use bundles mode and generate again."
+            )
+
+        # Blade flags (16-bit IDs: bit 15 = space, bits 7-14 = index, bits 0-6 = bit).
+        # are taken by the group 0/1/2 IDs above and by the game, so blades use
+        # indexes 34-255 (scene) and 34-252 (dungeon): 222*128 + 219*128 IDs.
+        BLADE_FIRST_INDEX = 34
+        BLADE_SCENE_INDEXES = 222
+        BLADE_DUNGEON_INDEXES = 219
+        BLADE_SCENE_FLAGS = BLADE_SCENE_INDEXES * 128
+        BLADE_CAPACITY = (BLADE_SCENE_INDEXES + BLADE_DUNGEON_INDEXES) * 128
+        if len(blade_locations) > BLADE_CAPACITY:
+            raise OptionError(
+                f"SSHD: {len(blade_locations)} grass blade locations are enabled but only "
+                f"{BLADE_CAPACITY} blade flags exist. Turn off grass blade shuffle or some other shuffles."
+            )
+        self._blade_flag_to_location = {}
+        self._blade_index_by_location = {}
+        # Blades of one patch are contiguous in location-code order, so blade k of
+        # patch p gets global blade number base_p + k - 1 (base_p = first blade's
+        # number in this list). Numbers 0..BLADE_SCENE_FLAGS-1 are scene space,
+        # the rest dungeon space.
+        for n, location in enumerate(blade_locations):
+            if n < BLADE_SCENE_FLAGS:
+                space, local = 0, n
+            else:
+                space, local = 1, n - BLADE_SCENE_FLAGS
+            flag16 = (space << 15) | ((BLADE_FIRST_INDEX + local // 128) << 7) | (local % 128)
+            self._blade_flag_to_location[flag16] = location.address
+            self._blade_index_by_location[location.address] = n
+
         # Assign custom flags sequentially: pots from the extended pool, everything
         # else from the original pool, each in location-code order.
         for location in other_locations:
@@ -4924,6 +5043,11 @@ class SSHDWorld(World):
         for location in pot_locations:
             custom_flag_id = group1_flags.pop()
             custom_flag_to_location[custom_flag_id] = location.address
+        for location in grass_locations:
+            custom_flag_id = group2_flags.pop()
+            custom_flag_to_location[custom_flag_id] = location.address
+        # Blade flags are not in custom_flag_to_location: they are 16-bit IDs and
+        # would collide with the 10-bit IDs above. They go in blade_flag_to_location.
         
         print(f"[__init__.py] Built custom flag mapping with {len(custom_flag_to_location)} flags for {len(all_locations)} locations ({len(pot_locations)} pots in extended group)")
         return custom_flag_to_location

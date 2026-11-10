@@ -384,6 +384,27 @@ b.eq speed_target_scale_hook
 cmp w8, #114
 b.eq ganbari_gauge_execute_hook
 
+; Grass shuffle (grass.asm). Cut drop (x5 = blade base).
+cmp w8, #115
+b.eq grass_cut_drop_hook
+
+; Grass shuffle. Blade created (x0 = blade base).
+cmp w8, #116
+b.eq grass_blade_init_hook
+
+; Grass shuffle. Patch actorPostCreate entry (x0 = patch actor).
+cmp w8, #117
+b.eq grass_patch_begin_hook
+
+; Grass shuffle. spawnSingleGrass entry; returns 1 to skip a collected patch.
+cmp w8, #118
+b.eq grass_spawn_skip_hook
+
+; Grass RNG site D (index 120): hash of the inline candidate position. Returns
+; w8 = hash through the bl in the game-side stub at 0x7100659f68 (grass-rng.asm).
+cmp w8, #120
+b.eq grass_inline_rng_hook
+
 ret ; this should never be reached
 
 ; Wrapper for custom_event_commands.
@@ -401,4 +422,22 @@ _ce_wrapper:
     mov w21, #1
     ret
     
+;
+; Grass RNG site D routine (landingpad index 120). Replaces the global LCG read
+; `ldr w8, [x26, #0x3e0]` in the inline candidate loop of actorPostCreate (Ghidra
+; 0x7100e774f0). Hashes the candidate position: s10 = inner loop x, s12 = outer
+; loop z (both callee-saved, untouched by this routine). Uses only x16/x17 and w8.
+.global grass_inline_rng_hook
+grass_inline_rng_hook:
+fmov w16, s10
+fmov w17, s12
+eor w16, w16, w17, lsl #13
+eor w16, w16, w16, lsr #17
+eor w16, w16, w16, lsl #5
+eor w16, w16, w17, ror #11
+eor w16, w16, w16, lsr #15
+eor w16, w16, w16, lsl #7
+mov w8, w16
+ret
+
 ; ends at 0x712e0a7000

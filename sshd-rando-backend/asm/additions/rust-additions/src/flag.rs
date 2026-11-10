@@ -553,7 +553,7 @@ pub extern "C" fn set_global_sceneflag(sceneindex: u16, flag: u16) {
     let lower_flag = flag & 0x0F;
 
     unsafe {
-        (*FILE_MGR).FA.sceneflags[sceneindex as usize][upper_flag as usize] |= 1 << lower_flag;
+        (*scene_page(sceneindex))[upper_flag as usize] |= 1 << lower_flag;
     }
 }
 
@@ -563,7 +563,7 @@ pub extern "C" fn unset_global_sceneflag(sceneindex: u16, flag: u16) {
     let lower_flag = flag & 0x0F;
 
     unsafe {
-        (*FILE_MGR).FA.sceneflags[sceneindex as usize][upper_flag as usize] &= !(1 << lower_flag);
+        (*scene_page(sceneindex))[upper_flag as usize] &= !(1 << lower_flag);
     }
 }
 
@@ -573,9 +573,26 @@ pub extern "C" fn check_global_sceneflag(sceneindex: u16, flag: u16) -> u16 {
     let lower_flag = flag & 0x0F;
 
     unsafe {
-        return ((*FILE_MGR).FA.sceneflags[sceneindex as usize][upper_flag as usize] >> lower_flag)
-            & 0x1;
+        return ((*scene_page(sceneindex))[upper_flag as usize] >> lower_flag) & 0x1;
     }
+}
+
+// Dungeonflags (global)
+
+/// Pointer to the 8-u16 scene flag page `sceneindex`. Pages 0-29 are the
+/// declared `FA.sceneflags` array; pages 30-255 are reserved padding in the
+/// same save struct (see savefile.rs), so they are reached by byte offset.
+#[inline]
+unsafe fn scene_page(sceneindex: u16) -> *mut [u16; 8] {
+    (core::ptr::addr_of_mut!((*FILE_MGR).FA.sceneflags) as *mut u8).add(sceneindex as usize * 16)
+        as *mut [u16; 8]
+}
+
+/// Same as `scene_page`, for the dungeon flag arrays.
+#[inline]
+unsafe fn dungeon_page(sceneindex: u16) -> *mut [u16; 8] {
+    (core::ptr::addr_of_mut!((*FILE_MGR).FA.dungeonflags) as *mut u8).add(sceneindex as usize * 16)
+        as *mut [u16; 8]
 }
 
 // Dungeonflags (global)
@@ -585,7 +602,7 @@ pub extern "C" fn set_global_dungeonflag(sceneindex: u16, flag: u16) {
     let lower_flag = flag & 0x0F;
 
     unsafe {
-        (*FILE_MGR).FA.dungeonflags[sceneindex as usize][upper_flag as usize] |= 1 << lower_flag;
+        (*dungeon_page(sceneindex))[upper_flag as usize] |= 1 << lower_flag;
     }
 }
 
@@ -594,7 +611,7 @@ pub extern "C" fn unset_global_dungeonflag(sceneindex: u16, flag: u16) {
     let upper_flag = (flag & 0xF0) >> 4;
     let lower_flag = flag & 0x0F;
     unsafe {
-        (*FILE_MGR).FA.dungeonflags[sceneindex as usize][upper_flag as usize] &= !(1 << lower_flag);
+        (*dungeon_page(sceneindex))[upper_flag as usize] &= !(1 << lower_flag);
     }
 }
 
@@ -604,9 +621,7 @@ pub extern "C" fn check_global_dungeonflag(sceneindex: u16, flag: u16) -> u16 {
     let lower_flag = flag & 0x0F;
 
     unsafe {
-        return ((*FILE_MGR).FA.dungeonflags[sceneindex as usize][upper_flag as usize]
-            >> lower_flag)
-            & 0x1;
+        return ((*dungeon_page(sceneindex))[upper_flag as usize] >> lower_flag) & 0x1;
     }
 }
 

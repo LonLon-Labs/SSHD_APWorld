@@ -63,6 +63,12 @@ def build_location_table(world: "World | None" = None) -> dict[str, Location]:
             f"Processing new location {name}\tid: {location_id}\toriginal item: {original_item}"
         )
 
+    # Grass blades carry a GrassBlade block (patch object, blade number, global blade index)
+    # from locations.yaml. Kept as a plain dict on the location: getattr(loc, "grass_blade", None).
+    for location_node in location_data:
+        if "GrassBlade" in location_node:
+            location_table[location_node["name"]].grass_blade = location_node["GrassBlade"]
+
     return location_table
 
 
@@ -125,6 +131,14 @@ def get_disabled_shuffle_locations(
             or (
                 settings["barrel_shuffle"].value == "off"
                 and "Barrels" in location.types
+            )
+            or (
+                settings["grass_shuffle"].value != "bundles"
+                and "Grass" in location.types
+            )
+            or (
+                settings["grass_shuffle"].value != "blades"
+                and "Grass Blade" in location.types
             )
             or (
                 settings["hidden_item_shuffle"].value == "off"

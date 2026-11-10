@@ -399,6 +399,22 @@ class BarrelShuffle(Toggle):
     """Shuffle barrels. Breaking a barrel can give a randomized item. The exploding barrels in the Sand Sea are not included."""
     display_name = "Barrel Shuffle"
 
+class GrassShuffle(Choice):
+    """Shuffle grass. Cutting grass can give a randomized item.
+
+    Off: Grass drops only vanilla items and nothing is sent to the server.
+    Bundles: One item per grass patch. Each patch is one location.
+    Blades: Every blade in every grass patch drops its own item and is its own location.
+    Choose Random in the sshd-rando GUI to have it pick one of these when the YAML is generated."""
+    display_name = "Grass Shuffle"
+    option_off = 0
+    option_bundles = 1
+    option_blades = 2
+    default = 0
+    # Backward compatibility with the old on/off toggle
+    alias_false = 0  # false -> off
+    alias_true = 1   # true -> bundles
+
 class HiddenItemShuffle(Toggle):
     """Shuffle hidden items."""
     display_name = "Hidden Item Shuffle"
@@ -2155,6 +2171,7 @@ class SSHDOptions(PerGameCommonOptions):
     pot_shuffle: PotShuffle
     pumpkin_shuffle: PumpkinShuffle
     barrel_shuffle: BarrelShuffle
+    grass_shuffle: GrassShuffle
     hidden_item_shuffle: HiddenItemShuffle
     rupee_shuffle: RupeeShuffle
     goddess_chest_shuffle: GoddessChestShuffle
@@ -2415,6 +2432,7 @@ sshd_option_groups = [
         PotShuffle,
         PumpkinShuffle,
         BarrelShuffle,
+        GrassShuffle,
         HiddenItemShuffle,
         RupeeShuffle,
         GoddessChestShuffle,

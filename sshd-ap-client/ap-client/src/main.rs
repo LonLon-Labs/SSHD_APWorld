@@ -434,6 +434,9 @@ fn run_headless(args: StartupArgs) {
                             Err(e) => eprintln!("[IPC] failed to apply cheat flags from slot_data: {e}"),
                         }
 
+                        if let Err(e) = item_info::write_blade_names_from_slot_data(&mut mem, root_addr, slot_data) {
+                            eprintln!("[IPC] failed to write blade names: {e}");
+                        }
                         match item_info::write_item_info_table(&mut mem, root_addr, &slot_data.item_info_for_game()) {
                             Ok(count) => {
                                 println!("[AP] Wrote {count} AP item info entries for textbox display.");

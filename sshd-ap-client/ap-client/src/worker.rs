@@ -128,7 +128,7 @@ use crate::item_info;
 use crate::items;
 use crate::links::{self, LinkMonitor, LinkSignal};
 use crate::hints::{self, FiNotes, NoteFlag};
-use crate::locations::{ApItemInfo, CustomFlagPoller, SlotData};
+use crate::locations::{ApItemInfo, BladeFlagPoller, CustomFlagPoller, SlotData};
 
 /// Bounce tag for `/kill <SlotName>` requests between SSHD players.
 const KILL_TAG: &str = "SSHDKill";
@@ -209,6 +209,7 @@ struct SyncState {
     /// Keeps the bow textbox storyflags in line with the bow item flags (see bow_storyflags.rs).
     bow_flags:            BowStoryflagSync,
     location_poller:      Option<CustomFlagPoller>,
+    blade_poller:         Option<BladeFlagPoller>,
     goddess_chest_poller: Option<GoddessChestPoller>,
     goddess_cube_poller:  Option<GoddessCubePoller>,
     // Beedle's shop needs no slot_data (its 10-entry table is hardcoded),
@@ -240,6 +241,11 @@ struct SyncState {
     // so it can be periodically refreshed, re-written after the emulator
     // re-attaches, and verified against what's actually in game memory.
     item_info_live: Option<std::collections::HashMap<u16, ApItemInfo>>,
+    // Grass blade names (IPC v17). `blade_names_live` keeps the session's slot_data
+    // so the names can be re-written after a re-attach; `pending_blade_names` is the
+    // retry queue, same pattern as `pending_item_info`.
+    blade_names_live: Option<SlotData>,
+    pending_blade_names: Option<SlotData>,
     item_info_last_refresh: Instant,
     // Set after every successful (re)write; the next tick reads the table
     // back from the game and logs whether it actually landed.
@@ -301,6 +307,7 @@ impl SyncState {
             delivery:             DeliveryTracker::new(),
             bow_flags:            BowStoryflagSync::new(),
             location_poller:      None,
+            blade_poller:         None,
             goddess_chest_poller: None,
             goddess_cube_poller:  None,
             beedle_poller:        BeedleShopPoller::new(),
@@ -309,6 +316,8 @@ impl SyncState {
             goal_sent:            false,
             pending_cheat_slot_data: None,
             pending_item_info: None,
+            blade_names_live: None,
+            pending_blade_names: None,
             item_info_live: None,
             item_info_last_refresh: Instant::now(),
             item_info_verify_pending: false,
@@ -515,6 +524,7 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                                 if ap_connected {
                                     if let Some(live) = sync.item_info_live.as_ref() {
                                         sync.pending_item_info = Some(live.clone());
+                                        sync.pending_blade_names = sync.blade_names_live.clone();
                                         sync.item_info_verify_pending = true;
                                     }
                                 }
@@ -593,6 +603,17 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                             );
                             sync.location_poller = Some(CustomFlagPoller::new(custom_flags));
 
+                            let blade_flags = slot_data.blade_flag_to_location.clone();
+                            if blade_flags.is_empty() {
+                                sync.blade_poller = None;
+                            } else {
+                                vlog!(
+                                    "[AP] Loaded {} blade-flag location mappings from slot_data.",
+                                    blade_flags.len()
+                                );
+                                sync.blade_poller = Some(BladeFlagPoller::new(blade_flags));
+                            }
+
                             let goddess_chests = slot_data.goddess_chest_scene_flags.clone();
                             vlog!(
                                 "[AP] Loaded {} goddess chest location mappings from slot_data.",
@@ -649,6 +670,8 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                             sync.pending_cheat_slot_data = Some(slot_data.clone());
                             let game_item_info = slot_data.item_info_for_game();
                             sync.pending_item_info = Some(game_item_info.clone());
+                            sync.blade_names_live = Some(slot_data.clone());
+                            sync.pending_blade_names = sync.blade_names_live.clone();
                             sync.item_info_live = Some(game_item_info);
                             sync.item_info_last_refresh = Instant::now();
                             sync.item_info_verify_pending = true;
@@ -904,6 +927,22 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                     }
                 }
 
+                // Grass blade names (IPC v17): same retry-until-written pattern as the
+                // item info above. The game reads these only at blade pickup.
+                if let Some(blade_data) = sync.pending_blade_names.take() {
+                    match item_info::write_blade_names_from_slot_data(mem, root_addr, &blade_data) {
+                        Ok(count) => {
+                            if count > 0 {
+                                vlog!("[AP] Wrote {count} grass blade name entries.");
+                            }
+                        },
+                        Err(e) => {
+                            vlog!("[IPC] failed to write blade names: {e}");
+                            sync.pending_blade_names = Some(blade_data);
+                        },
+                    }
+                }
+
                 // Item-info table upkeep, once the initial write has succeeded
                 // (`pending_item_info` is None): verify it landed, then mirror the
                 // Python client's ~5 s count refresh so a stale/zero count can't
@@ -1093,6 +1132,12 @@ fn run_blocking(mut input: mpsc::Receiver<WorkerInput>, output: EventSink) {
                     match poller.poll(mem, root_addr, &already_checked) {
                         Ok(codes) => newly_checked_all.extend(codes),
                         Err(e) => vlog!("[IPC] custom-flag location poll failed: {e}"),
+                    }
+                }
+                if let Some(poller) = sync.blade_poller.as_mut() {
+                    match poller.poll(mem, root_addr, &already_checked) {
+                        Ok(codes) => newly_checked_all.extend(codes),
+                        Err(e) => vlog!("[IPC] blade flag poll failed: {e}"),
                     }
                 }
                 if let Some(poller) = sync.goddess_chest_poller.as_mut() {
