@@ -3,6 +3,7 @@
 #![allow(unused)]
 
 use crate::actor;
+use crate::debug;
 use crate::event;
 use crate::fix;
 use crate::flag;
@@ -158,6 +159,12 @@ extern "C" {
     static BARREL_TABLE_MAGIC: u32;
     static BARREL_TABLE_COUNT: u32;
     static BARREL_TABLE_ENTRIES: [PumpkinEntry; BARREL_TABLE_MAX];
+
+    // Small tree (Bamboo) Shuffle (filled in by the patcher via
+    // init_global_variables)
+    static BAMBOO_TABLE_MAGIC: u32;
+    static BAMBOO_TABLE_COUNT: u32;
+    static BAMBOO_TABLE_ENTRIES: [PumpkinEntry; BAMBOO_TABLE_MAX];
 
     static mut SQUIRRELS_CAUGHT_THIS_PLAY_SESSION: bool;
     static TADTONE_SCENEFLAGS: [u8; 17];
@@ -2033,6 +2040,241 @@ static mut BLADE_SIDE_FLAG: [u16; BLADE_SIDE_LEN] = [0; BLADE_SIDE_LEN];
 static mut BLADE_SIDE_NEXT: usize = 0;
 /// Textbox key loaded for each side-table entry; 0 = not loaded yet.
 static mut BLADE_SIDE_KEY: [u16; BLADE_SIDE_LEN] = [0; BLADE_SIDE_LEN];
+
+/// ---------- Small tree (Bamboo) shuffle ----------
+///
+/// Bamboo trees are the small trees (BZS object "Bamboo", actor OBJ_BAMBOO). A
+/// tree's params are not usable, so it is looked up by position in
+/// BAMBOO_TABLE_* (written by asmpatchhandler). The tree's fall moves X and Z,
+/// so the key is the position recorded when the cut starts
+/// (bamboo_fall_start_hook), not the position at landing.
+
+/// Actor id of `OBJ_BAMBOO` (dAcObamboo_c, profile 0x1AF).
+const BAMBOO_ACTORID: u16 = 0x1AF;
+
+/// Capacity of the tree table (BAMBOO_TABLE_* in symbols.yaml).
+const BAMBOO_TABLE_MAX: usize = 96;
+
+/// "BAMB" as a little-endian u32; the patcher writes it in front of the table
+/// only when at least one tree has an item.
+const BAMBOO_TABLE_MAGIC_VALUE: u32 = 0x424D_4142;
+
+/// dAcObamboo_c position: X at +0x144, Y at +0x148, Z at +0x14C (Ghidra
+/// offsets; the same in the runtime object).
+const BAMBOO_POS_X_OFFSET: usize = 0x144;
+const BAMBOO_POS_Y_OFFSET: usize = 0x148;
+const BAMBOO_POS_Z_OFFSET: usize = 0x14C;
+
+/// Vanilla drop pointer (dAcObamboo_c +0x110). The landing code only calls the
+/// drop fetch when this is non-null, so clearing it stops the vanilla drop for
+/// a tree.
+const BAMBOO_DROP_PTR_OFFSET: usize = 0x110;
+
+/// Actor params1 (dAcObamboo_c +0x0C). Bits 9-16 hold the vanilla drop id, and
+/// the cut branch of the tree's update calls the drop-by-id functions for any
+/// id other than 0xFF, every frame while the tree is falling.
+const BAMBOO_PARAM1_OFFSET: usize = 0x0C;
+
+/// Runtime address of the drop request word the vanilla landing code reads
+/// (Ghidra 0x7102C23190 + 0x4000). 0xFFFF means "nothing to drop".
+const BAMBOO_DROP_REQUEST_ADDR: usize = 0x7102_C27190;
+
+/// Number of cut trees whose start position is remembered at the same time.
+const BAMBOO_FALL_SLOTS: usize = 16;
+
+/// One remembered cut: the tree actor and its position when the fall started.
+#[derive(Copy, Clone)]
+struct BambooFallStart {
+    actor:   usize,
+    px_bits: u32,
+    pz_bits: u32,
+}
+
+/// Round-robin ring of cut trees and their start positions.
+static mut BAMBOO_FALL_START: [BambooFallStart; BAMBOO_FALL_SLOTS] = [BambooFallStart {
+    actor:   0,
+    px_bits: 0,
+    pz_bits: 0,
+}; BAMBOO_FALL_SLOTS];
+static mut BAMBOO_FALL_START_NEXT: usize = 0;
+
+/// Trees that have already had their randomized item granted for the current
+/// cut. The fall-start hook runs again each time a falling tree is hit, so
+/// without this a tree could grant several items before it lands.
+const BAMBOO_GRANT_SLOTS: usize = 16;
+static mut BAMBOO_GRANTED: [usize; BAMBOO_GRANT_SLOTS] = [0; BAMBOO_GRANT_SLOTS];
+static mut BAMBOO_GRANTED_NEXT: usize = 0;
+
+/// True if this tree's item has already been granted for its current cut.
+unsafe fn bamboo_already_granted(tree: *mut u8) -> bool {
+    let base = core::ptr::addr_of!(BAMBOO_GRANTED) as *const usize;
+    for i in 0..BAMBOO_GRANT_SLOTS {
+        if core::ptr::read_volatile(base.add(i)) == tree as usize {
+            return true;
+        }
+    }
+    false
+}
+
+/// Records that this tree's item has been granted.
+unsafe fn bamboo_mark_granted(tree: *mut u8) {
+    let slot = core::ptr::read_volatile(core::ptr::addr_of!(BAMBOO_GRANTED_NEXT));
+    let base = core::ptr::addr_of_mut!(BAMBOO_GRANTED) as *mut usize;
+    base.add(slot).write_volatile(tree as usize);
+    core::ptr::write_volatile(
+        core::ptr::addr_of_mut!(BAMBOO_GRANTED_NEXT),
+        (slot + 1) % BAMBOO_GRANT_SLOTS,
+    );
+}
+
+/// Fall-state init (Ghidra 0x7100706BE4; landingpad #122). x0 = tree actor.
+/// Runs when the cut starts, before any physics moves the tree, so the
+/// position it records is the one the table was built from.
+#[no_mangle]
+pub extern "C" fn bamboo_fall_start_hook(tree: *mut u8) {
+    unsafe {
+        if tree.is_null() {
+            return;
+        }
+        let px_bits = (tree.add(BAMBOO_POS_X_OFFSET) as *const u32).read_unaligned();
+        let pz_bits = (tree.add(BAMBOO_POS_Z_OFFSET) as *const u32).read_unaligned();
+        let slot = core::ptr::read_volatile(core::ptr::addr_of!(BAMBOO_FALL_START_NEXT));
+        let base = core::ptr::addr_of_mut!(BAMBOO_FALL_START) as *mut BambooFallStart;
+        base.add(slot).write_volatile(BambooFallStart {
+            actor: tree as usize,
+            px_bits,
+            pz_bits,
+        });
+        core::ptr::write_volatile(
+            core::ptr::addr_of_mut!(BAMBOO_FALL_START_NEXT),
+            (slot + 1) % BAMBOO_FALL_SLOTS,
+        );
+        if !bamboo_already_granted(tree) {
+            bamboo_cut_drop_hook(tree);
+        }
+    }
+}
+
+/// Start position recorded for this tree's current cut, if any.
+unsafe fn bamboo_start_pos(tree: *mut u8) -> Option<(u32, u32)> {
+    let base = core::ptr::addr_of!(BAMBOO_FALL_START) as *const BambooFallStart;
+    for i in 0..BAMBOO_FALL_SLOTS {
+        let entry = core::ptr::read_volatile(base.add(i));
+        if entry.actor == tree as usize {
+            return Some((entry.px_bits, entry.pz_bits));
+        }
+    }
+    None
+}
+
+/// Finds a tree's table index from its start X/Z position bits.
+unsafe fn find_bamboo_entry(px_bits: u32, pz_bits: u32) -> Option<usize> {
+    if core::ptr::read_volatile(core::ptr::addr_of!(BAMBOO_TABLE_MAGIC)) != BAMBOO_TABLE_MAGIC_VALUE
+    {
+        return None;
+    }
+
+    let count = core::ptr::read_volatile(core::ptr::addr_of!(BAMBOO_TABLE_COUNT)) as usize;
+    let count = if count < BAMBOO_TABLE_MAX {
+        count
+    } else {
+        BAMBOO_TABLE_MAX
+    };
+
+    for index in 0..count {
+        let entry = core::ptr::read_unaligned(core::ptr::addr_of!(BAMBOO_TABLE_ENTRIES[index]));
+        if entry.px_bits == px_bits && entry.pz_bits == pz_bits {
+            return Some(index);
+        }
+    }
+    None
+}
+
+/// Landing drop (landingpad #121). x0 = tree actor. Runs in the vanilla
+/// landing block, right before the vanilla drop fetch, so the vanilla fetch
+/// sees the drop request set below and finds nothing to drop. For a tree with
+/// a table entry whose check is not collected yet, this spawns the randomized
+/// item. Every other tree keeps its vanilla drop.
+#[no_mangle]
+pub extern "C" fn bamboo_cut_drop_hook(tree: *mut u8) {
+    unsafe {
+        if tree.is_null() {
+            return;
+        }
+        let (px_bits, pz_bits) = match bamboo_start_pos(tree) {
+            Some(pos) => pos,
+            None => {
+                return;
+            },
+        };
+        let index = match find_bamboo_entry(px_bits, pz_bits) {
+            Some(index) => index,
+            None => {
+                return;
+            },
+        };
+
+        let entry = core::ptr::read_unaligned(core::ptr::addr_of!(BAMBOO_TABLE_ENTRIES[index]));
+        // This tree is shuffled, so its vanilla drop must never spawn: clear the drop
+        // id (params1 bits 9-16) to 0xFF, which the cut branch treats as no
+        // drop.
+        let param1 = tree.add(BAMBOO_PARAM1_OFFSET) as *mut u32;
+        core::ptr::write_volatile(
+            param1,
+            (core::ptr::read_volatile(param1) & !(0xFFu32 << 9)) | (0xFFu32 << 9),
+        );
+        let local_flag = entry.flag & 0x3FF;
+        if local_flag == CUSTOM_FLAG_NONE {
+            return;
+        }
+
+        // Already collected: the randomized item is gone, so clear the vanilla drop
+        // too. Leaving it in place lets the landing code run the vanilla fetch, which
+        // is what crashed on an already collected tree.
+        if check_ap_custom_flag(local_flag | CUSTOM_FLAG_GROUP1) {
+            core::ptr::write_volatile(tree.add(BAMBOO_DROP_PTR_OFFSET) as *mut usize, 0);
+            return;
+        }
+
+        let item_id = entry.item_word & 0x1FF;
+        let trap_nibble = ((entry.item_word >> 9) & 0xF) as u32;
+
+        // Loftwing and the Bird Statue unlock items keep their own item id (same rule
+        // as pumpkins, big pots and barrels).
+        let new_itemid = if item_id == 219 || bird_statue_unlock_flag_index(item_id).is_some() {
+            item_id
+        } else {
+            dAcItem__determineFinalItemid(item_id as u64) as u16
+        };
+
+        // Same param2 layout spawn_item_on_destroy expects from a patched pot.
+        let synthetic_param2: u32 =
+            (0xFF << 24) | (1 << 18) | (trap_nibble << 19) | ((local_flag as u32) << 8);
+
+        // The item appears where the tree landed.
+        let drop_pos = math::Vec3f {
+            x: f32::from_bits((tree.add(BAMBOO_POS_X_OFFSET) as *const u32).read_unaligned()),
+            y: f32::from_bits((tree.add(BAMBOO_POS_Y_OFFSET) as *const u32).read_unaligned()),
+            z: f32::from_bits((tree.add(BAMBOO_POS_Z_OFFSET) as *const u32).read_unaligned()),
+        };
+        let roomid: u32 = if ROOM_MGR.is_null() {
+            0
+        } else {
+            (*ROOM_MGR).roomid.into()
+        };
+
+        let item_actor =
+            spawn_item_on_destroy(roomid, drop_pos, 0, new_itemid, synthetic_param2, true);
+        if item_actor.is_null() {
+            return;
+        }
+
+        // Clear the vanilla drop pointer so the landing code skips its fetch. This
+        // replaces the old drop-request write, which faulted on the request word.
+        core::ptr::write_volatile(tree.add(BAMBOO_DROP_PTR_OFFSET) as *mut usize, 0);
+        bamboo_mark_granted(tree);
+    }
+}
 
 /// Blade number n (global, from the APWorld / patcher) to its 16-bit flag.
 /// Scene space comes first (save indexes 34-255), then dungeon space (34-252).

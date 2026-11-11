@@ -172,6 +172,11 @@ class AllPatchHandler:
         self.asm_patch_handler.barrel_entries = (
             self.stage_patch_handler.barrel_entries
         )
+        # Small tree (Bamboo) table. Missing here before, so init_global_variables
+        # always wrote an empty table ("[BAMB] writing tree table: 0 entries").
+        self.asm_patch_handler.bamboo_entries = (
+            self.stage_patch_handler.bamboo_entries
+        )
         # Pass global symbol initializers collected during stage patch setup
         # (e.g. EXTRA_DEMISE_COUNT) so init_global_variables can emit them.
         self.asm_patch_handler.global_symbol_values = (

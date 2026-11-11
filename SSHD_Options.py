@@ -399,6 +399,10 @@ class BarrelShuffle(Toggle):
     """Shuffle barrels. Breaking a barrel can give a randomized item. The exploding barrels in the Sand Sea are not included."""
     display_name = "Barrel Shuffle"
 
+class TreeShuffle(Toggle):
+    """Shuffle small trees (Bamboo). Cutting a small tree can give a randomized item."""
+    display_name = "Small Tree Shuffle"
+
 class GrassShuffle(Choice):
     """Shuffle grass. Cutting grass can give a randomized item.
 
@@ -2171,6 +2175,7 @@ class SSHDOptions(PerGameCommonOptions):
     pot_shuffle: PotShuffle
     pumpkin_shuffle: PumpkinShuffle
     barrel_shuffle: BarrelShuffle
+    tree_shuffle: TreeShuffle
     grass_shuffle: GrassShuffle
     hidden_item_shuffle: HiddenItemShuffle
     rupee_shuffle: RupeeShuffle

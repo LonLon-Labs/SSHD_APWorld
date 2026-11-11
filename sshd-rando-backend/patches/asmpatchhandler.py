@@ -860,6 +860,23 @@ class ASMPatchHandler:
                 )
             init_rw_globals_dict[0x712E54E000] = list(barrel_table)  # BARREL_TABLE_*
 
+        # Small tree (Bamboo) Shuffle: same position-keyed layout, directly after the
+        # barrel table (BAMBOO_TABLE_MAGIC 0x712E54E910 / _COUNT 0x712E54E914 /
+        # _ENTRIES 0x712E54E918 in symbols.yaml). Nothing is written (magic stays zero)
+        # when no tree has an item.
+        bamboo_entries = getattr(self, "bamboo_entries", [])
+        print(f"[BAMB] writing tree table: {len(bamboo_entries)} entries")
+        if bamboo_entries:
+            # Must match BAMBOO_TABLE_MAX in item.rs / symbols.yaml (12 bytes each)
+            assert len(bamboo_entries) <= 96, "Too many tree table entries"
+            bamboo_table = bytearray(b"BAMB")  # 0x424D4142 little endian
+            bamboo_table += struct.pack("<I", len(bamboo_entries))
+            for px_bits, pz_bits, item_word, custom_flag in bamboo_entries:
+                bamboo_table += struct.pack(
+                    "<IIHH", px_bits, pz_bits, item_word, custom_flag
+                )
+            init_rw_globals_dict[0x712E54E910] = list(bamboo_table)  # BAMBOO_TABLE_*
+
         # Apply additional symbol initializers provided by stage patch setup.
         global_symbol_values: dict[str, int] = getattr(self, "global_symbol_values", {})
         if "EXTRA_DEMISE_COUNT" in global_symbol_values:

@@ -1096,6 +1096,54 @@ def patch_barrel(
     return (_f32_bits(barrel["posx"]), _f32_bits(barrel["posz"]), item_word, custom_flag)
 
 
+def patch_bamboo(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+) -> tuple[int, int, int, int] | None:
+    """Small tree shuffle (Bamboo, dAcObamboo_c; actor profile OBJ_BAMBOO, 0x1AF).
+
+    Bamboo is a SOBJ object (the BZS tag is "SOBJ", not "OBJ "). Like barrels, its
+    params are not usable at runtime (params2 is 0xFFFFFFFF or a vanilla drop id
+    that is ignored once the item is shuffled), so nothing is written into the BZS
+    object. This returns a table entry keyed by the tree's position (X/Z as raw
+    f32 bits). The entries are written to the BAMBOO_TABLE_* config block by
+    asmpatchhandler and read by bamboo_cut_drop_hook in item.rs.
+
+    Returns (px_bits, pz_bits, item_word, flag), or None to keep the vanilla
+    behavior. item_word: bits 0-8 item id, bits 9-12 trap nibble (0xF = not a
+    trap). flag: the low 10 bits of the group 1 custom flag.
+    """
+    id = int(object_id_str, 16)
+
+    bamboo: dict | None = next(
+        filter(lambda x: x["name"] == "Bamboo" and x["id"] == id, bzs["SOBJ"]), None
+    )
+
+    if bamboo is None:
+        raise Exception(f"No tree (Bamboo) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla behavior
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return None
+
+    # Like pots and barrels, the game treats every tree flag as an extended (group 1,
+    # bit 10) flag; only the low 10 bits are stored.
+    if not (custom_flag & 0x400):
+        raise Exception(
+            f"Tree (Bamboo) '{hex(id)}' was given group 0 custom flag {custom_flag:#x}; "
+            "trees must use group 1 flags (bit 10 set)."
+        )
+    custom_flag &= 0x3FF
+
+    trap_nibble = (254 - trapid) if trapid else 0xF
+    if not (0 <= trap_nibble <= 0xF):
+        raise Exception(f"Tree (Bamboo) '{hex(id)}' has invalid trap id {trapid}.")
+    if not (0 <= itemid <= 0x1FF):
+        raise Exception(f"Tree (Bamboo) '{hex(id)}' has item id {itemid} that doesn't fit in 9 bits.")
+
+    item_word = (itemid & 0x1FF) | (trap_nibble << 9)
+    return (_f32_bits(bamboo["posx"]), _f32_bits(bamboo["posz"]), item_word, custom_flag)
+
+
 def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0x3FF):
 
     academy_bell: dict | None = next(
@@ -1506,6 +1554,10 @@ class StagePatchHandler:
         # keyed in the game by position. Written to the BARREL_TABLE_* config block
         # via init_global_variables (see patch_barrel). Max 192 entries.
         self.barrel_entries: list[tuple[int, int, int, int]] = []
+        # Small tree (Bamboo) Shuffle: (px_bits, pz_bits, item_word, flag) per patched tree,
+        # keyed in the game by position. Written to the BAMBOO_TABLE_* config block by
+        # asmpatchhandler (see patch_bamboo). Max 96 entries.
+        self.bamboo_entries: list[tuple[int, int, int, int]] = []
         # Global symbol initializers consumed by ASM global init.
         # Format: {"type": "symbol", "symbol": <name>, "value": <int>}.
         self.global_patches: list[dict] = []
@@ -1895,6 +1947,27 @@ class StagePatchHandler:
                                     "More than 192 barrels have items; BARREL_TABLE_ENTRIES only holds 192."
                                 )
                             self.barrel_entries.append(barrel_entry)
+                    elif object_name == "Bamboo":
+                        bamboo_entry = patch_bamboo(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                        if bamboo_entry is not None:
+                            for existing in self.bamboo_entries:
+                                if existing[0] == bamboo_entry[0] and existing[1] == bamboo_entry[1]:
+                                    raise Exception(
+                                        f"Two trees share the position {bamboo_entry[0]:#010x}/{bamboo_entry[1]:#010x}; "
+                                        "the position-keyed tree table needs unique positions."
+                                    )
+                            if len(self.bamboo_entries) >= 96:
+                                raise Exception(
+                                    "More than 96 trees have items; BAMBOO_TABLE_ENTRIES only holds 96."
+                                )
+                            self.bamboo_entries.append(bamboo_entry)
+                            print(f"[BAMB] tree entry: stage={stage_name} room={roomid} obj={objectid} flag={custom_flag:#x} item={itemid:#x} trap={trapid}")
                     elif object_name == "MassTag":
                         patch_grass(
                             room_bzs["LAY "][f"l{layer}"],

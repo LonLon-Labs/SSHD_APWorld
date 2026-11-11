@@ -107,6 +107,17 @@
     - "off": "Barrels will drop their vanilla items."
     - "on": "Breaking a barrel can give a randomized item. The exploding barrels in the Sand Sea are not included. Barrels revert to their vanilla drop after the item has been collected."
 
+- name: tree_shuffle
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Tree Shuffle
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Small trees (Bamboo) will drop their vanilla items."
+    - "on": "Cutting a small tree can give a randomized item. Trees revert to their vanilla drop after the item has been collected."
+
 - name: grass_shuffle
   tracker_important: true
   default_option: "off"

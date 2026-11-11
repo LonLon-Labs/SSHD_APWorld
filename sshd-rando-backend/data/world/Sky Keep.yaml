@@ -9,7 +9,7 @@
 
 # Holds entrance access to each room based on which areas have been reached.
 # TODO: Needs to be generalized for random layouts.
-  locations:  # grass-patches
+  locations:  # grass-patches and tree-sanity
     "Sky Keep - Grass Patch 1 - Blade 1": Nothing
     "Sky Keep - Grass Patch 1 - Blade 2": Nothing
     "Sky Keep - Grass Patch 1 - Blade 3": Nothing
@@ -211,6 +211,53 @@
     "Sky Keep - Grass Patch 9 - Blade 22": Nothing
     "Sky Keep - Grass Patch 9 - Blade 23": Nothing
     "Sky Keep - Grass Patch 9 - Blade 24": Nothing
+    "Sky Keep - Tree 1": Nothing
+    "Sky Keep - Tree 2": Nothing
+    "Sky Keep - Tree 3": Nothing
+    "Sky Keep - Tree 4": Nothing
+    "Sky Keep - Tree 5": Nothing
+    "Sky Keep - Tree 6": Nothing
+    "Sky Keep - Tree 7": Nothing
+    "Sky Keep - Tree 8": Nothing
+    "Sky Keep - Tree 9": Nothing
+    "Sky Keep - Tree 10": Nothing
+    "Sky Keep - Tree 11": Nothing
+    "Sky Keep - Tree 12": Nothing
+    "Sky Keep - Tree 13": Nothing
+    "Sky Keep - Tree 14": Nothing
+    "Sky Keep - Tree 15": Nothing
+    "Sky Keep - Tree 16": Nothing
+    "Sky Keep - Tree 17": Nothing
+    "Sky Keep - Tree 18": Nothing
+    "Sky Keep - Tree 19": Nothing
+    "Sky Keep - Tree 20": Nothing
+    "Sky Keep - Tree 21": Nothing
+    "Sky Keep - Tree 22": Nothing
+    "Sky Keep - Tree 23": Nothing
+    "Sky Keep - Tree 24": Nothing
+    "Sky Keep - Tree 25": Nothing
+    "Sky Keep - Tree 26": Nothing
+    "Sky Keep - Tree 27": Nothing
+    "Sky Keep - Tree 28": Nothing
+    "Sky Keep - Tree 29": Nothing
+    "Sky Keep - Tree 30": Nothing
+    "Sky Keep - Tree 31": Nothing
+    "Sky Keep - Tree 32": Nothing
+    "Sky Keep - Tree 33": Nothing
+    "Sky Keep - Tree 34": Nothing
+    "Sky Keep - Tree 35": Nothing
+    "Sky Keep - Tree 36": Nothing
+    "Sky Keep - Tree 37": Nothing
+    "Sky Keep - Tree 38": Nothing
+    "Sky Keep - Tree 39": Nothing
+    "Sky Keep - Tree 40": Nothing
+    "Sky Keep - Tree 41": Nothing
+    "Sky Keep - Tree 42": Nothing
+    "Sky Keep - Tree 43": Nothing
+    "Sky Keep - Tree 44": Nothing
+    "Sky Keep - Tree 45": Nothing
+    "Sky Keep - Tree 46": Nothing
+    "Sky Keep - Tree 47": Nothing
 - name: SK Meta Room
   exits:
     SK Skyview Room West: can_access(SK First Room East)

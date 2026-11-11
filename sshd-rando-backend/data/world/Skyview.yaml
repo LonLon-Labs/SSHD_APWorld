@@ -20,7 +20,7 @@
     Skyview Entry: Can_Cut_Trees_And_Logs
     SVT One Eye Room: Can_Hit_High_Skyview_Switches
     SVT First Hub Center Room: Bomb_Bag or shortcut_skyview_boards
-  locations:  # grass-patches
+  locations:  # grass-patches and tree-sanity
     "Skyview Temple - Grass Patch 1 - Blade 1": Nothing
     "Skyview Temple - Grass Patch 1 - Blade 2": Nothing
     "Skyview Temple - Grass Patch 1 - Blade 3": Nothing
@@ -595,6 +595,22 @@
     "Skyview Temple - Grass Patch 76 - Blade 31": Nothing
     "Skyview Temple - Grass Patch 76 - Blade 32": Nothing
     "Skyview Temple - Grass Patch 76 - Blade 33": Nothing
+    "Skyview Temple - Tree 1": Nothing
+    "Skyview Temple - Tree 2": Nothing
+    "Skyview Temple - Tree 3": Nothing
+    "Skyview Temple - Tree 4": Nothing
+    "Skyview Temple - Tree 5": Nothing
+    "Skyview Temple - Tree 6": Nothing
+    "Skyview Temple - Tree 7": Nothing
+    "Skyview Temple - Tree 8": Nothing
+    "Skyview Temple - Tree 9": Nothing
+    "Skyview Temple - Tree 10": Nothing
+    "Skyview Temple - Tree 11": Nothing
+    "Skyview Temple - Tree 12": Nothing
+    "Skyview Temple - Tree 13": Nothing
+    "Skyview Temple - Tree 14": Nothing
+    "Skyview Temple - Tree 15": Nothing
+    "Skyview Temple - Tree 16": Nothing
 
 - name: SVT One Eye Room
   dungeon: Skyview Temple

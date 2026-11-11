@@ -721,6 +721,8 @@ pub fn voidout_now() {
         if PLAYER_PTR.is_null() {
             return;
         }
+        // A teleport armed before the void-out must not fire on top of it.
+        crate::traps::cancel_pending_teleport();
         ((*(*PLAYER_PTR).vtable).can_handle_gameover)(PLAYER_PTR, 1, 0, 0);
     }
 }

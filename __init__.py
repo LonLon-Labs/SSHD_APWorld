@@ -607,6 +607,7 @@ class SSHDWorld(World):
         "pot_shuffle": ("pot_shuffle", "toggle", None),
         "pumpkin_shuffle": ("pumpkin_shuffle", "toggle", None),
         "barrel_shuffle": ("barrel_shuffle", "toggle", None),
+        "tree_shuffle": ("tree_shuffle", "toggle", None),
         "grass_shuffle": ("grass_shuffle", "choice", {"off": 0, "bundles": 1, "blades": 2}),
         "npc_closet_shuffle": ("npc_closet_shuffle", "toggle_custom", {"randomized": 1, "vanilla": 0}),
         "hidden_item_shuffle": ("hidden_item_shuffle", "toggle", None),
@@ -1133,6 +1134,7 @@ class SSHDWorld(World):
             "Pots":                  "pot_shuffle",
             "Pumpkins":              "pumpkin_shuffle",
             "Barrels":               "barrel_shuffle",
+            "Trees":                 "tree_shuffle",
             "Bird Statues":          "bird_statues_give_items",
             "Goddess Chests":        "goddess_chest_shuffle",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
@@ -1409,6 +1411,7 @@ class SSHDWorld(World):
                         "Pots":                  "pot_shuffle",
                         "Pumpkins":              "pumpkin_shuffle",
                         "Barrels":               "barrel_shuffle",
+                        "Trees":                 "tree_shuffle",
                         "Bird Statues":          "bird_statues_give_items",
                         "Goddess Chests":        "goddess_chest_shuffle",
                         "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
@@ -4596,6 +4599,7 @@ class SSHDWorld(World):
         settings_dict["pot_shuffle"] = "on" if self.options.pot_shuffle.value else "off"
         settings_dict["pumpkin_shuffle"] = "on" if self.options.pumpkin_shuffle.value else "off"
         settings_dict["barrel_shuffle"] = "on" if self.options.barrel_shuffle.value else "off"
+        settings_dict["tree_shuffle"] = "on" if self.options.tree_shuffle.value else "off"
         settings_dict["grass_shuffle"] = {0: "off", 1: "bundles", 2: "blades"}[self.options.grass_shuffle.value]
         settings_dict["npc_closet_shuffle"] = "randomized" if self.options.npc_closet_shuffle.value else "vanilla"
         settings_dict["hidden_item_shuffle"] = "on" if self.options.hidden_item_shuffle.value else "off"
@@ -4970,7 +4974,7 @@ class SSHDWorld(World):
         all_locations.sort(key=lambda loc: loc.address)
 
         pot_locations = [
-            loc for loc in all_locations if any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels"))
+            loc for loc in all_locations if any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels", "Trees"))
         ]
         # Patch-mode grass ("Grass" type): one location per patch, group 2 pool.
         grass_locations = [
@@ -4982,7 +4986,7 @@ class SSHDWorld(World):
             loc for loc in all_locations if "Grass Blade" in LOCATION_TABLE[loc.name].types
         ]
         other_locations = [
-            loc for loc in all_locations if not any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels", "Grass", "Grass Blade"))
+            loc for loc in all_locations if not any(t in LOCATION_TABLE[loc.name].types for t in ("Pots", "Pumpkins", "Barrels", "Trees", "Grass", "Grass Blade"))
         ]
         
         # Fail early with a clear message instead of producing a seed where some

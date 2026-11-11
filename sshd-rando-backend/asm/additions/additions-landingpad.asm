@@ -405,6 +405,16 @@ b.eq grass_spawn_skip_hook
 cmp w8, #120
 b.eq grass_inline_rng_hook
 
+; Small tree shuffle (bamboo.asm). Landing drop: x0 = tree actor, runs before the vanilla
+; drop fetch in the landing block (Ghidra 0x7100706F28).
+cmp w8, #121
+b.eq bamboo_cut_drop_hook
+
+; Small tree shuffle (bamboo.asm). Fall start: x0 = tree actor, runs when the cut starts
+; (Fall state init, Ghidra 0x7100706BE4).
+cmp w8, #122
+b.eq bamboo_fall_start_hook
+
 ret ; this should never be reached
 
 ; Wrapper for custom_event_commands.

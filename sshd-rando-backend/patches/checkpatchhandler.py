@@ -227,6 +227,15 @@ def determine_check_patches(
             elif "Barrels" in location.types:
                 # Unshuffled barrels are never patched: burn nothing.
                 custom_flag = 0x3FF
+            elif (
+                "Trees" in location.types
+                and world.setting("tree_shuffle") != "off"
+            ):
+                # Trees share the extended group 1 pool with pots, pumpkins and barrels
+                custom_flag = group1_flags.pop()
+            elif "Trees" in location.types:
+                # Unshuffled trees are never patched: burn nothing.
+                custom_flag = 0x3FF
             elif "Pots" in location.types:
                 # Unshuffled pots are never patched, so their flag is never used.
                 # Keep burning a group 0 flag while any are left so existing
@@ -249,24 +258,27 @@ def determine_check_patches(
             is_pot = "Pots" in location.types
             is_pumpkin = "Pumpkins" in location.types
             is_barrel = "Barrels" in location.types
-            is_group1_type = is_pot or is_pumpkin or is_barrel
+            is_tree = "Trees" in location.types
+            is_group1_type = is_pot or is_pumpkin or is_barrel or is_tree
             group1_off = (
                 world.setting("pot_shuffle") == "off"
                 if is_pot
                 else world.setting("barrel_shuffle") == "off"
                 if is_barrel
+                else world.setting("tree_shuffle") == "off"
+                if is_tree
                 else world.setting("pumpkin_shuffle") == "off"
             )
             if is_group1 and not is_group1_type:
                 raise Exception(
                     f'"{location.name}" has group 1 custom flag {custom_flag:#x} '
-                    "but isn't a pot, pumpkin or barrel."
+                    "but isn't a pot, pumpkin, barrel or tree."
                 )
             # With the shuffle off the location is never patched, so its flag is unused
             if is_group1_type and not group1_off and not is_group1:
                 raise Exception(
                     f'"{location.name}" has group 0 custom flag '
-                    f"{custom_flag:#x}; pots, pumpkins and barrels must use group 1."
+                    f"{custom_flag:#x}; pots, pumpkins, barrels and trees must use group 1."
                 )
 
         # Group 2 flags are only for grass patches, and every shuffled grass patch
@@ -313,6 +325,10 @@ def determine_check_patches(
 
         # Don't patch per-patch grass unless bundles mode is on
         if "Grass" in location.types and world.setting("grass_shuffle") != "bundles":
+            continue
+
+        # Don't patch trees if they're off
+        if "Trees" in location.types and world.setting("tree_shuffle") == "off":
             continue
 
         # Don't patch barrels if they're off

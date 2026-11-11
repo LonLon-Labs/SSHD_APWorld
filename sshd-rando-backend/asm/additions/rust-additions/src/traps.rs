@@ -168,6 +168,8 @@ extern "C" {
     static FANFARE_SOUND_MGR: *mut c_void;
 
     static ITEMFLAG_MGR: *mut flag::FlagMgr;
+    static mut GAME_RELOADER_PTR: *mut actor::GameReloader;
+    static STAGE_MGR: *mut actor::dStageMgr;
 
     static ACTOR_ALLOCATOR_DEFINITIONS_PTR: *mut c_void;
 
@@ -503,10 +505,40 @@ pub fn record_stage_history() {
     }
 }
 
+/// True while the game is already in a stage transition or game over (a
+/// void-out, a death, or another entrance trigger). Starting a warp on top of
+/// that re-enters GameReloader__triggerEntrance mid-transition, which crashed
+/// with PC = 0 when a teleport trap was armed during a void-out.
+fn teleport_stage_busy() -> bool {
+    unsafe {
+        if GAME_RELOADER_PTR.is_null() || STAGE_MGR.is_null() {
+            return true;
+        }
+        (*GAME_RELOADER_PTR).is_reloading != 0
+            || core::ptr::read_volatile(core::ptr::addr_of!(
+                (*STAGE_MGR).set_in_actually_trigger_entrance
+            )) != 0
+    }
+}
+
+/// Drops a teleport that was armed but not yet fired. Called when a void-out
+/// starts so the trap can't land on top of the respawn.
+pub fn cancel_pending_teleport() {
+    unsafe {
+        TELEPORT_PENDING = false;
+    }
+}
+
 /// Runs once per frame after the textbox/event check in handle_effect_timers.
 /// Performs a pending teleport, then counts down the return timer.
 fn teleport_tick() {
     unsafe {
+        // Wait out any stage transition or game over before touching the warp
+        // state. The pending teleport and the return timer both resume after.
+        if teleport_stage_busy() {
+            return;
+        }
+
         if TELEPORT_PENDING {
             // Still in the item-get pose: wait until Link can move again.
             if PLAYER_PTR.is_null()
