@@ -10,6 +10,15 @@
 # Holds entrance access to each room based on which areas have been reached.
 # TODO: Needs to be generalized for random layouts.
   locations:  # grass-patches and tree-sanity
+    "Sky Keep - Grass Patch 1": Nothing
+    "Sky Keep - Grass Patch 2": Nothing
+    "Sky Keep - Grass Patch 3": Nothing
+    "Sky Keep - Grass Patch 4": Nothing
+    "Sky Keep - Grass Patch 5": Nothing
+    "Sky Keep - Grass Patch 6": Nothing
+    "Sky Keep - Grass Patch 7": Nothing
+    "Sky Keep - Grass Patch 8": Nothing
+    "Sky Keep - Grass Patch 9": Nothing
     "Sky Keep - Grass Patch 1 - Blade 1": Nothing
     "Sky Keep - Grass Patch 1 - Blade 2": Nothing
     "Sky Keep - Grass Patch 1 - Blade 3": Nothing

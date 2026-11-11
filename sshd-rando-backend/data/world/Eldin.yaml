@@ -6,6 +6,62 @@
     Volcano Ascent: Bomb_Bag or shortcut_eldin_entrance_boulder or can_access(Volcano Ascent) # No bomb flowers are close enough for even tough beetle
     Volcano First Room: Nothing # Run over the magma platforms to the cave / room area.
   locations:
+    "Eldin Volcano - Grass Patch 1": Nothing
+    "Eldin Volcano - Grass Patch 2": Nothing
+    "Eldin Volcano - Grass Patch 3": Nothing
+    "Eldin Volcano - Grass Patch 4": Nothing
+    "Eldin Volcano - Grass Patch 5": Nothing
+    "Eldin Volcano - Grass Patch 6": Nothing
+    "Eldin Volcano - Grass Patch 7": Nothing
+    "Eldin Volcano - Grass Patch 8": Nothing
+    "Eldin Volcano - Grass Patch 9": Nothing
+    "Eldin Volcano - Grass Patch 10": Nothing
+    "Eldin Volcano - Grass Patch 11": Nothing
+    "Eldin Volcano - Grass Patch 12": Nothing
+    "Eldin Volcano - Grass Patch 13": Nothing
+    "Eldin Volcano - Grass Patch 14": Nothing
+    "Eldin Volcano - Grass Patch 15": Nothing
+    "Eldin Volcano - Grass Patch 16": Nothing
+    "Eldin Volcano - Grass Patch 17": Nothing
+    "Eldin Volcano - Grass Patch 18": Nothing
+    "Eldin Volcano - Grass Patch 19": Nothing
+    "Eldin Volcano - Grass Patch 20": Nothing
+    "Eldin Volcano - Grass Patch 21": Nothing
+    "Eldin Volcano - Grass Patch 22": Nothing
+    "Eldin Volcano - Grass Patch 23": Nothing
+    "Eldin Volcano - Grass Patch 24": Nothing
+    "Eldin Volcano - Grass Patch 25": Nothing
+    "Eldin Volcano - Grass Patch 26": Nothing
+    "Eldin Volcano - Grass Patch 27": Nothing
+    "Eldin Volcano - Grass Patch 28": Nothing
+    "Eldin Volcano - Grass Patch 29": Nothing
+    "Eldin Volcano - Grass Patch 30": Nothing
+    "Eldin Volcano - Grass Patch 31": Nothing
+    "Eldin Volcano - Grass Patch 32": Nothing
+    "Eldin Volcano - Grass Patch 33": Nothing
+    "Eldin Volcano - Grass Patch 34": Nothing
+    "Eldin Volcano - Grass Patch 35": Nothing
+    "Eldin Volcano - Grass Patch 36": Nothing
+    "Eldin Volcano - Grass Patch 37": Nothing
+    "Eldin Volcano - Grass Patch 38": Nothing
+    "Eldin Volcano - Grass Patch 39": Nothing
+    "Eldin Volcano - Grass Patch 40": Nothing
+    "Eldin Volcano - Grass Patch 41": Nothing
+    "Eldin Volcano - Grass Patch 42": Nothing
+    "Eldin Volcano - Grass Patch 43": Nothing
+    "Eldin Volcano - Grass Patch 44": Nothing
+    "Eldin Volcano - Grass Patch 45": Nothing
+    "Eldin Volcano - Grass Patch 46": Nothing
+    "Eldin Volcano - Grass Patch 47": Nothing
+    "Eldin Volcano - Grass Patch 48": Nothing
+    "Eldin Volcano - Grass Patch 49": Nothing
+    "Eldin Volcano - Grass Patch 50": Nothing
+    "Eldin Volcano - Grass Patch 51": Nothing
+    "Eldin Volcano - Grass Patch 52": Nothing
+    "Eldin Volcano - Grass Patch 53": Nothing
+    "Eldin Volcano - Grass Patch 54": Nothing
+    "Eldin Volcano - Grass Patch 55": Nothing
+    "Eldin Volcano - Grass Patch 56": Nothing
     "Eldin Volcano - Grass Patch 1 - Blade 1": Nothing
     "Eldin Volcano - Grass Patch 1 - Blade 2": Nothing
     "Eldin Volcano - Grass Patch 1 - Blade 3": Nothing
@@ -877,6 +933,13 @@
     Mogma Turf Pyrup Maze: Sailcloth and Digging_Mitts
     Volcano East: Sailcloth # Through 1st huge vent.
   locations:
+    "Mogma Turf - Grass Patch 1": Nothing
+    "Mogma Turf - Grass Patch 2": Nothing
+    "Mogma Turf - Grass Patch 3": Nothing
+    "Mogma Turf - Grass Patch 4": Nothing
+    "Mogma Turf - Grass Patch 5": Nothing
+    "Mogma Turf - Grass Patch 6": Nothing
+    "Mogma Turf - Grass Patch 7": Nothing
     "Mogma Turf - Grass Patch 1 - Blade 1": Nothing
     "Mogma Turf - Grass Patch 1 - Blade 2": Nothing
     "Mogma Turf - Grass Patch 1 - Blade 3": Nothing
@@ -1193,6 +1256,43 @@
     Bokoblin Base Before Drawbridge: Nothing # Follow the path and avoid the lantern bokoblin.
     Bokoblin Base After Drawbridge: Clawshots and Bomb_Bag
   locations:
+    "Bokoblin Base - Grass Patch 1": Nothing
+    "Bokoblin Base - Grass Patch 2": Nothing
+    "Bokoblin Base - Grass Patch 3": Nothing
+    "Bokoblin Base - Grass Patch 4": Nothing
+    "Bokoblin Base - Grass Patch 5": Nothing
+    "Bokoblin Base - Grass Patch 6": Nothing
+    "Bokoblin Base - Grass Patch 7": Nothing
+    "Bokoblin Base - Grass Patch 8": Nothing
+    "Bokoblin Base - Grass Patch 9": Nothing
+    "Bokoblin Base - Grass Patch 10": Nothing
+    "Bokoblin Base - Grass Patch 11": Nothing
+    "Bokoblin Base - Grass Patch 12": Nothing
+    "Bokoblin Base - Grass Patch 13": Nothing
+    "Bokoblin Base - Grass Patch 14": Nothing
+    "Bokoblin Base - Grass Patch 15": Nothing
+    "Bokoblin Base - Grass Patch 16": Nothing
+    "Bokoblin Base - Grass Patch 17": Nothing
+    "Bokoblin Base - Grass Patch 18": Nothing
+    "Bokoblin Base - Grass Patch 19": Nothing
+    "Bokoblin Base - Grass Patch 20": Nothing
+    "Bokoblin Base - Grass Patch 21": Nothing
+    "Bokoblin Base - Grass Patch 22": Nothing
+    "Bokoblin Base - Grass Patch 23": Nothing
+    "Bokoblin Base - Grass Patch 24": Nothing
+    "Bokoblin Base - Grass Patch 25": Nothing
+    "Bokoblin Base - Grass Patch 26": Nothing
+    "Bokoblin Base - Grass Patch 27": Nothing
+    "Bokoblin Base - Grass Patch 28": Nothing
+    "Bokoblin Base - Grass Patch 29": Nothing
+    "Bokoblin Base - Grass Patch 30": Nothing
+    "Bokoblin Base - Grass Patch 31": Nothing
+    "Bokoblin Base - Grass Patch 32": Nothing
+    "Bokoblin Base - Grass Patch 33": Nothing
+    "Bokoblin Base - Grass Patch 34": Nothing
+    "Bokoblin Base - Grass Patch 35": Nothing
+    "Bokoblin Base - Grass Patch 36": Nothing
+    "Bokoblin Base - Grass Patch 37": Nothing
     "Bokoblin Base - Grass Patch 1 - Blade 1": Nothing
     "Bokoblin Base - Grass Patch 1 - Blade 2": Nothing
     "Bokoblin Base - Grass Patch 2 - Blade 1": Nothing

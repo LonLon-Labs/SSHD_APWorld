@@ -22,6 +22,36 @@
     Central Skyloft: Loftwing and Sailcloth
     Skyloft Village: Loftwing and Sailcloth
   locations:
+    "The Sky - Grass Patch 1": Nothing
+    "The Sky - Grass Patch 2": Nothing
+    "The Sky - Grass Patch 3": Nothing
+    "The Sky - Grass Patch 4": Nothing
+    "The Sky - Grass Patch 5": Nothing
+    "The Sky - Grass Patch 6": Nothing
+    "The Sky - Grass Patch 7": Nothing
+    "The Sky - Grass Patch 8": Nothing
+    "The Sky - Grass Patch 9": Nothing
+    "The Sky - Grass Patch 10": Nothing
+    "The Sky - Grass Patch 11": Nothing
+    "The Sky - Grass Patch 12": Nothing
+    "The Sky - Grass Patch 13": Nothing
+    "The Sky - Grass Patch 14": Nothing
+    "The Sky - Grass Patch 15": Nothing
+    "The Sky - Grass Patch 16": Nothing
+    "The Sky - Grass Patch 17": Nothing
+    "The Sky - Grass Patch 18": Nothing
+    "The Sky - Grass Patch 19": Nothing
+    "The Sky - Grass Patch 20": Nothing
+    "The Sky - Grass Patch 21": Nothing
+    "The Sky - Grass Patch 22": Nothing
+    "The Sky - Grass Patch 23": Nothing
+    "The Sky - Grass Patch 24": Nothing
+    "The Sky - Grass Patch 25": Nothing
+    "The Sky - Grass Patch 26": Nothing
+    "The Sky - Grass Patch 27": Nothing
+    "The Sky - Grass Patch 28": Nothing
+    "The Sky - Grass Patch 29": Nothing
+    "The Sky - Grass Patch 30": Nothing
     "The Sky - Grass Patch 1 - Blade 1": Nothing
     "The Sky - Grass Patch 1 - Blade 2": Nothing
     "The Sky - Grass Patch 1 - Blade 3": Nothing
@@ -739,6 +769,24 @@
     Bug Heaven: Nothing
     The Sky: Day and ((Goddesss_Harp and Ballad_of_the_Goddess and can_access(Central Skyloft)) or open_thunderhead == on)
   locations:
+    "Inside the Thunderhead - Grass Patch 1": Nothing
+    "Inside the Thunderhead - Grass Patch 2": Nothing
+    "Inside the Thunderhead - Grass Patch 3": Nothing
+    "Inside the Thunderhead - Grass Patch 4": Nothing
+    "Inside the Thunderhead - Grass Patch 5": Nothing
+    "Inside the Thunderhead - Grass Patch 6": Nothing
+    "Inside the Thunderhead - Grass Patch 7": Nothing
+    "Inside the Thunderhead - Grass Patch 8": Nothing
+    "Inside the Thunderhead - Grass Patch 9": Nothing
+    "Inside the Thunderhead - Grass Patch 10": Nothing
+    "Inside the Thunderhead - Grass Patch 11": Nothing
+    "Inside the Thunderhead - Grass Patch 12": Nothing
+    "Inside the Thunderhead - Grass Patch 13": Nothing
+    "Inside the Thunderhead - Grass Patch 14": Nothing
+    "Inside the Thunderhead - Grass Patch 15": Nothing
+    "Inside the Thunderhead - Grass Patch 16": Nothing
+    "Inside the Thunderhead - Grass Patch 17": Nothing
+    "Inside the Thunderhead - Grass Patch 18": Nothing
     "Inside the Thunderhead - Grass Patch 1 - Blade 1": Nothing
     "Inside the Thunderhead - Grass Patch 1 - Blade 2": Nothing
     "Inside the Thunderhead - Grass Patch 1 - Blade 3": Nothing

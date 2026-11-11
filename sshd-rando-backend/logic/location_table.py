@@ -133,6 +133,10 @@ def get_disabled_shuffle_locations(
                 and "Barrels" in location.types
             )
             or (
+                settings["tree_shuffle"].value == "off"
+                and "Trees" in location.types
+            )
+            or (
                 settings["grass_shuffle"].value != "bundles"
                 and "Grass" in location.types
             )

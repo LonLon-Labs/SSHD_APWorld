@@ -66,6 +66,8 @@ extract_sword_models.py
 install_latest_patch.py
 sshd-rando-backend/add_grass_locations.py
 sshd-rando-backend/grass_blade_counts.txt
+sshd-rando-backend/grass_locations_generated.yaml
+sshd-rando-backend/grass_position_table.json
 sshd-rando-backend/add_tree_locations.py
 sshd-rando-backend/tree_locations_generated.yaml
 sshd-rando-backend/tree_position_table.json

@@ -21,6 +21,82 @@
     SVT One Eye Room: Can_Hit_High_Skyview_Switches
     SVT First Hub Center Room: Bomb_Bag or shortcut_skyview_boards
   locations:  # grass-patches and tree-sanity
+    "Skyview Temple - Grass Patch 1": Nothing
+    "Skyview Temple - Grass Patch 2": Nothing
+    "Skyview Temple - Grass Patch 3": Nothing
+    "Skyview Temple - Grass Patch 4": Nothing
+    "Skyview Temple - Grass Patch 5": Nothing
+    "Skyview Temple - Grass Patch 6": Nothing
+    "Skyview Temple - Grass Patch 7": Nothing
+    "Skyview Temple - Grass Patch 8": Nothing
+    "Skyview Temple - Grass Patch 9": Nothing
+    "Skyview Temple - Grass Patch 10": Nothing
+    "Skyview Temple - Grass Patch 11": Nothing
+    "Skyview Temple - Grass Patch 12": Nothing
+    "Skyview Temple - Grass Patch 13": Nothing
+    "Skyview Temple - Grass Patch 14": Nothing
+    "Skyview Temple - Grass Patch 15": Nothing
+    "Skyview Temple - Grass Patch 16": Nothing
+    "Skyview Temple - Grass Patch 17": Nothing
+    "Skyview Temple - Grass Patch 18": Nothing
+    "Skyview Temple - Grass Patch 19": Nothing
+    "Skyview Temple - Grass Patch 20": Nothing
+    "Skyview Temple - Grass Patch 21": Nothing
+    "Skyview Temple - Grass Patch 22": Nothing
+    "Skyview Temple - Grass Patch 23": Nothing
+    "Skyview Temple - Grass Patch 24": Nothing
+    "Skyview Temple - Grass Patch 25": Nothing
+    "Skyview Temple - Grass Patch 26": Nothing
+    "Skyview Temple - Grass Patch 27": Nothing
+    "Skyview Temple - Grass Patch 28": Nothing
+    "Skyview Temple - Grass Patch 29": Nothing
+    "Skyview Temple - Grass Patch 30": Nothing
+    "Skyview Temple - Grass Patch 31": Nothing
+    "Skyview Temple - Grass Patch 32": Nothing
+    "Skyview Temple - Grass Patch 33": Nothing
+    "Skyview Temple - Grass Patch 34": Nothing
+    "Skyview Temple - Grass Patch 35": Nothing
+    "Skyview Temple - Grass Patch 36": Nothing
+    "Skyview Temple - Grass Patch 37": Nothing
+    "Skyview Temple - Grass Patch 38": Nothing
+    "Skyview Temple - Grass Patch 39": Nothing
+    "Skyview Temple - Grass Patch 40": Nothing
+    "Skyview Temple - Grass Patch 41": Nothing
+    "Skyview Temple - Grass Patch 42": Nothing
+    "Skyview Temple - Grass Patch 43": Nothing
+    "Skyview Temple - Grass Patch 44": Nothing
+    "Skyview Temple - Grass Patch 45": Nothing
+    "Skyview Temple - Grass Patch 46": Nothing
+    "Skyview Temple - Grass Patch 47": Nothing
+    "Skyview Temple - Grass Patch 48": Nothing
+    "Skyview Temple - Grass Patch 49": Nothing
+    "Skyview Temple - Grass Patch 50": Nothing
+    "Skyview Temple - Grass Patch 51": Nothing
+    "Skyview Temple - Grass Patch 52": Nothing
+    "Skyview Temple - Grass Patch 53": Nothing
+    "Skyview Temple - Grass Patch 54": Nothing
+    "Skyview Temple - Grass Patch 55": Nothing
+    "Skyview Temple - Grass Patch 56": Nothing
+    "Skyview Temple - Grass Patch 57": Nothing
+    "Skyview Temple - Grass Patch 58": Nothing
+    "Skyview Temple - Grass Patch 59": Nothing
+    "Skyview Temple - Grass Patch 60": Nothing
+    "Skyview Temple - Grass Patch 61": Nothing
+    "Skyview Temple - Grass Patch 62": Nothing
+    "Skyview Temple - Grass Patch 63": Nothing
+    "Skyview Temple - Grass Patch 64": Nothing
+    "Skyview Temple - Grass Patch 65": Nothing
+    "Skyview Temple - Grass Patch 66": Nothing
+    "Skyview Temple - Grass Patch 67": Nothing
+    "Skyview Temple - Grass Patch 68": Nothing
+    "Skyview Temple - Grass Patch 69": Nothing
+    "Skyview Temple - Grass Patch 70": Nothing
+    "Skyview Temple - Grass Patch 71": Nothing
+    "Skyview Temple - Grass Patch 72": Nothing
+    "Skyview Temple - Grass Patch 73": Nothing
+    "Skyview Temple - Grass Patch 74": Nothing
+    "Skyview Temple - Grass Patch 75": Nothing
+    "Skyview Temple - Grass Patch 76": Nothing
     "Skyview Temple - Grass Patch 1 - Blade 1": Nothing
     "Skyview Temple - Grass Patch 1 - Blade 2": Nothing
     "Skyview Temple - Grass Patch 1 - Blade 3": Nothing
@@ -803,6 +879,12 @@
   exits:
     Skyview Boss Room: Nothing # Open the door.
   locations:
+    "Skyview Spring - Grass Patch 1": Nothing
+    "Skyview Spring - Grass Patch 2": Nothing
+    "Skyview Spring - Grass Patch 3": Nothing
+    "Skyview Spring - Grass Patch 4": Nothing
+    "Skyview Spring - Grass Patch 5": Nothing
+    "Skyview Spring - Grass Patch 6": Nothing
     "Skyview Spring - Grass Patch 1 - Blade 1": Nothing
     "Skyview Spring - Grass Patch 1 - Blade 2": Nothing
     "Skyview Spring - Grass Patch 1 - Blade 3": Nothing

@@ -8,6 +8,15 @@
                   (Slingshot or Clawshots or Bow or Long_Range_Skyward_Strike or (Can_Defeat_Lizalfos and Beetle))"
     Near Temple Entrance: Nothing # Walk up the stairs and exit the dungeon.
   locations:
+    "Earth Temple - Grass Patch 1": Nothing
+    "Earth Temple - Grass Patch 2": Nothing
+    "Earth Temple - Grass Patch 3": Nothing
+    "Earth Temple - Grass Patch 4": Nothing
+    "Earth Temple - Grass Patch 5": Nothing
+    "Earth Temple - Grass Patch 6": Nothing
+    "Earth Temple - Grass Patch 7": Nothing
+    "Earth Temple - Grass Patch 8": Nothing
+    "Earth Temple - Grass Patch 9": Nothing
     "Earth Temple - Grass Patch 1 - Blade 1": Nothing
     "Earth Temple - Grass Patch 1 - Blade 2": Nothing
     "Earth Temple - Grass Patch 1 - Blade 3": Nothing

@@ -10,6 +10,64 @@
     Lanayru Mine Statues Area: "'Lanayru_Mine_First_Timeshift_Stone'"
     Lanayru Mine Upper Area: Clawshots
   locations:
+    "Lanayru Mine - Grass Patch 1": Nothing
+    "Lanayru Mine - Grass Patch 2": Nothing
+    "Lanayru Mine - Grass Patch 3": Nothing
+    "Lanayru Mine - Grass Patch 4": Nothing
+    "Lanayru Mine - Grass Patch 5": Nothing
+    "Lanayru Mine - Grass Patch 6": Nothing
+    "Lanayru Mine - Grass Patch 7": Nothing
+    "Lanayru Mine - Grass Patch 8": Nothing
+    "Lanayru Mine - Grass Patch 9": Nothing
+    "Lanayru Mine - Grass Patch 10": Nothing
+    "Lanayru Mine - Grass Patch 11": Nothing
+    "Lanayru Mine - Grass Patch 12": Nothing
+    "Lanayru Mine - Grass Patch 13": Nothing
+    "Lanayru Mine - Grass Patch 14": Nothing
+    "Lanayru Mine - Grass Patch 15": Nothing
+    "Lanayru Mine - Grass Patch 16": Nothing
+    "Lanayru Mine - Grass Patch 17": Nothing
+    "Lanayru Mine - Grass Patch 18": Nothing
+    "Lanayru Mine - Grass Patch 19": Nothing
+    "Lanayru Mine - Grass Patch 20": Nothing
+    "Lanayru Mine - Grass Patch 21": Nothing
+    "Lanayru Mine - Grass Patch 22": Nothing
+    "Lanayru Mine - Grass Patch 23": Nothing
+    "Lanayru Mine - Grass Patch 24": Nothing
+    "Lanayru Mine - Grass Patch 25": Nothing
+    "Lanayru Mine - Grass Patch 26": Nothing
+    "Lanayru Mine - Grass Patch 27": Nothing
+    "Lanayru Mine - Grass Patch 28": Nothing
+    "Lanayru Mine - Grass Patch 29": Nothing
+    "Lanayru Mine - Grass Patch 30": Nothing
+    "Lanayru Mine - Grass Patch 31": Nothing
+    "Lanayru Mine - Grass Patch 32": Nothing
+    "Lanayru Mine - Grass Patch 33": Nothing
+    "Lanayru Mine - Grass Patch 34": Nothing
+    "Lanayru Mine - Grass Patch 35": Nothing
+    "Lanayru Mine - Grass Patch 36": Nothing
+    "Lanayru Mine - Grass Patch 37": Nothing
+    "Lanayru Mine - Grass Patch 38": Nothing
+    "Lanayru Mine - Grass Patch 39": Nothing
+    "Lanayru Mine - Grass Patch 40": Nothing
+    "Lanayru Mine - Grass Patch 41": Nothing
+    "Lanayru Mine - Grass Patch 42": Nothing
+    "Lanayru Mine - Grass Patch 43": Nothing
+    "Lanayru Mine - Grass Patch 44": Nothing
+    "Lanayru Mine - Grass Patch 45": Nothing
+    "Lanayru Mine - Grass Patch 46": Nothing
+    "Lanayru Mine - Grass Patch 47": Nothing
+    "Lanayru Mine - Grass Patch 48": Nothing
+    "Lanayru Mine - Grass Patch 49": Nothing
+    "Lanayru Mine - Grass Patch 50": Nothing
+    "Lanayru Mine - Grass Patch 51": Nothing
+    "Lanayru Mine - Grass Patch 52": Nothing
+    "Lanayru Mine - Grass Patch 53": Nothing
+    "Lanayru Mine - Grass Patch 54": Nothing
+    "Lanayru Mine - Grass Patch 55": Nothing
+    "Lanayru Mine - Grass Patch 56": Nothing
+    "Lanayru Mine - Grass Patch 57": Nothing
+    "Lanayru Mine - Grass Patch 58": Nothing
     "Lanayru Mine - Grass Patch 1 - Blade 1": Nothing
     "Lanayru Mine - Grass Patch 1 - Blade 2": Nothing
     "Lanayru Mine - Grass Patch 1 - Blade 3": Nothing
@@ -905,6 +963,52 @@
     Lanayru Desert West Courtyard: "'Get_Past_Spume_to_Sand_Oasis'"
     Lanayru Mine In Minecart: Blow_Up_Covered_Timeshift_Stone # Cannot assume that minecart is available.
   locations:
+    "Lanayru Desert - Grass Patch 1": Nothing
+    "Lanayru Desert - Grass Patch 2": Nothing
+    "Lanayru Desert - Grass Patch 3": Nothing
+    "Lanayru Desert - Grass Patch 4": Nothing
+    "Lanayru Desert - Grass Patch 5": Nothing
+    "Lanayru Desert - Grass Patch 6": Nothing
+    "Lanayru Desert - Grass Patch 7": Nothing
+    "Lanayru Desert - Grass Patch 8": Nothing
+    "Lanayru Desert - Grass Patch 9": Nothing
+    "Lanayru Desert - Grass Patch 10": Nothing
+    "Lanayru Desert - Grass Patch 11": Nothing
+    "Lanayru Desert - Grass Patch 12": Nothing
+    "Lanayru Desert - Grass Patch 13": Nothing
+    "Lanayru Desert - Grass Patch 14": Nothing
+    "Lanayru Desert - Grass Patch 15": Nothing
+    "Lanayru Desert - Grass Patch 16": Nothing
+    "Lanayru Desert - Grass Patch 17": Nothing
+    "Lanayru Desert - Grass Patch 18": Nothing
+    "Lanayru Desert - Grass Patch 19": Nothing
+    "Lanayru Desert - Grass Patch 20": Nothing
+    "Lanayru Desert - Grass Patch 21": Nothing
+    "Lanayru Desert - Grass Patch 22": Nothing
+    "Lanayru Desert - Grass Patch 23": Nothing
+    "Lanayru Desert - Grass Patch 24": Nothing
+    "Lanayru Desert - Grass Patch 25": Nothing
+    "Lanayru Desert - Grass Patch 26": Nothing
+    "Lanayru Desert - Grass Patch 27": Nothing
+    "Lanayru Desert - Grass Patch 28": Nothing
+    "Lanayru Desert - Grass Patch 29": Nothing
+    "Lanayru Desert - Grass Patch 30": Nothing
+    "Lanayru Desert - Grass Patch 31": Nothing
+    "Lanayru Desert - Grass Patch 32": Nothing
+    "Lanayru Desert - Grass Patch 33": Nothing
+    "Lanayru Desert - Grass Patch 34": Nothing
+    "Lanayru Desert - Grass Patch 35": Nothing
+    "Lanayru Desert - Grass Patch 36": Nothing
+    "Lanayru Desert - Grass Patch 37": Nothing
+    "Lanayru Desert - Grass Patch 38": Nothing
+    "Lanayru Desert - Grass Patch 39": Nothing
+    "Lanayru Desert - Grass Patch 40": Nothing
+    "Lanayru Desert - Grass Patch 41": Nothing
+    "Lanayru Desert - Grass Patch 42": Nothing
+    "Lanayru Desert - Grass Patch 43": Nothing
+    "Lanayru Desert - Grass Patch 44": Nothing
+    "Lanayru Desert - Grass Patch 45": Nothing
+    "Lanayru Desert - Grass Patch 46": Nothing
     "Lanayru Desert - Grass Patch 1 - Blade 1": Nothing
     "Lanayru Desert - Grass Patch 1 - Blade 2": Nothing
     "Lanayru Desert - Grass Patch 1 - Blade 3": Nothing
@@ -1996,6 +2100,48 @@
     Desert Gorge Statue: Nothing # Interact with the statue.
     Temple of Time West: Hook_Beetle or (Slingshot and logic_tot_slingshot)
   locations:
+    "Temple of Time - Grass Patch 1": Nothing
+    "Temple of Time - Grass Patch 2": Nothing
+    "Temple of Time - Grass Patch 3": Nothing
+    "Temple of Time - Grass Patch 4": Nothing
+    "Temple of Time - Grass Patch 5": Nothing
+    "Temple of Time - Grass Patch 6": Nothing
+    "Temple of Time - Grass Patch 7": Nothing
+    "Temple of Time - Grass Patch 8": Nothing
+    "Temple of Time - Grass Patch 9": Nothing
+    "Temple of Time - Grass Patch 10": Nothing
+    "Temple of Time - Grass Patch 11": Nothing
+    "Temple of Time - Grass Patch 12": Nothing
+    "Temple of Time - Grass Patch 13": Nothing
+    "Temple of Time - Grass Patch 14": Nothing
+    "Temple of Time - Grass Patch 15": Nothing
+    "Temple of Time - Grass Patch 16": Nothing
+    "Temple of Time - Grass Patch 17": Nothing
+    "Temple of Time - Grass Patch 18": Nothing
+    "Temple of Time - Grass Patch 19": Nothing
+    "Temple of Time - Grass Patch 20": Nothing
+    "Temple of Time - Grass Patch 21": Nothing
+    "Temple of Time - Grass Patch 22": Nothing
+    "Temple of Time - Grass Patch 23": Nothing
+    "Temple of Time - Grass Patch 24": Nothing
+    "Temple of Time - Grass Patch 25": Nothing
+    "Temple of Time - Grass Patch 26": Nothing
+    "Temple of Time - Grass Patch 27": Nothing
+    "Temple of Time - Grass Patch 28": Nothing
+    "Temple of Time - Grass Patch 29": Nothing
+    "Temple of Time - Grass Patch 30": Nothing
+    "Temple of Time - Grass Patch 31": Nothing
+    "Temple of Time - Grass Patch 32": Nothing
+    "Temple of Time - Grass Patch 33": Nothing
+    "Temple of Time - Grass Patch 34": Nothing
+    "Temple of Time - Grass Patch 35": Nothing
+    "Temple of Time - Grass Patch 36": Nothing
+    "Temple of Time - Grass Patch 37": Nothing
+    "Temple of Time - Grass Patch 38": Nothing
+    "Temple of Time - Grass Patch 39": Nothing
+    "Temple of Time - Grass Patch 40": Nothing
+    "Temple of Time - Grass Patch 41": Nothing
+    "Temple of Time - Grass Patch 42": Nothing
     "Temple of Time - Grass Patch 1 - Blade 1": Nothing
     "Temple of Time - Grass Patch 1 - Blade 2": Nothing
     "Temple of Time - Grass Patch 1 - Blade 3": Nothing
@@ -2757,6 +2903,25 @@
     Lanayru Mine Caves Platform: Nothing # Run up the ledge and exit towards the mine.
     Sand Oasis Highest Platform: Nothing # Run past the pillars towards the main desert.
   locations:
+    "Lanayru Caves - Grass Patch 1": Nothing
+    "Lanayru Caves - Grass Patch 2": Nothing
+    "Lanayru Caves - Grass Patch 3": Nothing
+    "Lanayru Caves - Grass Patch 4": Nothing
+    "Lanayru Caves - Grass Patch 5": Nothing
+    "Lanayru Caves - Grass Patch 6": Nothing
+    "Lanayru Caves - Grass Patch 7": Nothing
+    "Lanayru Caves - Grass Patch 8": Nothing
+    "Lanayru Caves - Grass Patch 9": Nothing
+    "Lanayru Caves - Grass Patch 10": Nothing
+    "Lanayru Caves - Grass Patch 11": Nothing
+    "Lanayru Caves - Grass Patch 12": Nothing
+    "Lanayru Caves - Grass Patch 13": Nothing
+    "Lanayru Caves - Grass Patch 14": Nothing
+    "Lanayru Caves - Grass Patch 15": Nothing
+    "Lanayru Caves - Grass Patch 16": Nothing
+    "Lanayru Caves - Grass Patch 17": Nothing
+    "Lanayru Caves - Grass Patch 18": Nothing
+    "Lanayru Caves - Grass Patch 19": Nothing
     "Lanayru Caves - Grass Patch 1 - Blade 1": Nothing
     "Lanayru Caves - Grass Patch 1 - Blade 2": Nothing
     "Lanayru Caves - Grass Patch 1 - Blade 3": Nothing
@@ -3011,6 +3176,113 @@
     Lanayru Gorge Beyond Bridge: Can_Hit_Timeshift_Stone_in_Minecart
     Lanayru Caves Past Crawlspace: Nothing # Exit out of Gorge towards Caves.
   locations:
+    "Lanayru Gorge - Grass Patch 1": Nothing
+    "Lanayru Gorge - Grass Patch 2": Nothing
+    "Lanayru Gorge - Grass Patch 3": Nothing
+    "Lanayru Gorge - Grass Patch 4": Nothing
+    "Lanayru Gorge - Grass Patch 5": Nothing
+    "Lanayru Gorge - Grass Patch 6": Nothing
+    "Lanayru Gorge - Grass Patch 7": Nothing
+    "Lanayru Gorge - Grass Patch 8": Nothing
+    "Lanayru Gorge - Grass Patch 9": Nothing
+    "Lanayru Gorge - Grass Patch 10": Nothing
+    "Lanayru Gorge - Grass Patch 11": Nothing
+    "Lanayru Gorge - Grass Patch 12": Nothing
+    "Lanayru Gorge - Grass Patch 13": Nothing
+    "Lanayru Gorge - Grass Patch 14": Nothing
+    "Lanayru Gorge - Grass Patch 15": Nothing
+    "Lanayru Gorge - Grass Patch 16": Nothing
+    "Lanayru Gorge - Grass Patch 17": Nothing
+    "Lanayru Gorge - Grass Patch 18": Nothing
+    "Lanayru Gorge - Grass Patch 19": Nothing
+    "Lanayru Gorge - Grass Patch 20": Nothing
+    "Lanayru Gorge - Grass Patch 21": Nothing
+    "Lanayru Gorge - Grass Patch 22": Nothing
+    "Lanayru Gorge - Grass Patch 23": Nothing
+    "Lanayru Gorge - Grass Patch 24": Nothing
+    "Lanayru Gorge - Grass Patch 25": Nothing
+    "Lanayru Gorge - Grass Patch 26": Nothing
+    "Lanayru Gorge - Grass Patch 27": Nothing
+    "Lanayru Gorge - Grass Patch 28": Nothing
+    "Lanayru Gorge - Grass Patch 29": Nothing
+    "Lanayru Gorge - Grass Patch 30": Nothing
+    "Lanayru Gorge - Grass Patch 31": Nothing
+    "Lanayru Gorge - Grass Patch 32": Nothing
+    "Lanayru Gorge - Grass Patch 33": Nothing
+    "Lanayru Gorge - Grass Patch 34": Nothing
+    "Lanayru Gorge - Grass Patch 35": Nothing
+    "Lanayru Gorge - Grass Patch 36": Nothing
+    "Lanayru Gorge - Grass Patch 37": Nothing
+    "Lanayru Gorge - Grass Patch 38": Nothing
+    "Lanayru Gorge - Grass Patch 39": Nothing
+    "Lanayru Gorge - Grass Patch 40": Nothing
+    "Lanayru Gorge - Grass Patch 41": Nothing
+    "Lanayru Gorge - Grass Patch 42": Nothing
+    "Lanayru Gorge - Grass Patch 43": Nothing
+    "Lanayru Gorge - Grass Patch 44": Nothing
+    "Lanayru Gorge - Grass Patch 45": Nothing
+    "Lanayru Gorge - Grass Patch 46": Nothing
+    "Lanayru Gorge - Grass Patch 47": Nothing
+    "Lanayru Gorge - Grass Patch 48": Nothing
+    "Lanayru Gorge - Grass Patch 49": Nothing
+    "Lanayru Gorge - Grass Patch 50": Nothing
+    "Lanayru Gorge - Grass Patch 51": Nothing
+    "Lanayru Gorge - Grass Patch 52": Nothing
+    "Lanayru Gorge - Grass Patch 53": Nothing
+    "Lanayru Gorge - Grass Patch 54": Nothing
+    "Lanayru Gorge - Grass Patch 55": Nothing
+    "Lanayru Gorge - Grass Patch 56": Nothing
+    "Lanayru Gorge - Grass Patch 57": Nothing
+    "Lanayru Gorge - Grass Patch 58": Nothing
+    "Lanayru Gorge - Grass Patch 59": Nothing
+    "Lanayru Gorge - Grass Patch 60": Nothing
+    "Lanayru Gorge - Grass Patch 61": Nothing
+    "Lanayru Gorge - Grass Patch 62": Nothing
+    "Lanayru Gorge - Grass Patch 63": Nothing
+    "Lanayru Gorge - Grass Patch 64": Nothing
+    "Lanayru Gorge - Grass Patch 65": Nothing
+    "Lanayru Gorge - Grass Patch 66": Nothing
+    "Lanayru Gorge - Grass Patch 67": Nothing
+    "Lanayru Gorge - Grass Patch 68": Nothing
+    "Lanayru Gorge - Grass Patch 69": Nothing
+    "Lanayru Gorge - Grass Patch 70": Nothing
+    "Lanayru Gorge - Grass Patch 71": Nothing
+    "Lanayru Gorge - Grass Patch 72": Nothing
+    "Lanayru Gorge - Grass Patch 73": Nothing
+    "Lanayru Gorge - Grass Patch 74": Nothing
+    "Lanayru Gorge - Grass Patch 75": Nothing
+    "Lanayru Gorge - Grass Patch 76": Nothing
+    "Lanayru Gorge - Grass Patch 77": Nothing
+    "Lanayru Gorge - Grass Patch 78": Nothing
+    "Lanayru Gorge - Grass Patch 79": Nothing
+    "Lanayru Gorge - Grass Patch 80": Nothing
+    "Lanayru Gorge - Grass Patch 81": Nothing
+    "Lanayru Gorge - Grass Patch 82": Nothing
+    "Lanayru Gorge - Grass Patch 83": Nothing
+    "Lanayru Gorge - Grass Patch 84": Nothing
+    "Lanayru Gorge - Grass Patch 85": Nothing
+    "Lanayru Gorge - Grass Patch 86": Nothing
+    "Lanayru Gorge - Grass Patch 87": Nothing
+    "Lanayru Gorge - Grass Patch 88": Nothing
+    "Lanayru Gorge - Grass Patch 89": Nothing
+    "Lanayru Gorge - Grass Patch 90": Nothing
+    "Lanayru Gorge - Grass Patch 91": Nothing
+    "Lanayru Gorge - Grass Patch 92": Nothing
+    "Lanayru Gorge - Grass Patch 93": Nothing
+    "Lanayru Gorge - Grass Patch 94": Nothing
+    "Lanayru Gorge - Grass Patch 95": Nothing
+    "Lanayru Gorge - Grass Patch 96": Nothing
+    "Lanayru Gorge - Grass Patch 97": Nothing
+    "Lanayru Gorge - Grass Patch 98": Nothing
+    "Lanayru Gorge - Grass Patch 99": Nothing
+    "Lanayru Gorge - Grass Patch 100": Nothing
+    "Lanayru Gorge - Grass Patch 101": Nothing
+    "Lanayru Gorge - Grass Patch 102": Nothing
+    "Lanayru Gorge - Grass Patch 103": Nothing
+    "Lanayru Gorge - Grass Patch 104": Nothing
+    "Lanayru Gorge - Grass Patch 105": Nothing
+    "Lanayru Gorge - Grass Patch 106": Nothing
+    "Lanayru Gorge - Grass Patch 107": Nothing
     "Lanayru Gorge - Grass Patch 1 - Blade 1": Nothing
     "Lanayru Gorge - Grass Patch 1 - Blade 2": Nothing
     "Lanayru Gorge - Grass Patch 1 - Blade 3": Nothing
@@ -4166,6 +4438,9 @@
     Ancient Harbour Statue: Nothing # Interact with the statue.
     Ancient Harbour Highest Platform: Clawshots
   locations:
+    "Ancient Harbour - Grass Patch 1": Nothing
+    "Ancient Harbour - Grass Patch 2": Nothing
+    "Ancient Harbour - Grass Patch 3": Nothing
     "Ancient Harbour - Grass Patch 1 - Blade 1": Nothing
     "Ancient Harbour - Grass Patch 1 - Blade 2": Nothing
     "Ancient Harbour - Grass Patch 1 - Blade 3": Nothing
@@ -4316,6 +4591,13 @@
     Skipper's Retreat Past Rock: Clawshots and (Bomb_Bag or Hook_Beetle or (Whip and logic_cactus_bomb_whip))
     Lanayru Sand Sea: Nothing # Talk to Skipper and exit to the sea.
   locations:  # grass-patches
+    "Skipper's Retreat - Grass Patch 1": Nothing
+    "Skipper's Retreat - Grass Patch 2": Nothing
+    "Skipper's Retreat - Grass Patch 3": Nothing
+    "Skipper's Retreat - Grass Patch 4": Nothing
+    "Skipper's Retreat - Grass Patch 5": Nothing
+    "Skipper's Retreat - Grass Patch 6": Nothing
+    "Skipper's Retreat - Grass Patch 7": Nothing
     "Skipper's Retreat - Grass Patch 1 - Blade 1": Nothing
     "Skipper's Retreat - Grass Patch 1 - Blade 2": Nothing
     "Skipper's Retreat - Grass Patch 1 - Blade 3": Nothing
@@ -4502,6 +4784,7 @@
     Construction Bay Sand Pit: Nothing # Open the door to the west.
     Lanayru Sand Sea: Nothing # Talk to Skipper and exit to the sea.
   locations:
+    "Shipyard - Grass Patch 1": Nothing
     "Shipyard - Grass Patch 1 - Blade 1": Nothing
     "Shipyard - Grass Patch 1 - Blade 2": Nothing
     "Shipyard - Grass Patch 1 - Blade 3": Nothing
@@ -4556,6 +4839,12 @@
     Pirate Stronghold Inside the Shark Head: "'Finish_Pirate_Stronghold'"
     Lanayru Sand Sea: Nothing # Talk to Skipper and exit to the sea.
   locations:
+    "Pirate Stronghold - Grass Patch 1": Nothing
+    "Pirate Stronghold - Grass Patch 2": Nothing
+    "Pirate Stronghold - Grass Patch 3": Nothing
+    "Pirate Stronghold - Grass Patch 4": Nothing
+    "Pirate Stronghold - Grass Patch 5": Nothing
+    "Pirate Stronghold - Grass Patch 6": Nothing
     "Pirate Stronghold - Grass Patch 1 - Blade 1": Nothing
     "Pirate Stronghold - Grass Patch 1 - Blade 2": Nothing
     "Pirate Stronghold - Grass Patch 1 - Blade 3": Nothing
