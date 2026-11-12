@@ -6,832 +6,832 @@
     Outside Fire Sanctuary: Nothing # Run up the stairs and exit the dungeon.
     FS First Room Past Water Plants: Can_Hit_High_Water_Plant
   locations:  # grass-patches
-    "Fire Sanctuary - Grass Patch 1": Nothing
-    "Fire Sanctuary - Grass Patch 2": Nothing
-    "Fire Sanctuary - Grass Patch 3": Nothing
-    "Fire Sanctuary - Grass Patch 4": Nothing
-    "Fire Sanctuary - Grass Patch 5": Nothing
-    "Fire Sanctuary - Grass Patch 6": Nothing
-    "Fire Sanctuary - Grass Patch 7": Nothing
-    "Fire Sanctuary - Grass Patch 8": Nothing
-    "Fire Sanctuary - Grass Patch 9": Nothing
-    "Fire Sanctuary - Grass Patch 10": Nothing
-    "Fire Sanctuary - Grass Patch 11": Nothing
-    "Fire Sanctuary - Grass Patch 12": Nothing
-    "Fire Sanctuary - Grass Patch 13": Nothing
-    "Fire Sanctuary - Grass Patch 14": Nothing
-    "Fire Sanctuary - Grass Patch 15": Nothing
-    "Fire Sanctuary - Grass Patch 16": Nothing
-    "Fire Sanctuary - Grass Patch 17": Nothing
-    "Fire Sanctuary - Grass Patch 18": Nothing
-    "Fire Sanctuary - Grass Patch 19": Nothing
-    "Fire Sanctuary - Grass Patch 20": Nothing
-    "Fire Sanctuary - Grass Patch 21": Nothing
-    "Fire Sanctuary - Grass Patch 22": Nothing
-    "Fire Sanctuary - Grass Patch 23": Nothing
-    "Fire Sanctuary - Grass Patch 24": Nothing
-    "Fire Sanctuary - Grass Patch 25": Nothing
-    "Fire Sanctuary - Grass Patch 26": Nothing
-    "Fire Sanctuary - Grass Patch 27": Nothing
-    "Fire Sanctuary - Grass Patch 28": Nothing
-    "Fire Sanctuary - Grass Patch 29": Nothing
-    "Fire Sanctuary - Grass Patch 30": Nothing
-    "Fire Sanctuary - Grass Patch 31": Nothing
-    "Fire Sanctuary - Grass Patch 32": Nothing
-    "Fire Sanctuary - Grass Patch 33": Nothing
-    "Fire Sanctuary - Grass Patch 34": Nothing
-    "Fire Sanctuary - Grass Patch 35": Nothing
-    "Fire Sanctuary - Grass Patch 36": Nothing
-    "Fire Sanctuary - Grass Patch 37": Nothing
-    "Fire Sanctuary - Grass Patch 38": Nothing
-    "Fire Sanctuary - Grass Patch 39": Nothing
-    "Fire Sanctuary - Grass Patch 40": Nothing
-    "Fire Sanctuary - Grass Patch 41": Nothing
-    "Fire Sanctuary - Grass Patch 42": Nothing
-    "Fire Sanctuary - Grass Patch 43": Nothing
-    "Fire Sanctuary - Grass Patch 44": Nothing
-    "Fire Sanctuary - Grass Patch 45": Nothing
-    "Fire Sanctuary - Grass Patch 46": Nothing
-    "Fire Sanctuary - Grass Patch 47": Nothing
-    "Fire Sanctuary - Grass Patch 48": Nothing
-    "Fire Sanctuary - Grass Patch 49": Nothing
-    "Fire Sanctuary - Grass Patch 50": Nothing
-    "Fire Sanctuary - Grass Patch 51": Nothing
-    "Fire Sanctuary - Grass Patch 52": Nothing
-    "Fire Sanctuary - Grass Patch 53": Nothing
-    "Fire Sanctuary - Grass Patch 54": Nothing
-    "Fire Sanctuary - Grass Patch 55": Nothing
-    "Fire Sanctuary - Grass Patch 56": Nothing
-    "Fire Sanctuary - Grass Patch 57": Nothing
-    "Fire Sanctuary - Grass Patch 58": Nothing
-    "Fire Sanctuary - Grass Patch 59": Nothing
-    "Fire Sanctuary - Grass Patch 60": Nothing
-    "Fire Sanctuary - Grass Patch 61": Nothing
-    "Fire Sanctuary - Grass Patch 62": Nothing
-    "Fire Sanctuary - Grass Patch 63": Nothing
-    "Fire Sanctuary - Grass Patch 64": Nothing
-    "Fire Sanctuary - Grass Patch 65": Nothing
-    "Fire Sanctuary - Grass Patch 66": Nothing
-    "Fire Sanctuary - Grass Patch 67": Nothing
-    "Fire Sanctuary - Grass Patch 68": Nothing
-    "Fire Sanctuary - Grass Patch 69": Nothing
-    "Fire Sanctuary - Grass Patch 70": Nothing
-    "Fire Sanctuary - Grass Patch 71": Nothing
-    "Fire Sanctuary - Grass Patch 72": Nothing
-    "Fire Sanctuary - Grass Patch 73": Nothing
-    "Fire Sanctuary - Grass Patch 74": Nothing
-    "Fire Sanctuary - Grass Patch 75": Nothing
-    "Fire Sanctuary - Grass Patch 76": Nothing
-    "Fire Sanctuary - Grass Patch 77": Nothing
-    "Fire Sanctuary - Grass Patch 78": Nothing
-    "Fire Sanctuary - Grass Patch 79": Nothing
-    "Fire Sanctuary - Grass Patch 80": Nothing
-    "Fire Sanctuary - Grass Patch 81": Nothing
-    "Fire Sanctuary - Grass Patch 82": Nothing
-    "Fire Sanctuary - Grass Patch 83": Nothing
-    "Fire Sanctuary - Grass Patch 84": Nothing
-    "Fire Sanctuary - Grass Patch 85": Nothing
-    "Fire Sanctuary - Grass Patch 86": Nothing
-    "Fire Sanctuary - Grass Patch 87": Nothing
-    "Fire Sanctuary - Grass Patch 88": Nothing
-    "Fire Sanctuary - Grass Patch 89": Nothing
-    "Fire Sanctuary - Grass Patch 90": Nothing
-    "Fire Sanctuary - Grass Patch 91": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 1 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 2 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 2 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 2 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 2 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 3 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 4 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 4 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 15": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 16": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 17": Nothing
-    "Fire Sanctuary - Grass Patch 5 - Blade 18": Nothing
-    "Fire Sanctuary - Grass Patch 6 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 6 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 6 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 6 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 6 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 6 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 6 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 6 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 6 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 7 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 8 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 8 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 8 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 8 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 8 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 8 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 8 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 8 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 8 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 15": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 16": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 17": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 18": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 19": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 20": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 21": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 22": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 23": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 24": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 25": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 26": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 27": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 28": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 29": Nothing
-    "Fire Sanctuary - Grass Patch 9 - Blade 30": Nothing
-    "Fire Sanctuary - Grass Patch 10 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 10 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 10 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 11 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 11 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 11 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 11 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 12 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 12 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 12 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 12 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 13 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 13 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 13 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 13 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 13 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 13 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 13 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 13 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 13 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 13 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 14 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 14 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 14 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 15 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 15 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 15 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 15 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 15 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 15 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 15 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 15 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 15": Nothing
-    "Fire Sanctuary - Grass Patch 16 - Blade 16": Nothing
-    "Fire Sanctuary - Grass Patch 17 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 17 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 17 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 17 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 18 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 18 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 18 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 19 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 19 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 19 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 20 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 20 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 20 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 20 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 20 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 21 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 21 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 21 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 21 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 22 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 22 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 23 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 23 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 23 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 24 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 24 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 24 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 24 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 24 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 24 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 24 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 24 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 24 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 25 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 25 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 25 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 25 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 25 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 26 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 27 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 27 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 27 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 27 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 15": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 16": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 17": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 18": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 19": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 20": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 21": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 22": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 23": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 24": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 25": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 26": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 27": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 28": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 29": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 30": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 31": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 32": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 33": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 34": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 35": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 36": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 37": Nothing
-    "Fire Sanctuary - Grass Patch 28 - Blade 38": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 29 - Blade 15": Nothing
-    "Fire Sanctuary - Grass Patch 30 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 30 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 30 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 30 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 30 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 30 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 30 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 30 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 30 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 31 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 32 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 33 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 34 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 34 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 34 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 34 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 34 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 34 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 34 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 34 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 35 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 36 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 37 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 37 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 37 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 37 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 37 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 37 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 37 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 38 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 38 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 38 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 38 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 38 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 38 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 38 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 38 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 39 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 39 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 39 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 39 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 39 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 39 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 39 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 39 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 40 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 40 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 40 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 40 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 41 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 41 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 42 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 42 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 42 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 42 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 42 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 42 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 42 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 42 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 43 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 43 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 43 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 43 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 44 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 44 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 44 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 44 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 45 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 45 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 45 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 45 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 45 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 45 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 45 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 45 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 46 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 46 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 46 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 46 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 46 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 46 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 46 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 46 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 46 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 46 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 47 - Blade 15": Nothing
-    "Fire Sanctuary - Grass Patch 48 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 48 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 48 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 48 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 48 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 48 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 49 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 49 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 49 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 50 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 50 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 50 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 50 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 50 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 50 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 50 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 50 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 50 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 51 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 51 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 51 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 51 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 51 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 51 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 51 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 52 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 52 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 53 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 53 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 54 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 54 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 54 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 54 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 54 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 54 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 54 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 54 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 54 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 55 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 56 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 56 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 56 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 56 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 56 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 57 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 57 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 58 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 58 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 58 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 58 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 58 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 58 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 58 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 58 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 58 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 59 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 59 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 59 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 59 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 15": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 16": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 17": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 18": Nothing
-    "Fire Sanctuary - Grass Patch 60 - Blade 19": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 61 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 62 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 62 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 62 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 62 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 62 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 62 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 62 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 62 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 62 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 63 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 63 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 63 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 64 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 64 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 64 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 64 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 64 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 64 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 64 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 64 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 64 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 64 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 65 - Blade 15": Nothing
-    "Fire Sanctuary - Grass Patch 66 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 66 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 66 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 66 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 66 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 66 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 66 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 66 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 66 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 66 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 67 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 67 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 67 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 67 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 67 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 67 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 67 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 67 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 67 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 68 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 68 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 68 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 68 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 68 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 68 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 68 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 69 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 69 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 69 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 69 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 69 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 69 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 70 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 71 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 72 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 72 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 72 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 72 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 72 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 73 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 73 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 73 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 73 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 73 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 73 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 73 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 73 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 15": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 16": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 17": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 18": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 19": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 20": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 21": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 22": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 23": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 24": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 25": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 26": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 27": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 28": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 29": Nothing
-    "Fire Sanctuary - Grass Patch 74 - Blade 30": Nothing
-    "Fire Sanctuary - Grass Patch 75 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 75 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 76 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 76 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 76 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 76 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 76 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 76 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 76 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 76 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 76 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 77 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 77 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 77 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 77 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 77 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 77 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 77 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 78 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 78 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 78 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 79 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 79 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 79 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 79 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 79 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 79 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 79 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 79 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 79 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 80 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 80 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 80 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 80 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 81 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 81 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 81 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 81 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 81 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 81 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 81 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 82 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 82 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 82 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 82 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 83 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 83 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 83 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 84 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 84 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 84 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 84 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 84 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 84 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 84 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 84 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 84 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 15": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 16": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 17": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 18": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 19": Nothing
-    "Fire Sanctuary - Grass Patch 85 - Blade 20": Nothing
-    "Fire Sanctuary - Grass Patch 86 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 86 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 86 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 86 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 87 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 87 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 87 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 87 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 87 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 87 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 87 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 87 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 87 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 88 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 88 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 88 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 88 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 88 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 88 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 88 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 88 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 89 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 89 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 89 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 89 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 89 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 89 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 89 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 89 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 90 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 90 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 90 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 1": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 2": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 3": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 4": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 5": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 6": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 7": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 8": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 9": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 10": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 11": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 12": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 13": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 14": Nothing
-    "Fire Sanctuary - Grass Patch 91 - Blade 15": Nothing
+    "Fire Sanctuary - Grass Patch 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 41": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 42": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 43": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 44": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 45": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 48": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 49": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 50": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 51": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 52": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 53": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 54": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 56": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 57": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 58": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 59": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 62": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 63": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 67": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 68": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 69": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 70": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 72": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 73": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 75": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 76": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 77": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 78": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 79": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 80": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 81": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 82": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 83": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 84": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 86": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 87": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 88": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 89": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 90": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 1 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 2 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 2 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 2 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 2 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 3 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 4 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 4 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 5 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 6 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 6 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 6 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 6 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 6 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 6 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 6 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 6 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 6 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 7 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 8 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 8 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 8 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 8 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 8 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 8 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 8 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 8 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 8 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 9 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 10 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 10 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 10 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 11 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 11 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 11 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 11 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 12 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 12 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 12 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 12 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 13 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 14 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 14 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 14 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 15 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 15 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 15 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 15 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 15 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 15 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 15 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 15 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 16 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 17 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 17 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 17 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 17 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 18 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 18 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 18 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 19 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 19 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 19 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 20 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 20 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 20 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 20 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 20 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 21 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 21 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 21 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 21 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 22 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 22 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 23 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 23 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 23 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 24 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 24 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 24 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 24 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 24 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 24 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 24 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 24 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 24 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 25 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 25 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 25 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 25 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 25 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 26 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 27 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 27 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 27 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 27 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 28 - Blade 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 29 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 30 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 30 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 30 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 30 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 30 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 30 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 30 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 30 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 30 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 31 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 32 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 33 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 34 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 34 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 34 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 34 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 34 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 34 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 34 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 34 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 35 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 36 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 37 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 37 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 37 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 37 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 37 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 37 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 37 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 38 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 38 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 38 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 38 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 38 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 38 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 38 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 38 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 39 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 39 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 39 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 39 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 39 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 39 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 39 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 39 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 40 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 40 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 40 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 40 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 41 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 41 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 42 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 42 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 42 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 42 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 42 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 42 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 42 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 42 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 43 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 43 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 43 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 43 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 44 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 44 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 44 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 44 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 45 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 45 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 45 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 45 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 45 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 45 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 45 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 45 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 46 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 47 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 48 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 48 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 48 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 48 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 48 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 48 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 49 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 49 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 49 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 50 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 50 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 50 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 50 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 50 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 50 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 50 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 50 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 50 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 51 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 51 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 51 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 51 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 51 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 51 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 51 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 52 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 52 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 53 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 53 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 54 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 54 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 54 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 54 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 54 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 54 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 54 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 54 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 54 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 55 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 56 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 56 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 56 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 56 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 56 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 57 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 57 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 58 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 58 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 58 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 58 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 58 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 58 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 58 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 58 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 58 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 59 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 59 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 59 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 59 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 60 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 61 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 62 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 62 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 62 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 62 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 62 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 62 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 62 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 62 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 62 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 63 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 63 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 63 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 64 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 65 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 66 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 67 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 67 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 67 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 67 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 67 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 67 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 67 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 67 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 67 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 68 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 68 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 68 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 68 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 68 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 68 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 68 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 69 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 69 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 69 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 69 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 69 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 69 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 70 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 71 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 72 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 72 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 72 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 72 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 72 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 73 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 73 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 73 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 73 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 73 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 73 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 73 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 73 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 74 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 75 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 75 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 76 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 76 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 76 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 76 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 76 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 76 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 76 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 76 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 76 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 77 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 77 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 77 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 77 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 77 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 77 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 77 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 78 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 78 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 78 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 79 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 79 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 79 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 79 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 79 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 79 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 79 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 79 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 79 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 80 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 80 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 80 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 80 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 81 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 81 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 81 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 81 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 81 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 81 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 81 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 82 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 82 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 82 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 82 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 83 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 83 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 83 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 84 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 84 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 84 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 84 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 84 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 84 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 84 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 84 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 84 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 85 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 86 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 86 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 86 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 86 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 87 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 87 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 87 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 87 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 87 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 87 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 87 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 87 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 87 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 88 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 88 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 88 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 88 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 88 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 88 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 88 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 88 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 89 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 89 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 89 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 89 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 89 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 89 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 89 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 89 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 90 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 90 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 90 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Fire Sanctuary - Grass Patch 91 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
 
 - name: FS First Room Past Water Plants
   dungeon: Fire Sanctuary

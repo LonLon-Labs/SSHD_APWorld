@@ -22,456 +22,456 @@
     Central Skyloft: Loftwing and Sailcloth
     Skyloft Village: Loftwing and Sailcloth
   locations:
-    "The Sky - Grass Patch 1": Nothing
-    "The Sky - Grass Patch 2": Nothing
-    "The Sky - Grass Patch 3": Nothing
-    "The Sky - Grass Patch 4": Nothing
-    "The Sky - Grass Patch 5": Nothing
-    "The Sky - Grass Patch 6": Nothing
-    "The Sky - Grass Patch 7": Nothing
-    "The Sky - Grass Patch 8": Nothing
-    "The Sky - Grass Patch 9": Nothing
-    "The Sky - Grass Patch 10": Nothing
-    "The Sky - Grass Patch 11": Nothing
-    "The Sky - Grass Patch 12": Nothing
-    "The Sky - Grass Patch 13": Nothing
-    "The Sky - Grass Patch 14": Nothing
-    "The Sky - Grass Patch 15": Nothing
-    "The Sky - Grass Patch 16": Nothing
-    "The Sky - Grass Patch 17": Nothing
-    "The Sky - Grass Patch 18": Nothing
-    "The Sky - Grass Patch 19": Nothing
-    "The Sky - Grass Patch 20": Nothing
-    "The Sky - Grass Patch 21": Nothing
-    "The Sky - Grass Patch 22": Nothing
-    "The Sky - Grass Patch 23": Nothing
-    "The Sky - Grass Patch 24": Nothing
-    "The Sky - Grass Patch 25": Nothing
-    "The Sky - Grass Patch 26": Nothing
-    "The Sky - Grass Patch 27": Nothing
-    "The Sky - Grass Patch 28": Nothing
-    "The Sky - Grass Patch 29": Nothing
-    "The Sky - Grass Patch 30": Nothing
-    "The Sky - Grass Patch 1 - Blade 1": Nothing
-    "The Sky - Grass Patch 1 - Blade 2": Nothing
-    "The Sky - Grass Patch 1 - Blade 3": Nothing
-    "The Sky - Grass Patch 1 - Blade 4": Nothing
-    "The Sky - Grass Patch 1 - Blade 5": Nothing
-    "The Sky - Grass Patch 1 - Blade 6": Nothing
-    "The Sky - Grass Patch 1 - Blade 7": Nothing
-    "The Sky - Grass Patch 1 - Blade 8": Nothing
-    "The Sky - Grass Patch 1 - Blade 9": Nothing
-    "The Sky - Grass Patch 1 - Blade 10": Nothing
-    "The Sky - Grass Patch 1 - Blade 11": Nothing
-    "The Sky - Grass Patch 1 - Blade 12": Nothing
-    "The Sky - Grass Patch 1 - Blade 13": Nothing
-    "The Sky - Grass Patch 1 - Blade 14": Nothing
-    "The Sky - Grass Patch 1 - Blade 15": Nothing
-    "The Sky - Grass Patch 1 - Blade 16": Nothing
-    "The Sky - Grass Patch 1 - Blade 17": Nothing
-    "The Sky - Grass Patch 1 - Blade 18": Nothing
-    "The Sky - Grass Patch 1 - Blade 19": Nothing
-    "The Sky - Grass Patch 1 - Blade 20": Nothing
-    "The Sky - Grass Patch 1 - Blade 21": Nothing
-    "The Sky - Grass Patch 1 - Blade 22": Nothing
-    "The Sky - Grass Patch 2 - Blade 1": Nothing
-    "The Sky - Grass Patch 2 - Blade 2": Nothing
-    "The Sky - Grass Patch 2 - Blade 3": Nothing
-    "The Sky - Grass Patch 2 - Blade 4": Nothing
-    "The Sky - Grass Patch 2 - Blade 5": Nothing
-    "The Sky - Grass Patch 2 - Blade 6": Nothing
-    "The Sky - Grass Patch 2 - Blade 7": Nothing
-    "The Sky - Grass Patch 2 - Blade 8": Nothing
-    "The Sky - Grass Patch 2 - Blade 9": Nothing
-    "The Sky - Grass Patch 2 - Blade 10": Nothing
-    "The Sky - Grass Patch 2 - Blade 11": Nothing
-    "The Sky - Grass Patch 2 - Blade 12": Nothing
-    "The Sky - Grass Patch 2 - Blade 13": Nothing
-    "The Sky - Grass Patch 2 - Blade 14": Nothing
-    "The Sky - Grass Patch 2 - Blade 15": Nothing
-    "The Sky - Grass Patch 2 - Blade 16": Nothing
-    "The Sky - Grass Patch 3 - Blade 1": Nothing
-    "The Sky - Grass Patch 4 - Blade 1": Nothing
-    "The Sky - Grass Patch 5 - Blade 1": Nothing
-    "The Sky - Grass Patch 6 - Blade 1": Nothing
-    "The Sky - Grass Patch 6 - Blade 2": Nothing
-    "The Sky - Grass Patch 6 - Blade 3": Nothing
-    "The Sky - Grass Patch 6 - Blade 4": Nothing
-    "The Sky - Grass Patch 6 - Blade 5": Nothing
-    "The Sky - Grass Patch 6 - Blade 6": Nothing
-    "The Sky - Grass Patch 6 - Blade 7": Nothing
-    "The Sky - Grass Patch 6 - Blade 8": Nothing
-    "The Sky - Grass Patch 6 - Blade 9": Nothing
-    "The Sky - Grass Patch 7 - Blade 1": Nothing
-    "The Sky - Grass Patch 7 - Blade 2": Nothing
-    "The Sky - Grass Patch 7 - Blade 3": Nothing
-    "The Sky - Grass Patch 7 - Blade 4": Nothing
-    "The Sky - Grass Patch 7 - Blade 5": Nothing
-    "The Sky - Grass Patch 7 - Blade 6": Nothing
-    "The Sky - Grass Patch 8 - Blade 1": Nothing
-    "The Sky - Grass Patch 8 - Blade 2": Nothing
-    "The Sky - Grass Patch 8 - Blade 3": Nothing
-    "The Sky - Grass Patch 8 - Blade 4": Nothing
-    "The Sky - Grass Patch 8 - Blade 5": Nothing
-    "The Sky - Grass Patch 8 - Blade 6": Nothing
-    "The Sky - Grass Patch 8 - Blade 7": Nothing
-    "The Sky - Grass Patch 9 - Blade 1": Nothing
-    "The Sky - Grass Patch 9 - Blade 2": Nothing
-    "The Sky - Grass Patch 9 - Blade 3": Nothing
-    "The Sky - Grass Patch 9 - Blade 4": Nothing
-    "The Sky - Grass Patch 9 - Blade 5": Nothing
-    "The Sky - Grass Patch 9 - Blade 6": Nothing
-    "The Sky - Grass Patch 9 - Blade 7": Nothing
-    "The Sky - Grass Patch 9 - Blade 8": Nothing
-    "The Sky - Grass Patch 9 - Blade 9": Nothing
-    "The Sky - Grass Patch 10 - Blade 1": Nothing
-    "The Sky - Grass Patch 10 - Blade 2": Nothing
-    "The Sky - Grass Patch 10 - Blade 3": Nothing
-    "The Sky - Grass Patch 10 - Blade 4": Nothing
-    "The Sky - Grass Patch 10 - Blade 5": Nothing
-    "The Sky - Grass Patch 10 - Blade 6": Nothing
-    "The Sky - Grass Patch 10 - Blade 7": Nothing
-    "The Sky - Grass Patch 11 - Blade 1": Nothing
-    "The Sky - Grass Patch 11 - Blade 2": Nothing
-    "The Sky - Grass Patch 11 - Blade 3": Nothing
-    "The Sky - Grass Patch 11 - Blade 4": Nothing
-    "The Sky - Grass Patch 11 - Blade 5": Nothing
-    "The Sky - Grass Patch 11 - Blade 6": Nothing
-    "The Sky - Grass Patch 11 - Blade 7": Nothing
-    "The Sky - Grass Patch 11 - Blade 8": Nothing
-    "The Sky - Grass Patch 11 - Blade 9": Nothing
-    "The Sky - Grass Patch 12 - Blade 1": Nothing
-    "The Sky - Grass Patch 12 - Blade 2": Nothing
-    "The Sky - Grass Patch 12 - Blade 3": Nothing
-    "The Sky - Grass Patch 12 - Blade 4": Nothing
-    "The Sky - Grass Patch 12 - Blade 5": Nothing
-    "The Sky - Grass Patch 12 - Blade 6": Nothing
-    "The Sky - Grass Patch 12 - Blade 7": Nothing
-    "The Sky - Grass Patch 12 - Blade 8": Nothing
-    "The Sky - Grass Patch 12 - Blade 9": Nothing
-    "The Sky - Grass Patch 12 - Blade 10": Nothing
-    "The Sky - Grass Patch 12 - Blade 11": Nothing
-    "The Sky - Grass Patch 12 - Blade 12": Nothing
-    "The Sky - Grass Patch 12 - Blade 13": Nothing
-    "The Sky - Grass Patch 12 - Blade 14": Nothing
-    "The Sky - Grass Patch 13 - Blade 1": Nothing
-    "The Sky - Grass Patch 13 - Blade 2": Nothing
-    "The Sky - Grass Patch 13 - Blade 3": Nothing
-    "The Sky - Grass Patch 13 - Blade 4": Nothing
-    "The Sky - Grass Patch 13 - Blade 5": Nothing
-    "The Sky - Grass Patch 13 - Blade 6": Nothing
-    "The Sky - Grass Patch 13 - Blade 7": Nothing
-    "The Sky - Grass Patch 13 - Blade 8": Nothing
-    "The Sky - Grass Patch 13 - Blade 9": Nothing
-    "The Sky - Grass Patch 13 - Blade 10": Nothing
-    "The Sky - Grass Patch 13 - Blade 11": Nothing
-    "The Sky - Grass Patch 13 - Blade 12": Nothing
-    "The Sky - Grass Patch 13 - Blade 13": Nothing
-    "The Sky - Grass Patch 13 - Blade 14": Nothing
-    "The Sky - Grass Patch 14 - Blade 1": Nothing
-    "The Sky - Grass Patch 14 - Blade 2": Nothing
-    "The Sky - Grass Patch 14 - Blade 3": Nothing
-    "The Sky - Grass Patch 14 - Blade 4": Nothing
-    "The Sky - Grass Patch 14 - Blade 5": Nothing
-    "The Sky - Grass Patch 14 - Blade 6": Nothing
-    "The Sky - Grass Patch 14 - Blade 7": Nothing
-    "The Sky - Grass Patch 14 - Blade 8": Nothing
-    "The Sky - Grass Patch 14 - Blade 9": Nothing
-    "The Sky - Grass Patch 14 - Blade 10": Nothing
-    "The Sky - Grass Patch 14 - Blade 11": Nothing
-    "The Sky - Grass Patch 14 - Blade 12": Nothing
-    "The Sky - Grass Patch 14 - Blade 13": Nothing
-    "The Sky - Grass Patch 14 - Blade 14": Nothing
-    "The Sky - Grass Patch 14 - Blade 15": Nothing
-    "The Sky - Grass Patch 14 - Blade 16": Nothing
-    "The Sky - Grass Patch 14 - Blade 17": Nothing
-    "The Sky - Grass Patch 14 - Blade 18": Nothing
-    "The Sky - Grass Patch 14 - Blade 19": Nothing
-    "The Sky - Grass Patch 14 - Blade 20": Nothing
-    "The Sky - Grass Patch 14 - Blade 21": Nothing
-    "The Sky - Grass Patch 14 - Blade 22": Nothing
-    "The Sky - Grass Patch 14 - Blade 23": Nothing
-    "The Sky - Grass Patch 14 - Blade 24": Nothing
-    "The Sky - Grass Patch 14 - Blade 25": Nothing
-    "The Sky - Grass Patch 14 - Blade 26": Nothing
-    "The Sky - Grass Patch 14 - Blade 27": Nothing
-    "The Sky - Grass Patch 14 - Blade 28": Nothing
-    "The Sky - Grass Patch 14 - Blade 29": Nothing
-    "The Sky - Grass Patch 14 - Blade 30": Nothing
-    "The Sky - Grass Patch 14 - Blade 31": Nothing
-    "The Sky - Grass Patch 14 - Blade 32": Nothing
-    "The Sky - Grass Patch 14 - Blade 33": Nothing
-    "The Sky - Grass Patch 14 - Blade 34": Nothing
-    "The Sky - Grass Patch 14 - Blade 35": Nothing
-    "The Sky - Grass Patch 14 - Blade 36": Nothing
-    "The Sky - Grass Patch 14 - Blade 37": Nothing
-    "The Sky - Grass Patch 14 - Blade 38": Nothing
-    "The Sky - Grass Patch 14 - Blade 39": Nothing
-    "The Sky - Grass Patch 14 - Blade 40": Nothing
-    "The Sky - Grass Patch 14 - Blade 41": Nothing
-    "The Sky - Grass Patch 14 - Blade 42": Nothing
-    "The Sky - Grass Patch 14 - Blade 43": Nothing
-    "The Sky - Grass Patch 14 - Blade 44": Nothing
-    "The Sky - Grass Patch 14 - Blade 45": Nothing
-    "The Sky - Grass Patch 14 - Blade 46": Nothing
-    "The Sky - Grass Patch 14 - Blade 47": Nothing
-    "The Sky - Grass Patch 14 - Blade 48": Nothing
-    "The Sky - Grass Patch 14 - Blade 49": Nothing
-    "The Sky - Grass Patch 14 - Blade 50": Nothing
-    "The Sky - Grass Patch 14 - Blade 51": Nothing
-    "The Sky - Grass Patch 14 - Blade 52": Nothing
-    "The Sky - Grass Patch 14 - Blade 53": Nothing
-    "The Sky - Grass Patch 14 - Blade 54": Nothing
-    "The Sky - Grass Patch 14 - Blade 55": Nothing
-    "The Sky - Grass Patch 14 - Blade 56": Nothing
-    "The Sky - Grass Patch 15 - Blade 1": Nothing
-    "The Sky - Grass Patch 15 - Blade 2": Nothing
-    "The Sky - Grass Patch 15 - Blade 3": Nothing
-    "The Sky - Grass Patch 15 - Blade 4": Nothing
-    "The Sky - Grass Patch 15 - Blade 5": Nothing
-    "The Sky - Grass Patch 15 - Blade 6": Nothing
-    "The Sky - Grass Patch 15 - Blade 7": Nothing
-    "The Sky - Grass Patch 15 - Blade 8": Nothing
-    "The Sky - Grass Patch 15 - Blade 9": Nothing
-    "The Sky - Grass Patch 15 - Blade 10": Nothing
-    "The Sky - Grass Patch 15 - Blade 11": Nothing
-    "The Sky - Grass Patch 15 - Blade 12": Nothing
-    "The Sky - Grass Patch 15 - Blade 13": Nothing
-    "The Sky - Grass Patch 15 - Blade 14": Nothing
-    "The Sky - Grass Patch 15 - Blade 15": Nothing
-    "The Sky - Grass Patch 15 - Blade 16": Nothing
-    "The Sky - Grass Patch 15 - Blade 17": Nothing
-    "The Sky - Grass Patch 15 - Blade 18": Nothing
-    "The Sky - Grass Patch 15 - Blade 19": Nothing
-    "The Sky - Grass Patch 15 - Blade 20": Nothing
-    "The Sky - Grass Patch 15 - Blade 21": Nothing
-    "The Sky - Grass Patch 15 - Blade 22": Nothing
-    "The Sky - Grass Patch 15 - Blade 23": Nothing
-    "The Sky - Grass Patch 15 - Blade 24": Nothing
-    "The Sky - Grass Patch 15 - Blade 25": Nothing
-    "The Sky - Grass Patch 15 - Blade 26": Nothing
-    "The Sky - Grass Patch 15 - Blade 27": Nothing
-    "The Sky - Grass Patch 15 - Blade 28": Nothing
-    "The Sky - Grass Patch 15 - Blade 29": Nothing
-    "The Sky - Grass Patch 15 - Blade 30": Nothing
-    "The Sky - Grass Patch 15 - Blade 31": Nothing
-    "The Sky - Grass Patch 15 - Blade 32": Nothing
-    "The Sky - Grass Patch 15 - Blade 33": Nothing
-    "The Sky - Grass Patch 15 - Blade 34": Nothing
-    "The Sky - Grass Patch 15 - Blade 35": Nothing
-    "The Sky - Grass Patch 15 - Blade 36": Nothing
-    "The Sky - Grass Patch 15 - Blade 37": Nothing
-    "The Sky - Grass Patch 15 - Blade 38": Nothing
-    "The Sky - Grass Patch 15 - Blade 39": Nothing
-    "The Sky - Grass Patch 15 - Blade 40": Nothing
-    "The Sky - Grass Patch 15 - Blade 41": Nothing
-    "The Sky - Grass Patch 15 - Blade 42": Nothing
-    "The Sky - Grass Patch 15 - Blade 43": Nothing
-    "The Sky - Grass Patch 15 - Blade 44": Nothing
-    "The Sky - Grass Patch 15 - Blade 45": Nothing
-    "The Sky - Grass Patch 15 - Blade 46": Nothing
-    "The Sky - Grass Patch 15 - Blade 47": Nothing
-    "The Sky - Grass Patch 16 - Blade 1": Nothing
-    "The Sky - Grass Patch 17 - Blade 1": Nothing
-    "The Sky - Grass Patch 17 - Blade 2": Nothing
-    "The Sky - Grass Patch 17 - Blade 3": Nothing
-    "The Sky - Grass Patch 17 - Blade 4": Nothing
-    "The Sky - Grass Patch 17 - Blade 5": Nothing
-    "The Sky - Grass Patch 17 - Blade 6": Nothing
-    "The Sky - Grass Patch 17 - Blade 7": Nothing
-    "The Sky - Grass Patch 17 - Blade 8": Nothing
-    "The Sky - Grass Patch 17 - Blade 9": Nothing
-    "The Sky - Grass Patch 17 - Blade 10": Nothing
-    "The Sky - Grass Patch 17 - Blade 11": Nothing
-    "The Sky - Grass Patch 17 - Blade 12": Nothing
-    "The Sky - Grass Patch 17 - Blade 13": Nothing
-    "The Sky - Grass Patch 17 - Blade 14": Nothing
-    "The Sky - Grass Patch 17 - Blade 15": Nothing
-    "The Sky - Grass Patch 17 - Blade 16": Nothing
-    "The Sky - Grass Patch 17 - Blade 17": Nothing
-    "The Sky - Grass Patch 17 - Blade 18": Nothing
-    "The Sky - Grass Patch 17 - Blade 19": Nothing
-    "The Sky - Grass Patch 17 - Blade 20": Nothing
-    "The Sky - Grass Patch 17 - Blade 21": Nothing
-    "The Sky - Grass Patch 17 - Blade 22": Nothing
-    "The Sky - Grass Patch 17 - Blade 23": Nothing
-    "The Sky - Grass Patch 17 - Blade 24": Nothing
-    "The Sky - Grass Patch 17 - Blade 25": Nothing
-    "The Sky - Grass Patch 17 - Blade 26": Nothing
-    "The Sky - Grass Patch 17 - Blade 27": Nothing
-    "The Sky - Grass Patch 17 - Blade 28": Nothing
-    "The Sky - Grass Patch 17 - Blade 29": Nothing
-    "The Sky - Grass Patch 17 - Blade 30": Nothing
-    "The Sky - Grass Patch 17 - Blade 31": Nothing
-    "The Sky - Grass Patch 17 - Blade 32": Nothing
-    "The Sky - Grass Patch 17 - Blade 33": Nothing
-    "The Sky - Grass Patch 17 - Blade 34": Nothing
-    "The Sky - Grass Patch 17 - Blade 35": Nothing
-    "The Sky - Grass Patch 17 - Blade 36": Nothing
-    "The Sky - Grass Patch 17 - Blade 37": Nothing
-    "The Sky - Grass Patch 17 - Blade 38": Nothing
-    "The Sky - Grass Patch 17 - Blade 39": Nothing
-    "The Sky - Grass Patch 17 - Blade 40": Nothing
-    "The Sky - Grass Patch 17 - Blade 41": Nothing
-    "The Sky - Grass Patch 17 - Blade 42": Nothing
-    "The Sky - Grass Patch 17 - Blade 43": Nothing
-    "The Sky - Grass Patch 17 - Blade 44": Nothing
-    "The Sky - Grass Patch 17 - Blade 45": Nothing
-    "The Sky - Grass Patch 17 - Blade 46": Nothing
-    "The Sky - Grass Patch 17 - Blade 47": Nothing
-    "The Sky - Grass Patch 17 - Blade 48": Nothing
-    "The Sky - Grass Patch 17 - Blade 49": Nothing
-    "The Sky - Grass Patch 17 - Blade 50": Nothing
-    "The Sky - Grass Patch 17 - Blade 51": Nothing
-    "The Sky - Grass Patch 17 - Blade 52": Nothing
-    "The Sky - Grass Patch 17 - Blade 53": Nothing
-    "The Sky - Grass Patch 18 - Blade 1": Nothing
-    "The Sky - Grass Patch 19 - Blade 1": Nothing
-    "The Sky - Grass Patch 19 - Blade 2": Nothing
-    "The Sky - Grass Patch 19 - Blade 3": Nothing
-    "The Sky - Grass Patch 19 - Blade 4": Nothing
-    "The Sky - Grass Patch 19 - Blade 5": Nothing
-    "The Sky - Grass Patch 19 - Blade 6": Nothing
-    "The Sky - Grass Patch 19 - Blade 7": Nothing
-    "The Sky - Grass Patch 19 - Blade 8": Nothing
-    "The Sky - Grass Patch 19 - Blade 9": Nothing
-    "The Sky - Grass Patch 19 - Blade 10": Nothing
-    "The Sky - Grass Patch 19 - Blade 11": Nothing
-    "The Sky - Grass Patch 19 - Blade 12": Nothing
-    "The Sky - Grass Patch 19 - Blade 13": Nothing
-    "The Sky - Grass Patch 19 - Blade 14": Nothing
-    "The Sky - Grass Patch 19 - Blade 15": Nothing
-    "The Sky - Grass Patch 19 - Blade 16": Nothing
-    "The Sky - Grass Patch 19 - Blade 17": Nothing
-    "The Sky - Grass Patch 19 - Blade 18": Nothing
-    "The Sky - Grass Patch 19 - Blade 19": Nothing
-    "The Sky - Grass Patch 19 - Blade 20": Nothing
-    "The Sky - Grass Patch 19 - Blade 21": Nothing
-    "The Sky - Grass Patch 19 - Blade 22": Nothing
-    "The Sky - Grass Patch 20 - Blade 1": Nothing
-    "The Sky - Grass Patch 20 - Blade 2": Nothing
-    "The Sky - Grass Patch 20 - Blade 3": Nothing
-    "The Sky - Grass Patch 20 - Blade 4": Nothing
-    "The Sky - Grass Patch 21 - Blade 1": Nothing
-    "The Sky - Grass Patch 21 - Blade 2": Nothing
-    "The Sky - Grass Patch 21 - Blade 3": Nothing
-    "The Sky - Grass Patch 21 - Blade 4": Nothing
-    "The Sky - Grass Patch 21 - Blade 5": Nothing
-    "The Sky - Grass Patch 21 - Blade 6": Nothing
-    "The Sky - Grass Patch 21 - Blade 7": Nothing
-    "The Sky - Grass Patch 21 - Blade 8": Nothing
-    "The Sky - Grass Patch 21 - Blade 9": Nothing
-    "The Sky - Grass Patch 21 - Blade 10": Nothing
-    "The Sky - Grass Patch 21 - Blade 11": Nothing
-    "The Sky - Grass Patch 21 - Blade 12": Nothing
-    "The Sky - Grass Patch 21 - Blade 13": Nothing
-    "The Sky - Grass Patch 21 - Blade 14": Nothing
-    "The Sky - Grass Patch 21 - Blade 15": Nothing
-    "The Sky - Grass Patch 22 - Blade 1": Nothing
-    "The Sky - Grass Patch 22 - Blade 2": Nothing
-    "The Sky - Grass Patch 22 - Blade 3": Nothing
-    "The Sky - Grass Patch 22 - Blade 4": Nothing
-    "The Sky - Grass Patch 22 - Blade 5": Nothing
-    "The Sky - Grass Patch 22 - Blade 6": Nothing
-    "The Sky - Grass Patch 22 - Blade 7": Nothing
-    "The Sky - Grass Patch 22 - Blade 8": Nothing
-    "The Sky - Grass Patch 22 - Blade 9": Nothing
-    "The Sky - Grass Patch 22 - Blade 10": Nothing
-    "The Sky - Grass Patch 22 - Blade 11": Nothing
-    "The Sky - Grass Patch 22 - Blade 12": Nothing
-    "The Sky - Grass Patch 22 - Blade 13": Nothing
-    "The Sky - Grass Patch 22 - Blade 14": Nothing
-    "The Sky - Grass Patch 22 - Blade 15": Nothing
-    "The Sky - Grass Patch 22 - Blade 16": Nothing
-    "The Sky - Grass Patch 22 - Blade 17": Nothing
-    "The Sky - Grass Patch 22 - Blade 18": Nothing
-    "The Sky - Grass Patch 22 - Blade 19": Nothing
-    "The Sky - Grass Patch 22 - Blade 20": Nothing
-    "The Sky - Grass Patch 22 - Blade 21": Nothing
-    "The Sky - Grass Patch 22 - Blade 22": Nothing
-    "The Sky - Grass Patch 22 - Blade 23": Nothing
-    "The Sky - Grass Patch 22 - Blade 24": Nothing
-    "The Sky - Grass Patch 22 - Blade 25": Nothing
-    "The Sky - Grass Patch 23 - Blade 1": Nothing
-    "The Sky - Grass Patch 23 - Blade 2": Nothing
-    "The Sky - Grass Patch 23 - Blade 3": Nothing
-    "The Sky - Grass Patch 23 - Blade 4": Nothing
-    "The Sky - Grass Patch 23 - Blade 5": Nothing
-    "The Sky - Grass Patch 23 - Blade 6": Nothing
-    "The Sky - Grass Patch 23 - Blade 7": Nothing
-    "The Sky - Grass Patch 23 - Blade 8": Nothing
-    "The Sky - Grass Patch 23 - Blade 9": Nothing
-    "The Sky - Grass Patch 23 - Blade 10": Nothing
-    "The Sky - Grass Patch 23 - Blade 11": Nothing
-    "The Sky - Grass Patch 23 - Blade 12": Nothing
-    "The Sky - Grass Patch 23 - Blade 13": Nothing
-    "The Sky - Grass Patch 24 - Blade 1": Nothing
-    "The Sky - Grass Patch 24 - Blade 2": Nothing
-    "The Sky - Grass Patch 24 - Blade 3": Nothing
-    "The Sky - Grass Patch 24 - Blade 4": Nothing
-    "The Sky - Grass Patch 24 - Blade 5": Nothing
-    "The Sky - Grass Patch 24 - Blade 6": Nothing
-    "The Sky - Grass Patch 24 - Blade 7": Nothing
-    "The Sky - Grass Patch 25 - Blade 1": Nothing
-    "The Sky - Grass Patch 25 - Blade 2": Nothing
-    "The Sky - Grass Patch 25 - Blade 3": Nothing
-    "The Sky - Grass Patch 25 - Blade 4": Nothing
-    "The Sky - Grass Patch 25 - Blade 5": Nothing
-    "The Sky - Grass Patch 25 - Blade 6": Nothing
-    "The Sky - Grass Patch 26 - Blade 1": Nothing
-    "The Sky - Grass Patch 26 - Blade 2": Nothing
-    "The Sky - Grass Patch 26 - Blade 3": Nothing
-    "The Sky - Grass Patch 26 - Blade 4": Nothing
-    "The Sky - Grass Patch 27 - Blade 1": Nothing
-    "The Sky - Grass Patch 27 - Blade 2": Nothing
-    "The Sky - Grass Patch 27 - Blade 3": Nothing
-    "The Sky - Grass Patch 27 - Blade 4": Nothing
-    "The Sky - Grass Patch 27 - Blade 5": Nothing
-    "The Sky - Grass Patch 27 - Blade 6": Nothing
-    "The Sky - Grass Patch 27 - Blade 7": Nothing
-    "The Sky - Grass Patch 27 - Blade 8": Nothing
-    "The Sky - Grass Patch 27 - Blade 9": Nothing
-    "The Sky - Grass Patch 27 - Blade 10": Nothing
-    "The Sky - Grass Patch 27 - Blade 11": Nothing
-    "The Sky - Grass Patch 27 - Blade 12": Nothing
-    "The Sky - Grass Patch 27 - Blade 13": Nothing
-    "The Sky - Grass Patch 27 - Blade 14": Nothing
-    "The Sky - Grass Patch 27 - Blade 15": Nothing
-    "The Sky - Grass Patch 27 - Blade 16": Nothing
-    "The Sky - Grass Patch 27 - Blade 17": Nothing
-    "The Sky - Grass Patch 27 - Blade 18": Nothing
-    "The Sky - Grass Patch 27 - Blade 19": Nothing
-    "The Sky - Grass Patch 27 - Blade 20": Nothing
-    "The Sky - Grass Patch 27 - Blade 21": Nothing
-    "The Sky - Grass Patch 28 - Blade 1": Nothing
-    "The Sky - Grass Patch 28 - Blade 2": Nothing
-    "The Sky - Grass Patch 28 - Blade 3": Nothing
-    "The Sky - Grass Patch 28 - Blade 4": Nothing
-    "The Sky - Grass Patch 28 - Blade 5": Nothing
-    "The Sky - Grass Patch 29 - Blade 1": Nothing
-    "The Sky - Grass Patch 29 - Blade 2": Nothing
-    "The Sky - Grass Patch 29 - Blade 3": Nothing
-    "The Sky - Grass Patch 29 - Blade 4": Nothing
-    "The Sky - Grass Patch 29 - Blade 5": Nothing
-    "The Sky - Grass Patch 29 - Blade 6": Nothing
-    "The Sky - Grass Patch 29 - Blade 7": Nothing
-    "The Sky - Grass Patch 29 - Blade 8": Nothing
-    "The Sky - Grass Patch 29 - Blade 9": Nothing
-    "The Sky - Grass Patch 29 - Blade 10": Nothing
-    "The Sky - Grass Patch 29 - Blade 11": Nothing
-    "The Sky - Grass Patch 29 - Blade 12": Nothing
-    "The Sky - Grass Patch 29 - Blade 13": Nothing
-    "The Sky - Grass Patch 29 - Blade 14": Nothing
-    "The Sky - Grass Patch 29 - Blade 15": Nothing
-    "The Sky - Grass Patch 29 - Blade 16": Nothing
-    "The Sky - Grass Patch 29 - Blade 17": Nothing
-    "The Sky - Grass Patch 29 - Blade 18": Nothing
-    "The Sky - Grass Patch 30 - Blade 1": Nothing
-    "The Sky - Grass Patch 30 - Blade 2": Nothing
-    "The Sky - Grass Patch 30 - Blade 3": Nothing
-    "The Sky - Grass Patch 30 - Blade 4": Nothing
-    "The Sky - Grass Patch 30 - Blade 5": Nothing
-    "The Sky - Grass Patch 30 - Blade 6": Nothing
+    "The Sky - Grass Patch 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 1 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 2 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 3 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 4 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 5 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 6 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 6 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 6 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 6 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 6 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 6 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 6 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 6 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 6 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 7 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 7 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 7 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 7 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 7 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 7 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 8 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 8 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 8 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 8 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 8 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 8 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 8 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 9 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 9 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 9 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 9 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 9 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 9 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 9 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 9 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 9 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 10 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 10 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 10 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 10 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 10 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 10 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 10 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 11 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 11 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 11 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 11 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 11 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 11 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 11 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 11 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 11 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 12 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 13 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 41": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 42": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 43": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 44": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 45": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 46": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 47": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 48": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 49": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 50": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 51": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 52": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 53": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 54": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 55": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 14 - Blade 56": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 41": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 42": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 43": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 44": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 45": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 46": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 15 - Blade 47": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 16 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 41": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 42": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 43": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 44": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 45": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 46": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 47": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 48": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 49": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 50": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 51": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 52": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 17 - Blade 53": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 18 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 19 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 20 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 20 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 20 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 20 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 21 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 22 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 23 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 24 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 24 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 24 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 24 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 24 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 24 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 24 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 25 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 25 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 25 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 25 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 25 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 25 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 26 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 26 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 26 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 26 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 27 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 28 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 28 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 28 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 28 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 28 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 29 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 30 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 30 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 30 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 30 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 30 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "The Sky - Grass Patch 30 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
     The Sky - Form a Swirrell Ring above Volcanic Island: Loftwing # Collect the swirrell and then land somewhere else, carefully.
     The Sky - Form a Swirrell Ring above Lumpy Pumpkin: Loftwing # Collect the swirrell and then land somewhere else, carefully.
     The Sky - Form a Swirrell Ring above Bamboo Island: Loftwing # Collect the swirrell and then land somewhere else, carefully.
@@ -769,346 +769,346 @@
     Bug Heaven: Nothing
     The Sky: Day and ((Goddesss_Harp and Ballad_of_the_Goddess and can_access(Central Skyloft)) or open_thunderhead == on)
   locations:
-    "Inside the Thunderhead - Grass Patch 1": Nothing
-    "Inside the Thunderhead - Grass Patch 2": Nothing
-    "Inside the Thunderhead - Grass Patch 3": Nothing
-    "Inside the Thunderhead - Grass Patch 4": Nothing
-    "Inside the Thunderhead - Grass Patch 5": Nothing
-    "Inside the Thunderhead - Grass Patch 6": Nothing
-    "Inside the Thunderhead - Grass Patch 7": Nothing
-    "Inside the Thunderhead - Grass Patch 8": Nothing
-    "Inside the Thunderhead - Grass Patch 9": Nothing
-    "Inside the Thunderhead - Grass Patch 10": Nothing
-    "Inside the Thunderhead - Grass Patch 11": Nothing
-    "Inside the Thunderhead - Grass Patch 12": Nothing
-    "Inside the Thunderhead - Grass Patch 13": Nothing
-    "Inside the Thunderhead - Grass Patch 14": Nothing
-    "Inside the Thunderhead - Grass Patch 15": Nothing
-    "Inside the Thunderhead - Grass Patch 16": Nothing
-    "Inside the Thunderhead - Grass Patch 17": Nothing
-    "Inside the Thunderhead - Grass Patch 18": Nothing
-    "Inside the Thunderhead - Grass Patch 1 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 1 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 1 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 1 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 1 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 1 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 11": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 12": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 13": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 14": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 15": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 16": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 17": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 18": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 19": Nothing
-    "Inside the Thunderhead - Grass Patch 2 - Blade 20": Nothing
-    "Inside the Thunderhead - Grass Patch 3 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 3 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 3 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 3 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 3 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 3 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 4 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 4 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 4 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 4 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 4 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 4 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 4 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 4 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 4 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 4 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 11": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 12": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 13": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 14": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 15": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 16": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 17": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 18": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 19": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 20": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 21": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 22": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 23": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 24": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 25": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 26": Nothing
-    "Inside the Thunderhead - Grass Patch 5 - Blade 27": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 11": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 12": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 13": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 14": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 15": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 16": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 17": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 18": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 19": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 20": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 21": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 22": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 23": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 24": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 25": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 26": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 27": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 28": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 29": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 30": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 31": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 32": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 33": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 34": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 35": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 36": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 37": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 38": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 39": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 40": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 41": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 42": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 43": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 44": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 45": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 46": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 47": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 48": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 49": Nothing
-    "Inside the Thunderhead - Grass Patch 6 - Blade 50": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 11": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 12": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 13": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 14": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 15": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 16": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 17": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 18": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 19": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 20": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 21": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 22": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 23": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 24": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 25": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 26": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 27": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 28": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 29": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 30": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 31": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 32": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 33": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 34": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 35": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 36": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 37": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 38": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 39": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 40": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 41": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 42": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 43": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 44": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 45": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 46": Nothing
-    "Inside the Thunderhead - Grass Patch 7 - Blade 47": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 11": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 12": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 13": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 14": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 15": Nothing
-    "Inside the Thunderhead - Grass Patch 8 - Blade 16": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 11": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 12": Nothing
-    "Inside the Thunderhead - Grass Patch 9 - Blade 13": Nothing
-    "Inside the Thunderhead - Grass Patch 10 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 10 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 10 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 10 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 10 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 10 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 10 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 10 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 10 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 11 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 11 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 11 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 11 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 11 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 11 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 11 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 11 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 11 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 11 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 11": Nothing
-    "Inside the Thunderhead - Grass Patch 12 - Blade 12": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 11": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 12": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 13": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 14": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 15": Nothing
-    "Inside the Thunderhead - Grass Patch 13 - Blade 16": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 11": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 12": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 13": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 14": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 15": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 16": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 17": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 18": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 19": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 20": Nothing
-    "Inside the Thunderhead - Grass Patch 14 - Blade 21": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 10": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 11": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 12": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 13": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 14": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 15": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 16": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 17": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 18": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 19": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 20": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 21": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 22": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 23": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 24": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 25": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 26": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 27": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 28": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 29": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 30": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 31": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 32": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 33": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 34": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 35": Nothing
-    "Inside the Thunderhead - Grass Patch 15 - Blade 36": Nothing
-    "Inside the Thunderhead - Grass Patch 16 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 16 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 16 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 16 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 16 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 16 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 16 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 16 - Blade 8": Nothing
-    "Inside the Thunderhead - Grass Patch 16 - Blade 9": Nothing
-    "Inside the Thunderhead - Grass Patch 17 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 17 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 17 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 17 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 17 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 17 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 18 - Blade 1": Nothing
-    "Inside the Thunderhead - Grass Patch 18 - Blade 2": Nothing
-    "Inside the Thunderhead - Grass Patch 18 - Blade 3": Nothing
-    "Inside the Thunderhead - Grass Patch 18 - Blade 4": Nothing
-    "Inside the Thunderhead - Grass Patch 18 - Blade 5": Nothing
-    "Inside the Thunderhead - Grass Patch 18 - Blade 6": Nothing
-    "Inside the Thunderhead - Grass Patch 18 - Blade 7": Nothing
-    "Inside the Thunderhead - Grass Patch 18 - Blade 8": Nothing
+    "Inside the Thunderhead - Grass Patch 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 1 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 1 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 1 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 1 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 1 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 1 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 2 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 3 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 3 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 3 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 3 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 3 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 3 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 4 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 5 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 41": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 42": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 43": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 44": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 45": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 46": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 47": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 48": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 49": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 6 - Blade 50": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 41": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 42": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 43": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 44": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 45": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 46": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 7 - Blade 47": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 8 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 9 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 10 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 10 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 10 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 10 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 10 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 10 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 10 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 10 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 10 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 11 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 12 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 13 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 14 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 15 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 16 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 16 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 16 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 16 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 16 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 16 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 16 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 16 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 16 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 17 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 17 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 17 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 17 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 17 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 17 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 18 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 18 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 18 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 18 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 18 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 18 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 18 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Inside the Thunderhead - Grass Patch 18 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
     Inside the Thunderhead - Song from Levias: Spiral_Charge and Scrapper and Sword and 'Pick_up_Levias_Soup'
     Inside the Thunderhead - Gossip Stone Treasure near Bug Heaven: (Goddess's_Harp and Ballad_of_the_Goddess) or gossip_stone_treasure_shuffle == off
     Inside the Thunderhead - Gossip Stone Hint near Bug Heaven: (Goddess's_Harp and Ballad_of_the_Goddess) or gossip_stone_treasure_shuffle == off

@@ -13,743 +13,743 @@
     AC Inside Statue High: count(2, Ancient_Cistern_Small_Key) or small_keys == removed or 'Can_Lower_Giant_Statue'
     Floria Waterfall Temple Ledge: Nothing # Walk up the stairs and out the dungeon.
   locations:
-    "Ancient Cistern - Grass Patch 1": Nothing
-    "Ancient Cistern - Grass Patch 2": Nothing
-    "Ancient Cistern - Grass Patch 3": Nothing
-    "Ancient Cistern - Grass Patch 4": Nothing
-    "Ancient Cistern - Grass Patch 5": Nothing
-    "Ancient Cistern - Grass Patch 6": Nothing
-    "Ancient Cistern - Grass Patch 7": Nothing
-    "Ancient Cistern - Grass Patch 8": Nothing
-    "Ancient Cistern - Grass Patch 9": Nothing
-    "Ancient Cistern - Grass Patch 10": Nothing
-    "Ancient Cistern - Grass Patch 11": Nothing
-    "Ancient Cistern - Grass Patch 12": Nothing
-    "Ancient Cistern - Grass Patch 13": Nothing
-    "Ancient Cistern - Grass Patch 14": Nothing
-    "Ancient Cistern - Grass Patch 15": Nothing
-    "Ancient Cistern - Grass Patch 16": Nothing
-    "Ancient Cistern - Grass Patch 17": Nothing
-    "Ancient Cistern - Grass Patch 18": Nothing
-    "Ancient Cistern - Grass Patch 19": Nothing
-    "Ancient Cistern - Grass Patch 20": Nothing
-    "Ancient Cistern - Grass Patch 21": Nothing
-    "Ancient Cistern - Grass Patch 22": Nothing
-    "Ancient Cistern - Grass Patch 23": Nothing
-    "Ancient Cistern - Grass Patch 24": Nothing
-    "Ancient Cistern - Grass Patch 25": Nothing
-    "Ancient Cistern - Grass Patch 26": Nothing
-    "Ancient Cistern - Grass Patch 27": Nothing
-    "Ancient Cistern - Grass Patch 28": Nothing
-    "Ancient Cistern - Grass Patch 29": Nothing
-    "Ancient Cistern - Grass Patch 30": Nothing
-    "Ancient Cistern - Grass Patch 31": Nothing
-    "Ancient Cistern - Grass Patch 32": Nothing
-    "Ancient Cistern - Grass Patch 33": Nothing
-    "Ancient Cistern - Grass Patch 34": Nothing
-    "Ancient Cistern - Grass Patch 35": Nothing
-    "Ancient Cistern - Grass Patch 36": Nothing
-    "Ancient Cistern - Grass Patch 37": Nothing
-    "Ancient Cistern - Grass Patch 38": Nothing
-    "Ancient Cistern - Grass Patch 39": Nothing
-    "Ancient Cistern - Grass Patch 40": Nothing
-    "Ancient Cistern - Grass Patch 41": Nothing
-    "Ancient Cistern - Grass Patch 42": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 1 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 2 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 3 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 4 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 26": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 27": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 28": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 29": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 30": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 31": Nothing
-    "Ancient Cistern - Grass Patch 5 - Blade 32": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 6 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 26": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 27": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 28": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 29": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 30": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 31": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 32": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 33": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 34": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 35": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 36": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 37": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 38": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 39": Nothing
-    "Ancient Cistern - Grass Patch 7 - Blade 40": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 26": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 27": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 28": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 29": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 30": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 31": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 32": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 33": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 34": Nothing
-    "Ancient Cistern - Grass Patch 8 - Blade 35": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 9 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 10 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 26": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 27": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 28": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 29": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 30": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 31": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 32": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 33": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 34": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 35": Nothing
-    "Ancient Cistern - Grass Patch 11 - Blade 36": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 12 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 13 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 14 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 14 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 14 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 15 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 16 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 17 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 18 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 18 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 18 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 18 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 19 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 19 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 19 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 20 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 20 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 20 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 21 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 21 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 21 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 21 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 22 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 22 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 22 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 23 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 23 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 23 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 24 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 24 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 24 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 24 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 24 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 24 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 24 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 26": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 27": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 28": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 29": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 30": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 31": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 32": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 33": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 34": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 35": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 36": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 37": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 38": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 39": Nothing
-    "Ancient Cistern - Grass Patch 25 - Blade 40": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 26": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 27": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 28": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 29": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 30": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 31": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 32": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 33": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 34": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 35": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 36": Nothing
-    "Ancient Cistern - Grass Patch 26 - Blade 37": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 27 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 26": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 27": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 28": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 29": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 30": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 31": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 32": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 33": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 34": Nothing
-    "Ancient Cistern - Grass Patch 28 - Blade 35": Nothing
-    "Ancient Cistern - Grass Patch 29 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 29 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 29 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 30 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 31 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 32 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 32 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 32 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 32 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 32 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 32 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 32 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 33 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 33 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 34 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 35 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 35 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 35 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 35 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 35 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 35 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 36 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 36 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 37 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 37 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 37 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 38 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 26": Nothing
-    "Ancient Cistern - Grass Patch 39 - Blade 27": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 9": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 10": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 11": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 12": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 13": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 14": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 15": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 16": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 17": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 18": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 19": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 20": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 21": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 22": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 23": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 24": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 25": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 26": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 27": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 28": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 29": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 30": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 31": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 32": Nothing
-    "Ancient Cistern - Grass Patch 40 - Blade 33": Nothing
-    "Ancient Cistern - Grass Patch 41 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 41 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 41 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 41 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 41 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 42 - Blade 1": Nothing
-    "Ancient Cistern - Grass Patch 42 - Blade 2": Nothing
-    "Ancient Cistern - Grass Patch 42 - Blade 3": Nothing
-    "Ancient Cistern - Grass Patch 42 - Blade 4": Nothing
-    "Ancient Cistern - Grass Patch 42 - Blade 5": Nothing
-    "Ancient Cistern - Grass Patch 42 - Blade 6": Nothing
-    "Ancient Cistern - Grass Patch 42 - Blade 7": Nothing
-    "Ancient Cistern - Grass Patch 42 - Blade 8": Nothing
-    "Ancient Cistern - Grass Patch 42 - Blade 9": Nothing
+    "Ancient Cistern - Grass Patch 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 41": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 42": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 1 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 2 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 3 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 4 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 5 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 6 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 7 - Blade 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 8 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 9 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 10 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 11 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 12 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 13 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 14 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 14 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 14 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 15 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 16 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 17 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 18 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 18 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 18 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 18 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 19 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 19 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 19 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 20 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 20 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 20 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 21 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 21 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 21 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 21 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 22 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 22 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 22 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 23 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 23 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 23 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 24 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 24 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 24 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 24 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 24 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 24 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 24 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 25 - Blade 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 26 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 27 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 28 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 29 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 29 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 29 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 30 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 31 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 32 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 32 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 32 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 32 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 32 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 32 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 32 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 33 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 33 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 34 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 35 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 35 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 35 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 35 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 35 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 35 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 36 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 36 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 37 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 37 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 37 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 38 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 39 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 40 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 41 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 41 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 41 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 41 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 41 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 42 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 42 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 42 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 42 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 42 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 42 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 42 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 42 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    "Ancient Cistern - Grass Patch 42 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
     Ancient Cistern - Rupee in East Hand: Water_Dragons_Scale
     Ancient Cistern - Rupee in West Hand: Water_Dragons_Scale
 
