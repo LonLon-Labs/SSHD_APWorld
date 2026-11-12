@@ -17,6 +17,7 @@ import shutil
 import atexit
 import threading
 import subprocess
+from Options import OptionError
 from base64 import b64encode
 from copy import deepcopy
 from dataclasses import fields
