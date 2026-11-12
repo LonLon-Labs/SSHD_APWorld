@@ -14991,6 +14991,14 @@ LOCATION_TABLE: dict[str, SSHDLocation] = {
     "Sealed Grounds - Grass Patch 24 - Blade 42": SSHDLocation("Sealed Grounds - Grass Patch 24 - Blade 42", 2827635, "Sealed Grounds", "Green Rupee", ['Grass Blade', 'Custom Flag']),
     "Sealed Grounds - Grass Patch 24 - Blade 43": SSHDLocation("Sealed Grounds - Grass Patch 24 - Blade 43", 2827636, "Sealed Grounds", "Green Rupee", ['Grass Blade', 'Custom Flag']),
     "Sealed Grounds - Grass Patch 24 - Blade 44": SSHDLocation("Sealed Grounds - Grass Patch 24 - Blade 44", 2827637, "Sealed Grounds", "Green Rupee", ['Grass Blade', 'Custom Flag']),
+    "Central Skyloft - Sign 1": SSHDLocation("Central Skyloft - Sign 1", 2827638, "Central Skyloft", "Green Rupee", ['Signs', 'Custom Flag']),
+    "Central Skyloft - Sign 2": SSHDLocation("Central Skyloft - Sign 2", 2827639, "Central Skyloft", "Green Rupee", ['Signs', 'Custom Flag']),
+    "Central Skyloft - Sign 3": SSHDLocation("Central Skyloft - Sign 3", 2827640, "Central Skyloft", "Green Rupee", ['Signs', 'Custom Flag']),
+    "Central Skyloft - Sign 4": SSHDLocation("Central Skyloft - Sign 4", 2827641, "Central Skyloft", "Green Rupee", ['Signs', 'Custom Flag']),
+    "Central Skyloft - Sign 5": SSHDLocation("Central Skyloft - Sign 5", 2827642, "Central Skyloft", "Green Rupee", ['Signs', 'Custom Flag']),
+    "Central Skyloft - Sign 6": SSHDLocation("Central Skyloft - Sign 6", 2827643, "Central Skyloft", "Green Rupee", ['Signs', 'Custom Flag']),
+    "Central Skyloft - Sign 7": SSHDLocation("Central Skyloft - Sign 7", 2827644, "Central Skyloft", "Green Rupee", ['Signs', 'Custom Flag']),
+    "Beedle's Island - Sign 1": SSHDLocation("Beedle's Island - Sign 1", 2827645, "Beedle's Island", "Green Rupee", ['Signs', 'Custom Flag']),
 }
 
 

@@ -403,6 +403,10 @@ class TreeShuffle(Toggle):
     """Shuffle small trees (Bamboo). Cutting a small tree can give a randomized item."""
     display_name = "Small Tree Shuffle"
 
+class SignShuffle(Toggle):
+    """Shuffle signs (Kanban). Cutting a sign can give a randomized item. Once the item has been collected, the sign drops nothing."""
+    display_name = "Sign Shuffle"
+
 class GrassShuffle(Choice):
     """Shuffle grass. Cutting grass can give a randomized item.
 
@@ -2176,6 +2180,7 @@ class SSHDOptions(PerGameCommonOptions):
     pumpkin_shuffle: PumpkinShuffle
     barrel_shuffle: BarrelShuffle
     tree_shuffle: TreeShuffle
+    sign_shuffle: SignShuffle
     grass_shuffle: GrassShuffle
     hidden_item_shuffle: HiddenItemShuffle
     rupee_shuffle: RupeeShuffle

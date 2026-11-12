@@ -166,6 +166,11 @@ extern "C" {
     static BAMBOO_TABLE_COUNT: u32;
     static BAMBOO_TABLE_ENTRIES: [PumpkinEntry; BAMBOO_TABLE_MAX];
 
+    // Sign (KanbanS) Shuffle (filled in by the patcher via init_global_variables)
+    static SIGN_TABLE_MAGIC: u32;
+    static SIGN_TABLE_COUNT: u32;
+    static SIGN_TABLE_ENTRIES: [PumpkinEntry; SIGN_TABLE_MAX];
+
     static mut SQUIRRELS_CAUGHT_THIS_PLAY_SESSION: bool;
     static TADTONE_SCENEFLAGS: [u8; 17];
 
@@ -2273,6 +2278,214 @@ pub extern "C" fn bamboo_cut_drop_hook(tree: *mut u8) {
         // replaces the old drop-request write, which faulted on the request word.
         core::ptr::write_volatile(tree.add(BAMBOO_DROP_PTR_OFFSET) as *mut usize, 0);
         bamboo_mark_granted(tree);
+    }
+}
+
+/// ---------- Sign (KanbanS) shuffle ----------
+///
+/// Signs are the BZS object "KanbanS" (actor dAcKanban_c). Cutting a sign
+/// enters its PullOut state, and that state's init (landingpad #123, Ghidra
+/// 0x71004EFDA8) runs once at the moment of the cut, before anything moves the
+/// sign. The sign is looked up by its BZS X/Z position in SIGN_TABLE_*
+/// (written by asmpatchhandler). Signs have no vanilla drop, so a shuffled
+/// sign only spawns its randomized item; once that item is collected, the sign
+/// spawns nothing.
+
+/// Capacity of the sign table (SIGN_TABLE_* in symbols.yaml).
+const SIGN_TABLE_MAX: usize = 96;
+
+/// "SIGN" as a little-endian u32; the patcher writes it in front of the table
+/// only when at least one sign has an item.
+const SIGN_TABLE_MAGIC_VALUE: u32 = 0x4E47_4953;
+
+/// Finds a sign's table index from its X/Z position bits.
+unsafe fn find_sign_entry(px_bits: u32, pz_bits: u32) -> Option<usize> {
+    if core::ptr::read_volatile(core::ptr::addr_of!(SIGN_TABLE_MAGIC)) != SIGN_TABLE_MAGIC_VALUE {
+        return None;
+    }
+
+    let count = core::ptr::read_volatile(core::ptr::addr_of!(SIGN_TABLE_COUNT)) as usize;
+    let count = if count < SIGN_TABLE_MAX {
+        count
+    } else {
+        SIGN_TABLE_MAX
+    };
+
+    for index in 0..count {
+        let entry = core::ptr::read_unaligned(core::ptr::addr_of!(SIGN_TABLE_ENTRIES[index]));
+        if entry.px_bits == px_bits && entry.pz_bits == pz_bits {
+            return Some(index);
+        }
+    }
+    None
+}
+
+/// Sign cut (PullOut init, landingpad #123). x0 = sign actor. Spawns the
+/// randomized item for a shuffled sign whose check has not been collected yet.
+#[no_mangle]
+pub extern "C" fn sign_cut_hook(sign: *mut u8) {
+    unsafe {
+        if sign.is_null() {
+            return;
+        }
+        let px_bits = (sign.add(BAMBOO_POS_X_OFFSET) as *const u32).read_unaligned();
+        let pz_bits = (sign.add(BAMBOO_POS_Z_OFFSET) as *const u32).read_unaligned();
+        let index = match find_sign_entry(px_bits, pz_bits)
+            .or_else(|| find_sign_entry_near(f32::from_bits(px_bits), f32::from_bits(pz_bits)))
+        {
+            Some(index) => index,
+            None => return,
+        };
+
+        let entry = core::ptr::read_unaligned(core::ptr::addr_of!(SIGN_TABLE_ENTRIES[index]));
+        let local_flag = entry.flag & 0x3FF;
+        if local_flag == CUSTOM_FLAG_NONE {
+            return;
+        }
+
+        // Already collected: spawn nothing. Signs have no vanilla drop to clear.
+        if check_ap_custom_flag(local_flag | CUSTOM_FLAG_GROUP1) {
+            return;
+        }
+
+        let item_id = entry.item_word & 0x1FF;
+        let trap_nibble = ((entry.item_word >> 9) & 0xF) as u32;
+
+        // Loftwing and the Bird Statue unlock items keep their own item id (same rule
+        // as trees, pumpkins, big pots and barrels).
+        let new_itemid = if item_id == 219 || bird_statue_unlock_flag_index(item_id).is_some() {
+            item_id
+        } else {
+            dAcItem__determineFinalItemid(item_id as u64) as u16
+        };
+
+        // Same param2 layout spawn_item_on_destroy expects from a patched pot.
+        let synthetic_param2: u32 =
+            (0xFF << 24) | (1 << 18) | (trap_nibble << 19) | ((local_flag as u32) << 8);
+
+        // The item appears where the sign was.
+        let drop_pos = math::Vec3f {
+            x: f32::from_bits((sign.add(BAMBOO_POS_X_OFFSET) as *const u32).read_unaligned()),
+            y: f32::from_bits((sign.add(BAMBOO_POS_Y_OFFSET) as *const u32).read_unaligned()),
+            z: f32::from_bits((sign.add(BAMBOO_POS_Z_OFFSET) as *const u32).read_unaligned()),
+        };
+        let roomid: u32 = if ROOM_MGR.is_null() {
+            0
+        } else {
+            (*ROOM_MGR).roomid.into()
+        };
+
+        if sign_already_granted(sign) {
+            return;
+        }
+        let _ = spawn_item_on_destroy(roomid, drop_pos, 0, new_itemid, synthetic_param2, true);
+        sign_mark_granted(sign);
+    }
+}
+
+/// Nearest sign table entry within 10 units of (px, pz). Used when the exact
+/// X/Z bits don't match (the runtime position can differ slightly from the BZS
+/// value).
+unsafe fn find_sign_entry_near(px: f32, pz: f32) -> Option<usize> {
+    if core::ptr::read_volatile(core::ptr::addr_of!(SIGN_TABLE_MAGIC)) != SIGN_TABLE_MAGIC_VALUE {
+        return None;
+    }
+    let count = core::ptr::read_volatile(core::ptr::addr_of!(SIGN_TABLE_COUNT)) as usize;
+    let count = if count < SIGN_TABLE_MAX {
+        count
+    } else {
+        SIGN_TABLE_MAX
+    };
+
+    let mut best: Option<usize> = None;
+    let mut best_d2 = 100.0f32;
+    for index in 0..count {
+        let entry = core::ptr::read_unaligned(core::ptr::addr_of!(SIGN_TABLE_ENTRIES[index]));
+        let dx = f32::from_bits(entry.px_bits) - px;
+        let dz = f32::from_bits(entry.pz_bits) - pz;
+        let d2 = dx * dx + dz * dz;
+        if d2 < best_d2 {
+            best_d2 = d2;
+            best = Some(index);
+        }
+    }
+    best
+}
+
+/// Sign granted list: signs whose randomized item has already been spawned for
+/// the current hit. Both the Wait-update hit and the PullOut init can run for
+/// one cut.
+const SIGN_GRANT_SLOTS: usize = 16;
+static mut SIGN_GRANTED: [usize; SIGN_GRANT_SLOTS] = [0; SIGN_GRANT_SLOTS];
+static mut SIGN_GRANTED_NEXT: usize = 0;
+
+unsafe fn sign_already_granted(sign: *mut u8) -> bool {
+    let base = core::ptr::addr_of!(SIGN_GRANTED) as *const usize;
+    for i in 0..SIGN_GRANT_SLOTS {
+        if core::ptr::read_volatile(base.add(i)) == sign as usize {
+            return true;
+        }
+    }
+    false
+}
+
+unsafe fn sign_mark_granted(sign: *mut u8) {
+    let slot = core::ptr::read_volatile(core::ptr::addr_of!(SIGN_GRANTED_NEXT));
+    let base = core::ptr::addr_of_mut!(SIGN_GRANTED) as *mut usize;
+    base.add(slot).write_volatile(sign as usize);
+    core::ptr::write_volatile(
+        core::ptr::addr_of_mut!(SIGN_GRANTED_NEXT),
+        (slot + 1) % SIGN_GRANT_SLOTS,
+    );
+}
+
+/// Per-sign tracking for the Wait-update hook: the sign's actor and its flag
+/// word from the previous frame, so the rising edge of bit 0 (the sword hit)
+/// is seen once per cut.
+const SIGN_WAIT_SLOTS: usize = 16;
+static mut SIGN_WAIT_ACTOR: [usize; SIGN_WAIT_SLOTS] = [0; SIGN_WAIT_SLOTS];
+static mut SIGN_WAIT_LAST: [u32; SIGN_WAIT_SLOTS] = [0; SIGN_WAIT_SLOTS];
+static mut SIGN_WAIT_NEXT: usize = 0;
+
+/// Sign Wait update (Ghidra 0x71004EF804, landingpad #124). x0 = sign actor.
+/// Runs every frame; on the rising edge of the hit flag (+0xA00 bit 0) it
+/// drops the sign's item.
+#[no_mangle]
+pub extern "C" fn sign_wait_hook(sign: *mut u8) {
+    unsafe {
+        if sign.is_null() {
+            return;
+        }
+        let a00 = (sign.add(0xA00) as *const u32).read_unaligned();
+        let actors = core::ptr::addr_of_mut!(SIGN_WAIT_ACTOR) as *mut usize;
+        let lasts = core::ptr::addr_of_mut!(SIGN_WAIT_LAST) as *mut u32;
+
+        let mut slot = usize::MAX;
+        for i in 0..SIGN_WAIT_SLOTS {
+            if actors.add(i).read_volatile() == sign as usize {
+                slot = i;
+                break;
+            }
+        }
+        if slot == usize::MAX {
+            // First frame seen: record the flag word without treating it as a hit, so a
+            // sign that is already flagged when it loads does not drop
+            // anything.
+            slot = core::ptr::read_volatile(core::ptr::addr_of!(SIGN_WAIT_NEXT));
+            actors.add(slot).write_volatile(sign as usize);
+            lasts.add(slot).write_volatile(a00);
+            core::ptr::write_volatile(
+                core::ptr::addr_of_mut!(SIGN_WAIT_NEXT),
+                (slot + 1) % SIGN_WAIT_SLOTS,
+            );
+            return;
+        }
+
+        let last = lasts.add(slot).read_volatile();
+        lasts.add(slot).write_volatile(a00);
+        if (a00 & 1) == 1 && (last & 1) == 0 {
+            sign_cut_hook(sign);
+        }
     }
 }
 

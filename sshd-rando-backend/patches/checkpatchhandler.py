@@ -236,6 +236,15 @@ def determine_check_patches(
             elif "Trees" in location.types:
                 # Unshuffled trees are never patched: burn nothing.
                 custom_flag = 0x3FF
+            elif (
+                "Signs" in location.types
+                and world.setting("sign_shuffle") != "off"
+            ):
+                # Signs share the extended group 1 pool with pots, pumpkins, barrels and trees
+                custom_flag = group1_flags.pop()
+            elif "Signs" in location.types:
+                # Unshuffled signs are never patched: burn nothing.
+                custom_flag = 0x3FF
             elif "Pots" in location.types:
                 # Unshuffled pots are never patched, so their flag is never used.
                 # Keep burning a group 0 flag while any are left so existing
@@ -259,7 +268,8 @@ def determine_check_patches(
             is_pumpkin = "Pumpkins" in location.types
             is_barrel = "Barrels" in location.types
             is_tree = "Trees" in location.types
-            is_group1_type = is_pot or is_pumpkin or is_barrel or is_tree
+            is_sign = "Signs" in location.types
+            is_group1_type = is_pot or is_pumpkin or is_barrel or is_tree or is_sign
             group1_off = (
                 world.setting("pot_shuffle") == "off"
                 if is_pot
@@ -267,6 +277,8 @@ def determine_check_patches(
                 if is_barrel
                 else world.setting("tree_shuffle") == "off"
                 if is_tree
+                else world.setting("sign_shuffle") == "off"
+                if is_sign
                 else world.setting("pumpkin_shuffle") == "off"
             )
             if is_group1 and not is_group1_type:
@@ -329,6 +341,10 @@ def determine_check_patches(
 
         # Don't patch trees if they're off
         if "Trees" in location.types and world.setting("tree_shuffle") == "off":
+            continue
+
+        # Don't patch signs if they're off
+        if "Signs" in location.types and world.setting("sign_shuffle") == "off":
             continue
 
         # Don't patch barrels if they're off

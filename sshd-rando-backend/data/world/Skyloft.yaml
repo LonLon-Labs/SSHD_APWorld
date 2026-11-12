@@ -226,6 +226,13 @@
     Waterfall Cave: Can_Cut_Trees_And_Logs
     Bird Nest: logic_bird_nest_item_from_beedles_shop and Day and Distance_Activator and (Beetle or Whip)
   locations:
+    "Central Skyloft - Sign 1": Sword
+    "Central Skyloft - Sign 2": Sword
+    "Central Skyloft - Sign 3": Sword
+    "Central Skyloft - Sign 4": Sword
+    "Central Skyloft - Sign 5": Sword
+    "Central Skyloft - Sign 6": Sword
+    "Central Skyloft - Sign 7": Sword
     "Central Skyloft - Grass Patch 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
     "Central Skyloft - Grass Patch 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
     "Central Skyloft - Grass Patch 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip

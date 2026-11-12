@@ -71,11 +71,15 @@ sshd-rando-backend/grass_position_table.json
 sshd-rando-backend/add_tree_locations.py
 sshd-rando-backend/tree_locations_generated.yaml
 sshd-rando-backend/tree_position_table.json
+sshd-rando-backend/add_sign_locations.py
+sshd-rando-backend/sign_locations_generated.yaml
+sshd-rando-backend/sign_position_table.json
 sshd-rando-backend/dump_pots.py
 sshd-rando-backend/dump_big_pots.py
 sshd-rando-backend/dump_pumpkins.py
 sshd-rando-backend/dump_barrels.py
 sshd-rando-backend/dump_trees.py
+sshd-rando-backend/dump_signs.py
 sshd-rando-backend/dump_grass.py
 sshd-rando-backend/dump_boss_rooms.py
 sshd-rando-backend/pots.yaml
@@ -83,6 +87,7 @@ sshd-rando-backend/big_pots.yaml
 sshd-rando-backend/pumpkins.yaml
 sshd-rando-backend/barrels.yaml
 sshd-rando-backend/trees.yaml
+sshd-rando-backend/signs.yaml
 sshd-rando-backend/grass.yaml
 sshd-rando-backend/boss_rooms.yaml
 sshd-rando-backend/minibosses.yaml

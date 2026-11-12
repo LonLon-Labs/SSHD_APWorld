@@ -415,6 +415,15 @@ b.eq bamboo_cut_drop_hook
 cmp w8, #122
 b.eq bamboo_fall_start_hook
 
+; Sign shuffle (sign.asm). PullOut init (x0 = sign actor, Ghidra 0x71004EFDA8).
+cmp w8, #123
+b.eq sign_cut_hook
+
+; Sign Wait update (sign_wait_hook, Ghidra 0x71004EF804, runtime 0x71004F3804): drops the
+; item on the hit's rising edge.
+cmp w8, #124
+b.eq sign_wait_hook
+
 ret ; this should never be reached
 
 ; Wrapper for custom_event_commands.

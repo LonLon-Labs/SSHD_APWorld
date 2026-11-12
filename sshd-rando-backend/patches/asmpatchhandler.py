@@ -877,6 +877,22 @@ class ASMPatchHandler:
                 )
             init_rw_globals_dict[0x712E54E910] = list(bamboo_table)  # BAMBOO_TABLE_*
 
+        # Sign (KanbanS) Shuffle: same position-keyed layout, directly after the bamboo table
+        # (SIGN_TABLE_MAGIC 0x712E54EDA0 / _COUNT 0x712E54EDA4 / _ENTRIES 0x712E54EDA8 in
+        # symbols.yaml). Nothing is written (magic stays zero) when no sign has an item.
+        sign_entries = getattr(self, "sign_entries", [])
+        print(f"[SIGN] writing sign table: {len(sign_entries)} entries")
+        if sign_entries:
+            # Must match SIGN_TABLE_MAX in item.rs / symbols.yaml (12 bytes each)
+            assert len(sign_entries) <= 96, "Too many sign table entries"
+            sign_table = bytearray(b"SIGN")  # 0x4E474953 little endian
+            sign_table += struct.pack("<I", len(sign_entries))
+            for px_bits, pz_bits, item_word, custom_flag in sign_entries:
+                sign_table += struct.pack(
+                    "<IIHH", px_bits, pz_bits, item_word, custom_flag
+                )
+            init_rw_globals_dict[0x712E54EDA0] = list(sign_table)  # SIGN_TABLE_*
+
         # Apply additional symbol initializers provided by stage patch setup.
         global_symbol_values: dict[str, int] = getattr(self, "global_symbol_values", {})
         if "EXTRA_DEMISE_COUNT" in global_symbol_values:

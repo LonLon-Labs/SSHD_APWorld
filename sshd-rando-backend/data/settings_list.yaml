@@ -118,6 +118,17 @@
     - "off": "Small trees (Bamboo) will drop their vanilla items."
     - "on": "Cutting a small tree can give a randomized item. Trees revert to their vanilla drop after the item has been collected."
 
+- name: sign_shuffle
+  tracker_important: true
+  default_option: "off"
+  pretty_name: Sign Shuffle
+  pretty_options:
+    - "Off"
+    - "On"
+  options:
+    - "off": "Signs will not drop anything when cut."
+    - "on": "Cutting a sign can give a randomized item. Once the item has been collected, the sign drops nothing."
+
 - name: grass_shuffle
   tracker_important: true
   default_option: "off"

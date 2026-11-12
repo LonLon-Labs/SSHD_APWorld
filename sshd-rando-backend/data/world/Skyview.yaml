@@ -20,7 +20,7 @@
     Skyview Entry: Can_Cut_Trees_And_Logs
     SVT One Eye Room: Can_Hit_High_Skyview_Switches
     SVT First Hub Center Room: Bomb_Bag or shortcut_skyview_boards
-  locations:  # grass-patches and tree-sanity
+  locations:  # grass-patches and tree-sanity and sign-sanity
     "Skyview Temple - Grass Patch 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
     "Skyview Temple - Grass Patch 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
     "Skyview Temple - Grass Patch 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip

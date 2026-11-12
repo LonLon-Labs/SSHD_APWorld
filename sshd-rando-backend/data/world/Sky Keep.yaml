@@ -9,7 +9,7 @@
 
 # Holds entrance access to each room based on which areas have been reached.
 # TODO: Needs to be generalized for random layouts.
-  locations:  # grass-patches and tree-sanity
+  locations:  # grass-patches and tree-sanity and sign-sanity
     "Sky Keep - Grass Patch 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
     "Sky Keep - Grass Patch 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
     "Sky Keep - Grass Patch 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip

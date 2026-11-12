@@ -578,6 +578,7 @@
     Beedle's Airshop: Night
     The Sky: Day or natural_night_connections == off
   locations:
+    "Beedle's Island - Sign 1": Sword
     Beedle's Island - Crystal on Airshop Propeller: Night and Beetle
     Beedle's Island - Deliver Beedle's Insect Cage: Night and Beedles_Insect_Cage
     Beedle's Island - Top Goddess Chest: (Day or natural_night_connections == off) and Temple_of_Time_Goddess_Cube

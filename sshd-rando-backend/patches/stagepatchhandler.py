@@ -1144,6 +1144,50 @@ def patch_bamboo(
     return (_f32_bits(bamboo["posx"]), _f32_bits(bamboo["posz"]), item_word, custom_flag)
 
 
+def patch_sign(
+    bzs: dict, itemid: int, object_id_str: str, trapid: int, custom_flag: int
+) -> tuple[int, int, int, int] | None:
+    """Sign shuffle (KanbanS, dAcKanban_c).
+
+    KanbanS is an OBJ object (the BZS tag is "OBJ ", not "SOBJ"; the dump confirms this
+    for all 17 signs). Its params are not used at runtime, so nothing
+    is written into the BZS object. This returns a table entry keyed by the sign's
+    position (X/Z as raw f32 bits), read by sign_cut_hook in item.rs (SIGN_TABLE_*).
+
+    Returns (px_bits, pz_bits, item_word, flag), or None to keep the vanilla behavior.
+    item_word: bits 0-8 item id, bits 9-12 trap nibble (0xF = not a trap). flag: the low
+    10 bits of the group 1 custom flag.
+    """
+    id = int(object_id_str, 16)
+
+    sign: dict | None = next(
+        filter(lambda x: x["name"] == "Kanban" and x["id"] == id, bzs["OBJ "]), None
+    )
+
+    if sign is None:
+        raise Exception(f"No sign (Kanban) with id '{hex(id)}' found to patch.")
+
+    # Without a custom flag the check can't be tracked, so keep the vanilla behavior
+    if custom_flag == -1 or (custom_flag & 0x3FF) == 0x3FF:
+        return None
+
+    if not (custom_flag & 0x400):
+        raise Exception(
+            f"Sign (KanbanS) '{hex(id)}' was given group 0 custom flag {custom_flag:#x}; "
+            "signs must use group 1 flags (bit 10 set)."
+        )
+    custom_flag &= 0x3FF
+
+    trap_nibble = (254 - trapid) if trapid else 0xF
+    if not (0 <= trap_nibble <= 0xF):
+        raise Exception(f"Sign (KanbanS) '{hex(id)}' has invalid trap id {trapid}.")
+    if not (0 <= itemid <= 0x1FF):
+        raise Exception(f"Sign (KanbanS) '{hex(id)}' has item id {itemid} that doesn't fit in 9 bits.")
+
+    item_word = (itemid & 0x1FF) | (trap_nibble << 9)
+    return (_f32_bits(sign["posx"]), _f32_bits(sign["posz"]), item_word, custom_flag)
+
+
 def patch_academy_bell(bzs: dict, itemid: int, trapid: int, custom_flag: int = 0x3FF):
 
     academy_bell: dict | None = next(
@@ -1558,6 +1602,10 @@ class StagePatchHandler:
         # keyed in the game by position. Written to the BAMBOO_TABLE_* config block by
         # asmpatchhandler (see patch_bamboo). Max 96 entries.
         self.bamboo_entries: list[tuple[int, int, int, int]] = []
+        # Sign (KanbanS) Shuffle: (px_bits, pz_bits, item_word, flag) per patched sign, keyed
+        # by position. Written to the SIGN_TABLE_* config block by asmpatchhandler (see
+        # patch_sign). Max 96 entries.
+        self.sign_entries: list[tuple[int, int, int, int]] = []
         # Global symbol initializers consumed by ASM global init.
         # Format: {"type": "symbol", "symbol": <name>, "value": <int>}.
         self.global_patches: list[dict] = []
@@ -1968,6 +2016,27 @@ class StagePatchHandler:
                                 )
                             self.bamboo_entries.append(bamboo_entry)
                             print(f"[BAMB] tree entry: stage={stage_name} room={roomid} obj={objectid} flag={custom_flag:#x} item={itemid:#x} trap={trapid}")
+                    elif object_name == "Kanban":
+                        sign_entry = patch_sign(
+                            room_bzs["LAY "][f"l{layer}"],
+                            itemid,
+                            objectid,
+                            trapid,
+                            custom_flag,
+                        )
+                        if sign_entry is not None:
+                            for existing in self.sign_entries:
+                                if existing[0] == sign_entry[0] and existing[1] == sign_entry[1]:
+                                    raise Exception(
+                                        f"Two signs share the position {sign_entry[0]:#010x}/{sign_entry[1]:#010x}; "
+                                        "the position-keyed sign table needs unique positions."
+                                    )
+                            if len(self.sign_entries) >= 96:
+                                raise Exception(
+                                    "More than 96 signs have items; SIGN_TABLE_ENTRIES only holds 96."
+                                )
+                            self.sign_entries.append(sign_entry)
+                            print(f"[SIGN] sign entry: stage={stage_name} room={roomid} obj={objectid} flag={custom_flag:#x} item={itemid:#x} trap={trapid}")
                     elif object_name == "MassTag":
                         patch_grass(
                             room_bzs["LAY "][f"l{layer}"],
