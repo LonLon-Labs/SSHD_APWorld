@@ -18,7 +18,7 @@ use std::mem::size_of;
 
 /// 8-byte discovery marker the client scans for exactly once.
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_SUPPORTED_VERSION: u16 = 18;
+pub const AP_IPC_SUPPORTED_VERSION: u16 = 19;
 
 // ─── Sub-structs (mirror commands.rs / item.rs) ────────────────────────────
 
@@ -291,7 +291,7 @@ pub struct ApBladeNames {
     pub player_count: u16,
     pub _pad:         u16,
     pub index:        [[u16; 2]; 16384],
-    pub item_names:   [[u16; 32]; 384],
+    pub item_names:   [[u16; 32]; 1024],
     pub player_names: [[u16; 16]; 64],
     /// Game item id to spawn for each blade (own-game items only; 0 = placeholder).
     pub item_ids:     [u16; 16384],
@@ -305,7 +305,7 @@ impl Default for ApBladeNames {
             player_count: 0,
             _pad: 0,
             index: [[0; 2]; 16384],
-            item_names: [[0; 32]; 384],
+            item_names: [[0; 32]; 1024],
             player_names: [[0; 16]; 64],
             item_ids: [0; 16384],
         }

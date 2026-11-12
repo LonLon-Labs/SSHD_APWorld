@@ -61,7 +61,7 @@ pub const NORMAL_ITEM_TABLE_MAX: usize = ap_ipc::AP_ITEM_TABLE_MAX - BLADE_RESER
 
 /// Limits for the blade-name block; must match `ApBladeNames` in ap-ipc / the game.
 pub const BLADE_MAX: usize = 16384;
-pub const BLADE_ITEM_NAME_MAX: usize = 384;
+pub const BLADE_ITEM_NAME_MAX: usize = 1024;
 pub const BLADE_PLAYER_NAME_MAX: usize = 64;
 
 /// Encodes `s` as UTF-16, truncated to fit `N` `u16`s with room left over

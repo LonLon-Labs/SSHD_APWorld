@@ -3732,6 +3732,12 @@ class SSHDWorld(World):
             }
             item_idx, player_idx = {}, {}
             pairs = []
+            # The game's blade-name table holds this many unique item names and
+            # player names (see ApBladeNames in ipc.rs / ap-ipc). Blades past the
+            # limit get index 0xFFFF, which the game shows with the default name.
+            BLADE_ITEM_NAME_TABLE_MAX = 1024
+            BLADE_PLAYER_NAME_TABLE_MAX = 64
+            blade_name_overflow = 0
             # Parallel to pairs: the game item ID each blade spawns when it is this
             # player's own item. Other players' items (and missing locations) use 0,
             # which the game treats as the Archipelago Item (216) placeholder.
@@ -3742,20 +3748,30 @@ class SSHDWorld(World):
                     pairs.append([0xFFFF, 0xFFFF])
                     game_ids.append(0)
                     continue
-                if loc.item.name not in item_idx:
-                    item_idx[loc.item.name] = len(item_idx)
                 pname = self.multiworld.get_player_name(loc.item.player)
-                if pname not in player_idx:
-                    player_idx[pname] = len(player_idx)
-                pairs.append([item_idx[loc.item.name], player_idx[pname]])
+                item_slot = item_idx.get(loc.item.name)
+                if item_slot is None:
+                    if len(item_idx) < BLADE_ITEM_NAME_TABLE_MAX:
+                        item_slot = len(item_idx)
+                        item_idx[loc.item.name] = item_slot
+                    else:
+                        item_slot = 0xFFFF
+                        blade_name_overflow += 1
+                player_slot = player_idx.get(pname)
+                if player_slot is None:
+                    if len(player_idx) < BLADE_PLAYER_NAME_TABLE_MAX:
+                        player_slot = len(player_idx)
+                        player_idx[pname] = player_slot
+                    else:
+                        player_slot = 0xFFFF
+                        blade_name_overflow += 1
+                pairs.append([item_slot, player_slot])
                 if loc.item.player == self.player and loc.item.name in ITEM_TABLE:
                     game_ids.append(ITEM_TABLE[loc.item.name].original_id)
                 else:
                     game_ids.append(0)
-            if len(item_idx) > 384:
-                raise OptionError(f"SSHD: {len(item_idx)} unique blade item names, the table holds 384.")
-            if len(player_idx) > 64:
-                raise OptionError(f"SSHD: {len(player_idx)} players hold blade items, the table holds 64.")
+            if blade_name_overflow:
+                print(f"[__init__.py] Blade names: {blade_name_overflow} name slot(s) past the table limit use the default name")
             slot_data["blade_item_names"] = list(item_idx.keys())
             slot_data["blade_player_names"] = list(player_idx.keys())
             slot_data["blade_name_indexes"] = pairs

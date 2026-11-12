@@ -46,7 +46,7 @@ use static_assertions::assert_eq_size;
 /// a breaking change to `ApIpcRoot`'s layout so old/new clients don't
 /// silently misread each other).
 pub const AP_IPC_MAGIC: [u8; 8] = *b"SSHDAPI\x01";
-pub const AP_IPC_VERSION: u16 = 18;
+pub const AP_IPC_VERSION: u16 = 19;
 
 /// Live BY-VALUE COPY of the player's health and stamina, refreshed every
 /// frame by `item::refresh_ipc_addresses()`. Lets the host client detect
@@ -152,13 +152,13 @@ pub struct ApBladeNames {
     pub player_count: u16,
     pub _pad:         u16,
     pub index:        [[u16; 2]; 16384],
-    pub item_names:   [[u16; 32]; 384],
+    pub item_names:   [[u16; 32]; 1024],
     pub player_names: [[u16; 16]; 64],
     /// Game item id to spawn for each blade when the item belongs to this game
     /// (0 = spawn the Archipelago placeholder). IPC version 18.
     pub item_ids:     [u16; 16384],
 }
-assert_eq_size!([u8; 124936], ApBladeNames);
+assert_eq_size!([u8; 165896], ApBladeNames);
 
 /// Seed gating info (IPC version 12). `patched_seed` is the seed the installed
 /// patch was made for, `save_seed` the one stored in the loaded save file (0 =
@@ -568,7 +568,7 @@ pub static mut AP_IPC_ROOT: ApIpcRoot = ApIpcRoot {
         player_count: 0,
         _pad:         0,
         index:        [[0u16; 2]; 16384],
-        item_names:   [[0u16; 32]; 384],
+        item_names:   [[0u16; 32]; 1024],
         player_names: [[0u16; 16]; 64],
         item_ids:     [0u16; 16384],
     },
@@ -601,6 +601,6 @@ assert_eq_size!(
         + 580
         + 128
         + 7056
-        + 124936],
+        + 165896],
     ApIpcRoot
 );
