@@ -822,6 +822,9 @@ class SSHDLogicConverter:
             "Pots":                  "pot_shuffle",
             "Pumpkins":              "pumpkin_shuffle",
             "Barrels": "barrel_shuffle",
+            "Trees":                "tree_shuffle",
+            "Signs":                "sign_shuffle",
+            "Bird Statues":         "bird_statues_give_items",
             "Gossip Stone Treasures": "gossip_stone_treasure_shuffle",
             "Underground Rupees":    "underground_rupee_shuffle",
         }
@@ -833,6 +836,15 @@ class SSHDLogicConverter:
         # NPC Closet shuffle: "vanilla" means off
         if s.get("npc_closet_shuffle", "vanilla") == "vanilla":
             excluded.add("Closets")
+
+        # Grass shuffle is a 3-way setting: off / bundles / blades.
+        # Bundles = one location per patch (type "Grass"), blades = one location
+        # per blade (type "Grass Blade"). Mirrors SSHDWorld._get_excluded_item_types.
+        grass_mode = s.get("grass_shuffle", "off")
+        if grass_mode != "bundles":
+            excluded.add("Grass")
+        if grass_mode != "blades":
+            excluded.add("Grass Blade")
 
         # Beedle's Airshop: "vanilla" means off
         if s.get("beedle_shop_shuffle", "vanilla") == "vanilla":

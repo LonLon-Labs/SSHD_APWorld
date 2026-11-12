@@ -226,412 +226,412 @@
     Waterfall Cave: Can_Cut_Trees_And_Logs
     Bird Nest: logic_bird_nest_item_from_beedles_shop and Day and Distance_Activator and (Beetle or Whip)
   locations:
-    "Central Skyloft - Sign 1": Sword
-    "Central Skyloft - Sign 2": Sword
-    "Central Skyloft - Sign 3": Sword
-    "Central Skyloft - Sign 4": Sword
-    "Central Skyloft - Sign 5": Sword
-    "Central Skyloft - Sign 6": Sword
-    "Central Skyloft - Sign 7": Sword
-    "Central Skyloft - Grass Patch 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 1 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 2 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 2 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 2 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 2 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 2 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 3 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 3 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 3 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 3 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 3 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 3 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 4 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 4 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 4 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 4 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 4 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 4 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 5 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 5 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 5 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 5 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 5 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 5 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 5 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 6 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 7 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 8 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 9 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 41": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 42": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 10 - Blade 43": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 11 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 26": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 27": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 28": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 29": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 30": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 31": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 32": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 33": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 34": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 35": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 36": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 37": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 38": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 39": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 40": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 41": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 42": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 43": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 44": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 45": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 46": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 12 - Blade 47": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 13 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 13 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 13 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 13 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 14 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 15 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 16 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 16 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 16 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 16 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 17 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 17 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 17 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 17 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 18 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 18 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 18 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 18 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 18 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 18 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 18 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 18 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 18 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 19 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 20 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 24": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 21 - Blade 25": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 22 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 23 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 5": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 6": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 7": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 8": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 9": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 10": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 11": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 12": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 13": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 14": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 15": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 16": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 17": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 18": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 19": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 20": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 21": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 22": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 24 - Blade 23": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 25 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 25 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 25 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 25 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 26 - Blade 1": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 26 - Blade 2": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 26 - Blade 3": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Grass Patch 26 - Blade 4": Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
-    "Central Skyloft - Tree 1": Can_Cut_Trees_And_Logs
-    "Central Skyloft - Tree 2": Can_Cut_Trees_And_Logs
-    "Central Skyloft - Tree 3": Can_Cut_Trees_And_Logs
-    "Central Skyloft - Tree 4": Can_Cut_Trees_And_Logs
-    "Central Skyloft - Tree 5": Can_Cut_Trees_And_Logs
-    "Central Skyloft - Tree 6": Can_Cut_Trees_And_Logs
-    "Central Skyloft - Tree 7": Can_Cut_Trees_And_Logs
-    "Central Skyloft - Tree 8": Can_Cut_Trees_And_Logs
-    "Central Skyloft - Tree 9": Can_Cut_Trees_And_Logs
-    "Central Skyloft - Tree 10": Can_Cut_Trees_And_Logs
+    Central Skyloft - Sign 1: Sword
+    Central Skyloft - Sign 2: Sword
+    Central Skyloft - Sign 3: Sword
+    Central Skyloft - Sign 4: Sword
+    Central Skyloft - Sign 5: Sword
+    Central Skyloft - Sign 6: Sword
+    Central Skyloft - Sign 7: Sword
+    Central Skyloft - Grass Patch 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 26: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 1 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 2 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 2 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 2 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 2 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 2 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 3 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 3 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 3 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 3 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 3 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 3 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 4 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 4 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 4 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 4 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 4 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 4 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 5 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 5 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 5 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 5 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 5 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 5 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 5 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 6 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 7 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 8 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 9 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 26: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 27: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 28: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 29: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 30: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 31: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 32: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 33: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 34: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 35: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 36: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 37: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 38: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 39: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 40: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 41: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 42: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 10 - Blade 43: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 11 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 26: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 27: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 28: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 29: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 30: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 31: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 32: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 33: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 34: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 35: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 36: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 37: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 38: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 39: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 40: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 41: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 42: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 43: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 44: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 45: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 46: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 12 - Blade 47: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 13 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 13 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 13 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 13 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 14 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 15 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 16 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 16 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 16 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 16 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 17 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 17 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 17 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 17 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 18 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 18 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 18 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 18 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 18 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 18 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 18 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 18 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 18 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 19 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 20 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 21 - Blade 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 22 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 23 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 24 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 25 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 25 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 25 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 25 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 26 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 26 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 26 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Grass Patch 26 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Central Skyloft - Tree 1: Can_Cut_Trees_And_Logs
+    Central Skyloft - Tree 2: Can_Cut_Trees_And_Logs
+    Central Skyloft - Tree 3: Can_Cut_Trees_And_Logs
+    Central Skyloft - Tree 4: Can_Cut_Trees_And_Logs
+    Central Skyloft - Tree 5: Can_Cut_Trees_And_Logs
+    Central Skyloft - Tree 6: Can_Cut_Trees_And_Logs
+    Central Skyloft - Tree 7: Can_Cut_Trees_And_Logs
+    Central Skyloft - Tree 8: Can_Cut_Trees_And_Logs
+    Central Skyloft - Tree 9: Can_Cut_Trees_And_Logs
+    Central Skyloft - Tree 10: Can_Cut_Trees_And_Logs
     Central Skyloft - Pot 1: Nothing
     Central Skyloft - Pot 2: Nothing
     Central Skyloft - Pot 3: Nothing
