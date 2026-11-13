@@ -36,6 +36,20 @@ fmov s2, s0
 fmov s1, wzr
 fmov s0, wzr
 
+; Add a per-item height offset to the spot a shop item moves to when the player
+; picks it up to decide whether to buy it.
+;
+; dAcShopSample mover update. Every frame it asks the shop menu where the item
+; should be (vtable function 0) and overwrites the stored destination with the
+; answer, so the offset has to be applied to that answer here rather than once at
+; init. Both the base class and the subclass PickUp states go through this.
+; The replaced virtual call is redone in Rust (get_shop_item_move_target):
+;   x0 = mover, x1 = key, x2 = out vec3 (all already set up by the game)
+.offset 0x7100affb54
+mov w8, #102
+bl additions_jumptable
+nop
+
 ; Init dAcShopSample__Subclasses based on their shop_index instead of the item
 ; being sold. The vanilla game checks the shop_index and behaves correctly for
 ; the vanilla item that's placed there. Rando breaks the assumptions made so

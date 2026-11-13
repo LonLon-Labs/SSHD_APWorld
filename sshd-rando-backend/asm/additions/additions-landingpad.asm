@@ -319,10 +319,110 @@ cmp w8, #99
 b.eq check_sailcloth_for_air_vents
 
 cmp w8, #100
-b.eq require_sailcloth_to_fly_to_sky
+b.eq require_sailcloth_and_loftwing_to_fly_to_sky
 
 cmp w8, #101
 b.eq voidout_near_skyloft_or_light_pillars_without_sailcloth
+
+; shop item buy decide position
+cmp w8, #102
+b.eq get_shop_item_move_target
+
+; Fi proactive alert override
+cmp w8, #103
+b.eq fi_proactive_alert_override
+
+; Fi can't-drop gate
+cmp w8, #104
+b.eq fi_cant_drop_gate_pending
+
+; DEBUG (remove after the sky test): FUN_7100a69ccc entry counter
+cmp w8, #105
+b.eq fi_dbg_entry
+
+; DEBUG (remove after the sky test): before the Fi event request call
+; (x0 = Fi object, x1 = request struct)
+cmp w8, #106
+b.eq fi_dbg_request_pre
+
+; DEBUG (remove after the sky test): after the Fi event request call
+; (x0 = result of FUN_7100b70290)
+cmp w8, #107
+b.eq fi_dbg_request_post
+
+; Pot sanity: item drop when a pot breaks (x5 = pot actor)
+cmp w8, #108
+b.eq pot_spawn_custom_item
+
+; File select slot name display (apseed_ui.rs): file select state + cursor
+; (x0 = file select scene object)
+cmp w8, #109
+b.eq apseed_ui_fs_hook
+
+; File select slot name display: label getter entry
+; (x0 = message file index, x1 = label)
+cmp w8, #110
+b.eq apseed_ui_label_hook
+
+; File select slot name display: label getter epilogue
+; (x0 = string pointer about to be returned; returns the pointer to use)
+cmp w8, #111
+b.eq apseed_ui_label_ret_hook
+
+; Demise (BLastBoss) defeated: sets the goal storyflag (x0 = boss actor)
+cmp w8, #112
+b.eq demise_defeated_hook
+
+; Speed target scale (x0 = unused; s0 = walking-speed target in, scaled target out)
+; Called from speed-target-scale.asm via the stub at 0x7100659ca0.
+cmp w8, #113
+b.eq speed_target_scale_hook
+
+; Ganbari gauge hide (x0 = dLytMeterGanbariGauge_c). Called from
+; ganbari-gauge-hide.asm on entry to execute(). Hides the stamina/air gauge
+; while infinite stamina is on (lyt.rs).
+cmp w8, #114
+b.eq ganbari_gauge_execute_hook
+
+; Grass shuffle (grass.asm). Cut drop (x5 = blade base).
+cmp w8, #115
+b.eq grass_cut_drop_hook
+
+; Grass shuffle. Blade created (x0 = blade base).
+cmp w8, #116
+b.eq grass_blade_init_hook
+
+; Grass shuffle. Patch actorPostCreate entry (x0 = patch actor).
+cmp w8, #117
+b.eq grass_patch_begin_hook
+
+; Grass shuffle. spawnSingleGrass entry; returns 1 to skip a collected patch.
+cmp w8, #118
+b.eq grass_spawn_skip_hook
+
+; Grass RNG site D (index 120): hash of the inline candidate position. Returns
+; w8 = hash through the bl in the game-side stub at 0x7100659f68 (grass-rng.asm).
+cmp w8, #120
+b.eq grass_inline_rng_hook
+
+; Small tree shuffle (bamboo.asm). Landing drop: x0 = tree actor, runs before the vanilla
+; drop fetch in the landing block (Ghidra 0x7100706F28).
+cmp w8, #121
+b.eq bamboo_cut_drop_hook
+
+; Small tree shuffle (bamboo.asm). Fall start: x0 = tree actor, runs when the cut starts
+; (Fall state init, Ghidra 0x7100706BE4).
+cmp w8, #122
+b.eq bamboo_fall_start_hook
+
+; Sign shuffle (sign.asm). PullOut init (x0 = sign actor, Ghidra 0x71004EFDA8).
+cmp w8, #123
+b.eq sign_cut_hook
+
+; Sign Wait update (sign_wait_hook, Ghidra 0x71004EF804, runtime 0x71004F3804): drops the
+; item on the hit's rising edge.
+cmp w8, #124
+b.eq sign_wait_hook
 
 ret ; this should never be reached
 
@@ -341,4 +441,22 @@ _ce_wrapper:
     mov w21, #1
     ret
     
+;
+; Grass RNG site D routine (landingpad index 120). Replaces the global LCG read
+; `ldr w8, [x26, #0x3e0]` in the inline candidate loop of actorPostCreate (Ghidra
+; 0x7100e774f0). Hashes the candidate position: s10 = inner loop x, s12 = outer
+; loop z (both callee-saved, untouched by this routine). Uses only x16/x17 and w8.
+.global grass_inline_rng_hook
+grass_inline_rng_hook:
+fmov w16, s10
+fmov w17, s12
+eor w16, w16, w17, lsl #13
+eor w16, w16, w16, lsr #17
+eor w16, w16, w16, lsl #5
+eor w16, w16, w17, ror #11
+eor w16, w16, w16, lsr #15
+eor w16, w16, w16, lsl #7
+mov w8, w16
+ret
+
 ; ends at 0x712e0a7000

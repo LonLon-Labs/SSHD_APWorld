@@ -335,6 +335,12 @@ def set_rules(world: "SSHDWorld") -> None:
         """Check if player can access Fire Sanctuary."""
         return can_access_eldin(state) and has_mitts(state) and has(state, "Water Basin")
     
+    # Goddess chest / cube settings.
+    # goddess_chest_unlock: 0 = locked_until_struck, 1 = unlocked_after_goddess_sword,
+    #                       2 = unlocked_from_start
+    # (Decoupled cubes are real locations, so they show up in the loop below on their own.)
+    goddess_chest_unlock = options.goddess_chest_unlock.value
+
     # Set location access rules
     # These are BASIC rules - full logic would be much more complex
     for location in multiworld.get_locations(player):
@@ -373,14 +379,27 @@ def set_rules(world: "SSHDWorld") -> None:
             elif "Earth Temple" in location_name:
                 location.access_rule = lambda state: has(state, "Earth Temple Boss Key")
         
-        # Goddess Cube checks require sword (Skyward Strike) + various items
-        if "Goddess Cube" in location_name or "Goddess Chest" in location_name:
-            if "Clawshot" in location_name:
-                location.access_rule = lambda state: can_open_goddess_chests(state) and has(state, "Clawshots")
+        # Goddess Cube / Goddess Chest checks.
+        # - Cube locations only exist when cubes are decoupled; striking one needs a
+        #   Skyward Strike (Goddess Sword or better).
+        # - Chests need that strike too unless goddess_chest_unlock is
+        #   unlocked_from_start, in which case they're already active and only the
+        #   item hints in the name (Clawshots / Beetle) still apply.
+        is_goddess_cube = "Goddess Cube" in location_name
+        is_goddess_chest = "Goddess Chest" in location_name
+        if is_goddess_cube or is_goddess_chest:
+            needs_strike = is_goddess_cube or goddess_chest_unlock != 2
+            if needs_strike:
+                if "Clawshot" in location_name:
+                    location.access_rule = lambda state: can_open_goddess_chests(state) and has(state, "Clawshots")
+                elif "Beetle" in location_name:
+                    location.access_rule = lambda state: can_open_goddess_chests(state) and has_beetle(state)
+                else:
+                    location.access_rule = lambda state: can_open_goddess_chests(state)
+            elif "Clawshot" in location_name:
+                location.access_rule = lambda state: has(state, "Clawshots")
             elif "Beetle" in location_name:
-                location.access_rule = lambda state: can_open_goddess_chests(state) and has_beetle(state)
-            else:
-                location.access_rule = lambda state: can_open_goddess_chests(state)
+                location.access_rule = lambda state: has_beetle(state)
         
         # Silent Realm checks - NO LOCATION REQUIREMENTS
         # Entrance requirements (Harp + Sword level 1) handle access

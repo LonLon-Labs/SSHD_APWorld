@@ -14,7 +14,14 @@ import importlib.util
 import subprocess
 import tempfile
 import re
+import stat
 from pathlib import Path
+
+try:
+    from build_ap_client import build_ap_client, DIST_DIR as RUST_CLIENT_DIST_DIR
+except ImportError:
+    build_ap_client = None
+    RUST_CLIENT_DIST_DIR = None
 
 
 # Third-party Python packages to bundle into the apworld.
@@ -135,39 +142,66 @@ def build_apworld():
     # Files/folders to exclude
     exclude_patterns = [
         "__pycache__",
-        ".pyc",
+        "*.pyc",
+        "*.pyo",
+        "*.pyd",
         ".git",
+
         "build_apworld.py",
+
+        # Build/output directories
+        "sshd-rando-backend/asm/additions/rust-additions/target",
+        "sshd-rando-backend/asm/debug_build",
+
+        # Files not needed in the apworld
+        "assets/patch_custom_model.py",
+        "assets/patch_model_tools.py",
+        "assets/compress_arc.py",
     ]
-    
+
+    def should_exclude(rel_path: Path) -> bool:
+        """Return True if a file or directory should be excluded."""
+        rel_str = str(rel_path).replace("\\", "/")
+
+        for pattern in exclude_patterns:
+            pattern = pattern.replace("\\", "/").rstrip("/")
+
+            # Directory/path exclusion:
+            # Excludes the directory itself and everything underneath it.
+            if rel_str == pattern or rel_str.startswith(pattern + "/"):
+                return True
+
+            # Glob-style filename exclusion
+            if pattern.startswith("*."):
+                if rel_str.endswith(pattern[1:]):
+                    return True
+
+            # Simple filename exclusion
+            if "/" not in pattern and rel_path.name == pattern:
+                return True
+
+        return False
+
     def should_include(filepath: Path) -> bool:
         """Check if a file should be included in the .apworld."""
         rel_path = filepath.relative_to(source_dir)
         rel_str = str(rel_path).replace("\\", "/")
-        filename = filepath.name
-        
-        # Check if explicitly excluded (exact filename match to avoid false positives)
-        for pattern in exclude_patterns:
-            if pattern in ["__pycache__", ".pyc", ".git"]:
-                # Substring match for these
-                if pattern in rel_str:
-                    return False
-            else:
-                # Exact filename match for others
-                if filename == pattern:
-                    return False
-        
+
+        # Exclusions always take priority.
+        if should_exclude(rel_path):
+            return False
+
         # Check if matches include patterns
         for pattern in include_patterns:
+            pattern = pattern.replace("\\", "/")
+
             if pattern.endswith("/"):
-                # Directory pattern
                 if rel_str.startswith(pattern):
                     return True
             else:
-                # File pattern
                 if rel_str == pattern or rel_str.startswith(pattern + "/"):
                     return True
-        
+
         return False
     
     print(f"Building sshd.apworld...")
@@ -219,6 +253,52 @@ def build_apworld():
                     rel = full.relative_to(staging_dir)
                     arcname = Path("sshd") / "_bundled_deps" / str(rel).replace("\\", "/")
                     apworld.write(full, arcname)
+                    print(f"  Added: {arcname}")
+                    file_count += 1
+
+        # ------------------------------------------------------------------
+        # Bundle the Rust client (sshd-ap-client), if available.
+        #
+        # This only bundles binaries for whatever platform(s) have already
+        # been built into sshd-ap-client/dist/<platform_tag>/ — unlike the
+        # Python wheels above, we do NOT download/cross-compile for every
+        # platform here. Run build_ap_client.py (or let this call it below)
+        # on each platform you want to support, ideally from CI.
+        #
+        # Best-effort: if cargo isn't installed or the build fails,
+        # build_ap_client() prints a warning and returns None, and we just
+        # skip bundling it — the .apworld still builds fine with the
+        # Python client only.
+        # ------------------------------------------------------------------
+        # CI prebuilds every platform's binary in a matrix and drops them
+        # into sshd-ap-client/dist/, so it sets SSHD_SKIP_RUST_BUILD to
+        # avoid rebuilding (and overwriting) the host platform's binary.
+        if build_ap_client is not None and not os.environ.get("SSHD_SKIP_RUST_BUILD"):
+            print("Building Rust client (sshd-ap-client)...")
+            build_ap_client()
+            print()
+        elif os.environ.get("SSHD_SKIP_RUST_BUILD"):
+            print("SSHD_SKIP_RUST_BUILD set - using prebuilt Rust client binaries.")
+            print()
+
+        if RUST_CLIENT_DIST_DIR is not None and RUST_CLIENT_DIST_DIR.exists():
+            print("Bundling Rust client binaries...")
+            for platform_dir in sorted(RUST_CLIENT_DIST_DIR.iterdir()):
+                if not platform_dir.is_dir():
+                    continue
+                for binary_file in platform_dir.iterdir():
+                    if not binary_file.is_file():
+                        continue
+                    arcname = Path("sshd") / "_bundled_bin" / platform_dir.name / binary_file.name
+                    apworld.write(binary_file, arcname)
+                    # zipfile.write() normally captures the source file's
+                    # permission bits automatically, but we set them
+                    # explicitly here too so the exec bit survives even if
+                    # this ever runs somewhere that behaves differently
+                    # (e.g. bundling a binary built on another machine).
+                    if not binary_file.name.endswith(".exe"):
+                        info = apworld.getinfo(str(arcname).replace("\\", "/"))
+                        info.external_attr = (stat.S_IFREG | 0o755) << 16
                     print(f"  Added: {arcname}")
                     file_count += 1
     

@@ -463,7 +463,10 @@ pub extern "C" fn prefer_modreplace_for_general_arcs(
     }
 }
 
-#[no_mangle]
+// Not #[no_mangle]: nothing in the game calls these, and exporting them kept
+// ~0x428 bytes of debug-only code in .text, which pushed .text past
+// 0x712e0bd000 and moved .rodata onto an unmapped page.
+#[allow(dead_code)]
 pub extern "C" fn debug_print_heap_info(heap: *mut Heap, heap_identifier: *const c_char) {
     debug::debug_print_str(c"Heap info for: %s".as_ptr(), heap_identifier);
     if !heap.is_null() {
@@ -478,7 +481,7 @@ pub extern "C" fn debug_print_heap_info(heap: *mut Heap, heap_identifier: *const
     debug::debug_print(c"".as_ptr());
 }
 
-#[no_mangle]
+#[allow(dead_code)]
 pub extern "C" fn debug_print_all_heap_info() {
     let heaps = unsafe {
         [

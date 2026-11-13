@@ -20,6 +20,674 @@
     Skyview Entry: Can_Cut_Trees_And_Logs
     SVT One Eye Room: Can_Hit_High_Skyview_Switches
     SVT First Hub Center Room: Bomb_Bag or shortcut_skyview_boards
+  locations:  # grass-patches and tree-sanity and sign-sanity
+    Skyview Temple - Grass Patch 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 28: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 29: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 31: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 32: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 33: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 34: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 35: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 36: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 37: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 38: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 39: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 40: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 42: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 43: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 45: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 46: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 47: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 48: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 49: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 50: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 53: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 54: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 55: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 56: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 57: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 58: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 59: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 62: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 63: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 64: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 65: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 66: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 67: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 68: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 69: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 70: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 71: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 72: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 73: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 1 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 1 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 1 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 1 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 1 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 1 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 1 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 2 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 2 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 3 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 4 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 4 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 4 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 4 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 4 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 5 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 5 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 5 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 5 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 5 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 5 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 5 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 5 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 6 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 7 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 7 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 7 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 7 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 7 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 7 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 7 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 8 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 9 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 10 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 10 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 10 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 10 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 10 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 11 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 11 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 11 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 11 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 12 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 12 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 12 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 12 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 12 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 12 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 12 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 13 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 13 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 13 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 14 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 15 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 15 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 15 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 15 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 15 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 15 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 16 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 16 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 16 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 16 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 16 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 16 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 16 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 16 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 17 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 17 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 17 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 17 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 17 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 17 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 17 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 18 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 19 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 19 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 19 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 19 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 19 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 20 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 20 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 20 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 20 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 21 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 21 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 21 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 21 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 21 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 21 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 21 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 21 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 22 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 22 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 22 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 22 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 22 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 22 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 22 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 22 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 23 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 23 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 23 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 23 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 23 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 23 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 23 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 23 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 24 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 24 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 24 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 24 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 24 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 25 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 26 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 27 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 28 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 28 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 28 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 28 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 29 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 29 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 29 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 29 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 30 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 31 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 31 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 31 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 32 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 32 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 32 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 32 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 32 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 32 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 33 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 33 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 33 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 34 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 35 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 35 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 35 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 36 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 36 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 36 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 36 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 36 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 36 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 37 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 37 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 37 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 38 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 38 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 38 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 38 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 38 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 38 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 38 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 38 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 39 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 39 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 39 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 40 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 26: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 27: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 28: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 29: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 30: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 31: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 32: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 41 - Blade 33: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 42 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 42 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 42 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 42 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 42 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 42 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 42 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 42 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 42 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 43 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 43 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 43 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 43 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 43 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 43 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 43 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 43 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 43 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 44 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 45 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 45 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 45 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 45 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 45 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 45 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 45 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 45 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 45 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 46 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 47 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 48 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 48 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 48 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 48 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 49 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 49 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 49 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 50 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 50 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 50 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 50 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 26: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 27: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 28: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 29: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 30: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 31: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 32: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 33: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 34: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 35: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 51 - Blade 36: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 52 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 53 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 53 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 53 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 53 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 54 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 54 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 54 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 54 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 54 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 55 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 55 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 55 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 55 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 55 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 55 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 55 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 55 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 55 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 56 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 56 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 56 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 56 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 56 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 56 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 57 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 57 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 57 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 57 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 57 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 58 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 58 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 58 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 58 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 58 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 58 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 58 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 58 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 59 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 59 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 59 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 59 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 60 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 61 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 62 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 62 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 62 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 62 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 62 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 62 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 63 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 63 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 63 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 64 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 64 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 64 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 65 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 65 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 65 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 66 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 66 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 67 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 67 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 67 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 67 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 68 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 69 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 69 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 69 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 69 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 70 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 70 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 70 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 71 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 71 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 72 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 72 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 72 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 72 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 72 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 73 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 73 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 73 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 73 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 74 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 75 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 26: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 27: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 28: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 29: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 30: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 31: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 32: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Temple - Grass Patch 76 - Blade 33: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+
+    Skyview Temple - Tree 1: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 2: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 3: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 4: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 5: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 6: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 7: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 8: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 9: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 10: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 11: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 12: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 13: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 14: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 15: Can_Cut_Trees_And_Logs
+    Skyview Temple - Tree 16: Can_Cut_Trees_And_Logs
 
 - name: SVT One Eye Room
   dungeon: Skyview Temple
@@ -195,6 +863,14 @@
     SVT Last Room After Rope: Can_Defeat_Ghirahim
     Skyview Spring: Can_Defeat_Ghirahim
   locations:
+    Skyview Boss Room - Pot 1: Nothing
+    Skyview Boss Room - Pot 2: Nothing
+    Skyview Boss Room - Pot 3: Nothing
+    Skyview Boss Room - Pot 4: Nothing
+    Skyview Boss Room - Pot 5: Nothing
+    Skyview Boss Room - Pot 6: Nothing
+    Skyview Boss Room - Pot 7: Nothing
+    Skyview Boss Room - Pot 8: Nothing
     Skyview Temple - Defeat Boss: Can_Defeat_Ghirahim
 
 - name: Skyview Spring
@@ -204,6 +880,36 @@
   exits:
     Skyview Boss Room: Nothing # Open the door.
   locations:
+    Skyview Spring - Grass Patch 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 1 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 1 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 1 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 1 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 2 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 2 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 2 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 3 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 3 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 4 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 4 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 4 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 4 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 4 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 4 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 5 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 5 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 5 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 5 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 5 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 5 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 5 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 5 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Skyview Spring - Grass Patch 6 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
     Skyview Spring - Slingshot top of Door: Slingshot
     Skyview Spring - Bonk Broken Left Pillar: Nothing # Bonk into the pillar.
     Skyview Spring - Bonk Broken Right Pillar: Nothing # Bonk into the pillar.

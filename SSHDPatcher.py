@@ -96,6 +96,39 @@ def _find_extract_path() -> Path:
         return Path.home() / ".local" / "share" / "Archipelago" / "sshd_extract"
 
 
+_SETTINGS_FILE_NAME = "sshd_patcher_settings.json"
+
+
+def _settings_path() -> Path:
+    """Return the JSON file where the patcher remembers user settings."""
+    if sys.platform == "win32":
+        base = Path(os.environ.get("APPDATA", str(Path.home()))) / "Archipelago"
+    else:
+        base = Path.home() / ".config" / "Archipelago"
+    return base / _SETTINGS_FILE_NAME
+
+
+def _load_saved_extract_path() -> Optional[str]:
+    """Return the ROM extract path saved by a previous run, or None."""
+    try:
+        with open(_settings_path(), "r", encoding="utf-8") as f:
+            value = json.load(f).get("extract_path")
+        return value if isinstance(value, str) and value else None
+    except (OSError, ValueError, AttributeError):
+        return None
+
+
+def _save_extract_path(path: Path) -> None:
+    """Remember the ROM extract path so it is pre-filled next time."""
+    try:
+        settings = _settings_path()
+        settings.parent.mkdir(parents=True, exist_ok=True)
+        with open(settings, "w", encoding="utf-8") as f:
+            json.dump({"extract_path": str(path)}, f, indent=2)
+    except OSError as e:
+        print(f"[Patcher] Warning: could not save settings: {e}")
+
+
 _GAME_ID = "01002da013484000"
 _ALL_EMULATORS = ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]
 
@@ -217,6 +250,7 @@ def generate_patches(
     patcher_data: dict,
     extract_path: Path,
     output_dir: Path,
+    other_mods_path: Optional[Path] = None,
 ) -> Tuple[Optional[Path], Optional[Path]]:
     """
     Generate romfs/exefs mod files from patcher_data + user's ROM extract.
@@ -225,6 +259,8 @@ def generate_patches(
         patcher_data: Dict loaded from patcher_data.json inside .apsshd
         extract_path: Path to the extracted SSHD ROM (contains romfs/ and exefs/)
         output_dir: Temporary directory for generation output
+        other_mods_path: Optional folder containing the mods listed in the YAML's
+            other_mods. Overrides the YAML's other_mods_path when given.
 
     Returns:
         (romfs_path, exefs_path) on success, or (None, None) on failure.
@@ -241,6 +277,14 @@ def generate_patches(
     os.environ["SSHD_AP_EXTRACT_PATH"] = str(extract_path.resolve())
     os.environ["SSHD_AP_USERDATA_PATH"] = str(extract_path.resolve().parent)
 
+    # Other mods: point the backend at the folder holding the mods the YAML asked for.
+    # (Must happen before filepathconstants is reloaded below.)
+    from SSHDRWrapper import configure_other_mods_environment
+    _mods_settings = dict(patcher_data.get("ap_settings", {}))
+    if other_mods_path is not None:
+        _mods_settings["other_mods_path"] = str(other_mods_path)
+    configure_other_mods_environment(_mods_settings, extract_path)
+
     # Force reload filepathconstants if already imported so new env vars apply
     import importlib
     if "filepathconstants" in sys.modules:
@@ -253,8 +297,10 @@ def generate_patches(
         create_sshd_rando_config,
         overlay_multiworld_items,
         inject_custom_flags_into_world,
+        sync_other_mods_constants,
     )
     _initialize_sshd_rando()
+    sync_other_mods_constants()
 
     from logic.generate import generate
     from logic.config import write_config_to_file
@@ -309,6 +355,23 @@ def generate_patches(
         raise RuntimeError("sshd-rando generation returned None world")
     world.config.output_dir = output_dir
 
+    # Seed + slot name stored in new save files and shown on file select
+    if patcher_data.get("ap_seed") is not None:
+        world.ap_seed = int(patcher_data["ap_seed"])
+    elif patcher_data.get("seed") is not None:
+        world.ap_seed = int(patcher_data["seed"])
+    world.ap_slot_name = patcher_data.get("ap_slot_name", "")
+
+    # Fi's text tells the player the dungeon goal count (None = goal disabled)
+    world.ap_dungeon_goal_count = patcher_data.get("ap_dungeon_goal_count")
+
+    # Sync required-dungeon flags so Fi's text matches AP's selection
+    ap_required = patcher_data.get("ap_required_dungeons")
+    if ap_required is not None:
+        for name, dun in world.dungeons.items():
+            dun.required = name in ap_required
+        print(f"[Patcher] Synced required dungeons to AP selection: {ap_required}")
+
     # ---- Overlay multiworld items ----
     item_mapping = patcher_data.get("multiworld_item_mapping", {})
     if item_mapping:
@@ -348,6 +411,22 @@ def generate_patches(
 
     # ---- Apply patches (requires ROM) ----
     print("[Patcher] Applying ROM patches (this reads from your ROM extract)...")
+
+    # Load custom Archipelago item model OARCs into cache before patching.
+    # Without this, the stage patcher references ArchipelagoItem(.arc/2.arc)
+    # but the files are missing from cache/oarc, so every Archipelago item
+    # falls back to the green rupee model when a custom model is selected.
+    try:
+        from rando.ArcPatcher import patch_archipelago_item_oarc
+        assets_dir_item = _CURRENT_DIR / "assets"
+        model_setting = ap_settings.get("archipelago_item_model", "archipelago_logo")
+        if isinstance(model_setting, int):
+            model_setting = {0: "letter", 1: "archipelago_logo", 2: "unofficial_archipelago_logo"}.get(
+                model_setting, "archipelago_logo"
+            )
+        patch_archipelago_item_oarc(None, assets_dir_item, model_setting)
+    except Exception as _item_e:
+        print(f"[Patcher] Warning: Could not load Archipelago item OARCs: {_item_e}")
 
     # Load key ring and skeleton key OARCs into cache before patching
     try:
@@ -802,7 +881,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
             lbl2 = QLabel("ROM extract:")
             lbl2.setProperty("class", "FieldLabel")
             row2.addWidget(lbl2)
-            self.extract_input = QLineEdit(str(_find_extract_path()))
+            self.extract_input = QLineEdit(_load_saved_extract_path() or str(_find_extract_path()))
             self.extract_input.setPlaceholderText("Path to sshd_extract folder")
             row2.addWidget(self.extract_input, stretch=1)
             browse_ext = QPushButton("Browse")
@@ -895,6 +974,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
             )
             if path:
                 self.extract_input.setText(path)
+                _save_extract_path(Path(path))
 
         def _on_patch_changed(self, text):
             if text.strip():
@@ -950,6 +1030,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
             if not extract_path or not Path(extract_path).exists():
                 self._set_info("ROM extract path not found", "#ee0000")
                 return
+            _save_extract_path(Path(extract_path))
 
             self.patch_btn.setEnabled(False)
             self.log_output.clear()
@@ -1023,6 +1104,12 @@ def main():
         help="Create a new .apsshd with ROM patches included (for sharing with others).",
     )
     parser.add_argument(
+        "--other-mods-path",
+        help="Folder containing the mods listed in the YAML's other_mods. "
+             "Defaults to the YAML's other_mods_path, then <extract parent>/other_mods.",
+        default=None,
+    )
+    parser.add_argument(
         "--nogui",
         action="store_true",
         help="Run in CLI mode without the GUI.",
@@ -1085,7 +1172,10 @@ def main():
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        romfs_path, exefs_path = generate_patches(patcher_data, extract_path, temp_dir)
+        romfs_path, exefs_path = generate_patches(
+            patcher_data, extract_path, temp_dir,
+            other_mods_path=Path(args.other_mods_path) if args.other_mods_path else None,
+        )
 
         if romfs_path is None or exefs_path is None:
             print("\nERROR: Patch generation failed.")

@@ -9,6 +9,264 @@
 
 # Holds entrance access to each room based on which areas have been reached.
 # TODO: Needs to be generalized for random layouts.
+  locations:  # grass-patches and tree-sanity and sign-sanity
+    Sky Keep - Grass Patch 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 26: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 27: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 28: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 29: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 1 - Blade 30: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 26: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 27: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 28: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 29: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 30: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 31: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 32: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 33: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 34: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 35: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 36: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 37: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 38: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 39: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 40: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 41: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 42: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 43: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 44: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 45: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 46: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 47: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 48: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 49: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 50: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 51: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 52: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 53: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 2 - Blade 54: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 3 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 4 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 5 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 5 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 5 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 5 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 5 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 5 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 5 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 5 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 5 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 6 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 6 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 6 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 6 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 6 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 6 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 6 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 6 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 7 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 8 - Blade 25: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 1: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 2: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 3: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 4: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 5: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 6: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 7: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 8: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 9: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 10: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 11: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 12: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 13: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 14: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 15: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 16: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 17: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 18: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 19: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 20: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 21: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 22: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 23: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Grass Patch 9 - Blade 24: Progressive_Sword or Beetle or Bomb_Bag or Bow or Whip
+    Sky Keep - Tree 1: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 2: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 3: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 4: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 5: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 6: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 7: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 8: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 9: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 10: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 11: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 12: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 13: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 14: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 15: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 16: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 17: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 18: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 19: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 20: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 21: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 22: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 23: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 24: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 25: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 26: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 27: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 28: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 29: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 30: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 31: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 32: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 33: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 34: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 35: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 36: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 37: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 38: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 39: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 40: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 41: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 42: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 43: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 44: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 45: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 46: Can_Cut_Trees_And_Logs
+    Sky Keep - Tree 47: Can_Cut_Trees_And_Logs
 - name: SK Meta Room
   exits:
     SK Skyview Room West: can_access(SK First Room East)
@@ -67,6 +325,14 @@
 
 - name: SK Earth Temple Room North
   dungeon: Sky Keep
+  locations:
+    SK Earth Temple Room North - Pot 1: Nothing
+    SK Earth Temple Room North - Pot 2: Nothing
+    SK Earth Temple Room North - Pot 3: Nothing
+    SK Earth Temple Room North - Pot 4: Nothing
+    SK Earth Temple Room North - Pot 5: Nothing
+    SK Earth Temple Room North - Pot 6: Nothing
+    SK Earth Temple Room North - Pot 7: Nothing
 
 - name: SK Dreadfuse Room South
   dungeon: Sky Keep
@@ -111,6 +377,16 @@
     SK Fire Sanctuary Room North: Beetle and shortcut_sky_keep_fs_room_lower_bars
     SK Fire Sanctuary Room End Platform: (Clawshots and (Beetle or (logic_skykeep_vineclip and Bomb_Bag))) or shortcut_sky_keep_fs_room_upper_bars
   locations:
+    SK Fire Sanctuary Room East - Pot 1: Nothing
+    SK Fire Sanctuary Room East - Pot 2: Nothing
+    SK Fire Sanctuary Room East - Pot 3: Nothing
+    SK Fire Sanctuary Room East - Pot 4: Nothing
+    SK Fire Sanctuary Room East - Pot 5: Nothing
+    SK Fire Sanctuary Room East - Pot 6: Nothing
+    SK Fire Sanctuary Room East - Pot 7: Nothing
+    SK Fire Sanctuary Room East - Pot 8: Nothing
+    SK Fire Sanctuary Room East - Pot 9: Nothing
+    SK Fire Sanctuary Room East - Pot 10: Nothing
     Sky Keep - Rupee in Fire Sanctuary Room in Alcove: Beetle
 
 - name: SK Fire Sanctuary Room South
@@ -148,9 +424,14 @@
   dungeon: Sky Keep
   exits:
     SK Sacred Power of Nayru Room: Bow and Clawshots and Practice_Sword
+  locations:
+    SK Sandship Room West - Barrel 1: Nothing
+    SK Sandship Room West - Barrel 2: Nothing
 
 - name: SK Sacred Power of Nayru Room
   exits:
     SK Sandship Room West: Nothing
   locations:
     Sky Keep - Sacred Power of Nayru: Nothing # Run into the floating item.
+    SK Sacred Power of Nayru Room - Barrel 1: Nothing
+    SK Sacred Power of Nayru Room - Barrel 2: Nothing

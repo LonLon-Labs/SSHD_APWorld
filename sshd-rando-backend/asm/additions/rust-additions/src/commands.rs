@@ -4,6 +4,8 @@
 
 use crate::entrance;
 use crate::flag;
+use crate::math;
+use crate::player;
 use crate::traps;
 use core::ffi::c_char;
 use static_assertions::assert_eq_size;
@@ -61,20 +63,10 @@ pub struct ApFlagRequest {
 }
 assert_eq_size!([u8; 20], ApFlagRequest);
 
-#[no_mangle]
-pub static mut AP_FLAG_REQUEST: ApFlagRequest = ApFlagRequest {
-    magic:          [0x46, 0x4C, 0x00, 0x01], // "FL\x00\x01"
-    pending:        false,
-    flag_type:      0,
-    operation:      0,
-    _pad0:          0,
-    flag_id:        0,
-    value:          0,
-    scene_index:    0xFFFF,
-    response_ready: false,
-    _pad1:          0,
-    response_value: 0,
-};
+// The live instance of this struct now lives at AP_IPC_ROOT.flag_request
+// (see ipc.rs) instead of a standalone static, so the external client
+// only needs ONE scan (for AP_IPC_ROOT.magic) to find every mailbox,
+// this one included.
 
 // ─── AP_WARP_REQUEST ───────────────────────────────────────────────────
 // Backs the /warp command. Python locates this struct by scanning for
@@ -89,41 +81,87 @@ pub static mut AP_FLAG_REQUEST: ApFlagRequest = ApFlagRequest {
 //                              an explicit stage
 //   +6  layer u8             — target layer for mode=1; 0xFF = unspecified
 //                              (treated as 0). Unused for mode=0.
-//   +7  _pad0 u8
+//   +7  room u8             — target room for mode=1 (0 = default). Was
+//                              `_pad0`; old clients send 0 = old behaviour.
 //   +8  stage_name [u8; 8]   — ASCII stage code, null-padded (e.g.
 //                              "F000\0\0\0\0"). Unused for mode=0.
 //   +16 response_ready bool  — we set this to 1 once response_code is valid
 //   +17 response_code u8     — 0 = ok, 1 = failed (null pointers / invalid
-// mode)   +18 _pad1 [u8; 2]
+// mode)
+//   +18 entrance u8         — target entrance for mode=1 (0 = default). Was
+//                              `_pad1[0]`.
+//   +19 flags u8            — WARP_FLAG_* bits (night / trial overrides).
+//                              Was `_pad1[1]`; 0 = "unspecified", i.e. day
+//                              and the usual automatic trial detection.
 #[repr(C, packed(1))]
 pub struct ApWarpRequest {
     pub magic:          [u8; 4],
     pub pending:        bool,
     pub mode:           u8,
     pub layer:          u8,
-    pub _pad0:          u8,
+    pub room:           u8,
     pub stage_name:     [u8; 8],
     pub response_ready: bool,
     pub response_code:  u8,
-    pub _pad1:          [u8; 2],
+    pub entrance:       u8,
+    pub flags:          u8,
 }
 assert_eq_size!([u8; 20], ApWarpRequest);
 
-#[no_mangle]
-pub static mut AP_WARP_REQUEST: ApWarpRequest = ApWarpRequest {
-    magic:          [0x57, 0x52, 0x00, 0x01], // "WR\x00\x01"
-    pending:        false,
-    mode:           0,
-    layer:          0xFF,
-    _pad0:          0,
-    stage_name:     [0u8; 8],
-    response_ready: false,
-    response_code:  0,
-    _pad1:          [0u8; 2],
-};
+// ApWarpRequest.flags bits. Must match WARP_FLAG_* in the client's ap-ipc.
+/// Night value to use (only honoured if WARP_FLAG_NIGHT_SET is also set).
+const WARP_FLAG_NIGHT: u8 = 1 << 0;
+/// The client explicitly specified night (0 or 1).
+const WARP_FLAG_NIGHT_SET: u8 = 1 << 1;
+/// Trial (Silent Realm effect) value to use (only if WARP_FLAG_TRIAL_SET).
+const WARP_FLAG_TRIAL: u8 = 1 << 2;
+/// The client explicitly specified trial (0 or 1).
+const WARP_FLAG_TRIAL_SET: u8 = 1 << 3;
+
+// The live instance of this struct now lives at AP_IPC_ROOT.warp_request
+// (see ipc.rs) instead of a standalone static, for the same reason as
+// AP_FLAG_REQUEST above.
 
 const WARP_MODE_START: u8 = 0;
 const WARP_MODE_STAGE: u8 = 1;
+
+// ─── AP_TELEPORT_REQUEST ───────────────────────────────────────────────
+// Backs the client's /tp <x> <y> <z> command (IPC version 13). Moves the
+// player to a world position in the CURRENT stage; it never loads a stage
+// (that's what ApWarpRequest is for). Lives at AP_IPC_ROOT.teleport_request.
+// This layout must stay in sync with `ApTeleportRequest` in the client's
+// ap-ipc crate.
+//
+// Layout (packed, little-endian, 16 bytes total):
+//   +0  pending bool        — 1 = new request for us to process; we clear it
+//                             back to 0 as soon as we pick it up
+//   +1  response_ready bool — we set this to 1 once response_code is valid
+//   +2  response_code u8    — TELEPORT_RESPONSE_*
+//   +3  _pad u8
+//   +4  x_bits u32          — f32 bits of the target X
+//   +8  y_bits u32          — f32 bits of the target Y
+//   +12 z_bits u32          — f32 bits of the target Z
+// The coordinates are sent as raw bits rather than f32 so the client never has
+// to take a reference to a (possibly misaligned) float inside a packed struct.
+#[repr(C, packed(1))]
+pub struct ApTeleportRequest {
+    pub pending:        bool,
+    pub response_ready: bool,
+    pub response_code:  u8,
+    pub _pad:           u8,
+    pub x_bits:         u32,
+    pub y_bits:         u32,
+    pub z_bits:         u32,
+}
+assert_eq_size!([u8; 16], ApTeleportRequest);
+
+// ApTeleportRequest.response_code values. Must match TELEPORT_RESPONSE_* in
+// the client's ap-ipc.
+const TELEPORT_RESPONSE_OK: u8 = 0;
+/// PLAYER_PTR is null (title screen, loading, ...).
+const TELEPORT_RESPONSE_NO_PLAYER: u8 = 1;
+/// A coordinate was NaN or infinite.
+const TELEPORT_RESPONSE_BAD_COORDS: u8 = 2;
 
 // Flag type discriminants — must match FLAG_TYPES in SSHDClient.py
 const FLAG_TYPE_STORYFLAG: u8 = 0;
@@ -142,6 +180,8 @@ const SCENE_INDEX_CURRENT: u16 = 0xFFFF;
 // IMPORTANT: when using vanilla code, the start point must be declared in
 // symbols.yaml and then added to this extern block.
 extern "C" {
+    static PLAYER_PTR: *mut player::dPlayer;
+
     // Functions
     fn debugPrint_128(string: *const c_char, fstr: *const c_char, ...);
 }
@@ -163,18 +203,19 @@ extern "C" {
 /// as the spawn-request handlers above).
 pub fn handle_flag_request() {
     unsafe {
-        if !AP_FLAG_REQUEST.pending {
+        let req = core::ptr::addr_of_mut!(crate::ipc::AP_IPC_ROOT.flag_request);
+        if !(*req).pending {
             return;
         }
         // Clear first so this is one-shot even if we return early below.
-        AP_FLAG_REQUEST.pending = false;
-        AP_FLAG_REQUEST.response_ready = false;
+        (*req).pending = false;
+        (*req).response_ready = false;
 
-        let flag_type = AP_FLAG_REQUEST.flag_type;
-        let operation = AP_FLAG_REQUEST.operation;
-        let flag_id = AP_FLAG_REQUEST.flag_id;
-        let value = AP_FLAG_REQUEST.value;
-        let scene_index = AP_FLAG_REQUEST.scene_index;
+        let flag_type = (*req).flag_type;
+        let operation = (*req).operation;
+        let flag_id = (*req).flag_id;
+        let value = (*req).value;
+        let scene_index = (*req).scene_index;
 
         let result: u32 = match flag_type {
             FLAG_TYPE_STORYFLAG => handle_storyflag(operation, flag_id, value),
@@ -184,8 +225,8 @@ pub fn handle_flag_request() {
             _ => 0,
         };
 
-        AP_FLAG_REQUEST.response_value = result;
-        AP_FLAG_REQUEST.response_ready = true;
+        (*req).response_value = result;
+        (*req).response_ready = true;
     }
 }
 
@@ -307,27 +348,89 @@ fn handle_dungeonflag(operation: u8, flag_id: u16, scene_index: u16) -> u32 {
 /// as the spawn/flag request handlers).
 pub fn handle_warp_request() {
     unsafe {
-        if !AP_WARP_REQUEST.pending {
+        let req = core::ptr::addr_of_mut!(crate::ipc::AP_IPC_ROOT.warp_request);
+        if !(*req).pending {
             return;
         }
         // Clear first so this is one-shot even if we return early below.
-        AP_WARP_REQUEST.pending = false;
-        AP_WARP_REQUEST.response_ready = false;
+        (*req).pending = false;
+        (*req).response_ready = false;
 
-        let ok = match AP_WARP_REQUEST.mode {
+        let ok = match (*req).mode {
             WARP_MODE_START => entrance::warp_to_start(),
             WARP_MODE_STAGE => {
-                let layer = if AP_WARP_REQUEST.layer == 0xFF {
+                let layer = if (*req).layer == 0xFF {
                     0
                 } else {
-                    AP_WARP_REQUEST.layer
+                    (*req).layer
                 };
-                entrance::warp_to_stage(AP_WARP_REQUEST.stage_name, layer)
+                let flags = (*req).flags;
+                let night = if flags & WARP_FLAG_NIGHT_SET != 0 {
+                    Some(flags & WARP_FLAG_NIGHT != 0)
+                } else {
+                    None
+                };
+                let trial = if flags & WARP_FLAG_TRIAL_SET != 0 {
+                    Some(flags & WARP_FLAG_TRIAL != 0)
+                } else {
+                    None
+                };
+                entrance::warp_to_stage(
+                    (*req).stage_name,
+                    layer,
+                    (*req).room,
+                    (*req).entrance,
+                    night,
+                    trial,
+                )
             },
             _ => false,
         };
 
-        AP_WARP_REQUEST.response_code = if ok { 0 } else { 1 };
-        AP_WARP_REQUEST.response_ready = true;
+        (*req).response_code = if ok { 0 } else { 1 };
+        (*req).response_ready = true;
+    }
+}
+
+/// Processes at most one AP_TELEPORT_REQUEST per call (one-shot, same pattern
+/// as the flag/warp request handlers). Backs the client's `/tp`.
+///
+/// Only the player's position is written; no stage load happens, so the target
+/// is interpreted in whatever stage is currently loaded. Besides the primary
+/// `pos`, the actor's position copies are updated too (otherwise the game can
+/// copy the stale value back over `pos` on its next update), and velocity is
+/// zeroed so a fall in progress doesn't carry over to the destination.
+pub fn handle_teleport_request() {
+    unsafe {
+        let req = core::ptr::addr_of_mut!(crate::ipc::AP_IPC_ROOT.teleport_request);
+        if !(*req).pending {
+            return;
+        }
+        // Clear first so this is one-shot even if we return early below.
+        (*req).pending = false;
+        (*req).response_ready = false;
+
+        let x = f32::from_bits((*req).x_bits);
+        let y = f32::from_bits((*req).y_bits);
+        let z = f32::from_bits((*req).z_bits);
+
+        let code = if !(x.is_finite() && y.is_finite() && z.is_finite()) {
+            TELEPORT_RESPONSE_BAD_COORDS
+        } else if PLAYER_PTR.is_null() {
+            TELEPORT_RESPONSE_NO_PLAYER
+        } else {
+            let pos = math::Vec3f { x, y, z };
+            let player = PLAYER_PTR;
+            (*player).obj_base_members.base.pos = pos;
+            (*player).obj_base_members.base.pos_copy = pos;
+            (*player).obj_base_members.pos_copy1 = pos;
+            (*player).obj_base_members.pos_copy2 = pos;
+            (*player).obj_base_members.pos_copy3 = pos;
+            (*player).obj_base_members.velocity = math::Vec3f::default();
+            TELEPORT_RESPONSE_OK
+        };
+
+        (*req).response_code = code;
+        (*req).response_ready = true;
     }
 }

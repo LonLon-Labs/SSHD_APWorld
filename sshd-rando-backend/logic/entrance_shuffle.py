@@ -786,11 +786,41 @@ def delete_target_entrance(target: Entrance) -> None:
         target.parent_area = None
 
 
+def log_unreachable_for_diagnostics(
+    worlds: list[World], item_pool: Counter[Item], entrance: Entrance
+) -> None:
+    # Diagnostic only: list the locations and areas the search cannot reach when
+    # all_logic_satisfied fails, so the blocking requirement can be found.
+    search = Search(SearchMode.ALL_LOCATIONS_REACHABLE, worlds, item_pool)
+    search.search_worlds()
+    unreachable_locs = [
+        loc
+        for w in worlds
+        for loc in w.get_all_item_locations()
+        if loc not in search.visited_locations
+    ]
+    unreachable_areas = [
+        area
+        for w in worlds
+        for area in w.areas.values()
+        if area not in search.visited_areas
+    ]
+    print(
+        f"[SSHD-VALIDATE-DIAG] entrance={entrance} unreachable locations={len(unreachable_locs)} "
+        f"unreachable areas={len(unreachable_areas)}"
+    )
+    for area in unreachable_areas[:25]:
+        print(f"[SSHD-VALIDATE-DIAG]   AREA: {area}")
+    for loc in unreachable_locs[:25]:
+        print(f"[SSHD-VALIDATE-DIAG]   LOC: {loc}")
+
+
 def validate_world(
     world: World, worlds: list[World], entrance: Entrance, item_pool: Counter[Item]
 ) -> None:
     # Validate that the world is still beatable
     if not all_logic_satisfied(worlds, item_pool):
+        log_unreachable_for_diagnostics(worlds, item_pool, entrance)
         raise EntranceShuffleError(f"Not all logic is satisfied!")
 
     # Check to make sure that there's at least 1 sphere 0 location reachable

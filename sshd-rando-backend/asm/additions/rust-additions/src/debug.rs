@@ -134,6 +134,37 @@ pub extern "C" fn debug_print_num(debug_string: *const c_char, number: usize) {
 }
 
 #[no_mangle]
+pub extern "C" fn debug_print_nums(
+    debug_string: *const c_char,
+    a: usize,
+    b: usize,
+    c: usize,
+    d: usize,
+    e: usize,
+    f: usize,
+) {
+    // Up to six integer/pointer arguments for the format string, e.g.
+    // debug::debug_print_nums(c"[APSEED] x=%d y=%d s=%s".as_ptr(), x, y, ptr as
+    // usize, 0, 0, 0);
+    // Unused arguments are ignored by the format string. Keep the format string
+    // short (under ~50 characters), it is copied into a 64 byte buffer.
+
+    unsafe {
+        __setup_debug_strings(debug_string, core::ptr::null_mut());
+        debugPrint_128(
+            DEBUG_BUFFER.as_ptr(),
+            DEBUG_PRINTABLE_STRING.as_ptr(),
+            a,
+            b,
+            c,
+            d,
+            e,
+            f,
+        );
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn debug_print_float(debug_string: *const c_char, float: f32) {
     // e.g. debug::debug_print_float(c"param1: %f".as_ptr(), param1 as f32);
 

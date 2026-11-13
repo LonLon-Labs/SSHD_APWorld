@@ -158,6 +158,28 @@ class SettingGet:
     def value_as_number(self):
         return int(self.setting.value)
 
+    def keeps_locks_despite_removed(self) -> bool:
+        """
+        True when this is a key-lock setting (small_keys / lanayru_caves_keys)
+        set to "removed" while Key Rings or the Skeleton Key are in the pool.
+
+        "Removed" normally means "the locks start opened". But when Key Rings or
+        the Skeleton Key are enabled, those items are what open the doors, so the
+        doors have to stay locked. Everything that decides whether a lock starts
+        opened (== comparisons here, and the setting comparisons inside logic /
+        startflags / patch conditions) must go through this check.
+        """
+        if self.setting_name not in ("small_keys", "lanayru_caves_keys"):
+            return False
+        if self.setting.value != "removed":
+            return False
+
+        key_rings = self.settings_map.get("key_rings_in_pool")
+        skeleton = self.settings_map.get("skeleton_key_in_pool")
+        key_rings_on = key_rings is not None and key_rings.value == "on"
+        skeleton_on = skeleton is not None and skeleton.value == "on"
+        return key_rings_on or skeleton_on
+
     def __eq__(self, value_: str) -> bool:
         if value_ not in self.setting.info.options:
             raise SettingInfoError(
@@ -165,24 +187,10 @@ class SettingGet:
             )
 
         # Keep key doors locked when key rings or skeleton key are active,
-        # even if Small Keys In The Pool is set to removed.
-        if self.setting_name == "small_keys" and value_ == "removed":
-            key_rings = self.settings_map.get("key_rings_in_pool")
-            skeleton = self.settings_map.get("skeleton_key_in_pool")
-            key_rings_on = key_rings is not None and key_rings.value == "on"
-            skeleton_on = skeleton is not None and skeleton.value == "on"
-            if key_rings_on or skeleton_on:
-                return False
-
-        # Lanayru Caves locks should stay locked when key rings or skeleton key
-        # are active; those items control access instead of auto-unlocking.
-        if self.setting_name == "lanayru_caves_keys" and value_ == "removed":
-            key_rings = self.settings_map.get("key_rings_in_pool")
-            skeleton = self.settings_map.get("skeleton_key_in_pool")
-            key_rings_on = key_rings is not None and key_rings.value == "on"
-            skeleton_on = skeleton is not None and skeleton.value == "on"
-            if key_rings_on or skeleton_on:
-                return False
+        # even if the setting is "removed" (those items control access instead
+        # of the locks auto-unlocking).
+        if value_ == "removed" and self.keeps_locks_despite_removed():
+            return False
 
         return self.setting.value == value_
 
