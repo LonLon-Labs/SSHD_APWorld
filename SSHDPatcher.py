@@ -96,6 +96,39 @@ def _find_extract_path() -> Path:
         return Path.home() / ".local" / "share" / "Archipelago" / "sshd_extract"
 
 
+_SETTINGS_FILE_NAME = "sshd_patcher_settings.json"
+
+
+def _settings_path() -> Path:
+    """Return the JSON file where the patcher remembers user settings."""
+    if sys.platform == "win32":
+        base = Path(os.environ.get("APPDATA", str(Path.home()))) / "Archipelago"
+    else:
+        base = Path.home() / ".config" / "Archipelago"
+    return base / _SETTINGS_FILE_NAME
+
+
+def _load_saved_extract_path() -> Optional[str]:
+    """Return the ROM extract path saved by a previous run, or None."""
+    try:
+        with open(_settings_path(), "r", encoding="utf-8") as f:
+            value = json.load(f).get("extract_path")
+        return value if isinstance(value, str) and value else None
+    except (OSError, ValueError, AttributeError):
+        return None
+
+
+def _save_extract_path(path: Path) -> None:
+    """Remember the ROM extract path so it is pre-filled next time."""
+    try:
+        settings = _settings_path()
+        settings.parent.mkdir(parents=True, exist_ok=True)
+        with open(settings, "w", encoding="utf-8") as f:
+            json.dump({"extract_path": str(path)}, f, indent=2)
+    except OSError as e:
+        print(f"[Patcher] Warning: could not save settings: {e}")
+
+
 _GAME_ID = "01002da013484000"
 _ALL_EMULATORS = ["Ryujinx", "yuzu", "suyu", "sudachi", "eden"]
 
@@ -848,7 +881,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
             lbl2 = QLabel("ROM extract:")
             lbl2.setProperty("class", "FieldLabel")
             row2.addWidget(lbl2)
-            self.extract_input = QLineEdit(str(_find_extract_path()))
+            self.extract_input = QLineEdit(_load_saved_extract_path() or str(_find_extract_path()))
             self.extract_input.setPlaceholderText("Path to sshd_extract folder")
             row2.addWidget(self.extract_input, stretch=1)
             browse_ext = QPushButton("Browse")
@@ -941,6 +974,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
             )
             if path:
                 self.extract_input.setText(path)
+                _save_extract_path(Path(path))
 
         def _on_patch_changed(self, text):
             if text.strip():
@@ -996,6 +1030,7 @@ def _run_gui(initial_patch_file: Optional[str] = None):
             if not extract_path or not Path(extract_path).exists():
                 self._set_info("ROM extract path not found", "#ee0000")
                 return
+            _save_extract_path(Path(extract_path))
 
             self.patch_btn.setEnabled(False)
             self.log_output.clear()
